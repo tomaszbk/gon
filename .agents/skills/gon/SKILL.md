@@ -314,7 +314,7 @@ affected named calls, match arms, propagation and lazy/contextual expressions.
 
 In this toolchain repository, read `misc/gon/STATUS.md`, `misc/gon/features.json`
 and `misc/gon/VALIDATION.md` for current status and executed checks. Local
-specifications live in `$(gon env GOROOT)/design/`; clearly labeled proposals do not change current implementation contracts. Executable pairs live in
+contracts live in `$(gon env GOROOT)/misc/gon/OPTIONALS.md` and `STATUS.md`. Local ignored design notes may be absent from a fresh checkout; proposals do not change implementation contracts. Executable pairs live in
 `test/{enums,matching,optionresult,namedarguments}.go` and their `.dir` fixtures.
 `GON_BASELINE_GO=/absolute/path/to/unmodified/go python3 misc/gon/validate.py modern`
 runs the deduplicated focused aggregate. Individual profiles are `enums`,
