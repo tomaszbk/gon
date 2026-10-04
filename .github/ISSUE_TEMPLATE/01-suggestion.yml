@@ -1,0 +1,10 @@
+name: Suggestion
+description: Share an idea or improvement for Gon.
+body:
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: What would you like to suggest?
+      description: Describe your idea and how it would help. Examples are welcome!
+    validations:
+      required: true

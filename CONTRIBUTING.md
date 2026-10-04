@@ -1,39 +1,8 @@
-# Contributing to Go
+# Contributing to Gon
 
-Go is an open source project.
+All contributions and suggestions are welcome! Feel free to open an issue or
+submit a pull request, whether it is a bug report, an idea, a documentation
+improvement, or a code change.
 
-It is the work of hundreds of contributors. We appreciate your help!
-
-## Before filing an issue
-
-If you are unsure whether you have found a bug, please consider asking in the [golang-nuts mailing
-list](https://groups.google.com/forum/#!forum/golang-nuts) or [other forums](https://golang.org/help/) first. If
-the behavior you are seeing is confirmed as a bug or issue, it can easily be re-raised in the issue tracker.
-
-## Filing issues
-
-Sensitive security-related issues should be reported to [security@golang.org](mailto:security@golang.org).
-See the [security policy](https://golang.org/security) for details.
-
-The recommended way to file an issue is by running `go bug`.
-Otherwise, when filing an issue, make sure to answer these five questions:
-
-1. What version of Go are you using (`go version`)?
-2. What operating system and processor architecture are you using?
-3. What did you do?
-4. What did you expect to see?
-5. What did you see instead?
-
-For change proposals, see [Proposing Changes To Go](https://go.dev/s/proposal-process).
-
-## Contributing code
-
-Please read the [Contribution Guidelines](https://golang.org/doc/contribute.html) before sending patches.
-
-This repository includes source code originated by The Go Authors under the
-BSD-style license found in the LICENSE file.
-
-Per-file boilerplate comments ("// Copyright [YEAR] The Go Authors...") have been
-removed to reduce token consumption during automated LLM analysis and code generation.
-The license terms, copyright ownership, and disclaimer in the root LICENSE file
-remain fully applicable and intact.
+This repository includes code originated by The Go Authors under the BSD-style
+license in [LICENSE](LICENSE).
