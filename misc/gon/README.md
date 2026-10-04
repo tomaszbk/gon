@@ -180,9 +180,10 @@ gon refactor rename store.Sum Add --dry-run
 gon explain InvalidErrorHandling
 ```
 
-Agents learn these conventions from the project skill in
-[`.agents/skills/gon`](../../.agents/skills/gon/SKILL.md). It is not installed
-globally; to opt another repository into Gon, copy it with
+Keep the syntax and tooling skill in
+[`.agents/skills/gon`](../../.agents/skills/gon/SKILL.md) in every Gon project
+so coding agents use the selected language and tools. It is project-scoped;
+copy it from the Gon checkout with
 `python3 misc/gon/install.py --project-skill /path/to/repo`.
 
 ## Install without replacing Go
@@ -280,7 +281,7 @@ public commands to select Gon for this project.
    rewriting those source changes. `gon fix` modernizes supported forms; it is
    not a reverse migration tool.
 
-For coding agents, optionally copy the project-scoped skill from the Gon
+For coding agents, include the project-scoped skill from the Gon
 checkout with `python3 misc/gon/install.py --project-skill /path/to/your-project`.
 This is independent of compiler and editor selection.
 
