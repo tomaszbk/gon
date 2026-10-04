@@ -1998,6 +1998,10 @@ func checkForChunkedIndexBounds(ft *factsTable, b *ssa.Block, index, bound *ssa.
 
 func (ft *factsTable) addValueFact(b *ssa.Block, v *ssa.Value) {
 	switch v.Op {
+	case ssaop.OpLoad:
+		if c := conditionalLoadConstant(v); c != nil {
+			ft.newLimit(v, ssa.InitLimit(c))
+		}
 	case ssaop.OpAdd64, ssaop.OpAdd32, ssaop.OpAdd16, ssaop.OpAdd8:
 		x := ft.limits[v.Args[0].ID]
 		y := ft.limits[v.Args[1].ID]

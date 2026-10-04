@@ -20,21 +20,22 @@ const (
 	// These are the tokens defined by LSP 3.18, but a client is
 	// free to send its own set; any tokens that the server emits
 	// that are not in this set are simply not encoded in the bitfield.
-	TokComment   Type = "comment"       // for a comment
-	TokFunction  Type = "function"      // for a function
-	TokKeyword   Type = "keyword"       // for a keyword
-	TokLabel     Type = "label"         // for a control label (LSP 3.18)
-	TokMacro     Type = "macro"         // for text/template tokens
-	TokMethod    Type = "method"        // for a method
-	TokNamespace Type = "namespace"     // for an imported package name
-	TokNumber    Type = "number"        // for a numeric literal
-	TokOperator  Type = "operator"      // for an operator
-	TokParameter Type = "parameter"     // for a parameter variable
-	TokProperty  Type = "property"      // for a struct field
-	TokString    Type = "string"        // for a string literal
-	TokType      Type = "type"          // for a type name (plus other uses)
-	TokTypeParam Type = "typeParameter" // for a type parameter
-	TokVariable  Type = "variable"      // for a var or const
+	TokComment    Type = "comment"       // for a comment
+	TokFunction   Type = "function"      // for a function
+	TokKeyword    Type = "keyword"       // for a keyword
+	TokLabel      Type = "label"         // for a control label (LSP 3.18)
+	TokMacro      Type = "macro"         // for text/template tokens
+	TokMethod     Type = "method"        // for a method
+	TokNamespace  Type = "namespace"     // for an imported package name
+	TokNumber     Type = "number"        // for a numeric literal
+	TokOperator   Type = "operator"      // for an operator
+	TokParameter  Type = "parameter"     // for a parameter variable
+	TokProperty   Type = "property"      // for a struct field
+	TokString     Type = "string"        // for a string literal
+	TokType       Type = "type"          // for a type name (plus other uses)
+	TokTypeParam  Type = "typeParameter" // for a type parameter
+	TokVariable   Type = "variable"      // for a var or const
+	TokEnumMember Type = "enumMember"    // for a Gon enum alternative
 	// The section below defines a subset of token types in standard token types
 	// that gopls does not use.
 	//
@@ -43,7 +44,6 @@ const (
 	// TokClass      Type = "class"
 	// TokDecorator  Type = "decorator"
 	// TokEnum       Type = "enum"
-	// TokEnumMember Type = "enumMember"
 	// TokEvent      Type = "event"
 	// TokInterface  Type = "interface"
 	// TokModifier   Type = "modifier"
@@ -68,6 +68,7 @@ var Types = []Type{
 	TokNumber,
 	TokOperator,
 	TokLabel,
+	TokEnumMember,
 }
 
 type Modifier string

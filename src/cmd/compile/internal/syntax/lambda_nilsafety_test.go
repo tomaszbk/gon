@@ -100,11 +100,12 @@ func TestNilSafetySyntax(t *testing.T) {
 	if right, ok := op.Y.(*Operation); !ok || right.Op != Coalesce {
 		t.Fatal("coalescing must group right")
 	}
-	for _, src := range []string{`var x = p?.(T)`, `var x = p?.5`, `var x = p? .A`, `var x = p?[0]`, `var x = a ?? b + c`, `var x = a || b ?? c`, "var x = p\n?.A", "var x = p\n?? q"} {
+	for _, src := range []string{`var x = p?.(T)`, `var x = p?.5`, `var x = a ?? b + c`, `var x = a || b ?? c`, "var x = p\n?.A", "var x = p\n?? q"} {
 		if _, err := Parse(NewFileBase("bad.go"), strings.NewReader("package p; "+src), func(error) {}, nil, 0); err == nil {
 			t.Errorf("accepted invalid nil syntax %q", src)
 		}
 	}
+	parseNewSyntax(t, `func f() { _ = p? .A; _ = p?[0] }`)
 	parseNewSyntax(t, `var or = "?. ?? ??= =>"; var n = .5; var b = !x; var c = ! x; var d = x!=y; var a = f(xs...)`)
 }
 

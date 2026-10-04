@@ -99,6 +99,22 @@ type any = interface{}
 // not as the type of a variable.
 type comparable interface{ comparable }
 
+// Native optional types are spelled T?. Their zero value is absence; assigning
+// nil constructs absence and assigning one compatible payload constructs presence.
+// Typed nil stays present. Presence patterns use P?, and absence patterns use nil.
+
+// Result is Gon's predeclared closed alternative for success or failure.
+// E may be any type. Its zero value is Ok with the zero value of T.
+// Result may be shadowed. Qualified constructors remain available; .Ok and
+// .Err use an expected canonical Result type. Ordinary named function results
+// can describe the returned Result without adding labels to its type arguments.
+type Result[T, E any] enum {
+	// Ok contains a successful value of T and is the default alternative.
+	default Ok(T)
+	// Err contains a failure value of E.
+	Err(E)
+}
+
 // iota is a predeclared identifier representing the untyped integer ordinal
 // number of the current const specification in a (usually parenthesized)
 // const declaration. It is zero-indexed.

@@ -348,6 +348,23 @@ func (p *printer) printRawNode(n Node) {
 		// we should not reach here but don't crash
 
 	// expressions and types
+	case *ContextualVariantExpr:
+		p.print(_Dot, n.Name)
+		if n.Lparen.IsKnown() {
+			p.print(_Lparen)
+			for i, arg := range n.ArgList {
+				if i > 0 {
+					p.print(_Comma, blank)
+				}
+				p.print(arg)
+			}
+			p.print(_Rparen)
+		}
+	case *OptionalExpr:
+		p.print(n.X, _Question)
+	case *EnumConstructExpr, *EnumType, *EnumVariant, *MatchExpr, *MatchStmt, *MatchArm, *MatchPattern, *MatchField:
+		p.printAlternative(n)
+
 	case *BadExpr:
 		p.print(_Name, "<bad expr>")
 
@@ -453,7 +470,15 @@ func (p *printer) printRawNode(n Node) {
 
 	case *CallExpr:
 		p.print(n.Fun, _Lparen)
-		p.printExprList(n.ArgList)
+		for i, arg := range n.ArgList {
+			if i > 0 {
+				p.print(_Comma, blank)
+			}
+			if i < len(n.ArgNames) && n.ArgNames[i] != nil {
+				p.print(n.ArgNames[i], _Colon, blank)
+			}
+			p.print(arg)
+		}
 		if n.HasDots {
 			p.print(_DotDotDot)
 		}

@@ -1,0 +1,1 @@
+PASS: optional syntax baseline/legacy/modern execution, LSP diagnostics, imported named results, Result builtin definitions, native presence bindings/references/rename, tokens, formatting, signatures, contextual and payload completion, extraction safety, CLI types

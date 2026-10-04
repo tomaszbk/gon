@@ -68,7 +68,11 @@ func (b *builder) safeNav(fn *Function, e *ast.SafeNavExpr, discard bool) Value 
 	var t types.Type
 	if !discard {
 		t = fn.typeOf(e)
-		value = emitConv(fn, value, t, e)
+		if types.IsOptional(t) {
+			value = enumValue(fn, t, enumAlternative(t, "$present"), []Value{value}, e)
+		} else {
+			value = emitConv(fn, value, t, e)
+		}
 	}
 	emitJump(fn, done, e)
 	fn.currentBlock = absent
@@ -87,7 +91,13 @@ func (b *builder) coalesce(fn *Function, e *ast.BinaryExpr) Value {
 	fallback := fn.newBasicBlock("coalesce.fallback")
 	done := fn.newBasicBlock("coalesce.done")
 	value := b.nilOperand(fn, e.X, fallback)
-	if nillable(value.Type()) {
+	_, safe := ast.Unparen(e.X).(*ast.SafeNavExpr)
+	optionChain := safe && types.IsOptional(fn.typeOf(e.X))
+	if optionChain {
+		// The outer Option was already tested; preserve its final payload.
+	} else if types.IsOptional(value.Type()) {
+		value = b.optionPresent(fn, value, fallback, e.X)
+	} else if nillable(value.Type()) {
 		b.nilPresent(fn, value, fallback, e.X)
 	}
 	t := fn.typeOf(e)
@@ -108,9 +118,18 @@ func (b *builder) coalesceAssign(fn *Function, s *ast.AssignStmt) {
 	value := loc.load(fn, s)
 	fallback := fn.newBasicBlock("coalesce.assign")
 	done := fn.newBasicBlock("coalesce.done")
-	emitIf(fn, emitCompare(fn, token.NEQ, value, zeroConst(value.Type(), s), s), done, fallback, s)
+	if types.IsOptional(value.Type()) {
+		tag := enumField(fn, value, 0, s)
+		emitIf(fn, emitCompare(fn, token.NEQ, tag, emitConv(fn, intConst(0, s), tag.Type(), s), s), done, fallback, s)
+	} else {
+		emitIf(fn, emitCompare(fn, token.NEQ, value, zeroConst(value.Type(), s), s), done, fallback, s)
+	}
 	fn.currentBlock = fallback
-	loc.store(fn, b.expr(fn, s.Rhs[0]), s)
+	rhs := b.expr(fn, s.Rhs[0])
+	if types.IsOptional(value.Type()) {
+		rhs = enumValue(fn, value.Type(), enumAlternative(value.Type(), "$present"), []Value{rhs}, s)
+	}
+	loc.store(fn, rhs, s)
 	emitJump(fn, done, s)
 	fn.currentBlock = done
 }

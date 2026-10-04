@@ -364,6 +364,20 @@ func (c *DeepCopier) CopyExpr(e syntax.Expr) syntax.Expr {
 			l.Lowered = c.CopyExpr(e.Lowered).(*syntax.FuncLit)
 		}
 		newE = l
+	case *syntax.ContextualVariantExpr:
+		x := &syntax.ContextualVariantExpr{Name: c.CopyName(e.Name, false), Lparen: e.Lparen, Rparen: e.Rparen}
+		for _, arg := range e.ArgList {
+			x.ArgList = append(x.ArgList, c.CopyExpr(arg))
+		}
+		newE = x
+	case *syntax.EnumConstructExpr:
+		x := &syntax.EnumConstructExpr{Variant: e.Variant}
+		for _, arg := range e.ArgList {
+			x.ArgList = append(x.ArgList, c.CopyExpr(arg))
+		}
+		newE = x
+	case *syntax.OptionalExpr:
+		newE = &syntax.OptionalExpr{X: c.CopyExpr(e.X), Question: e.Question, Body: c.CopyBlockStmt(e.Body)}
 	case *syntax.NilGuardExpr:
 		newE = &syntax.NilGuardExpr{X: c.CopyExpr(e.X), Question: e.Question}
 	case *syntax.SafeNavExpr:
@@ -400,7 +414,7 @@ func (c *DeepCopier) CopyExpr(e syntax.Expr) syntax.Expr {
 	case *syntax.Operation:
 		newE = &syntax.Operation{Op: e.Op, X: c.CopyExpr(e.X), Y: c.CopyExpr(e.Y)}
 	case *syntax.ErrorExpr:
-		newE = &syntax.ErrorExpr{X: c.CopyExpr(e.X), Err: c.CopyName(e.Err, true), Body: c.CopyBlockStmt(e.Body)}
+		newE = &syntax.ErrorExpr{X: c.CopyExpr(e.X), Err: c.CopyName(e.Err, true), Body: c.CopyBlockStmt(e.Body), SynthesizedHandler: e.SynthesizedHandler}
 	case *syntax.CondExpr:
 		newE = &syntax.CondExpr{Cond: c.CopyExpr(e.Cond), Then: c.CopyExpr(e.Then), Else: c.CopyExpr(e.Else), Rbrace: e.Rbrace}
 	case *syntax.CallExpr:
@@ -410,6 +424,9 @@ func (c *DeepCopier) CopyExpr(e syntax.Expr) syntax.Expr {
 		}
 		for _, a := range e.ArgList {
 			newCall.ArgList = append(newCall.ArgList, c.CopyExpr(a))
+		}
+		for _, name := range e.ArgNames {
+			newCall.ArgNames = append(newCall.ArgNames, c.CopyName(name, false))
 		}
 		newE = newCall
 	case *syntax.ListExpr:

@@ -163,7 +163,7 @@ func run(pass *analysis.Pass) (any, error) {
 	for _, lit := range lits {
 		li := funcLits[lit]
 		if li.cfg == nil {
-			li.cfg = cfg.New(lit.Body, c.callMayReturn)
+			li.cfg = cfg.NewWithTypes(lit.Body, c.callMayReturn, c.pass.TypesInfo)
 			if li.cfg.NoReturn() {
 				li.noReturn = true
 			}
@@ -180,7 +180,7 @@ func run(pass *analysis.Pass) (any, error) {
 			body = &ast.BlockStmt{Lbrace: lit.Arrow, List: []ast.Stmt{stmt}, Rbrace: lit.End()}
 		}
 		li := lambdas[lit]
-		li.cfg = cfg.New(body, c.callMayReturn)
+		li.cfg = cfg.NewWithTypes(body, c.callMayReturn, c.pass.TypesInfo)
 		li.noReturn = li.cfg.NoReturn()
 	}
 	// All CFGs are now built.
@@ -205,7 +205,7 @@ func (c *CFGs) buildDecl(fn *types.Func, di *declInfo) {
 	noreturn, known := knownIntrinsic(fn)
 	if !known {
 		if di.decl.Body != nil {
-			di.cfg = cfg.New(di.decl.Body, c.callMayReturn)
+			di.cfg = cfg.NewWithTypes(di.decl.Body, c.callMayReturn, c.pass.TypesInfo)
 			if di.cfg.NoReturn() {
 				noreturn = true
 			}

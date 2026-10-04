@@ -1,0 +1,21 @@
+{"Time":"2026-10-03T11:32:51.971037-03:00","Action":"start","Package":"cmd/compile/internal/types2"}
+{"Time":"2026-10-03T11:32:51.973854-03:00","Action":"start","Package":"go/types"}
+{"Time":"2026-10-03T11:32:52.214346-03:00","Action":"output","Package":"cmd/compile/internal/types2","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-10-03T11:32:52.214673-03:00","Action":"output","Package":"cmd/compile/internal/types2","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:52.21537-03:00","Action":"output","Package":"cmd/compile/internal/types2","Output":"ok  \tcmd/compile/internal/types2\t0.244s [no tests to run]\n"}
+{"Time":"2026-10-03T11:32:52.215429-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Elapsed":0.244}
+{"Time":"2026-10-03T11:32:52.216414-03:00","Action":"run","Package":"go/types","Test":"TestEnumConstructorMetadata"}
+{"Time":"2026-10-03T11:32:52.216482-03:00","Action":"output","Package":"go/types","Test":"TestEnumConstructorMetadata","Output":"=== RUN   TestEnumConstructorMetadata\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:52.217596-03:00","Action":"output","Package":"go/types","Test":"TestEnumConstructorMetadata","Output":"--- PASS: TestEnumConstructorMetadata (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:52.217625-03:00","Action":"pass","Package":"go/types","Test":"TestEnumConstructorMetadata","Elapsed":0}
+{"Time":"2026-10-03T11:32:52.217641-03:00","Action":"run","Package":"go/types","Test":"TestEnumCanonicalNamesShadow"}
+{"Time":"2026-10-03T11:32:52.217652-03:00","Action":"output","Package":"go/types","Test":"TestEnumCanonicalNamesShadow","Output":"=== RUN   TestEnumCanonicalNamesShadow\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:52.21771-03:00","Action":"output","Package":"go/types","Test":"TestEnumCanonicalNamesShadow","Output":"--- PASS: TestEnumCanonicalNamesShadow (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:52.217722-03:00","Action":"pass","Package":"go/types","Test":"TestEnumCanonicalNamesShadow","Elapsed":0}
+{"Time":"2026-10-03T11:32:52.217785-03:00","Action":"run","Package":"go/types","Test":"TestGenerate"}
+{"Time":"2026-10-03T11:32:52.217798-03:00","Action":"output","Package":"go/types","Test":"TestGenerate","Output":"=== RUN   TestGenerate\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:52.282617-03:00","Action":"output","Package":"go/types","Test":"TestGenerate","Output":"--- PASS: TestGenerate (0.06s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:52.282654-03:00","Action":"pass","Package":"go/types","Test":"TestGenerate","Elapsed":0.06}
+{"Time":"2026-10-03T11:32:52.282898-03:00","Action":"output","Package":"go/types","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:52.283457-03:00","Action":"output","Package":"go/types","Output":"ok  \tgo/types\t0.310s\n"}
+{"Time":"2026-10-03T11:32:52.283471-03:00","Action":"pass","Package":"go/types","Elapsed":0.31}

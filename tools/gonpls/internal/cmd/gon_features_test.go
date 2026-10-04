@@ -44,8 +44,8 @@ func TestGonFeatureExplain(t *testing.T) {
 			Cases               []struct{ Message, Meaning, Fix string }
 		}
 	}
-	gonJSON(t, tree, nil, &ex, "explain", "InvalidLambda", "InvalidNilSafety").checkCode(0)
-	for i, code := range []string{"InvalidLambda", "InvalidNilSafety"} {
+	gonJSON(t, tree, nil, &ex, "explain", "InvalidLambda", "InvalidNilSafety", "InvalidMatch").checkCode(0)
+	for i, code := range []string{"InvalidLambda", "InvalidNilSafety", "InvalidMatch"} {
 		e := ex.Explanations[i]
 		if e.Code != code || e.Kind != "type-error" || e.Number == nil || len(e.Cases) == 0 || e.Summary == "" {
 			t.Errorf("%s: %+v", code, e)

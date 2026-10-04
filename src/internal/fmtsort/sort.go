@@ -103,6 +103,34 @@ func compare(aVal, bVal reflect.Value) int {
 		}
 		return cmp.Compare(aVal.Pointer(), bVal.Pointer())
 	case reflect.Struct:
+		if reflect.IsOptional(aVal.Type()) {
+			a, b := reflect.OptionalValuePresent(aVal), reflect.OptionalValuePresent(bVal)
+			if a != b {
+				if !a {
+					return -1
+				}
+				return 1
+			}
+			if !a {
+				return 0
+			}
+			return compare(reflect.OptionalValuePayload(aVal), reflect.OptionalValuePayload(bVal))
+		}
+		if reflect.IsEnum(aType) {
+			a, b := reflect.EnumValueVariant(aVal), reflect.EnumValueVariant(bVal)
+			if a.Name < b.Name {
+				return -1
+			}
+			if a.Name > b.Name {
+				return 1
+			}
+			for i := range a.Fields {
+				if c := compare(reflect.EnumValuePayload(aVal, i), reflect.EnumValuePayload(bVal, i)); c != 0 {
+					return c
+				}
+			}
+			return 0
+		}
 		for i := 0; i < aVal.NumField(); i++ {
 			if c := compare(aVal.Field(i), bVal.Field(i)); c != 0 {
 				return c

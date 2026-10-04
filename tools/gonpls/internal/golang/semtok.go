@@ -392,6 +392,36 @@ func (tv *tokenVisitor) inspect(n ast.Node) (descend bool) {
 	case *ast.NilGuardExpr:
 		tv.token(n.Question, 2, semtok.TokOperator)
 	case *ast.SafeNavExpr:
+	case *ast.OptionalExpr:
+		tv.token(n.Question, 1, semtok.TokOperator)
+	case *ast.ContextualVariantExpr:
+		tv.token(n.Dot, 1, semtok.TokOperator)
+	case *ast.EnumType:
+		tv.token(n.Enum, len("enum"), semtok.TokKeyword)
+	case *ast.EnumVariant:
+		if n.Default.IsValid() {
+			tv.token(n.Default, len("default"), semtok.TokKeyword)
+		}
+	case *ast.MatchExpr:
+		tv.token(n.Switch, len("switch"), semtok.TokKeyword)
+	case *ast.MatchStmt, *ast.MatchField:
+	case *ast.MatchPattern:
+		if n.Question.IsValid() {
+			tv.token(n.Question, 1, semtok.TokOperator)
+		}
+		if n.Rest.IsValid() {
+			tv.token(n.Rest, 3, semtok.TokOperator)
+		}
+	case *ast.MatchArm:
+		keyword := "case"
+		if n.Pattern == nil {
+			keyword = "default"
+		}
+		tv.token(n.Case, len(keyword), semtok.TokKeyword)
+		tv.token(n.Arrow, 2, semtok.TokOperator)
+		if n.Guard != nil && n.Pattern != nil {
+			tv.token(tv.findKeyword("if", n.Pattern.End(), n.Guard.Pos()), 2, semtok.TokKeyword)
+		}
 	case *ast.CondExpr:
 		tv.token(n.If, len("if"), semtok.TokKeyword)
 		tv.token(n.ElsePos, len("else"), semtok.TokKeyword)
@@ -582,6 +612,24 @@ func (tv *tokenVisitor) formatString(lit *ast.BasicLit) bool {
 func (tv *tokenVisitor) appendObjectModifiers(mods []semtok.Modifier, obj types.Object) (semtok.Type, []semtok.Modifier) {
 	if obj.Pkg() == nil {
 		mods = append(mods, semtok.ModDefaultLibrary)
+	}
+
+	// Variant objects live on enum descriptors, not in the package scope.
+	var enumType types.Type
+	switch object := obj.(type) {
+	case *types.Func:
+		if object.Signature().Results().Len() == 1 {
+			enumType = object.Signature().Results().At(0).Type()
+		}
+	case *types.Var:
+		enumType = object.Type()
+	}
+	if enum := types.EnumOf(enumType); enum != nil {
+		for i := range enum.NumVariants() {
+			if sameEnumObject(obj, enum.Variant(i).Object()) {
+				return semtok.TokEnumMember, mods
+			}
+		}
 	}
 
 	// Note: PkgName, Builtin, Label have type Invalid, which adds no modifiers.
@@ -777,7 +825,8 @@ func (tv *tokenVisitor) unkIdent(id *ast.Ident) (semtok.Type, []semtok.Modifier)
 		*ast.ReturnStmt, *ast.ChanType, *ast.SendStmt,
 		*ast.ForStmt, // possibly incomplete
 		*ast.IfStmt,  /* condition */
-		*ast.NilGuardExpr, *ast.SafeNavExpr,
+		*ast.NilGuardExpr, *ast.SafeNavExpr, *ast.OptionalExpr, *ast.ContextualVariantExpr,
+		*ast.MatchExpr, *ast.MatchArm,
 		*ast.CondExpr,     // condition or branch, possibly incomplete
 		*ast.KeyValueExpr, // either key or value
 		*ast.IndexListExpr:
@@ -794,6 +843,15 @@ func (tv *tokenVisitor) unkIdent(id *ast.Ident) (semtok.Type, []semtok.Modifier)
 			return semtok.TokVariable, def
 		}
 		return semtok.TokVariable, nil
+	case *ast.EnumVariant:
+		return semtok.TokEnumMember, def
+	case *ast.MatchPattern:
+		return semtok.TokVariable, def
+	case *ast.MatchField:
+		if parent.Name == id {
+			return semtok.TokProperty, nil
+		}
+		return semtok.TokVariable, def
 	case *ast.Ellipsis:
 		return semtok.TokType, nil
 	case *ast.CaseClause:
@@ -813,6 +871,9 @@ func (tv *tokenVisitor) unkIdent(id *ast.Ident) (semtok.Type, []semtok.Modifier)
 	case *ast.CallExpr:
 		if id == parent.Fun {
 			return semtok.TokFunction, nil
+		}
+		if slices.Contains(parent.ArgNames, id) {
+			return semtok.TokParameter, nil
 		}
 		return semtok.TokVariable, nil
 	case *ast.SwitchStmt:

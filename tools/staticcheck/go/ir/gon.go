@@ -22,6 +22,9 @@ func (b *builder) exprList(fn *Function, e ast.Expr) []Value {
 }
 
 func (b *builder) errorExpr(fn *Function, e *ast.ErrorExpr) []Value {
+	if types.IsCanonicalResult(fn.typeOf(e.X)) {
+		return b.resultExpr(fn, e)
+	}
 	var values []Value
 	if _, ok := fn.typeOf(e.X).(*types.Tuple); ok {
 		values = b.exprList(fn, e.X)

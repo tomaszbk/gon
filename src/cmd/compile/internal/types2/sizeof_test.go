@@ -28,7 +28,7 @@ func TestSizeof(t *testing.T) {
 		{Basic{}, 16, 32},
 		{Array{}, 16, 24},
 		{Slice{}, 8, 16},
-		{Struct{}, 24, 48},
+		{Struct{}, 28, 56},
 		{Pointer{}, 8, 16},
 		{Tuple{}, 12, 24},
 		{Signature{}, 32, 64},
@@ -36,7 +36,7 @@ func TestSizeof(t *testing.T) {
 		{Interface{}, 40, 80},
 		{Map{}, 16, 32},
 		{Chan{}, 12, 24},
-		{Named{}, 68, 128},
+		{Named{}, 72, 136},
 		{TypeParam{}, 28, 48},
 		{term{}, 12, 24},
 

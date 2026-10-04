@@ -128,6 +128,10 @@ func (obj *Object) Pos() token.Pos {
 		if d.Label.Name == name {
 			return d.Label.Pos()
 		}
+	case *MatchPattern:
+		if id, ok := d.Value.(*Ident); ok && id.Name == name {
+			return id.Pos()
+		}
 	case *LambdaExpr:
 		for _, param := range d.Params {
 			if param.Name == name {

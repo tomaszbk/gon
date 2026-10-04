@@ -153,6 +153,7 @@ var tokens = []elt{
 	{token.SAFE_LPAREN, "?(", operator},
 	{token.COALESCE, "??", operator},
 	{token.COALESCE_ASSIGN, "??=", operator},
+	{token.QUESTION, "?", operator},
 
 	// Keywords
 	{token.BREAK, "break", keyword},

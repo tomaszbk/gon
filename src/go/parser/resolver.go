@@ -322,6 +322,66 @@ func (r *resolver) Visit(node ast.Node) ast.Visitor {
 		r.walkFuncType(n.Type)
 		r.walkBody(n.Body)
 
+	case *ast.ContextualVariantExpr:
+		r.walkExprs(n.Args)
+
+	case *ast.EnumType:
+		for _, v := range n.Variants {
+			if v.Payload != nil {
+				for _, f := range v.Payload.List {
+					if f.Type != nil {
+						ast.Walk(r, f.Type)
+					}
+				}
+			}
+		}
+
+	case *ast.MatchExpr:
+		if n.Tag != nil {
+			ast.Walk(r, n.Tag)
+		}
+		for _, a := range n.Arms {
+			ast.Walk(r, a)
+		}
+
+	case *ast.MatchArm:
+		r.openScope(n.Pos())
+		defer r.closeScope()
+		var bindings []*ast.MatchPattern
+		var pattern func(*ast.MatchPattern, bool)
+		pattern = func(p *ast.MatchPattern, top bool) {
+			if p == nil {
+				return
+			}
+			if id, ok := p.Value.(*ast.Ident); ok && !p.Lparen.IsValid() && !p.Lbrace.IsValid() {
+				if id.Name != "_" && id.Name != "true" && id.Name != "false" && id.Name != "nil" && !top {
+					bindings = append(bindings, p)
+				}
+			} else if p.Value != nil {
+				ast.Walk(r, p.Value)
+			}
+			for _, a := range p.Args {
+				pattern(a, false)
+			}
+			for _, f := range p.Fields {
+				pattern(f.Pattern, false)
+			}
+		}
+		pattern(n.Pattern, true)
+		// Resolve every qualified head before introducing any payload binding.
+		for _, p := range bindings {
+			r.declare(p, nil, r.topScope, ast.Var, p.Value.(*ast.Ident))
+		}
+		if n.Guard != nil {
+			ast.Walk(r, n.Guard)
+		}
+		if n.Value != nil {
+			ast.Walk(r, n.Value)
+		}
+		if n.Body != nil {
+			r.walkStmts(n.Body.List)
+		}
+
 	case *ast.LambdaExpr:
 		r.openScope(n.Pos())
 		defer r.closeScope()
@@ -342,6 +402,11 @@ func (r *resolver) Visit(node ast.Node) ast.Visitor {
 			r.declare(n, nil, r.topScope, ast.Var, n.Err)
 			r.walkStmts(n.Body.List)
 		}
+
+	case *ast.CallExpr:
+		// Argument labels name static parameters, never lexical variables.
+		ast.Walk(r, n.Fun)
+		r.walkExprs(n.Args)
 
 	case *ast.SelectorExpr:
 		ast.Walk(r, n.X)

@@ -84,6 +84,9 @@ func ZeroString(t types.Type, qual types.Qualifier) (_ string, isValid bool) {
 	case *types.Array, *types.Struct:
 		return types.TypeString(t, qual) + "{}", true
 
+	case *types.Optional:
+		return "*new(" + types.TypeString(t, qual) + ")", true
+
 	case *types.TypeParam:
 		// Assumes func new is not shadowed.
 		return "*new(" + types.TypeString(t, qual) + ")", true
@@ -178,6 +181,8 @@ func ZeroExpr(t types.Type, qual types.Qualifier) (_ ast.Expr, isValid bool) {
 			Type: TypeExpr(t, qual),
 		}, true
 
+	case *types.Optional:
+		return &ast.StarExpr{X: &ast.CallExpr{Fun: ast.NewIdent("new"), Args: []ast.Expr{TypeExpr(t, qual)}}}, true
 	case *types.TypeParam:
 		return &ast.StarExpr{ // *new(T)
 			X: &ast.CallExpr{
@@ -212,6 +217,13 @@ func ZeroExpr(t types.Type, qual types.Qualifier) (_ ast.Expr, isValid bool) {
 // Type-to-valid-Go-syntax formatter.
 func TypeExpr(t types.Type, qual types.Qualifier) ast.Expr {
 	switch t := t.(type) {
+	case *types.Optional:
+		elem := TypeExpr(t.Elem(), qual)
+		switch types.Unalias(t.Elem()).(type) {
+		case *types.Array, *types.Slice, *types.Map, *types.Pointer, *types.Chan, *types.Signature, *types.Optional:
+			elem = &ast.ParenExpr{X: elem}
+		}
+		return &ast.OptionalExpr{X: elem}
 	case *types.Basic:
 		switch t.Kind() {
 		case types.UnsafePointer:

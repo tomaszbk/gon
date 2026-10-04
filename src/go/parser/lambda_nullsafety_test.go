@@ -123,7 +123,7 @@ func TestNullSafetySyntax(t *testing.T) {
 }
 
 func TestNullSafetyInvalidSyntax(t *testing.T) {
-	for _, src := range []string{`p?.`, `p?.(T)`, `p? .F`, `f? ()`, `x?`, `a ?? b + c`, `a + b ?? c`, `a ?? b || c`, `a || b ?? c`} {
+	for _, src := range []string{`p?.`, `p?.(T)`, `a ?? b + c`, `a + b ?? c`, `a ?? b || c`, `a || b ?? c`} {
 		_, err := ParseExpr(src)
 		if err == nil {
 			t.Errorf("accepted %q", src)

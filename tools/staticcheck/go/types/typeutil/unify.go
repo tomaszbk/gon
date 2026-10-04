@@ -197,6 +197,9 @@ func Unify(x, y types.Type, unifier map[*types.TypeParam]types.Type) bool {
 			}
 			return true
 
+		case *types.Optional:
+			return uni(x.Elem(), y.(*types.Optional).Elem())
+
 		case *types.Pointer:
 			y := y.(*types.Pointer)
 			return uni(x.Elem(), y.Elem())
@@ -306,6 +309,9 @@ func typeParams(t types.Type) iter.Seq[*types.TypeParam] {
 				}
 				// instantiated type: look at type args
 				return every(t.TypeArgs().Types(), tps)
+
+			case *types.Optional:
+				return tps(t.Elem())
 
 			case *types.Pointer:
 				return tps(t.Elem())

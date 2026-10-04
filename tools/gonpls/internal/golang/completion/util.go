@@ -36,6 +36,9 @@ func eachField(T types.Type, fn func(*types.Var)) {
 
 	var visit func(T types.Type)
 	visit = func(T types.Type) {
+		if types.EnumOf(typeparams.Deref(T)) != nil {
+			return // enum payloads are accessible only after matching
+		}
 		// T may be a Struct, optionally Named, with an optional
 		// Pointer (with optional Aliases at every step!):
 		// Consider: type T *struct{ f int }; _ = T(nil).f

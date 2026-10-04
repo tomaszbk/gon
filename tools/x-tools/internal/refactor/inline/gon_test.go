@@ -24,7 +24,7 @@ func TestGonCalleeSafety(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			info := &types.Info{Implicits: map[ast.Node]types.Object{}, Types: map[ast.Expr]types.TypeAndValue{}, Defs: map[*ast.Ident]types.Object{}, Uses: map[*ast.Ident]types.Object{}, Scopes: map[ast.Node]*types.Scope{}, Selections: map[*ast.SelectorExpr]*types.Selection{}, Instances: map[*ast.Ident]types.Instance{}, FileVersions: map[*ast.File]string{}}
+			info := &types.Info{OptionalConversions: map[ast.Expr]types.Type{}, Implicits: map[ast.Node]types.Object{}, Types: map[ast.Expr]types.TypeAndValue{}, Defs: map[*ast.Ident]types.Object{}, Uses: map[*ast.Ident]types.Object{}, Scopes: map[ast.Node]*types.Scope{}, Selections: map[*ast.SelectorExpr]*types.Selection{}, Instances: map[*ast.Ident]types.Instance{}, FileVersions: map[*ast.File]string{}}
 			pkg, err := new(types.Config).Check("p", fs, []*ast.File{file}, info)
 			if err != nil {
 				t.Fatal(err)
@@ -44,6 +44,8 @@ func TestGonCalleeSafety(t *testing.T) {
 func TestGonCallerSafety(t *testing.T) {
 	const refuse = "error: cannot inline call .*Gon control-flow expressions"
 	runTests(t, []testcase{
+		{"contextual constructor", `func f(x int) int { return x }`, `func g() Result[int,string] { return .Ok(f(1)) }`, refuse},
+		{"implicit Option argument", `func f(x int?) int? { return x }`, `func g() int? { return f(1) }`, "error: cannot inline function containing Gon control-flow expressions"},
 		{"lambda argument", `func f(cb func(int) int) int { return cb(1) }`, `func g() int { return f((x) => x + 1) }`, refuse},
 		{"coalesce argument", `func f(x *int) *int { return x }`, `func g(p, q *int) *int { return f(p ?? q) }`, refuse},
 		{"safe navigation", `func f() int { return 1 }`, `type S struct{ N int }; func g(p *S) int { return p?.N ?? f() }`, refuse},
@@ -114,7 +116,7 @@ func main() {
 			if err != nil {
 				t.Fatal(err)
 			}
-			info := &types.Info{Implicits: map[ast.Node]types.Object{}, Types: map[ast.Expr]types.TypeAndValue{}, Defs: map[*ast.Ident]types.Object{}, Uses: map[*ast.Ident]types.Object{}, Scopes: map[ast.Node]*types.Scope{}, Selections: map[*ast.SelectorExpr]*types.Selection{}, Instances: map[*ast.Ident]types.Instance{}, FileVersions: map[*ast.File]string{}}
+			info := &types.Info{OptionalConversions: map[ast.Expr]types.Type{}, Implicits: map[ast.Node]types.Object{}, Types: map[ast.Expr]types.TypeAndValue{}, Defs: map[*ast.Ident]types.Object{}, Uses: map[*ast.Ident]types.Object{}, Scopes: map[ast.Node]*types.Scope{}, Selections: map[*ast.SelectorExpr]*types.Selection{}, Instances: map[*ast.Ident]types.Instance{}, FileVersions: map[*ast.File]string{}}
 			pkg, err := new(types.Config).Check("main", fset, []*ast.File{file}, info)
 			if err != nil {
 				t.Fatal(err)
@@ -184,5 +186,23 @@ func main() {
 				}
 			}
 		})
+	}
+}
+
+func TestGonOptionalCalleeWithoutMetadata(t *testing.T) {
+	const source = `package p; func f() int? { return 1 }`
+	fs := token.NewFileSet()
+	file, err := parser.ParseFile(fs, "p.go", source, parser.SkipObjectResolution)
+	if err != nil {
+		t.Fatal(err)
+	}
+	info := &types.Info{Types: map[ast.Expr]types.TypeAndValue{}, Defs: map[*ast.Ident]types.Object{}, Uses: map[*ast.Ident]types.Object{}, Implicits: map[ast.Node]types.Object{}, Scopes: map[ast.Node]*types.Scope{}, Selections: map[*ast.SelectorExpr]*types.Selection{}, Instances: map[*ast.Ident]types.Instance{}, FileVersions: map[*ast.File]string{}}
+	pkg, err := new(types.Config).Check("p", fs, []*ast.File{file}, info)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = inline.AnalyzeCallee(t.Logf, fs, pkg, info, file.Decls[0].(*ast.FuncDecl), []byte(source))
+	if err == nil || !strings.Contains(err.Error(), "contextual Option conversion") {
+		t.Fatalf("unsafe inline without conversion metadata: %v", err)
 	}
 }

@@ -1,0 +1,16 @@
+{"Time":"2026-10-03T22:46:05.738971-03:00","Action":"start","Package":"golang.org/x/tools/gopls/internal/golang"}
+{"Time":"2026-10-03T22:46:05.739093-03:00","Action":"start","Package":"golang.org/x/tools/gopls/internal/golang/completion"}
+{"Time":"2026-10-03T22:46:06.034923-03:00","Action":"run","Package":"golang.org/x/tools/gopls/internal/golang/completion","Test":"TestGonOptionalInference"}
+{"Time":"2026-10-03T22:46:06.03498-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/golang/completion","Test":"TestGonOptionalInference","Output":"=== RUN   TestGonOptionalInference\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:06.035042-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/golang/completion","Test":"TestGonOptionalInference","Output":"--- PASS: TestGonOptionalInference (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:06.035048-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/golang/completion","Test":"TestGonOptionalInference","Elapsed":0}
+{"Time":"2026-10-03T22:46:06.035055-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/golang/completion","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:06.035578-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/golang/completion","Output":"ok  \tgolang.org/x/tools/gopls/internal/golang/completion\t0.296s\n"}
+{"Time":"2026-10-03T22:46:06.035596-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/golang/completion","Elapsed":0.297}
+{"Time":"2026-10-03T22:46:06.069982-03:00","Action":"run","Package":"golang.org/x/tools/gopls/internal/golang","Test":"TestGonOptionalUnify"}
+{"Time":"2026-10-03T22:46:06.07002-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/golang","Test":"TestGonOptionalUnify","Output":"=== RUN   TestGonOptionalUnify\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:06.070142-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/golang","Test":"TestGonOptionalUnify","Output":"--- PASS: TestGonOptionalUnify (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:06.070171-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/golang","Test":"TestGonOptionalUnify","Elapsed":0}
+{"Time":"2026-10-03T22:46:06.070183-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/golang","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:06.071283-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/golang","Output":"ok  \tgolang.org/x/tools/gopls/internal/golang\t0.332s\n"}
+{"Time":"2026-10-03T22:46:06.071293-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/golang","Elapsed":0.332}

@@ -1,0 +1,20 @@
+{"Time":"2026-10-03T11:32:25.939848-03:00","Action":"start","Package":"golang.org/x/tools/gopls/internal/cmd"}
+{"Time":"2026-10-03T11:32:26.443854-03:00","Action":"run","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonFeatureExplain"}
+{"Time":"2026-10-03T11:32:26.444218-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonFeatureExplain","Output":"=== RUN   TestGonFeatureExplain\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:26.444322-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonFeatureExplain","Output":"=== PAUSE TestGonFeatureExplain\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:26.444328-03:00","Action":"pause","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonFeatureExplain"}
+{"Time":"2026-10-03T11:32:26.444334-03:00","Action":"run","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonExplain"}
+{"Time":"2026-10-03T11:32:26.444342-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonExplain","Output":"=== RUN   TestGonExplain\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:26.444347-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonExplain","Output":"=== PAUSE TestGonExplain\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:26.444351-03:00","Action":"pause","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonExplain"}
+{"Time":"2026-10-03T11:32:26.444355-03:00","Action":"cont","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonFeatureExplain"}
+{"Time":"2026-10-03T11:32:26.444359-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonFeatureExplain","Output":"=== CONT  TestGonFeatureExplain\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:26.444363-03:00","Action":"cont","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonExplain"}
+{"Time":"2026-10-03T11:32:26.444366-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonExplain","Output":"=== CONT  TestGonExplain\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:26.598593-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonFeatureExplain","Output":"--- PASS: TestGonFeatureExplain (0.15s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:26.627442-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonFeatureExplain","Elapsed":0.15}
+{"Time":"2026-10-03T11:32:26.627479-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonExplain","Output":"--- PASS: TestGonExplain (0.18s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:26.627487-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/cmd","Test":"TestGonExplain","Elapsed":0.18}
+{"Time":"2026-10-03T11:32:26.627492-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/cmd","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:26.628094-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/cmd","Output":"ok  \tgolang.org/x/tools/gopls/internal/cmd\t0.688s\n"}
+{"Time":"2026-10-03T11:32:26.628113-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/cmd","Elapsed":0.688}

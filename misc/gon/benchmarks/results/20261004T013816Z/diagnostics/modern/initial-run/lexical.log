@@ -1,0 +1,20 @@
+{"Time":"2026-10-03T11:32:15.278668-03:00","Action":"start","Package":"go/token"}
+{"Time":"2026-10-03T11:32:15.278812-03:00","Action":"start","Package":"go/scanner"}
+{"Time":"2026-10-03T11:32:15.490926-03:00","Action":"run","Package":"go/scanner","Test":"TestScan"}
+{"Time":"2026-10-03T11:32:15.49104-03:00","Action":"output","Package":"go/scanner","Test":"TestScan","Output":"=== RUN   TestScan\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:15.491149-03:00","Action":"output","Package":"go/scanner","Test":"TestScan","Output":"--- PASS: TestScan (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:15.491171-03:00","Action":"pass","Package":"go/scanner","Test":"TestScan","Elapsed":0}
+{"Time":"2026-10-03T11:32:15.4912-03:00","Action":"run","Package":"go/scanner","Test":"TestScanErrors"}
+{"Time":"2026-10-03T11:32:15.491208-03:00","Action":"output","Package":"go/scanner","Test":"TestScanErrors","Output":"=== RUN   TestScanErrors\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:15.491218-03:00","Action":"output","Package":"go/scanner","Test":"TestScanErrors","Output":"--- PASS: TestScanErrors (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:15.491227-03:00","Action":"pass","Package":"go/scanner","Test":"TestScanErrors","Elapsed":0}
+{"Time":"2026-10-03T11:32:15.491232-03:00","Action":"output","Package":"go/scanner","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:15.491807-03:00","Action":"output","Package":"go/scanner","Output":"ok  \tgo/scanner\t0.213s\n"}
+{"Time":"2026-10-03T11:32:15.491822-03:00","Action":"pass","Package":"go/scanner","Elapsed":0.213}
+{"Time":"2026-10-03T11:32:15.509233-03:00","Action":"run","Package":"go/token","Test":"TestGonTokens"}
+{"Time":"2026-10-03T11:32:15.509312-03:00","Action":"output","Package":"go/token","Test":"TestGonTokens","Output":"=== RUN   TestGonTokens\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:15.509341-03:00","Action":"output","Package":"go/token","Test":"TestGonTokens","Output":"--- PASS: TestGonTokens (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:15.509353-03:00","Action":"pass","Package":"go/token","Test":"TestGonTokens","Elapsed":0}
+{"Time":"2026-10-03T11:32:15.509365-03:00","Action":"output","Package":"go/token","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:15.510165-03:00","Action":"output","Package":"go/token","Output":"ok  \tgo/token\t0.231s\n"}
+{"Time":"2026-10-03T11:32:15.510184-03:00","Action":"pass","Package":"go/token","Elapsed":0.232}

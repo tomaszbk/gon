@@ -15,6 +15,7 @@ import (
 type nilSafetyContext struct {
 	current *ir.Nodes
 	value   ir.Node
+	guards  []*ir.IfStmt
 }
 
 func (w *writer) nilConversion(dst types2.Type, x syntax.Expr) {
@@ -25,6 +26,10 @@ func (w *writer) nilConversion(dst types2.Type, x syntax.Expr) {
 }
 
 func (w *writer) safeNavExpr(x *syntax.SafeNavExpr, statement bool) {
+	if optionChain(x.X) {
+		w.optionSafeNav(x, statement)
+		return
+	}
 	w.Code(exprSafeNav)
 	w.pos(x)
 	w.Bool(statement)
@@ -62,6 +67,10 @@ func (w *writer) nilOperand(x syntax.Expr) {
 }
 
 func (w *writer) coalesceExpr(x *syntax.Operation) {
+	if types2.IsOptional(w.p.typeOf(x.X)) {
+		w.optionCoalesce(x)
+		return
+	}
 	w.Code(exprCoalesce)
 	w.pos(x)
 	w.typ(w.p.typeOf(x))
@@ -87,16 +96,27 @@ func (r *reader) nilGuardExpr() ir.Node {
 	guard := ir.NewIfStmt(pos, nilTest(pos, tmp, ir.ONE), nil, nil)
 	guard.SetTypecheck(1)
 	ctx.current.Append(guard)
+	ctx.guards = append(ctx.guards, guard)
 	ctx.current = &guard.Body
 	return tmp
 }
 
 func nilInline(pos src.XPos, body ir.Nodes, result *ir.Name) ir.Node {
+	if result == nil {
+		return nilInlineValue(pos, body, nil)
+	}
+	return nilInlineValue(pos, body, result)
+}
+
+// nilInlineValue also accepts pure field selections from a saved struct value.
+// They need no extra payload temporary and cannot reevaluate the operand.
+func nilInlineValue(pos src.XPos, body ir.Nodes, result ir.Node) ir.Node {
 	var values []ir.Node
 	if result != nil {
 		values = []ir.Node{result}
 	}
 	x := ir.NewInlinedCallExpr(pos, body, values)
+	x.GonLowering = true
 	if result != nil {
 		x.SetType(result.Type())
 	}
@@ -134,8 +154,7 @@ func (r *reader) coalesceExpr() ir.Node {
 	pos := r.pos()
 	typ := r.typ()
 	result := r.temp(pos, typ)
-	present := r.temp(pos, types.Types[types.TBOOL])
-	body := ir.Nodes{typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, result)), typecheck.Stmt(ir.NewAssignStmt(pos, result, ir.NewZero(pos, typ))), typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, present)), typecheck.Stmt(ir.NewAssignStmt(pos, present, ir.NewBool(pos, false)))}
+	body := ir.Nodes{typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, result)), typecheck.Stmt(ir.NewAssignStmt(pos, result, ir.NewZero(pos, typ)))}
 	ctx := &nilSafetyContext{current: &body}
 	previous := r.nilSafety
 	r.nilSafety = ctx
@@ -144,13 +163,26 @@ func (r *reader) coalesceExpr() ir.Node {
 		guard := ir.NewIfStmt(pos, nilTest(pos, ctx.value, ir.ONE), nil, nil)
 		guard.SetTypecheck(1)
 		ctx.current.Append(guard)
+		ctx.guards = append(ctx.guards, guard)
 		ctx.current = &guard.Body
 	}
 	converted := r.expr()
-	ctx.current.Append(typecheck.Stmt(ir.NewAssignStmt(pos, result, converted)), typecheck.Stmt(ir.NewAssignStmt(pos, present, ir.NewBool(pos, true))))
+	ctx.current.Append(typecheck.Stmt(ir.NewAssignStmt(pos, result, converted)))
 	r.nilSafety = previous
 	rhs := r.expr()
-	body.Append(typecheck.Stmt(ir.NewIfStmt(pos, typecheck.Expr(ir.NewUnaryExpr(pos, ir.ONOT, present)), []ir.Node{typecheck.Stmt(ir.NewAssignStmt(pos, result, rhs))}, nil)))
+	fallback := typecheck.Stmt(ir.NewAssignStmt(pos, result, rhs))
+	if len(ctx.guards) == 1 {
+		// A single guard has exactly two outcomes. Use its else branch
+		// directly instead of materializing a presence flag and another if.
+		ctx.guards[0].Else = ir.Nodes{fallback}
+	} else {
+		// Nested guards share one lazy fallback. Keep the flag so the RHS
+		// remains a single IR subtree and is evaluated only after absence.
+		present := r.temp(pos, types.Types[types.TBOOL])
+		*ctx.current = append(*ctx.current, typecheck.Stmt(ir.NewAssignStmt(pos, present, ir.NewBool(pos, true))))
+		body = append(ir.Nodes{typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, present)), typecheck.Stmt(ir.NewAssignStmt(pos, present, ir.NewBool(pos, false)))}, body...)
+		body.Append(typecheck.Stmt(ir.NewIfStmt(pos, typecheck.Expr(ir.NewUnaryExpr(pos, ir.ONOT, present)), []ir.Node{fallback}, nil)))
+	}
 	return nilInline(pos, body, result)
 }
 
@@ -172,5 +204,25 @@ func (r *reader) coalesceAssign() ir.Node {
 	// inserts a key or writes to an already-present entry.
 	read := ir.Copy(lhs)
 	body.Append(typecheck.Stmt(ir.NewIfStmt(pos, nilTest(pos, read, ir.OEQ), []ir.Node{typecheck.Stmt(ir.NewAssignStmt(pos, lhs, rhs))}, nil)))
-	return block(body)
+	result := ir.NewBlockStmt(pos, body)
+	result.GonLowering = true
+	return result
+}
+
+func optionChain(e syntax.Expr) bool {
+	switch e := e.(type) {
+	case *syntax.NilGuardExpr:
+		return types2.IsOptional(e.X.GetTypeInfo().Type) || optionChain(e.X)
+	case *syntax.SelectorExpr:
+		return optionChain(e.X)
+	case *syntax.CallExpr:
+		return optionChain(e.Fun)
+	case *syntax.IndexExpr:
+		return optionChain(e.X)
+	case *syntax.SliceExpr:
+		return optionChain(e.X)
+	case *syntax.SafeNavExpr:
+		return optionChain(e.X)
+	}
+	return false
 }

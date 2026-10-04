@@ -47,6 +47,17 @@ func (check *Checker) isTerminating(s ast.Stmt, label string) bool {
 			return true
 		}
 
+	case *ast.MatchStmt:
+		if len(s.Match.Arms) == 0 {
+			return false
+		}
+		for _, a := range s.Match.Arms {
+			if a.Body == nil || !check.isTerminating(a.Body, "") || hasBreak(a.Body, label, true) {
+				return false
+			}
+		}
+		return true
+
 	case *ast.SwitchStmt:
 		return check.isTerminatingSwitch(s.Body, label)
 
@@ -137,6 +148,15 @@ func hasBreak(s ast.Stmt, label string, implicit bool) bool {
 
 	case *ast.CaseClause:
 		return hasBreakList(s.Body, label, implicit)
+
+	case *ast.MatchStmt:
+		if label != "" {
+			for _, a := range s.Match.Arms {
+				if a.Body != nil && hasBreak(a.Body, label, false) {
+					return true
+				}
+			}
+		}
 
 	case *ast.SwitchStmt:
 		if label != "" && hasBreak(s.Body, label, false) {

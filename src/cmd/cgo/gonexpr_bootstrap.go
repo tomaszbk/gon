@@ -4,7 +4,7 @@ package main
 
 import "go/ast"
 
-func (f *File) walkGonExpr(x any, visit func(*File, any, astContext)) bool {
+func (f *File) walkGonExpr(x any, context astContext, visit func(*File, any, astContext)) bool {
 	return false
 }
 

@@ -35,7 +35,7 @@ func main() {
 	if err != nil {
 		t.Fatal(err)
 	}
-	info := &types.Info{
+	info := &types.Info{OptionalConversions: map[ast.Expr]types.Type{},
 		Defs:         make(map[*ast.Ident]types.Object),
 		Uses:         make(map[*ast.Ident]types.Object),
 		Types:        make(map[ast.Expr]types.TypeAndValue),

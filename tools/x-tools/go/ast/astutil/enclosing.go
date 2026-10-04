@@ -259,6 +259,38 @@ func childrenOf(n ast.Node) []ast.Node {
 		children = append(children, tok(n.Question, 1))
 	case *ast.SafeNavExpr:
 		// The underlying primary expression owns the chain's tokens.
+	case *ast.ContextualVariantExpr:
+		children = append(children, tok(n.Dot, 1))
+		if n.Lparen.IsValid() {
+			children = append(children, tok(n.Lparen, 1), tok(n.Rparen, 1))
+		}
+	case *ast.OptionalExpr:
+		children = append(children, tok(n.Question, 1))
+	case *ast.EnumType:
+		children = append(children, tok(n.Enum, 4), tok(n.Lbrace, 1), tok(n.Rbrace, 1))
+	case *ast.EnumVariant:
+		if n.Default.IsValid() {
+			children = append(children, tok(n.Default, 7))
+		}
+	case *ast.MatchExpr:
+		children = append(children, tok(n.Switch, 6), tok(n.Lbrace, 1), tok(n.Rbrace, 1))
+	case *ast.MatchArm:
+		width := 4
+		if n.Pattern == nil {
+			width = 7
+		}
+		children = append(children, tok(n.Case, width), tok(n.Arrow, 2))
+	case *ast.MatchPattern:
+		for _, pos := range []token.Pos{n.Lparen, n.Rparen, n.Lbrace, n.Rbrace} {
+			if pos.IsValid() {
+				children = append(children, tok(pos, 1))
+			}
+		}
+		if n.Rest.IsValid() {
+			children = append(children, tok(n.Rest, 3))
+		}
+	case *ast.MatchField:
+		children = append(children, tok(n.Colon, 1))
 
 	case *ast.CallExpr:
 		children = append(children,
@@ -570,6 +602,24 @@ func NodeDescription(n ast.Node) string {
 		return "nil guard"
 	case *ast.SafeNavExpr:
 		return "safe navigation"
+	case *ast.ContextualVariantExpr:
+		return "contextual variant constructor"
+	case *ast.OptionalExpr:
+		return "absence propagation"
+	case *ast.EnumType:
+		return "enum type"
+	case *ast.EnumVariant:
+		return "enum variant"
+	case *ast.MatchExpr:
+		return "match expression"
+	case *ast.MatchStmt:
+		return "match statement"
+	case *ast.MatchArm:
+		return "match arm"
+	case *ast.MatchPattern:
+		return "match pattern"
+	case *ast.MatchField:
+		return "match field"
 	case *ast.CallExpr:
 		if len(n.Args) == 1 && !n.Ellipsis.IsValid() {
 			return "function call (or conversion)"

@@ -2159,15 +2159,17 @@ func (s *regAllocState) regalloc(f *ssa.Func) {
 	// Fix up all merge edges.
 	s.shuffle(stacklive)
 
-	// Erase any copies or restores that we never used. Also, an unused value
-	// might be the only use of a different value, so continue erasing until
-	// we reach a fixed point.
+	// Erase any copies, restores, or pure rematerializations that we never
+	// used. Shuffle has restored strict SSA, so a rematerialized register
+	// value with no uses is dead even if the original value was live at a
+	// merge. An unused value might be the only use of a different value, so
+	// continue erasing until we reach a fixed point.
 	// TODO: just use deadcode pass?
 	for {
 		progress := false
 		for _, b := range f.Blocks {
 			for _, v := range b.Values {
-				if v.Uses == 0 && (v.Op == ssaop.OpLoadReg || v.Op == ssaop.OpCopy) {
+				if v.Uses == 0 && (v.Op == ssaop.OpLoadReg || v.Op == ssaop.OpCopy || v.Rematerializeable() && v.Removeable()) {
 					if s.f.Pass.Debug > ssa.RegDebug {
 						fmt.Printf("delete unused value %s\n", v.LongString())
 					}

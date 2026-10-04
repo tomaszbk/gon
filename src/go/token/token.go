@@ -129,6 +129,7 @@ const (
 	SAFE_LPAREN     // ?(
 	COALESCE        // ??
 	COALESCE_ASSIGN // ??=
+	QUESTION        // ?
 	additional_end
 )
 
@@ -237,6 +238,7 @@ var tokens = [...]string{
 	SAFE_LPAREN:     "?(",
 	COALESCE:        "??",
 	COALESCE_ASSIGN: "??=",
+	QUESTION:        "?",
 }
 
 // String returns the string corresponding to the token tok.

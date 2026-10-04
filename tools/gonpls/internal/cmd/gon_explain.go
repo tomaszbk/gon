@@ -50,8 +50,8 @@ type gonCase struct {
 // They mirror the messages of types2 and go/types.
 var gonErrorHandlingCases = []gonCase{
 	{"error handling requires a function or method call",
-		"The operand of ! or of an or handler must be a call, not a value, conversion or receive.",
-		"Call the function directly, or handle the value with explicit Go code."},
+		"The legacy error-return protocol requires a function call. Canonical Result values also support ! and or handlers.",
+		"Call a function returning error last, or use a canonical Result value with an explicit handler or compatible Result return type."},
 	{"error handling is only permitted inside a function",
 		"! and or handlers need an enclosing function, for example not in a package-level var.",
 		"Move the call into a function, such as init or a helper returning error."},
@@ -113,14 +113,29 @@ func (r *gonRequest) explain(ctx context.Context) (gonResult, error) {
 			if c.name == "InvalidNilSafety" {
 				ex.Cases = []gonCase{
 					{"cannot be nil; use ?? to provide a value when it is absent", "A safe-navigation chain may stop before producing a result whose type has no nil value.", "Consume the chain with ?? and supply a default."},
-					{"safe navigation requires a pointer or interface", "?. guards pointer or interface operands; ?( guards a function value.", "Use the guard corresponding to the operand, or explicit nil checks."},
+					{"safe navigation requires a pointer or interface", "?. guards pointer or interface operands; ?( guards a function value. Canonical Option checks Some/None and wraps the final result in Option.", "Use the guard corresponding to the operand, or explicit nil checks."},
+					{"absence propagation requires an enclosing function returning exactly one Option", "Postfix ? returns None from the nearest compatible function. Some(nil) and Some(zero) remain present.", "Return exactly Option[U], or handle None with ?? or exhaustive matching."},
+					{"mixed Option and nil navigation requires an explicit boundary", "The first implementation keeps Option presence and Go nil guards in separate chains.", "Extract or coalesce the Option payload, then start a separate nil-navigation chain."},
 				}
 				if doc := filepath.Join(root, "design", "null-safety", "README.md"); gonExists(doc) {
 					ex.References = append(ex.References, doc)
 				}
 			}
+			if c.name == "InvalidMatch" {
+				ex.Cases = []gonCase{
+					{"non-exhaustive match", "Every alternative and nested payload case needs coverage. Guards do not establish complete coverage.", "Add the missing patterns, an irrefutable payload binding, or an explicit default/_ arm."},
+					{"record pattern must list every field or explicitly ignore the rest with ...", "Record variants use named fields and explicit rest patterns.", "List the remaining accessible fields or add ... to ignore the remainder."},
+					{"unreachable match arm", "An earlier unguarded pattern already covers every value in this arm.", "Remove the arm or make its earlier covering pattern more specific."},
+					{"match guard must be boolean", "A guard is an ordinary boolean expression in the pattern bindings' scope.", "Write a boolean test; its result controls whether this arm is selected."},
+				}
+				if doc := filepath.Join(root, "design", "alternatives", "README.md"); gonExists(doc) {
+					ex.References = append(ex.References, doc)
+				}
+			}
 			if c.name == "InvalidErrorHandling" {
-				ex.Cases = gonErrorHandlingCases
+				ex.Cases = append(append([]gonCase(nil), gonErrorHandlingCases...),
+					gonCase{"Result propagation requires exactly one enclosing Result with an assignable error type", "Result ! propagates Err by its variant, including Err(nil), to the nearest function returning Result.", "Return exactly Result[U,F] with the source error assignable to F, or handle it explicitly with or problem { ... }."},
+					gonCase{"Result error handler must terminate", "Result has one success payload even when its type is struct{}.", "End every handler path with return, panic, or another terminating statement."})
 				if doc := filepath.Join(root, "design", "error-handling", "README.md"); gonExists(doc) {
 					ex.References = append(ex.References, doc)
 				}

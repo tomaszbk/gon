@@ -386,7 +386,8 @@ type (
 	CallExpr struct {
 		Fun      Expr      // function expression
 		Lparen   token.Pos // position of "("
-		Args     []Expr    // function arguments; or nil
+		Args     []Expr    // function arguments in written order; or nil
+		ArgNames []*Ident  // nil, or labels aligned with Args; nil entries are positional
 		Ellipsis token.Pos // position of "..." (token.NoPos if there is no "...")
 		Rparen   token.Pos // position of ")"
 	}

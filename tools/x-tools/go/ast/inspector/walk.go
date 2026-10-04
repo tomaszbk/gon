@@ -108,7 +108,78 @@ func walk(v *visitor, ek edge.Kind, index int, node ast.Node) {
 
 	case *ast.CallExpr:
 		walk(v, edge.CallExpr_Fun, -1, n.Fun)
-		walkList(v, edge.CallExpr_Args, n.Args)
+		for i, arg := range n.Args {
+			if i < len(n.ArgNames) && n.ArgNames[i] != nil {
+				walk(v, edge.CallExpr_ArgNames, i, n.ArgNames[i])
+			}
+			walk(v, edge.CallExpr_Args, i, arg)
+		}
+
+	case *ast.ContextualVariantExpr:
+		walk(v, edge.ContextualVariantExpr_Name, -1, n.Name)
+		walkList(v, edge.ContextualVariantExpr_Args, n.Args)
+	case *ast.OptionalExpr:
+		walk(v, edge.OptionalExpr_X, -1, n.X)
+
+	case *ast.EnumType:
+		walkList(v, edge.EnumType_Variants, n.Variants)
+
+	case *ast.EnumVariant:
+		if n.Doc != nil {
+			walk(v, edge.EnumVariant_Doc, -1, n.Doc)
+		}
+		if n.Name != nil {
+			walk(v, edge.EnumVariant_Name, -1, n.Name)
+		}
+		if n.Payload != nil {
+			walk(v, edge.EnumVariant_Payload, -1, n.Payload)
+		}
+		if n.Comment != nil {
+			walk(v, edge.EnumVariant_Comment, -1, n.Comment)
+		}
+
+	case *ast.MatchExpr:
+		if n.Tag != nil {
+			walk(v, edge.MatchExpr_Tag, -1, n.Tag)
+		}
+		walkList(v, edge.MatchExpr_Arms, n.Arms)
+
+	case *ast.MatchStmt:
+		if n.Match != nil {
+			walk(v, edge.MatchStmt_Match, -1, n.Match)
+		}
+
+	case *ast.MatchArm:
+		if n.Pattern != nil {
+			walk(v, edge.MatchArm_Pattern, -1, n.Pattern)
+		}
+		if n.Guard != nil {
+			walk(v, edge.MatchArm_Guard, -1, n.Guard)
+		}
+		if n.Value != nil {
+			walk(v, edge.MatchArm_Value, -1, n.Value)
+		}
+		if n.Body != nil {
+			walk(v, edge.MatchArm_Body, -1, n.Body)
+		}
+
+	case *ast.MatchPattern:
+		if n.Inner != nil {
+			walk(v, edge.MatchPattern_Inner, -1, n.Inner)
+		}
+		if n.Value != nil {
+			walk(v, edge.MatchPattern_Value, -1, n.Value)
+		}
+		walkList(v, edge.MatchPattern_Args, n.Args)
+		walkList(v, edge.MatchPattern_Fields, n.Fields)
+
+	case *ast.MatchField:
+		if n.Name != nil {
+			walk(v, edge.MatchField_Name, -1, n.Name)
+		}
+		if n.Pattern != nil {
+			walk(v, edge.MatchField_Pattern, -1, n.Pattern)
+		}
 
 	case *ast.ErrorExpr:
 		walk(v, edge.ErrorExpr_X, -1, n.X)

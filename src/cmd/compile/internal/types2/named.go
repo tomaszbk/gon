@@ -106,6 +106,7 @@ type Named struct {
 
 	inst *instance // information for instantiated types; nil otherwise
 
+	enumCache  *Enum          // instantiated constructor objects, guarded by mu
 	mu         sync.Mutex     // guards all fields below
 	state_     uint32         // the current state of this type; must only be accessed atomically or when mu is held
 	fromRHS    Type           // the declaration RHS this type is derived from

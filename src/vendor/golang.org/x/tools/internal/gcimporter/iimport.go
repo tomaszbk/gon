@@ -73,6 +73,9 @@ const (
 	instanceType
 	unionType
 	aliasType
+	enumType
+	canonicalEnumType
+	optionalType
 )
 
 // Object tags
@@ -906,6 +909,28 @@ func (r *importReader) doType(base *types.Named) (res types.Type) {
 		paramPkg := r.pkg()
 		return r.signature(paramPkg, nil, nil, nil)
 
+	case optionalType:
+		return types.NewOptional(r.typ())
+	case canonicalEnumType:
+		name := r.string()
+		if name != "Result" {
+			panic("invalid canonical enum in indexed export data")
+		}
+		return types.Universe.Lookup(name).Type()
+	case enumType:
+		variants := make([]*types.EnumVariant, r.uint64())
+		defaultIndex := int(r.uint64())
+		for i := range variants {
+			pos := r.pos()
+			pkg, name, record := r.pkg(), r.string(), r.bool()
+			fields := make([]*types.Var, r.uint64())
+			for j := range fields {
+				pos, pkg, name := r.pos(), r.pkg(), r.string()
+				fields[j] = types.NewField(pos, pkg, name, r.typ(), false)
+			}
+			variants[i] = types.NewEnumVariantAt(pos, pkg, name, fields, record)
+		}
+		return types.NewEnum(variants, defaultIndex)
 	case structType:
 		fieldPkg := r.pkg()
 

@@ -25,6 +25,8 @@ const (
 	stmtSwitch
 	stmtSelect
 	stmtCoalesceAssign
+	stmtOptionCoalesceAssign
+	stmtMatch
 )
 
 // A codeExpr distinguishes among expression encodings.
@@ -39,6 +41,8 @@ const (
 	exprLocal           // local variable
 	exprGlobal          // global variable or function
 	exprCompLit
+	exprEnumConstruct
+	exprEnumConstructor
 	exprFuncLit
 	exprFieldVal
 	exprMethodVal
@@ -65,6 +69,13 @@ const (
 	exprSafeNav
 	exprNilGuard
 	exprCoalesce
+	exprNamedCall // named call; arguments evaluated in written order
+	exprOption
+	exprResultError
+	exprOptionCoalesce
+	exprOptionSafeNav
+	exprOptionGuard
+	exprMatch
 	exprNilValue // a previously evaluated value in a nil-safety expression
 )
 

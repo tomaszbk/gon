@@ -1,0 +1,4 @@
+OUTPUT /Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261004T014736Z
+Preparing caches and checking all three variants...
+PASS: 16 tests per variant; identical program output.
+Correctness evidence: /Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261004T014736Z/correctness.json

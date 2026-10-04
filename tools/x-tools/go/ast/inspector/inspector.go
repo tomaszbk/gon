@@ -57,16 +57,16 @@ type Inspector struct {
 }
 
 func packEdgeKindAndIndex(ek edge.Kind, index int) int32 {
-	return int32(uint32(index+1)<<7 | uint32(ek))
+	return int32(uint32(index+1)<<8 | uint32(ek))
 }
 
 // unpackEdgeKindAndIndex unpacks the edge kind and edge index (within
 // an []ast.Node slice) from the parent field of a pop event.
 func unpackEdgeKindAndIndex(x int32) (edge.Kind, int) {
 	// The "parent" field of a pop node holds the
-	// edge Kind in the lower 7 bits and the index+1
-	// in the upper 25.
-	return edge.Kind(x & 0x7f), int(x>>7) - 1
+	// edge Kind in the lower 8 bits and the index+1
+	// in the upper 24.
+	return edge.Kind(x & 0xff), int(x>>8) - 1
 }
 
 // New returns an Inspector for the specified syntax trees.
@@ -78,9 +78,9 @@ func New(files []*ast.File) *Inspector {
 // of an ast.Node during a traversal.
 type event struct {
 	node   ast.Node
-	typ    uint64 // typeOf(node) on push event, or union of typ strictly between push and pop events on pop events
-	index  int32  // index of corresponding push or pop event
-	parent int32  // index of parent's push node (push nodes only), or packed edge kind/index (pop nodes only)
+	typ    nodeMask // typeOf(node) on push event, or union of typ strictly between push and pop events on pop events
+	index  int32    // index of corresponding push or pop event
+	parent int32    // index of parent's push node (push nodes only), or packed edge kind/index (pop nodes only)
 }
 
 // TODO: Experiment with storing only the second word of event.node (unsafe.Pointer).
@@ -119,11 +119,11 @@ func (in *Inspector) Preorder(types []ast.Node, f func(ast.Node)) {
 		ev := in.events[i]
 		if ev.index > i {
 			// push
-			if ev.typ&mask != 0 {
+			if ev.typ.intersects(mask) {
 				f(ev.node)
 			}
 			pop := ev.index
-			if in.events[pop].typ&mask == 0 {
+			if !in.events[pop].typ.intersects(mask) {
 				// Subtrees do not contain types: skip them and pop.
 				i = pop + 1
 				continue
@@ -158,13 +158,13 @@ func (in *Inspector) Nodes(types []ast.Node, f func(n ast.Node, push bool) (proc
 		if ev.index > i {
 			// push
 			pop := ev.index
-			if ev.typ&mask != 0 {
+			if ev.typ.intersects(mask) {
 				if !f(ev.node, true) {
 					i = pop + 1 // jump to corresponding pop + 1
 					continue
 				}
 			}
-			if in.events[pop].typ&mask == 0 {
+			if !in.events[pop].typ.intersects(mask) {
 				// Subtrees do not contain types: skip them.
 				i = pop
 				continue
@@ -172,7 +172,7 @@ func (in *Inspector) Nodes(types []ast.Node, f func(n ast.Node, push bool) (proc
 		} else {
 			// pop
 			push := ev.index
-			if in.events[push].typ&mask != 0 {
+			if in.events[push].typ.intersects(mask) {
 				f(ev.node, false)
 			}
 		}
@@ -202,14 +202,14 @@ func (in *Inspector) WithStack(types []ast.Node, f func(n ast.Node, push bool, s
 			// push
 			pop := ev.index
 			stack = append(stack, ev.node)
-			if ev.typ&mask != 0 {
+			if ev.typ.intersects(mask) {
 				if !f(ev.node, true, stack) {
 					i = pop + 1
 					stack = stack[:len(stack)-1]
 					continue
 				}
 			}
-			if in.events[pop].typ&mask == 0 {
+			if !in.events[pop].typ.intersects(mask) {
 				// Subtrees does not contain types: skip them.
 				i = pop
 				continue
@@ -217,7 +217,7 @@ func (in *Inspector) WithStack(types []ast.Node, f func(n ast.Node, push bool, s
 		} else {
 			// pop
 			push := ev.index
-			if in.events[push].typ&mask != 0 {
+			if in.events[push].typ.intersects(mask) {
 				f(ev.node, false, stack)
 			}
 			stack = stack[:len(stack)-1]
@@ -256,10 +256,10 @@ type visitor struct {
 }
 
 type item struct {
-	index            int32  // index of current node's push event
-	parentIndex      int32  // index of parent node's push event
-	typAccum         uint64 // accumulated type bits of current node's descendants
-	edgeKindAndIndex int32  // edge.Kind and index, bit packed
+	index            int32    // index of current node's push event
+	parentIndex      int32    // index of parent node's push event
+	typAccum         nodeMask // accumulated type bits of current node's descendants
+	edgeKindAndIndex int32    // edge.Kind and index, bit packed
 }
 
 func (v *visitor) push(ek edge.Kind, eindex int, node ast.Node) {
@@ -284,9 +284,9 @@ func (v *visitor) push(ek edge.Kind, eindex int, node ast.Node) {
 		panic("event index exceeded int32")
 	}
 
-	// 32M elements in an []ast.Node ought to be enough for anyone!
+	// 16M elements in an []ast.Node ought to be enough for anyone!
 	if ek2, eindex2 := unpackEdgeKindAndIndex(packEdgeKindAndIndex(ek, eindex)); ek2 != ek || eindex2 != eindex {
-		panic("Node slice index exceeded uint25")
+		panic("Node slice index exceeded uint24")
 	}
 }
 
@@ -297,8 +297,8 @@ func (v *visitor) pop(node ast.Node) {
 	push := &v.events[current.index]
 	parent := &v.stack[top-1]
 
-	push.index = int32(len(v.events))              // make push event refer to pop
-	parent.typAccum |= current.typAccum | push.typ // accumulate type bits into parent
+	push.index = int32(len(v.events))                                         // make push event refer to pop
+	parent.typAccum = parent.typAccum.union(current.typAccum).union(push.typ) // accumulate type bits into parent
 
 	v.stack = v.stack[:top]
 

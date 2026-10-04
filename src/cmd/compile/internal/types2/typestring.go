@@ -128,6 +128,21 @@ func (w *typeWriter) typ(typ Type) {
 		}
 		w.string(t.name)
 
+	case *Optional:
+		parens := false
+		switch Unalias(t.elem).(type) {
+		case *Optional, *Pointer, *Slice, *Array, *Map, *Chan, *Signature:
+			parens = true
+		}
+		if parens {
+			w.byte('(')
+		}
+		w.typ(t.elem)
+		if parens {
+			w.byte(')')
+		}
+		w.byte('?')
+
 	case *Array:
 		w.byte('[')
 		w.string(strconv.FormatInt(t.len, 10))
@@ -139,6 +154,10 @@ func (w *typeWriter) typ(typ Type) {
 		w.typ(t.elem)
 
 	case *Struct:
+		if t.enum != nil && w.ctxt == nil {
+			w.enum(t.enum)
+			break
+		}
 		w.string("struct{")
 		for i, f := range t.fields {
 			if i > 0 {
@@ -322,6 +341,10 @@ func (w *typeWriter) typ(typ Type) {
 		}
 
 	case *Alias:
+		if migrationOption != nil && (t.Obj() == migrationOption.Obj() || t.Origin() == migrationOption) {
+			w.typ(Unalias(t))
+			break
+		}
 		w.typeName(t.obj)
 		if list := t.targs.list(); len(list) != 0 {
 			// instantiated type
@@ -344,6 +367,42 @@ func (w *typeWriter) typ(typ Type) {
 		// Note: In this case cycles won't be caught.
 		w.string(t.String())
 	}
+}
+
+// enum prints the source alternatives rather than their private storage.
+func (w *typeWriter) enum(e *Enum) {
+	w.string("enum{")
+	for i, v := range e.variants {
+		if i > 0 {
+			w.byte(';')
+		}
+		if i == e.defaultIndex {
+			w.string("default ")
+		}
+		w.string(v.name)
+		if v.record {
+			w.byte('{')
+			for j, f := range v.fields {
+				if j > 0 {
+					w.byte(';')
+				}
+				w.string(f.name)
+				w.byte(' ')
+				w.typ(f.typ)
+			}
+			w.byte('}')
+		} else if len(v.fields) != 0 {
+			w.byte('(')
+			for j, f := range v.fields {
+				if j > 0 {
+					w.byte(',')
+				}
+				w.typ(f.typ)
+			}
+			w.byte(')')
+		}
+	}
+	w.byte('}')
 }
 
 // typeSet writes a canonical hash for an interface type set.

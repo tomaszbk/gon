@@ -1,0 +1,4 @@
+PASS: README legacy with /opt/homebrew/bin/go
+PASS: README legacy with /Users/tzbk/Documents/gon/gon/bin/gon
+PASS: README modern with /Users/tzbk/Documents/gon/gon/bin/gon
+PASS: 28 documented blocks (20 unique snippets) match executed fixtures; baseline go1.27.1

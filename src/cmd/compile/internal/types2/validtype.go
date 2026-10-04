@@ -42,6 +42,9 @@ func (check *Checker) validType0(pos syntax.Pos, typ Type, nest, path []*Named) 
 			panic("validType0(nil)")
 		}
 
+	case *Optional:
+		return check.validType0(pos, t.elem, nest, path)
+
 	case *Array:
 		return check.validType0(pos, t.elem, nest, path)
 

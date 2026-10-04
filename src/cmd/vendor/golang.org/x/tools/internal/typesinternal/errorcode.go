@@ -1623,4 +1623,5 @@ const (
 	InvalidErrorHandling ErrorCode = 10000 + iota
 	InvalidLambda
 	InvalidNilSafety
+	InvalidMatch
 )

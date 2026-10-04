@@ -8,7 +8,7 @@ import (
 )
 
 // tflagComputed is set in the high bit of Type.tflag once the low
-// bits hold a valid abi.TFlag. abi.TFlag itself uses only the low 6.
+// bits hold a valid abi.TFlag. abi.TFlag itself uses only the low 7.
 const tflagComputed uint8 = 1 << 7
 
 var tflagMu sync.Mutex
@@ -45,6 +45,9 @@ func (t *Type) TFlag() abi.TFlag {
 
 func computeTFlag(t *Type) abi.TFlag {
 	var tflag abi.TFlag
+	if t.IsEnum() {
+		tflag |= abi.TFlagEnum
+	}
 	if hasUncommon(t) {
 		tflag |= abi.TFlagUncommon
 	}

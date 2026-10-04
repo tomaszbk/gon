@@ -35,7 +35,11 @@ func (w *writer) condExpr(expr *syntax.CondExpr) {
 // for an assignment, unless the conditional expression is the operand of a
 // conversion, which then applies to each branch separately.
 func (w *writer) condBranch(typ types2.Type, branch syntax.Expr) {
-	w.convertExpr(typ, branch, types2.AssignableTo(w.p.typeOf(branch), typ))
+	implicit := types2.AssignableTo(w.p.typeOf(branch), typ)
+	if lift := w.p.info.OptionalConversions[branch]; lift != nil && types2.Identical(lift, typ) {
+		implicit = true
+	}
+	w.convertExpr(typ, branch, implicit)
 }
 
 // condExpr lowers a conditional expression to a temporary assigned by an

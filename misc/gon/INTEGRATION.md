@@ -8,7 +8,7 @@ assert execution on the others.
 
 The compatibility floor is Go 1.27+ (user decision, 2026-10-02). Current
 validation uses an unmodified stable Go 1.27.1 baseline. Record the actual
-baseline version; preserve historical results and module language directives.
+baseline version; keep module language directives and record current evidence accurately.
 
 ## Commands
 
@@ -18,7 +18,8 @@ GON_BASELINE_GO=/path/to/unmodified/go python3 misc/gon/validate.py errorhandlin
 GON_BASELINE_GO=/path/to/unmodified/go python3 misc/gon/validate.py conditional
 GON_BASELINE_GO=/path/to/unmodified/go python3 misc/gon/validate.py lambda
 GON_BASELINE_GO=/path/to/unmodified/go python3 misc/gon/validate.py nullsafety
-python3 misc/gon/validate.py conditional --list
+GON_BASELINE_GO=/path/to/unmodified/go python3 misc/gon/validate.py modern
+python3 misc/gon/validate.py modern --list
 ```
 
 `--only CHECK` (repeatable) runs a subset. Exit 0 means all gates passed with no
@@ -87,20 +88,38 @@ not proof that every possible analyzer path has been exercised.
 Edit `tools/x-tools`, `tools/staticcheck` and `tools/gonpls` directly. Their
 `UPSTREAM.json` files identify imported baselines. Retain upstream module paths,
 licenses and tests. Both cmd and gonpls select the same x/tools module via local
-replacements. `src/cmd/vendor` is generated:
+replacements. Standard-library export readers use that maintained module too.
+`src/vendor` and `src/cmd/vendor` are generated:
 
 ```sh
 python3 misc/gon/vendor.py
 python3 misc/gon/vendor.py --check
 ```
 
-Do not edit that generated copy or regenerate patches. The vendor check builds a
-fresh temporary tree from selected module versions and local x/tools, comparing
+Do not edit those generated copies or regenerate patches. The vendor check builds
+fresh temporary trees from selected module versions and local x/tools, comparing
 all files, including modules.txt. Tests run from the maintained source module,
-not a second copy in vendor. Standard
-library dependencies in `src/vendor` are unaffected by this workflow.
+not a second copy in vendor. Other standard-library dependency versions remain
+selected by `src/go.mod`; only x/tools is replaced with its maintained source.
 
 When updating upstream, import changes into the maintained modules, carry
 forward Gon adaptations, update provenance and go.mod/go.sum, regenerate vendor,
 and run the tooling gate. A module version label alone does not attest to Gon
 changes; Git history records the maintained sources.
+
+## Current Gon 2.27 status
+
+[STATUS.md](STATUS.md) describes the current implementation;
+[VALIDATION.md](VALIDATION.md) records commands, results and platform scope.
+All nine native cores and maintained tooling are implemented. Native optional
+values use `T?`, direct payloads, nil absence and presence patterns `P?`.
+No public Option/Some/None API remains. Result retains qualified and contextual
+Ok/Err constructors. See [OPTIONALS.md](OPTIONALS.md) for the current contract
+and assisted semantic migration.
+
+Keep compiler/frontends, metadata readers, analyzer registries and editor
+services in the same validation scope. Conservative source-inliner/extraction
+limits and private typed storage are recorded in features.json. A focused gate
+pass does not establish a release pass on every supported platform. Record
+executed and cross-compiled targets separately. Update current documentation
+in place; do not add handovers or superseded status narratives.

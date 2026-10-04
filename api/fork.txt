@@ -1,14 +1,31 @@
 pkg go/ast, func Children(Node) iter.Seq[Node]
 pkg go/ast, method (*CondExpr) End() token.Pos
 pkg go/ast, method (*CondExpr) Pos() token.Pos
+pkg go/ast, method (*EnumType) End() token.Pos
+pkg go/ast, method (*EnumType) Pos() token.Pos
+pkg go/ast, method (*EnumVariant) End() token.Pos
+pkg go/ast, method (*EnumVariant) Pos() token.Pos
 pkg go/ast, method (*ErrorExpr) End() token.Pos
 pkg go/ast, method (*ErrorExpr) Pos() token.Pos
 pkg go/ast, method (*LambdaExpr) End() token.Pos
 pkg go/ast, method (*LambdaExpr) Pos() token.Pos
+pkg go/ast, method (*MatchArm) End() token.Pos
+pkg go/ast, method (*MatchArm) Pos() token.Pos
+pkg go/ast, method (*MatchExpr) End() token.Pos
+pkg go/ast, method (*MatchExpr) Pos() token.Pos
+pkg go/ast, method (*MatchField) End() token.Pos
+pkg go/ast, method (*MatchField) Pos() token.Pos
+pkg go/ast, method (*MatchPattern) End() token.Pos
+pkg go/ast, method (*MatchPattern) Pos() token.Pos
+pkg go/ast, method (*MatchStmt) End() token.Pos
+pkg go/ast, method (*MatchStmt) Pos() token.Pos
 pkg go/ast, method (*NilGuardExpr) End() token.Pos
 pkg go/ast, method (*NilGuardExpr) Pos() token.Pos
+pkg go/ast, method (*OptionalExpr) End() token.Pos
+pkg go/ast, method (*OptionalExpr) Pos() token.Pos
 pkg go/ast, method (*SafeNavExpr) End() token.Pos
 pkg go/ast, method (*SafeNavExpr) Pos() token.Pos
+pkg go/ast, type CallExpr struct, ArgNames []*Ident
 pkg go/ast, type CondExpr struct
 pkg go/ast, type CondExpr struct, Cond Expr
 pkg go/ast, type CondExpr struct, Else Expr
@@ -19,6 +36,18 @@ pkg go/ast, type CondExpr struct, If token.Pos
 pkg go/ast, type CondExpr struct, Lbrace token.Pos
 pkg go/ast, type CondExpr struct, Rbrace token.Pos
 pkg go/ast, type CondExpr struct, Then Expr
+pkg go/ast, type EnumType struct
+pkg go/ast, type EnumType struct, Enum token.Pos
+pkg go/ast, type EnumType struct, Lbrace token.Pos
+pkg go/ast, type EnumType struct, Rbrace token.Pos
+pkg go/ast, type EnumType struct, Variants []*EnumVariant
+pkg go/ast, type EnumVariant struct
+pkg go/ast, type EnumVariant struct, Comment *CommentGroup
+pkg go/ast, type EnumVariant struct, Default token.Pos
+pkg go/ast, type EnumVariant struct, Doc *CommentGroup
+pkg go/ast, type EnumVariant struct, Name *Ident
+pkg go/ast, type EnumVariant struct, Payload *FieldList
+pkg go/ast, type EnumVariant struct, Record bool
 pkg go/ast, type ErrorExpr struct
 pkg go/ast, type ErrorExpr struct, Body *BlockStmt
 pkg go/ast, type ErrorExpr struct, Err *Ident
@@ -31,9 +60,40 @@ pkg go/ast, type LambdaExpr struct, Body Expr
 pkg go/ast, type LambdaExpr struct, Lparen token.Pos
 pkg go/ast, type LambdaExpr struct, Params []*Ident
 pkg go/ast, type LambdaExpr struct, Rparen token.Pos
+pkg go/ast, type MatchArm struct
+pkg go/ast, type MatchArm struct, Arrow token.Pos
+pkg go/ast, type MatchArm struct, Body *BlockStmt
+pkg go/ast, type MatchArm struct, Case token.Pos
+pkg go/ast, type MatchArm struct, Guard Expr
+pkg go/ast, type MatchArm struct, Pattern *MatchPattern
+pkg go/ast, type MatchArm struct, Value Expr
+pkg go/ast, type MatchExpr struct
+pkg go/ast, type MatchExpr struct, Arms []*MatchArm
+pkg go/ast, type MatchExpr struct, Lbrace token.Pos
+pkg go/ast, type MatchExpr struct, Rbrace token.Pos
+pkg go/ast, type MatchExpr struct, Switch token.Pos
+pkg go/ast, type MatchExpr struct, Tag Expr
+pkg go/ast, type MatchField struct
+pkg go/ast, type MatchField struct, Colon token.Pos
+pkg go/ast, type MatchField struct, Name *Ident
+pkg go/ast, type MatchField struct, Pattern *MatchPattern
+pkg go/ast, type MatchPattern struct
+pkg go/ast, type MatchPattern struct, Args []*MatchPattern
+pkg go/ast, type MatchPattern struct, Fields []*MatchField
+pkg go/ast, type MatchPattern struct, Lbrace token.Pos
+pkg go/ast, type MatchPattern struct, Lparen token.Pos
+pkg go/ast, type MatchPattern struct, Rbrace token.Pos
+pkg go/ast, type MatchPattern struct, Rest token.Pos
+pkg go/ast, type MatchPattern struct, Rparen token.Pos
+pkg go/ast, type MatchPattern struct, Value Expr
+pkg go/ast, type MatchStmt struct
+pkg go/ast, type MatchStmt struct, Match *MatchExpr
 pkg go/ast, type NilGuardExpr struct
 pkg go/ast, type NilGuardExpr struct, Question token.Pos
 pkg go/ast, type NilGuardExpr struct, X Expr
+pkg go/ast, type OptionalExpr struct
+pkg go/ast, type OptionalExpr struct, Question token.Pos
+pkg go/ast, type OptionalExpr struct, X Expr
 pkg go/ast, type SafeNavExpr struct
 pkg go/ast, type SafeNavExpr struct, X Expr
 pkg go/token, const COALESCE = 92
@@ -42,7 +102,65 @@ pkg go/token, const COALESCE_ASSIGN = 93
 pkg go/token, const COALESCE_ASSIGN Token
 pkg go/token, const FATARROW = 89
 pkg go/token, const FATARROW Token
+pkg go/token, const QUESTION = 94
+pkg go/token, const QUESTION Token
 pkg go/token, const SAFE_LPAREN = 91
 pkg go/token, const SAFE_LPAREN Token
 pkg go/token, const SAFE_PERIOD = 90
 pkg go/token, const SAFE_PERIOD Token
+pkg go/types, func EnumOf(Type) *Enum
+pkg go/types, func IsOptional(Type) bool
+pkg go/types, func IsCanonicalResult(Type) bool
+pkg go/types, func NewEnum([]*EnumVariant, int) *Struct
+pkg go/types, func NewEnumVariant(string, *Package, []*Var, bool) *EnumVariant
+pkg go/types, func NewEnumVariantAt(token.Pos, *Package, string, []*Var, bool) *EnumVariant
+pkg go/types, method (*Enum) Default() *EnumVariant
+pkg go/types, method (*Enum) Lookup(string, *Package) *EnumVariant
+pkg go/types, method (*Enum) NumVariants() int
+pkg go/types, method (*Enum) Variant(int) *EnumVariant
+pkg go/types, method (*EnumVariant) Field(int) *Var
+pkg go/types, method (*EnumVariant) IsRecord() bool
+pkg go/types, method (*EnumVariant) Name() string
+pkg go/types, method (*EnumVariant) NumFields() int
+pkg go/types, method (*EnumVariant) Object() Object
+pkg go/types, method (*EnumVariant) Pkg() *Package
+pkg go/types, method (*EnumVariant) StorageIndex() int
+pkg go/types, method (*EnumVariant) Tag() int
+pkg go/types, type Enum struct
+pkg go/types, type EnumVariant struct
+pkg reflect, func EnumValuePayload(Value, int) Value
+pkg reflect, func EnumValueVariant(Value) EnumVariant
+pkg reflect, func EnumVariants(Type) []EnumVariant
+pkg reflect, func IsEnum(Type) bool
+pkg reflect, type EnumField struct
+pkg reflect, type EnumField struct, Name string
+pkg reflect, type EnumField struct, Type Type
+pkg reflect, type EnumVariant struct
+pkg reflect, type EnumVariant struct, Default bool
+pkg reflect, type EnumVariant struct, Fields []EnumField
+pkg reflect, type EnumVariant struct, Name string
+pkg reflect, type EnumVariant struct, Record bool
+pkg go/ast, method (*ContextualVariantExpr) End() token.Pos
+pkg go/ast, method (*ContextualVariantExpr) Pos() token.Pos
+pkg go/ast, type ContextualVariantExpr struct
+pkg go/ast, type ContextualVariantExpr struct, Dot token.Pos
+pkg go/ast, type ContextualVariantExpr struct, Name *Ident
+pkg go/ast, type ContextualVariantExpr struct, Lparen token.Pos
+pkg go/ast, type ContextualVariantExpr struct, Rparen token.Pos
+pkg go/ast, type ContextualVariantExpr struct, Args []Expr
+pkg go/types, type Info struct, OptionalConversions map[ast.Expr]Type
+pkg go/ast, type MatchPattern struct, Inner *MatchPattern
+pkg go/ast, type MatchPattern struct, Question token.Pos
+pkg go/types, type Optional struct
+pkg go/types, method (*Optional) Elem() Type
+pkg go/types, method (*Optional) Underlying() Type
+pkg go/types, method (*Optional) String() string
+pkg go/types, func NewOptional(Type) *Optional
+pkg go/types, func OptionalOf(Type) *Optional
+pkg go/types, func OptionalStorage(Type) *Struct
+pkg go/types, func EnumStorageOf(Type) *Enum
+pkg go/types, type Config struct, MigrateOptionals bool
+pkg reflect, func IsOptional(Type) bool
+pkg reflect, func OptionalElement(Type) Type
+pkg reflect, func OptionalValuePresent(Value) bool
+pkg reflect, func OptionalValuePayload(Value) Value

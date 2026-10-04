@@ -25,10 +25,11 @@ type parser struct {
 	pragma    Pragma   // pragmas
 	goVersion string   // Go version from //go:build line
 
-	top    bool   // in top of file (before package clause)
-	fnest  int    // function nesting level (for error handling)
-	xnest  int    // expression nesting level (for complit ambiguity resolution)
-	indent []byte // tracing support
+	top       bool   // in top of file (before package clause)
+	fnest     int    // function nesting level (for error handling)
+	xnest     int    // expression nesting level (for complit ambiguity resolution)
+	indent    []byte // tracing support
+	matchCase bool   // case expressions may become patterns if followed by =>
 }
 
 func (p *parser) init(file *PosBase, r io.Reader, errh ErrorHandler, pragh PragmaHandler, mode Mode) {
@@ -635,7 +636,9 @@ func (p *parser) typeDecl(group *Group) Decl {
 			// is not a concern because name <- x is a statement and
 			// not an expression.
 			var x Expr = p.name()
-			if p.tok != _Lbrack {
+			// A following contextual identifier or may name the constraint.
+			// Leave it for paramList rather than treating P or as a handler.
+			if p.tok != _Lbrack && !(p.tok == _Name && p.lit == "or") {
 				// To parse the expression starting with name, expand
 				// the call sequence we would get by passing in name
 				// to parser.expr, and pass in name to parser.pexpr.
@@ -656,7 +659,7 @@ func (p *parser) typeDecl(group *Group) Decl {
 				// d.Name "[" pname ptype "," ...
 				d.TParamList = p.paramList(pname, ptype, _Rbrack, true, false) // ptype may be nil
 				d.Alias = p.gotAssign()
-				d.Type = p.typeOrNil()
+				d.Type = p.enumDeclType(!d.Alias)
 			} else {
 				// d.Name "[" pname "]" ...
 				// d.Name "[" x ...
@@ -672,7 +675,7 @@ func (p *parser) typeDecl(group *Group) Decl {
 		}
 	} else {
 		d.Alias = p.gotAssign()
-		d.Type = p.typeOrNil()
+		d.Type = p.enumDeclType(!d.Alias)
 	}
 
 	if d.Type == nil {
@@ -1017,6 +1020,27 @@ func (p *parser) operand(keep_parens bool) Expr {
 	}
 
 	switch p.tok {
+	case _Dot:
+		x := new(ContextualVariantExpr)
+		x.pos = p.pos()
+		p.next()
+		x.Name = p.name()
+		if p.tok == _Lparen {
+			x.Lparen = p.pos()
+			p.next()
+			p.xnest++
+			for p.tok != _Rparen && p.tok != _EOF {
+				x.ArgList = append(x.ArgList, p.expr())
+				if !p.got(_Comma) {
+					break
+				}
+			}
+			p.xnest--
+			x.Rparen = p.pos()
+			p.want(_Rparen)
+		}
+		return x
+
 	case _Name:
 		return p.name()
 
@@ -1111,6 +1135,9 @@ func (p *parser) operand(keep_parens bool) Expr {
 
 	case _Lbrack, _Chan, _Map, _Struct, _Interface:
 		return p.type_()
+
+	case _Switch:
+		return p.matchExpr()
 
 	case _If:
 		// In operand position, if starts a conditional expression. (At
@@ -1286,7 +1313,7 @@ func (p *parser) skipBranch() {
 func (p *parser) startsExpr() bool {
 	switch p.tok {
 	case _Name, _Literal, _Lparen, _Lbrack, _Lbrace, _Func, _Chan, _Map,
-		_Struct, _Interface, _Arrow, _Star, _If:
+		_Struct, _Interface, _Arrow, _Star, _If, _Dot:
 		return true
 	case _Operator:
 		switch p.op {
@@ -1329,6 +1356,11 @@ loop:
 	for {
 		pos := p.pos()
 		switch p.tok {
+		case _Question:
+			n := &OptionalExpr{X: x, Question: pos}
+			n.pos = pos
+			p.next()
+			x = n
 		case _Operator:
 			if p.op != Not {
 				break loop
@@ -1340,11 +1372,8 @@ loop:
 
 		case _Name:
 			// or remains an ordinary identifier everywhere except immediately
-			// after a call expression.
+			// before an explicit error-handler binding and block.
 			if p.lit != "or" {
-				break loop
-			}
-			if _, ok := Unparen(x).(*CallExpr); !ok {
 				break loop
 			}
 			t := new(ErrorExpr)
@@ -1481,7 +1510,7 @@ loop:
 			t.pos = pos
 			p.next()
 			t.Fun = x
-			t.ArgList, t.HasDots = p.argList()
+			t.ArgList, t.ArgNames, t.HasDots = p.argList()
 			x = t
 
 		case _Lbrace:
@@ -1558,6 +1587,11 @@ func (p *parser) literalVal() *CompositeLit {
 	p.want(_Lbrace)
 	x.Rbrace = p.list("composite literal", _Comma, _Rbrace, func() bool {
 		// value
+		if p.matchCase && p.tok == _DotDotDot {
+			x.ElemList = append(x.ElemList, NewName(p.pos(), "..."))
+			p.next()
+			return true
+		}
 		e := p.expr()
 		if p.tok == _Colon {
 			// key ':' value
@@ -1610,7 +1644,22 @@ func newIndirect(pos Pos, typ Expr) Expr {
 //	TypeName = identifier | QualifiedIdent .
 //	TypeLit  = ArrayType | StructType | PointerType | FunctionType | InterfaceType |
 //		      SliceType | MapType | Channel_Type .
+func (p *parser) optionalType(typ Expr) Expr {
+	if typ != nil && p.tok == _Question {
+		pos := p.pos()
+		p.next()
+		n := &OptionalExpr{X: typ, Question: pos}
+		n.SetPos(pos)
+		return n
+	}
+	return typ
+}
+
 func (p *parser) typeOrNil() Expr {
+	return p.optionalType(p.typeOrNilBase())
+}
+
+func (p *parser) typeOrNilBase() Expr {
 	if trace {
 		defer p.trace("typeOrNil")()
 	}
@@ -1686,7 +1735,7 @@ func (p *parser) typeOrNil() Expr {
 		// The parser doesn't keep unnecessary parentheses.
 		// Set the flag below to keep them, for testing
 		// (see e.g. tests for go.dev/issue/68639).
-		const keep_parens = false
+		keep_parens := p.tok == _Question
 		if keep_parens {
 			px := new(ParenExpr)
 			px.pos = pos
@@ -1850,8 +1899,24 @@ func (p *parser) funcResult() []*Field {
 		defer p.trace("funcResult")()
 	}
 
-	if p.got(_Lparen) {
-		return p.paramList(nil, nil, _Rparen, false, false)
+	if p.tok == _Lparen {
+		pos := p.pos()
+		p.next()
+		list := p.paramList(nil, nil, _Rparen, false, false)
+		if p.tok == _Question {
+			// A postfix question disambiguates a grouped type from a result
+			// list. Ordinary result tuples and named results stay unchanged.
+			if len(list) == 1 && list[0].Name == nil {
+				typ := &ParenExpr{X: list[0].Type}
+				typ.SetPos(pos)
+				list[0].Type = p.optionalType(typ)
+				list[0].SetPos(pos)
+				return list
+			}
+			p.syntaxError("optional return suffix requires one unnamed type")
+			p.next()
+		}
+		return list
 	}
 
 	pos := p.pos()
@@ -2197,6 +2262,7 @@ func (p *parser) paramDeclOrNil(name *Name, follow token) *Field {
 				// name "[" n "]" E
 				f.Name = name
 			}
+			f.Type = p.optionalType(f.Type)
 			if typeSetsOk && p.tok == _Operator && p.op == Or {
 				// name "[" ... "]" "|" ...
 				// name "[" n "]" E "|" ...
@@ -2208,6 +2274,7 @@ func (p *parser) paramDeclOrNil(name *Name, follow token) *Field {
 		if p.tok == _Dot {
 			// name "." ...
 			f.Type = p.qualifiedName(name)
+			f.Type = p.optionalType(f.Type)
 			if typeSetsOk && p.tok == _Operator && p.op == Or {
 				// name "." name "|" ...
 				f = p.embeddedElem(f)
@@ -2221,6 +2288,10 @@ func (p *parser) paramDeclOrNil(name *Name, follow token) *Field {
 			return p.embeddedElem(f)
 		}
 
+		if p.tok == _Question {
+			f.Type = p.optionalType(name)
+			return f
+		}
 		f.Name = name
 	}
 
@@ -2750,7 +2821,7 @@ func (p *parser) ifStmt() *IfStmt {
 	return s
 }
 
-func (p *parser) switchStmt() *SwitchStmt {
+func (p *parser) switchStmt() Stmt {
 	if trace {
 		defer p.trace("switchStmt")()
 	}
@@ -2765,12 +2836,13 @@ func (p *parser) switchStmt() *SwitchStmt {
 		p.advance(_Case, _Default, _Rbrace)
 	}
 	for p.tok != _EOF && p.tok != _Rbrace {
-		s.Body = append(s.Body, p.caseClause())
+		c := p.caseClause()
+		s.Body = append(s.Body, c)
 	}
 	s.Rbrace = p.pos()
 	p.want(_Rbrace)
 
-	return s
+	return p.matchSwitch(s)
 }
 
 func (p *parser) selectStmt() *SelectStmt {
@@ -2806,7 +2878,10 @@ func (p *parser) caseClause() *CaseClause {
 	switch p.tok {
 	case _Case:
 		p.next()
+		oldMatchCase := p.matchCase
+		p.matchCase = true
 		c.Cases = p.exprList()
+		p.matchCase = oldMatchCase
 
 	case _Default:
 		p.next()
@@ -2816,6 +2891,31 @@ func (p *parser) caseClause() *CaseClause {
 		p.advance(_Colon, _Case, _Default, _Rbrace)
 	}
 
+	if p.tok == _If {
+		p.next()
+		c.Guard = p.expr()
+	}
+	if p.tok == _FatArrow {
+		c.Arrow = p.pos()
+		p.next()
+		if c.Cases != nil {
+			c.Pattern = p.patternFromExpr(c.Cases)
+		}
+		c.Body = []Stmt{p.blockStmt("match arm")}
+		p.got(_Semi)
+		return c
+	}
+	if c.Cases != nil {
+		Inspect(c.Cases, func(n Node) bool {
+			if name, ok := n.(*Name); ok && name.Value == "..." {
+				p.errorAt(name.Pos(), "pattern rest requires =>")
+			}
+			return true
+		})
+	}
+	if c.Guard != nil {
+		p.errorAt(c.Guard.Pos(), "case guard requires =>")
+	}
 	c.Colon = p.pos()
 	p.want(_Colon)
 	c.Body = p.stmtList()
@@ -2998,14 +3098,30 @@ func (p *parser) stmtList() (list []Stmt) {
 // The last argument may be followed by "...".
 //
 // argList = [ arg { "," arg } [ "..." ] [ "," ] ] ")" .
-func (p *parser) argList() (list []Expr, hasDots bool) {
+func (p *parser) argList() (list []Expr, names []*Name, hasDots bool) {
 	if trace {
 		defer p.trace("argList")()
 	}
 
 	p.xnest++
 	p.list("argument list", _Comma, _Rparen, func() bool {
-		list = append(list, p.expr())
+		arg := p.expr()
+		var name *Name
+		if p.got(_Colon) {
+			var ok bool
+			name, ok = arg.(*Name)
+			if !ok {
+				p.errorAt(arg.Pos(), "argument label must be an identifier")
+			}
+			if names == nil {
+				names = make([]*Name, len(list))
+			}
+			arg = p.expr()
+		}
+		list = append(list, arg)
+		if names != nil {
+			names = append(names, name)
+		}
 		hasDots = p.got(_DotDotDot)
 		return hasDots
 	})

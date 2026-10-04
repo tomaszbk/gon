@@ -1,0 +1,1 @@
+PASS: syntax fixes, preview, idempotence, CLI/LSP suggestions, executable legacy/modern pairs (darwin/arm64; go version go1.27.1 darwin/arm64)

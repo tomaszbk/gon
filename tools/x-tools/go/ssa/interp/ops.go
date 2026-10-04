@@ -240,6 +240,9 @@ func zero(t types.Type) value {
 		return iface{} // nil type, methodset and value
 	case *types.Slice:
 		return []value(nil)
+	case *types.Optional:
+		return zero(types.OptionalStorage(t))
+
 	case *types.Struct:
 		s := make(structure, t.NumFields())
 		for i := range s {

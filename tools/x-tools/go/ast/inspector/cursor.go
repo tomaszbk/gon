@@ -182,11 +182,11 @@ func (c Cursor) Preorder(types ...ast.Node) iter.Seq[Cursor] {
 		for i, limit := c.indices(); i < limit; {
 			ev := events[i]
 			if ev.index > i { // push?
-				if ev.typ&mask != 0 && !yield(Cursor{c.in, i}) {
+				if ev.typ.intersects(mask) && !yield(Cursor{c.in, i}) {
 					break
 				}
 				pop := ev.index
-				if events[pop].typ&mask == 0 {
+				if !events[pop].typ.intersects(mask) {
 					// Subtree does not contain types: skip.
 					i = pop + 1
 					continue
@@ -218,8 +218,8 @@ func (c Cursor) Inspect(types []ast.Node, f func(c Cursor) (descend bool)) {
 		if ev.index > i {
 			// push
 			pop := ev.index
-			if ev.typ&mask != 0 && !f(Cursor{c.in, i}) ||
-				events[pop].typ&mask == 0 {
+			if ev.typ.intersects(mask) && !f(Cursor{c.in, i}) ||
+				!events[pop].typ.intersects(mask) {
 				// The user opted not to descend, or the
 				// subtree does not contain types:
 				// skip past the pop.
@@ -249,7 +249,7 @@ func (c Cursor) Enclosing(types ...ast.Node) iter.Seq[Cursor] {
 	return func(yield func(Cursor) bool) {
 		events := c.in.events
 		for i := c.index; i >= 0; i = events[i].parent {
-			if events[i].typ&mask != 0 && !yield(Cursor{c.in, i}) {
+			if events[i].typ.intersects(mask) && !yield(Cursor{c.in, i}) {
 				break
 			}
 		}
@@ -501,11 +501,11 @@ func (c Cursor) FindNode(n ast.Node) (Cursor, bool) {
 	for i, limit := c.indices(); i < limit; i++ {
 		ev := events[i]
 		if ev.index > i { // push?
-			if ev.typ&mask != 0 && ev.node == n {
+			if ev.typ.intersects(mask) && ev.node == n {
 				return Cursor{c.in, i}, true
 			}
 			pop := ev.index
-			if events[pop].typ&mask == 0 {
+			if !events[pop].typ.intersects(mask) {
 				// Subtree does not contain type of n: skip.
 				i = pop
 			}
@@ -558,8 +558,8 @@ func (c Cursor) FindByPos(start, end token.Pos) (Cursor, bool) {
 				// - n is FuncType
 				// - n.parent is FuncDecl
 				// - best is strictly beneath the FuncDecl
-				if ev.typ == 1<<nFuncType &&
-					events[ev.parent].typ == 1<<nFuncDecl &&
+				if ev.typ == nodeBit(nFuncType) &&
+					events[ev.parent].typ == nodeBit(nFuncDecl) &&
 					best > ev.parent {
 					continue
 				}

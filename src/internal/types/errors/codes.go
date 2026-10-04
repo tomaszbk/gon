@@ -1501,4 +1501,6 @@ const (
 	//  var p *struct { N int }
 	//  var n = p?.N // use p?.N ?? 0 to supply a value when p is nil
 	InvalidNilSafety
+	// InvalidMatch occurs for invalid patterns, guards, or non-exhaustive matches.
+	InvalidMatch
 )

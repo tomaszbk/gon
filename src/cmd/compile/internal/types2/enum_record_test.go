@@ -1,0 +1,27 @@
+package types2_test
+
+import (
+	"cmd/compile/internal/syntax"
+	. "cmd/compile/internal/types2"
+	"strings"
+	"testing"
+)
+
+func TestEnumRecordRestrictedHead(t *testing.T) {
+	const prefix = `package p; type E enum { default Empty; Record { Field int } }; `
+	for _, source := range []string{
+		`type Alias = E.Record`,
+		`var x E.Record`,
+		`var _ = new(E.Record)`,
+		`var _ = E.Record(E.Empty)`,
+		`var _ = E.Record`,
+	} {
+		t.Run(source, func(t *testing.T) {
+			f := mustParse(prefix + source)
+			_, err := new(Config).Check("p", []*syntax.File{f}, nil)
+			if err == nil || !strings.Contains(err.Error(), "record enum variant requires a keyed literal") {
+				t.Fatalf("error=%v", err)
+			}
+		})
+	}
+}

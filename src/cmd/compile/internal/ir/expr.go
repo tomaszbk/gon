@@ -232,9 +232,10 @@ type ClosureExpr struct {
 // Before type-checking, the type is Ntype.
 type CompLitExpr struct {
 	miniExpr
-	List     Nodes // initialized values
-	RType    Node  `mknode:"-"` // *runtime._type for OMAPLIT map types
-	Prealloc *Name
+	List           Nodes // initialized values
+	RType          Node  `mknode:"-"` // *runtime._type for OMAPLIT map types
+	Prealloc       *Name
+	GonEnumStorage bool // private typed payload wrapper, not a source literal
 	// For OSLICELIT, Len is the backing array length.
 	// For OMAPLIT, Len is the number of entries that we've removed from List and
 	// generated explicit mapassign calls for. This is used to inform the map alloc hint.
@@ -355,8 +356,9 @@ func NewKeyExpr(pos src.XPos, key, value Node) *KeyExpr {
 // A StructKeyExpr is a Field: Value composite literal key.
 type StructKeyExpr struct {
 	miniExpr
-	Field *types.Field
-	Value Node
+	Field          *types.Field
+	Value          Node
+	GonEnumStorage bool // private payload-storage key, not a source field
 }
 
 func NewStructKeyExpr(pos src.XPos, field *types.Field, value Node) *StructKeyExpr {
@@ -374,6 +376,9 @@ type InlinedCallExpr struct {
 	Body       Nodes
 	ReturnVars Nodes // must be side-effect free
 	Reshape    bool
+	// GonLowering marks a native expression's administrative IR container.
+	// Its compiler temporaries do not add source complexity for inlining.
+	GonLowering bool
 }
 
 func NewInlinedCallExpr(pos src.XPos, body, retvars []Node) *InlinedCallExpr {
@@ -548,8 +553,9 @@ type SelectorExpr struct {
 	// of the containing type.
 	Sel *types.Sym
 	// The actual selected field - may not be filled in until typechecking.
-	Selection *types.Field
-	Prealloc  *Name // preallocated storage for OMETHVALUE, if any
+	Selection      *types.Field
+	Prealloc       *Name // preallocated storage for OMETHVALUE, if any
+	GonEnumStorage bool  // private intermediate payload-storage selection
 }
 
 func NewSelectorExpr(pos src.XPos, op Op, x Node, sel *types.Sym) *SelectorExpr {

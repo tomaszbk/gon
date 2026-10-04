@@ -766,6 +766,9 @@ func (t *rtype) Elem() Type {
 }
 
 func (t *rtype) Field(i int) StructField {
+	if IsEnum(t) || IsOptional(t) {
+		panic("reflect: enum storage is inaccessible")
+	}
 	if t.Kind() != Struct {
 		panic("reflect: Field of non-struct type " + t.String())
 	}
@@ -774,6 +777,9 @@ func (t *rtype) Field(i int) StructField {
 }
 
 func (t *rtype) FieldByIndex(index []int) StructField {
+	if IsEnum(t) || IsOptional(t) {
+		panic("reflect: enum storage is inaccessible")
+	}
 	if t.Kind() != Struct {
 		panic("reflect: FieldByIndex of non-struct type " + t.String())
 	}
@@ -782,6 +788,9 @@ func (t *rtype) FieldByIndex(index []int) StructField {
 }
 
 func (t *rtype) FieldByName(name string) (StructField, bool) {
+	if IsEnum(t) || IsOptional(t) {
+		return StructField{}, false
+	}
 	if t.Kind() != Struct {
 		panic("reflect: FieldByName of non-struct type " + t.String())
 	}
@@ -790,6 +799,9 @@ func (t *rtype) FieldByName(name string) (StructField, bool) {
 }
 
 func (t *rtype) FieldByNameFunc(match func(string) bool) (StructField, bool) {
+	if IsEnum(t) || IsOptional(t) {
+		return StructField{}, false
+	}
 	if t.Kind() != Struct {
 		panic("reflect: FieldByNameFunc of non-struct type " + t.String())
 	}
@@ -806,6 +818,9 @@ func (t *rtype) Len() int {
 }
 
 func (t *rtype) NumField() int {
+	if IsEnum(t) || IsOptional(t) {
+		return 0
+	}
 	if t.Kind() != Struct {
 		panic("reflect: NumField of non-struct type " + t.String())
 	}
@@ -1270,6 +1285,9 @@ func (t *structType) FieldByNameFunc(match func(string) bool) (result StructFiel
 		// in 'count'; the multiplicity of the 'next' field counts is recorded in 'nextCount'.
 		for _, scan := range current {
 			t := scan.typ
+			if t.TFlag&abi.TFlagEnum != 0 {
+				continue
+			}
 			if visited[t] {
 				// We've looked through this type before, at a higher level.
 				// That higher level would shadow the lower level we're now at,

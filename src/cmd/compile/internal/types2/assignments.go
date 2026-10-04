@@ -33,6 +33,10 @@ func (check *Checker) assignment(x *operand, T Type, context string) {
 		return
 	}
 
+	if check.optionAssignment(x, T, context) {
+		return
+	}
+
 	if isUntyped(x.typ()) {
 		target := T
 		// spec: "If an untyped constant is assigned to a variable of interface

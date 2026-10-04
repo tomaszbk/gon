@@ -1,0 +1,76 @@
+{"Time":"2026-10-03T22:46:52.103646-03:00","Action":"start","Package":"cmd/compile/internal/types2"}
+{"Time":"2026-10-03T22:46:52.104409-03:00","Action":"start","Package":"go/types"}
+{"Time":"2026-10-03T22:46:52.335978-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead"}
+{"Time":"2026-10-03T22:46:52.336423-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead","Output":"=== RUN   TestEnumRecordRestrictedHead\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.336661-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/type_Alias_=_E.Record"}
+{"Time":"2026-10-03T22:46:52.336685-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/type_Alias_=_E.Record","Output":"=== RUN   TestEnumRecordRestrictedHead/type_Alias_=_E.Record\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.336807-03:00","Action":"run","Package":"go/types","Test":"TestEnumRecordRestrictedHead"}
+{"Time":"2026-10-03T22:46:52.336841-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead","Output":"=== RUN   TestEnumRecordRestrictedHead\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.33693-03:00","Action":"run","Package":"go/types","Test":"TestEnumRecordRestrictedHead/type_Alias_=_E.Record"}
+{"Time":"2026-10-03T22:46:52.336942-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead/type_Alias_=_E.Record","Output":"=== RUN   TestEnumRecordRestrictedHead/type_Alias_=_E.Record\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337087-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/type_Alias_=_E.Record","Output":"--- PASS: TestEnumRecordRestrictedHead/type_Alias_=_E.Record (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337109-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/type_Alias_=_E.Record","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.337135-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var_x_E.Record"}
+{"Time":"2026-10-03T22:46:52.337144-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var_x_E.Record","Output":"=== RUN   TestEnumRecordRestrictedHead/var_x_E.Record\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337199-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var_x_E.Record","Output":"--- PASS: TestEnumRecordRestrictedHead/var_x_E.Record (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337211-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var_x_E.Record","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.337223-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_new(E.Record)"}
+{"Time":"2026-10-03T22:46:52.337232-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_new(E.Record)","Output":"=== RUN   TestEnumRecordRestrictedHead/var___=_new(E.Record)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337409-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_new(E.Record)","Output":"--- PASS: TestEnumRecordRestrictedHead/var___=_new(E.Record) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337422-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_new(E.Record)","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.337432-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)"}
+{"Time":"2026-10-03T22:46:52.337442-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)","Output":"=== RUN   TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337484-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)","Output":"--- PASS: TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337494-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.337503-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_E.Record"}
+{"Time":"2026-10-03T22:46:52.337512-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_E.Record","Output":"=== RUN   TestEnumRecordRestrictedHead/var___=_E.Record\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.33755-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_E.Record","Output":"--- PASS: TestEnumRecordRestrictedHead/var___=_E.Record (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337567-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead/var___=_E.Record","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.337584-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead","Output":"--- PASS: TestEnumRecordRestrictedHead (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337599-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestEnumRecordRestrictedHead","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.337615-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestEnumTypeString"}
+{"Time":"2026-10-03T22:46:52.337629-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumTypeString","Output":"=== RUN   TestEnumTypeString\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337807-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead/type_Alias_=_E.Record","Output":"--- PASS: TestEnumRecordRestrictedHead/type_Alias_=_E.Record (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337825-03:00","Action":"pass","Package":"go/types","Test":"TestEnumRecordRestrictedHead/type_Alias_=_E.Record","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.337834-03:00","Action":"run","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var_x_E.Record"}
+{"Time":"2026-10-03T22:46:52.337843-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var_x_E.Record","Output":"=== RUN   TestEnumRecordRestrictedHead/var_x_E.Record\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337859-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestEnumTypeString","Output":"--- PASS: TestEnumTypeString (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337874-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestEnumTypeString","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.337886-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var_x_E.Record","Output":"--- PASS: TestEnumRecordRestrictedHead/var_x_E.Record (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.337896-03:00","Action":"pass","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var_x_E.Record","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.337903-03:00","Action":"run","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_new(E.Record)"}
+{"Time":"2026-10-03T22:46:52.337911-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_new(E.Record)","Output":"=== RUN   TestEnumRecordRestrictedHead/var___=_new(E.Record)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338099-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_new(E.Record)","Output":"--- PASS: TestEnumRecordRestrictedHead/var___=_new(E.Record) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338122-03:00","Action":"pass","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_new(E.Record)","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.33813-03:00","Action":"run","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)"}
+{"Time":"2026-10-03T22:46:52.338138-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)","Output":"=== RUN   TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338149-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)","Output":"--- PASS: TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338158-03:00","Action":"pass","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.338167-03:00","Action":"run","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_E.Record"}
+{"Time":"2026-10-03T22:46:52.338174-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_E.Record","Output":"=== RUN   TestEnumRecordRestrictedHead/var___=_E.Record\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338184-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_E.Record","Output":"--- PASS: TestEnumRecordRestrictedHead/var___=_E.Record (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338193-03:00","Action":"pass","Package":"go/types","Test":"TestEnumRecordRestrictedHead/var___=_E.Record","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.338202-03:00","Action":"output","Package":"go/types","Test":"TestEnumRecordRestrictedHead","Output":"--- PASS: TestEnumRecordRestrictedHead (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.33821-03:00","Action":"pass","Package":"go/types","Test":"TestEnumRecordRestrictedHead","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.338218-03:00","Action":"run","Package":"go/types","Test":"TestEnumConstructorMetadata"}
+{"Time":"2026-10-03T22:46:52.338226-03:00","Action":"output","Package":"go/types","Test":"TestEnumConstructorMetadata","Output":"=== RUN   TestEnumConstructorMetadata\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338356-03:00","Action":"output","Package":"cmd/compile/internal/types2","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338639-03:00","Action":"output","Package":"go/types","Test":"TestEnumConstructorMetadata","Output":"--- PASS: TestEnumConstructorMetadata (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338651-03:00","Action":"pass","Package":"go/types","Test":"TestEnumConstructorMetadata","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.33866-03:00","Action":"run","Package":"go/types","Test":"TestEnumCanonicalNamesShadow"}
+{"Time":"2026-10-03T22:46:52.338668-03:00","Action":"output","Package":"go/types","Test":"TestEnumCanonicalNamesShadow","Output":"=== RUN   TestEnumCanonicalNamesShadow\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338761-03:00","Action":"output","Package":"go/types","Test":"TestEnumCanonicalNamesShadow","Output":"--- PASS: TestEnumCanonicalNamesShadow (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338771-03:00","Action":"pass","Package":"go/types","Test":"TestEnumCanonicalNamesShadow","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.338779-03:00","Action":"run","Package":"go/types","Test":"TestEnumTypeString"}
+{"Time":"2026-10-03T22:46:52.338786-03:00","Action":"output","Package":"go/types","Test":"TestEnumTypeString","Output":"=== RUN   TestEnumTypeString\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338866-03:00","Action":"output","Package":"go/types","Test":"TestEnumTypeString","Output":"--- PASS: TestEnumTypeString (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.338876-03:00","Action":"pass","Package":"go/types","Test":"TestEnumTypeString","Elapsed":0}
+{"Time":"2026-10-03T22:46:52.338958-03:00","Action":"run","Package":"go/types","Test":"TestGenerate"}
+{"Time":"2026-10-03T22:46:52.338973-03:00","Action":"output","Package":"go/types","Test":"TestGenerate","Output":"=== RUN   TestGenerate\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.339399-03:00","Action":"output","Package":"cmd/compile/internal/types2","Output":"ok  \tcmd/compile/internal/types2\t0.236s\n"}
+{"Time":"2026-10-03T22:46:52.339427-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Elapsed":0.236}
+{"Time":"2026-10-03T22:46:52.407469-03:00","Action":"output","Package":"go/types","Test":"TestGenerate","Output":"--- PASS: TestGenerate (0.07s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.407505-03:00","Action":"pass","Package":"go/types","Test":"TestGenerate","Elapsed":0.07}
+{"Time":"2026-10-03T22:46:52.407619-03:00","Action":"output","Package":"go/types","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:52.408185-03:00","Action":"output","Package":"go/types","Output":"ok  \tgo/types\t0.304s\n"}
+{"Time":"2026-10-03T22:46:52.408199-03:00","Action":"pass","Package":"go/types","Elapsed":0.304}

@@ -150,7 +150,10 @@ func phiopt(f *ssa.Func) {
 			}
 		}
 	}
-	// strengthen phi optimization.
+	// Strengthen phi optimization, including integer 0/1 Phis. The latter
+	// can reuse the same controlling boolean even when a branch contains
+	// further control flow; comparisons of the resulting bool-to-int
+	// conversion can then use the boolean directly.
 	// Main use case is to transform:
 	//   x := false
 	//   if c {
@@ -201,15 +204,13 @@ func phiopt(f *ssa.Func) {
 		}
 
 		for _, v := range b.Values {
-			// find a phi value v = OpPhi (ConstBool [true]) (ConstBool [false]).
+			// Find a Phi of distinct boolean constants or integer 0/1 constants.
 			// TODO: v = OpPhi (ConstBool [true]) (Arg <bool> {value})
 			if v.Op != ssaop.OpPhi {
 				continue
 			}
-			if v.Args[0].Op != ssaop.OpConstBool || v.Args[1].Op != ssaop.OpConstBool {
-				continue
-			}
-			if v.Args[0].AuxInt == v.Args[1].AuxInt {
+			boolean := v.Args[0].Op == ssaop.OpConstBool && v.Args[1].Op == ssaop.OpConstBool && v.Args[0].AuxInt != v.Args[1].AuxInt
+			if !boolean && !(v.Type.IsInteger() && isBoolIntPhi(v)) {
 				continue
 			}
 
@@ -287,27 +288,27 @@ func phiopt(f *ssa.Func) {
 	}
 }
 
-func phioptint(v *ssa.Value, b0 *ssa.Block, reverse int) {
+// isBoolIntPhi reports whether v selects between integer constants 0 and 1.
+func isBoolIntPhi(v *ssa.Value) bool {
 	a0 := v.Args[0]
 	a1 := v.Args[1]
 	if a0.Op != a1.Op {
-		return
+		return false
 	}
 
 	switch a0.Op {
 	case ssaop.OpConst8, ssaop.OpConst16, ssaop.OpConst32, ssaop.OpConst64:
 	default:
-		return
+		return false
 	}
+	return a0.AuxInt == 0 && a1.AuxInt == 1 || a0.AuxInt == 1 && a1.AuxInt == 0
+}
 
-	negate := false
-	switch {
-	case a0.AuxInt == 0 && a1.AuxInt == 1:
-		negate = true
-	case a0.AuxInt == 1 && a1.AuxInt == 0:
-	default:
+func phioptint(v *ssa.Value, b0 *ssa.Block, reverse int) {
+	if !isBoolIntPhi(v) {
 		return
 	}
+	negate := v.Args[0].AuxInt == 0
 
 	if reverse == 1 {
 		negate = !negate
@@ -341,9 +342,13 @@ func phioptint(v *ssa.Value, b0 *ssa.Block, reverse int) {
 }
 
 // b is the If block giving the boolean value.
-// v is the phi value v = (OpPhi (ConstBool [true]) (ConstBool [false])).
+// v is a Phi of distinct boolean constants or integer 0/1 constants.
 // reverse is the predecessor from which the truth value comes.
 func convertPhi(b *ssa.Block, v *ssa.Value, reverse int) {
+	if v.Type.IsInteger() {
+		phioptint(v, b, reverse)
+		return
+	}
 	f := b.Func
 	ops := [2]ssaop.Op{ssaop.OpNot, ssaop.OpCopy}
 	v.Reset(ops[v.Args[reverse].AuxInt])

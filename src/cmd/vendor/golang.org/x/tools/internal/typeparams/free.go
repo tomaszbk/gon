@@ -50,6 +50,9 @@ func (w *Free) Has(typ types.Type) (res bool) {
 		// So, we must Unalias.
 		return w.Has(types.Unalias(t))
 
+	case *types.Optional:
+		return w.Has(t.Elem())
+
 	case *types.Array:
 		return w.Has(t.Elem())
 

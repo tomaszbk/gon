@@ -6,5 +6,5 @@
   "integratedOn": "2026-10-02",
   "commitsInUpdate": 96,
   "method": "three-way source integration; upstream ancestry not merged",
-  "validation": "handover/upstream-2026-10-02.md"
+  "validation": "misc/gon/VALIDATION.md#upstream-integration"
 }

@@ -8,10 +8,75 @@ import argparse
 import filecmp
 import os
 from pathlib import Path
+import shlex
 import shutil
 
 ROOT = Path(__file__).resolve().parents[2]
 SKILL = ROOT / ".agents" / "skills" / "gon"
+
+
+def configure_path(destination):
+    """Expose public commands in future shells without exposing private go."""
+    if str(destination) in os.environ.get("PATH", "").split(os.pathsep):
+        return
+    if os.name == "nt":
+        import winreg
+        with winreg.CreateKey(winreg.HKEY_CURRENT_USER, "Environment") as key:
+            try:
+                current, kind = winreg.QueryValueEx(key, "Path")
+            except FileNotFoundError:
+                current, kind = "", winreg.REG_EXPAND_SZ
+            entries = current.split(os.pathsep)
+            if str(destination).casefold() not in [os.path.expandvars(p).casefold() for p in entries]:
+                winreg.SetValueEx(key, "Path", 0, kind, str(destination) + (os.pathsep + current if current else ""))
+        # Tell Explorer and other applications to refresh their environment.
+        import ctypes
+        from ctypes import wintypes
+        broadcast = ctypes.windll.user32.SendMessageTimeoutW
+        broadcast.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM,
+                              wintypes.LPCWSTR, wintypes.UINT, wintypes.UINT,
+                              ctypes.POINTER(ctypes.c_size_t)]
+        broadcast.restype = wintypes.LPARAM
+        result = ctypes.c_size_t()
+        broadcast(
+            0xFFFF, 0x001A, 0, "Environment", 0x0002, 5000, ctypes.byref(result))
+        print("Added public commands to your user PATH. Open a new terminal and restart your editor.")
+        return
+    shell = Path(os.environ.get("SHELL", "/bin/sh")).name
+    home = Path.home()
+    if shell == "zsh":
+        profiles = [Path(os.environ.get("ZDOTDIR") or home) / ".zshrc"]
+    elif shell == "bash":
+        login = next((home / name for name in (".bash_profile", ".bash_login", ".profile")
+                      if (home / name).exists()), home / ".bash_profile")
+        profiles = [home / ".bashrc", login]
+    elif shell == "fish":
+        base = Path(os.environ.get("XDG_CONFIG_HOME") or home / ".config")
+        profiles = [base / "fish" / "conf.d" / "gon.fish"]
+    elif shell in ("sh", "dash", "ksh"):
+        profiles = [home / ".profile"]
+    else:
+        raise SystemExit(f"Unsupported shell {shell!r}; use --no-modify-path and add {destination} to PATH.")
+    # Quote literal paths, including spaces and shell metacharacters. No user
+    # content is executed while installing, and repeated installs append once.
+    if shell == "fish":
+        quoted = "'" + str(destination).replace("\\", "\\\\").replace("'", "\\'") + "'"
+        body = f"if not contains -- {quoted} $PATH\n    set -gx PATH {quoted} $PATH\nend\n"
+    else:
+        body = (f'case ":${{PATH-}}:" in\n'
+                f"    *{shlex.quote(':' + str(destination) + ':')}*) ;;\n"
+                f'    *) export PATH={shlex.quote(str(destination))}:"${{PATH-}}" ;;\n'
+                'esac\n')
+    block = "\n# Gon public commands (private Go tools are not added to PATH).\n" + body
+    for profile in profiles:
+        original = profile.read_text() if profile.exists() else ""
+        if block in original:
+            continue
+        profile.parent.mkdir(parents=True, exist_ok=True)
+        with profile.open("a") as stream:
+            stream.write(block)
+        print(f"Added public commands to PATH in {profile}")
+    print("Open a new terminal and restart your editor to load the updated PATH.")
 
 
 def same_tree(a, b):
@@ -41,6 +106,8 @@ def install_skill(repo):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bin-dir", type=Path, default=Path.home() / ".local" / "bin")
+    parser.add_argument("--no-modify-path", action="store_true",
+                        help="install commands without updating your shell/user PATH")
     parser.add_argument("--project-skill", type=Path, metavar="REPO",
                         help="copy the agent skill into REPO/.agents/skills/gon and exit")
     args = parser.parse_args()
@@ -58,15 +125,25 @@ def main():
         if target.exists() or target.is_symlink():
             if target.is_symlink() and target.resolve() == source.resolve():
                 continue
+            # Repair an earlier Gon installation after its checkout was moved.
+            # Other dangling links and existing commands remain protected.
+            if (target.is_symlink() and not target.exists() and
+                    Path(os.readlink(target)).parts[-3:] == ("gon", "bin", name + suffix)):
+                links.append((source, target))
+                continue
             raise SystemExit(f"Refusing to overwrite {target}; choose another --bin-dir")
         links.append((source, target))
     destination.mkdir(parents=True, exist_ok=True)
     for source, target in links:
+        if target.is_symlink():
+            target.unlink()
         target.symlink_to(source)
         print(f"Installed {target} -> {source}")
     print(f"Public commands are in {destination}; keep this toolchain directory in place.")
-    if str(destination) not in os.environ.get("PATH", "").split(os.pathsep):
+    if args.no_modify_path and str(destination) not in os.environ.get("PATH", "").split(os.pathsep):
         print(f"Add {destination} to PATH. Do not add the toolchain's private bin directory.")
+    elif not args.no_modify_path:
+        configure_path(destination)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,16 @@
+{"Time":"2026-10-03T11:32:09.370034-03:00","Action":"start","Package":"honnef.co/go/tools/analysis/code"}
+{"Time":"2026-10-03T11:32:09.370153-03:00","Action":"start","Package":"honnef.co/go/tools/go/ast/astutil"}
+{"Time":"2026-10-03T11:32:09.602457-03:00","Action":"run","Package":"honnef.co/go/tools/go/ast/astutil","Test":"TestGonTransformSafety"}
+{"Time":"2026-10-03T11:32:09.602612-03:00","Action":"output","Package":"honnef.co/go/tools/go/ast/astutil","Test":"TestGonTransformSafety","Output":"=== RUN   TestGonTransformSafety\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:09.602744-03:00","Action":"output","Package":"honnef.co/go/tools/go/ast/astutil","Test":"TestGonTransformSafety","Output":"--- PASS: TestGonTransformSafety (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:09.602763-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ast/astutil","Test":"TestGonTransformSafety","Elapsed":0}
+{"Time":"2026-10-03T11:32:09.602798-03:00","Action":"output","Package":"honnef.co/go/tools/go/ast/astutil","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:09.603566-03:00","Action":"output","Package":"honnef.co/go/tools/go/ast/astutil","Output":"ok  \thonnef.co/go/tools/go/ast/astutil\t0.233s\n"}
+{"Time":"2026-10-03T11:32:09.603615-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ast/astutil","Elapsed":0.233}
+{"Time":"2026-10-03T11:32:09.629757-03:00","Action":"run","Package":"honnef.co/go/tools/analysis/code","Test":"TestGonEffects"}
+{"Time":"2026-10-03T11:32:09.629847-03:00","Action":"output","Package":"honnef.co/go/tools/analysis/code","Test":"TestGonEffects","Output":"=== RUN   TestGonEffects\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:09.630001-03:00","Action":"output","Package":"honnef.co/go/tools/analysis/code","Test":"TestGonEffects","Output":"--- PASS: TestGonEffects (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:09.630019-03:00","Action":"pass","Package":"honnef.co/go/tools/analysis/code","Test":"TestGonEffects","Elapsed":0}
+{"Time":"2026-10-03T11:32:09.630034-03:00","Action":"output","Package":"honnef.co/go/tools/analysis/code","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T11:32:09.630864-03:00","Action":"output","Package":"honnef.co/go/tools/analysis/code","Output":"ok  \thonnef.co/go/tools/analysis/code\t0.261s\n"}
+{"Time":"2026-10-03T11:32:09.630906-03:00","Action":"pass","Package":"honnef.co/go/tools/analysis/code","Elapsed":0.261}

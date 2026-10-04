@@ -12,6 +12,9 @@ func (s *gcSizes) Alignof(T Type) (result int64) {
 
 	// For arrays and structs, alignment is defined in terms
 	// of alignment of the elements and fields, respectively.
+	if o, ok := T.Underlying().(*Optional); ok {
+		T = o.storage
+	}
 	switch t := T.Underlying().(type) {
 	case *Array:
 		// spec: "For a variable x of array type: unsafe.Alignof(x)
@@ -102,6 +105,9 @@ func (s *gcSizes) Offsetsof(fields []*Var) []int64 {
 }
 
 func (s *gcSizes) Sizeof(T Type) int64 {
+	if o, ok := T.Underlying().(*Optional); ok {
+		T = o.storage
+	}
 	switch t := T.Underlying().(type) {
 	case *Basic:
 		assert(isTyped(T))

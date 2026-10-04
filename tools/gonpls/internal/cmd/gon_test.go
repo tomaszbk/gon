@@ -143,7 +143,7 @@ type gonQuery struct {
 			Object      struct{ Name, Kind, Signature string }
 		}
 		Type *struct {
-			Expression, Type, Mode, Construct string
+			Expression, Type, Mode, Construct, Underlying string
 		}
 		Truncated *struct{ Omitted, NextOffset int }
 	}
@@ -529,7 +529,7 @@ func TestGonExplain(t *testing.T) {
 	}
 	gonJSON(t, tree, nil, &ex, "explain", "InvalidErrorHandling", "ErrorCode(10000)", "UndeclaredName", "unusedwrite", "SA4006").checkCode(0)
 	e := ex.Explanations
-	if e[0].Kind != "type-error" || e[0].Number == nil || *e[0].Number != 10000 || len(e[0].Cases) != 8 || len(e[0].References) != 1 ||
+	if e[0].Kind != "type-error" || e[0].Number == nil || *e[0].Number != 10000 || len(e[0].Cases) != 10 || len(e[0].References) != 1 ||
 		e[1].Code != "InvalidErrorHandling" || e[2].Kind != "type-error" ||
 		e[3].Kind != "analyzer" || e[3].DefaultEnabled == nil || e[4].Kind != "analyzer" {
 		t.Errorf("explanations: %+v", ex)
@@ -541,14 +541,21 @@ func TestGonExplain(t *testing.T) {
 
 	// The explained messages are those of both type checkers.
 	gonJSON(t, tree, nil, &ex, "explain", "InvalidErrorHandling")
-	for _, file := range []string{"src/go/types/errorhandling.go", "src/cmd/compile/internal/types2/errorexpr.go"} {
-		src, err := os.ReadFile(filepath.Join(runtime.GOROOT(), file))
-		if err != nil {
-			t.Fatal(err)
+	for _, files := range [][]string{
+		{"src/go/types/errorhandling.go", "src/go/types/optionresult.go"},
+		{"src/cmd/compile/internal/types2/errorexpr.go", "src/cmd/compile/internal/types2/optionresult.go"},
+	} {
+		var src strings.Builder
+		for _, file := range files {
+			data, err := os.ReadFile(filepath.Join(runtime.GOROOT(), file))
+			if err != nil {
+				t.Fatal(err)
+			}
+			src.Write(data)
 		}
 		for _, c := range ex.Explanations[0].Cases {
-			if !strings.Contains(string(src), strconv.Quote(c.Message)) {
-				t.Errorf("%s does not report %q", file, c.Message)
+			if !strings.Contains(src.String(), strconv.Quote(c.Message)) {
+				t.Errorf("%s do not report %q", files, c.Message)
 			}
 		}
 	}

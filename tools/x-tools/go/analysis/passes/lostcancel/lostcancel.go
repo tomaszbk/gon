@@ -248,6 +248,11 @@ func lostCancelPath(pass *analysis.Pass, g *cfg.CFG, v *types.Var, stmt ast.Node
 				// does not imply that the other path uses the variable.
 				ast.Inspect(n.Cond, visit)
 				return false
+			case *ast.MatchExpr:
+				return false // tag, guards and chosen arm have separate CFG blocks
+			case *ast.OptionalExpr:
+				ast.Inspect(n.X, visit)
+				return false
 			case *ast.SafeNavExpr:
 				return false // operands have their own guarded CFG blocks
 			case *ast.BinaryExpr:

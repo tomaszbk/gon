@@ -233,7 +233,15 @@ const (
 	typeIsSIMDTag // type is the SIMD marker type
 	typeIsSIMD    // type contains the SIMD marker type
 	typeMethodsComputed
+	typeIsEnum     // closed Gon alternative, backed by a GC-safe struct
+	typeIsOptional // native optional, with typed payload storage
 )
+
+func (t *Type) IsOptional() bool     { return t.flags&typeIsOptional != 0 }
+func (t *Type) SetIsOptional(b bool) { t.flags.set(typeIsOptional, b) }
+
+func (t *Type) IsEnum() bool     { return t.flags&typeIsEnum != 0 }
+func (t *Type) SetIsEnum(b bool) { t.flags.set(typeIsEnum, b) }
 
 func (t *Type) NotInHeap() bool           { return t.flags&typeNotInHeap != 0 }
 func (t *Type) Noalg() bool               { return t.flags&typeNoalg != 0 }
@@ -1680,6 +1688,8 @@ func (t *Type) SetUnderlying(underlying *Type) {
 	t.intRegs = underlying.intRegs
 	t.floatRegs = underlying.floatRegs
 	t.underlying = underlying.underlying
+	t.SetIsEnum(underlying.IsEnum())
+	t.SetIsOptional(underlying.IsOptional())
 
 	if underlying.NotInHeap() {
 		t.SetNotInHeap(true)

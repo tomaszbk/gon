@@ -67,6 +67,7 @@ const (
 	_FatArrow   // =>
 	_SafeDot    // ?.
 	_SafeLparen // ?(
+	_Question   // ?
 
 	// empty line comment to exclude it from .String
 	tokenCount //

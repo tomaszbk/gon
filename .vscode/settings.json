@@ -1,5 +1,4 @@
 {
-  "gon.enabled": true,
   "gon.compilerPath": "${workspaceFolder}/gon/bin/gon",
   "gon.languageServerPath": "${workspaceFolder}/gon/bin/gonpls",
   "gon.serverSettings": {

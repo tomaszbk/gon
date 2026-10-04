@@ -68,7 +68,11 @@ func (b *builder) safeNav(fn *Function, e *ast.SafeNavExpr, discard bool) Value 
 	var t types.Type
 	if !discard {
 		t = fn.typeOf(e)
-		value = emitConv(fn, value, t)
+		if types.IsOptional(t) {
+			value = enumValue(fn, t, enumAlternative(t, "$present"), []Value{value}, e.Pos())
+		} else {
+			value = emitConv(fn, value, t)
+		}
 	}
 	emitJump(fn, done)
 	fn.currentBlock = absent
@@ -87,7 +91,14 @@ func (b *builder) coalesce(fn *Function, e *ast.BinaryExpr) Value {
 	fallback := fn.newBasicBlock("coalesce.fallback")
 	done := fn.newBasicBlock("coalesce.done")
 	value := b.nilOperand(fn, e.X, fallback)
-	if nillable(value.Type()) {
+	_, safe := ast.Unparen(e.X).(*ast.SafeNavExpr)
+	optionChain := safe && types.IsOptional(fn.typeOf(e.X))
+	if optionChain {
+		// nilOperand already tested the outer Option guards and returned the
+		// final payload. Its nil or nested None remains a present value.
+	} else if types.IsOptional(value.Type()) {
+		value = b.optionPresent(fn, value, fallback, e.X)
+	} else if nillable(value.Type()) {
 		b.nilPresent(fn, value, fallback, e.X)
 	}
 	t := fn.typeOf(e)
@@ -108,9 +119,18 @@ func (b *builder) coalesceAssign(fn *Function, s *ast.AssignStmt) {
 	value := loc.load(fn)
 	fallback := fn.newBasicBlock("coalesce.assign")
 	done := fn.newBasicBlock("coalesce.done")
-	emitIf(fn, emitCompare(fn, token.NEQ, value, zeroConst(value.Type()), s.TokPos), done, fallback)
+	if types.IsOptional(value.Type()) {
+		tag := enumField(fn, value, 0, s.TokPos)
+		emitIf(fn, emitCompare(fn, token.NEQ, tag, emitConv(fn, intConst(0), tag.Type()), s.TokPos), done, fallback)
+	} else {
+		emitIf(fn, emitCompare(fn, token.NEQ, value, zeroConst(value.Type()), s.TokPos), done, fallback)
+	}
 	fn.currentBlock = fallback
-	loc.store(fn, b.expr(fn, s.Rhs[0]))
+	rhs := b.expr(fn, s.Rhs[0])
+	if types.IsOptional(value.Type()) {
+		rhs = enumValue(fn, value.Type(), enumAlternative(value.Type(), "$present"), []Value{rhs}, s.TokPos)
+	}
+	loc.store(fn, rhs)
 	emitJump(fn, done)
 	fn.currentBlock = done
 }

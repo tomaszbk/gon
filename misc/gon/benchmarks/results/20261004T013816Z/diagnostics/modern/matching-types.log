@@ -1,0 +1,36 @@
+{"Time":"2026-10-03T22:46:57.693638-03:00","Action":"start","Package":"cmd/compile/internal/types2"}
+{"Time":"2026-10-03T22:46:57.69459-03:00","Action":"start","Package":"go/types"}
+{"Time":"2026-10-03T22:46:57.921405-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestMatchTypes"}
+{"Time":"2026-10-03T22:46:57.921679-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestMatchTypes","Output":"=== RUN   TestMatchTypes\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.92257-03:00","Action":"run","Package":"go/types","Test":"TestGenerate"}
+{"Time":"2026-10-03T22:46:57.922618-03:00","Action":"output","Package":"go/types","Test":"TestGenerate","Output":"=== RUN   TestGenerate\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.923005-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestMatchTypes","Output":"--- PASS: TestMatchTypes (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.923041-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestMatchTypes","Elapsed":0}
+{"Time":"2026-10-03T22:46:57.923058-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestMatchInvalid"}
+{"Time":"2026-10-03T22:46:57.923066-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestMatchInvalid","Output":"=== RUN   TestMatchInvalid\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.923704-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestMatchInvalid","Output":"--- PASS: TestMatchInvalid (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.92372-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestMatchInvalid","Elapsed":0}
+{"Time":"2026-10-03T22:46:57.923729-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestMatchPatternNames"}
+{"Time":"2026-10-03T22:46:57.923735-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestMatchPatternNames","Output":"=== RUN   TestMatchPatternNames\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.923897-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestMatchPatternNames","Output":"--- PASS: TestMatchPatternNames (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.923907-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestMatchPatternNames","Elapsed":0}
+{"Time":"2026-10-03T22:46:57.924081-03:00","Action":"output","Package":"cmd/compile/internal/types2","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.924972-03:00","Action":"output","Package":"cmd/compile/internal/types2","Output":"ok  \tcmd/compile/internal/types2\t0.231s\n"}
+{"Time":"2026-10-03T22:46:57.925-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Elapsed":0.231}
+{"Time":"2026-10-03T22:46:57.989619-03:00","Action":"output","Package":"go/types","Test":"TestGenerate","Output":"--- PASS: TestGenerate (0.07s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.98966-03:00","Action":"pass","Package":"go/types","Test":"TestGenerate","Elapsed":0.07}
+{"Time":"2026-10-03T22:46:57.989701-03:00","Action":"run","Package":"go/types","Test":"TestMatchTypes"}
+{"Time":"2026-10-03T22:46:57.989711-03:00","Action":"output","Package":"go/types","Test":"TestMatchTypes","Output":"=== RUN   TestMatchTypes\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.990194-03:00","Action":"output","Package":"go/types","Test":"TestMatchTypes","Output":"--- PASS: TestMatchTypes (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.9902-03:00","Action":"pass","Package":"go/types","Test":"TestMatchTypes","Elapsed":0}
+{"Time":"2026-10-03T22:46:57.990203-03:00","Action":"run","Package":"go/types","Test":"TestMatchInvalid"}
+{"Time":"2026-10-03T22:46:57.990206-03:00","Action":"output","Package":"go/types","Test":"TestMatchInvalid","Output":"=== RUN   TestMatchInvalid\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.990481-03:00","Action":"output","Package":"go/types","Test":"TestMatchInvalid","Output":"--- PASS: TestMatchInvalid (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.990503-03:00","Action":"pass","Package":"go/types","Test":"TestMatchInvalid","Elapsed":0}
+{"Time":"2026-10-03T22:46:57.990506-03:00","Action":"run","Package":"go/types","Test":"TestMatchPatternNames"}
+{"Time":"2026-10-03T22:46:57.990509-03:00","Action":"output","Package":"go/types","Test":"TestMatchPatternNames","Output":"=== RUN   TestMatchPatternNames\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.990538-03:00","Action":"output","Package":"go/types","Test":"TestMatchPatternNames","Output":"--- PASS: TestMatchPatternNames (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.99055-03:00","Action":"pass","Package":"go/types","Test":"TestMatchPatternNames","Elapsed":0}
+{"Time":"2026-10-03T22:46:57.990621-03:00","Action":"output","Package":"go/types","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:57.991169-03:00","Action":"output","Package":"go/types","Output":"ok  \tgo/types\t0.296s\n"}
+{"Time":"2026-10-03T22:46:57.991177-03:00","Action":"pass","Package":"go/types","Elapsed":0.297}

@@ -233,6 +233,9 @@ func (h hasher) hash(t types.Type) uint32 {
 	case *types.Slice:
 		return 9049 + 2*h.hash(t.Elem())
 
+	case *types.Optional:
+		return 9067 + 2*h.hash(t.Elem())
+
 	case *types.Struct:
 		var hash uint32 = 9059
 		for i, n := 0, t.NumFields(); i < n; i++ {
@@ -430,6 +433,9 @@ func (h hasher) shallowHash(t types.Type) uint32 {
 
 	case *types.Slice:
 		return 2690201
+
+	case *types.Optional:
+		return 4986083
 
 	case *types.Struct:
 		return 3326489

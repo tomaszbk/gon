@@ -271,15 +271,32 @@ func (r *gonRequest) queryType(ctx context.Context, item *gonQueryItem, t *gonTa
 			ti.Value = tv.Value.ExactString()
 		}
 		switch e := expr.(type) {
+		case *ast.EnumType:
+			ti.Construct = "enum-type"
+		case *ast.MatchExpr:
+			ti.Construct = "match-expression"
+		case *ast.OptionalExpr:
+			ti.Construct = "optional-propagation"
+			if tv.IsType() {
+				ti.Construct = "optional-type"
+			}
+		case *ast.ContextualVariantExpr:
+			ti.Construct = "contextual-constructor"
 		case *ast.LambdaExpr:
 			ti.Construct = "lambda"
 		case *ast.NilGuardExpr:
 			ti.Construct = "nil-guard"
+			if types.IsOptional(info.TypeOf(e.X)) {
+				ti.Construct = "option-guard"
+			}
 		case *ast.SafeNavExpr:
 			ti.Construct = "safe-navigation"
 		case *ast.BinaryExpr:
 			if e.Op == token.COALESCE {
 				ti.Construct = "nil-coalescing"
+				if types.IsOptional(info.TypeOf(e.X)) {
+					ti.Construct = "optional-coalescing"
+				}
 			}
 		case *ast.CondExpr:
 			ti.Construct = "conditional-expression"
@@ -287,6 +304,13 @@ func (r *gonRequest) queryType(ctx context.Context, item *gonQueryItem, t *gonTa
 			ti.Construct = "error-propagation"
 			if e.Body != nil {
 				ti.Construct = "error-handler"
+			}
+			if types.IsCanonicalResult(info.TypeOf(e.X)) {
+				if e.Body != nil {
+					ti.Construct = "result-handler"
+				} else {
+					ti.Construct = "result-propagation"
+				}
 			}
 			if tup, isTuple := typ.(*types.Tuple); isTuple && tup.Len() == 0 {
 				ti.Type = "(no value)"

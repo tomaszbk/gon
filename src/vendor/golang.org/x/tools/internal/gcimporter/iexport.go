@@ -1016,6 +1016,10 @@ func (w *exportWriter) doTyp(t types.Type, pkg *types.Package) {
 	}
 	switch t := t.(type) {
 	case *types.Alias:
+		if t.Obj().Pkg() == nil && types.IsOptional(t) {
+			w.doTyp(types.Unalias(t), pkg)
+			return
+		}
 		if targs := t.TypeArgs(); targs.Len() > 0 {
 			w.startType(instanceType)
 			w.pos(t.Obj().Pos())
@@ -1026,6 +1030,10 @@ func (w *exportWriter) doTyp(t types.Type, pkg *types.Package) {
 		w.startType(aliasType)
 		w.qualifiedType(t.Obj())
 
+	case *types.Optional:
+		w.startType(optionalType)
+		w.typ(t.Elem(), pkg)
+
 	case *types.Named:
 		if targs := t.TypeArgs(); targs.Len() > 0 {
 			w.startType(instanceType)
@@ -1034,6 +1042,11 @@ func (w *exportWriter) doTyp(t types.Type, pkg *types.Package) {
 			w.pos(t.Obj().Pos())
 			w.typeList(targs, pkg)
 			w.typ(t.Origin(), pkg)
+			return
+		}
+		if types.IsCanonicalResult(t) {
+			w.startType(canonicalEnumType)
+			w.string(t.Obj().Name())
 			return
 		}
 		w.startType(definedType)
@@ -1082,6 +1095,41 @@ func (w *exportWriter) doTyp(t types.Type, pkg *types.Package) {
 		w.signature(t)
 
 	case *types.Struct:
+		if enum := types.EnumOf(t); enum != nil {
+			w.startType(enumType)
+			w.uint64(uint64(enum.NumVariants()))
+			defaultIndex := 0
+			for i := range enum.NumVariants() {
+				if enum.Variant(i) == enum.Default() {
+					defaultIndex = i
+				}
+			}
+			w.uint64(uint64(defaultIndex))
+			for i := range enum.NumVariants() {
+				variant := enum.Variant(i)
+				variantPkg := variant.Pkg()
+				if variantPkg == nil {
+					variantPkg = pkg
+				}
+				w.pos(variant.Object().Pos())
+				w.pkg(variantPkg)
+				w.string(variant.Name())
+				w.bool(variant.IsRecord())
+				w.uint64(uint64(variant.NumFields()))
+				for j := range variant.NumFields() {
+					field := variant.Field(j)
+					fieldPkg := field.Pkg()
+					if fieldPkg == nil {
+						fieldPkg = variantPkg
+					}
+					w.pos(field.Pos())
+					w.pkg(fieldPkg)
+					w.string(field.Name())
+					w.typ(field.Type(), fieldPkg)
+				}
+			}
+			return
+		}
 		w.startType(structType)
 		n := t.NumFields()
 		// Even for struct{} we must emit some qualifying package, because that's

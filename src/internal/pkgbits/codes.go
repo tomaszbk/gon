@@ -52,6 +52,9 @@ const (
 	TypeInterface
 	TypeUnion
 	TypeTypeParam
+	TypeEnum
+	TypeOptional
+	TypeCanonicalEnum
 )
 
 // A CodeObj distinguishes among go/types.Object encodings.

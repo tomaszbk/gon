@@ -447,17 +447,18 @@ func canDelayResults(fn *ir.Func) bool {
 // hairiness and whether or not it can be inlined.
 type hairyVisitor struct {
 	// This is needed to access the current caller in the doNode function.
-	curFunc       *ir.Func
-	isBigFunc     bool
-	debug         bool
-	budget        int32
-	maxBudget     int32
-	reason        string
-	extraCallCost int32
-	usedLocals    ir.NameSet
-	do            func(ir.Node) bool
-	profile       *pgoir.Profile
-	dbg           bool
+	curFunc          *ir.Func
+	isBigFunc        bool
+	debug            bool
+	budget           int32
+	maxBudget        int32
+	reason           string
+	extraCallCost    int32
+	usedLocals       ir.NameSet
+	do               func(ir.Node) bool
+	profile          *pgoir.Profile
+	dbg              bool
+	gonLoweringDepth int
 }
 
 func isDebugFn(fn *ir.Func) bool {
@@ -487,6 +488,59 @@ func (v *hairyVisitor) tooHairy(fn *ir.Func) bool {
 func (v *hairyVisitor) doNode(n ir.Node) bool {
 	if n == nil {
 		return false
+	}
+	// Like the unified-IR multi-result adjustment below, native Gon
+	// expressions must not pay for lowering-only declarations, temporary
+	// references and assignments. Still visit every operand, branch and
+	// call: operations and inlining prohibitions retain their ordinary cost.
+	// Typed enum payload storage adds an intermediate struct/key/selection
+	// to the IR. Charge the real payload expressions and fields, not this
+	// private nesting layer; it is absent from the source construct.
+	storageWrapper := false
+	switch n := n.(type) {
+	case *ir.CompLitExpr:
+		storageWrapper = n.GonEnumStorage
+	case *ir.StructKeyExpr:
+		storageWrapper = n.GonEnumStorage
+	case *ir.SelectorExpr:
+		storageWrapper = n.GonEnumStorage
+	}
+	if storageWrapper {
+		return ir.DoChildren(n, v.do)
+	}
+	gonLowering := false
+	switch n := n.(type) {
+	case *ir.InlinedCallExpr:
+		gonLowering = n.GonLowering
+	case *ir.BlockStmt:
+		gonLowering = n.GonLowering
+	}
+	if gonLowering {
+		v.gonLoweringDepth++
+		tooHairy := ir.DoChildren(n, v.do)
+		v.gonLoweringDepth--
+		return tooHairy
+	}
+	if v.gonLoweringDepth > 0 {
+		// An or-handler binds the failure payload like a parameter. Its
+		// initial capture is administrative, while payload computation,
+		// source uses and subsequent source assignments retain their cost.
+		switch n := n.(type) {
+		case *ir.Decl:
+			if n.GonBinding {
+				if n.X.Class == ir.PAUTO {
+					v.usedLocals.Add(n.X)
+				}
+				return false
+			}
+		case *ir.AssignStmt:
+			if n.GonBinding {
+				if name, ok := n.X.(*ir.Name); ok && name.Class == ir.PAUTO {
+					v.usedLocals.Add(name)
+				}
+				return doList(n.Init(), v.do) || v.do(n.Y)
+			}
+		}
 	}
 	if v.debug {
 		fmt.Printf("%v: doNode %v budget is %d\n", ir.Line(n), n.Op(), v.budget)
@@ -586,8 +640,14 @@ opSwitch:
 		// perhaps it will inline, it also can simplify escape analysis.
 		extraCost := v.extraCallCost
 
-		if n.Fun.Op() == ir.ONAME {
-			name := n.Fun.(*ir.Name)
+		fun := n.Fun
+		if name, ok := fun.(*ir.Name); v.gonLoweringDepth > 0 && ok && name.AutoTemp() {
+			// A guard saves its function operand before evaluating arguments.
+			// Preserve the parameter-call heuristic through that immutable copy.
+			fun = ir.StaticValue(fun)
+		}
+		if fun.Op() == ir.ONAME {
+			name := fun.(*ir.Name)
 			if name.Class == ir.PFUNC {
 				// Special case: on architectures that can do unaligned loads,
 				// explicitly mark internal/byteorder methods as cheap,
@@ -747,8 +807,16 @@ opSwitch:
 			}
 		}
 
+	case ir.ODCL:
+		if v.gonLoweringDepth > 0 && (n.(*ir.Decl).X.AutoTemp() || n.(*ir.Decl).X.GonTemporary) {
+			v.budget++
+		}
+
 	case ir.ONAME:
 		n := n.(*ir.Name)
+		if v.gonLoweringDepth > 0 && (n.AutoTemp() || n.GonTemporary) {
+			v.budget++
+		}
 		if n.Class == ir.PAUTO {
 			v.usedLocals.Add(n)
 		}
@@ -767,6 +835,16 @@ opSwitch:
 
 	case ir.OAS2:
 		n := n.(*ir.AssignListStmt)
+		if v.gonLoweringDepth > 0 && len(n.Lhs) > 0 {
+			allTemps := true
+			for _, lhs := range n.Lhs {
+				name, ok := lhs.(*ir.Name)
+				allTemps = allTemps && ok && name.AutoTemp()
+			}
+			if allTemps {
+				v.budget++
+			}
+		}
 
 		// Unified IR unconditionally rewrites:
 		//
@@ -785,7 +863,9 @@ opSwitch:
 		// tests), we need to compensate for this here.
 		//
 		// See also identical logic in IsBigFunc.
-		if len(n.Rhs) > 0 {
+		// Native-expression traversal already discounts these temporaries.
+		// Applying the unified-IR compensation again would hide real work.
+		if v.gonLoweringDepth == 0 && len(n.Rhs) > 0 {
 			if init := n.Rhs[0].Init(); len(init) == 1 {
 				if _, ok := init[0].(*ir.AssignListStmt); ok {
 					// 4 for each value, because each temporary variable now
@@ -811,6 +891,9 @@ opSwitch:
 		n := n.(*ir.AssignStmt)
 		if n.X.Op() == ir.OINDEX && isIndexingCoverageCounter(n.X) {
 			return false
+		}
+		if name, ok := n.X.(*ir.Name); v.gonLoweringDepth > 0 && ok && (name.AutoTemp() || name.GonTemporary) {
+			v.budget++
 		}
 
 	case ir.OSLICE, ir.OSLICEARR, ir.OSLICESTR, ir.OSLICE3, ir.OSLICE3ARR:

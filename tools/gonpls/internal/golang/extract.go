@@ -415,6 +415,11 @@ func canExtractVariable(info *types.Info, curFile inspector.Cursor, start, end t
 	if unsupportedGonExtraction(expr) {
 		return nil, fmt.Errorf("cannot extract a lambda or nil-safety expression without preserving its target and evaluation order")
 	}
+	for n := range ast.Preorder(expr) {
+		if e, ok := n.(ast.Expr); ok && info.OptionalConversions[e] != nil {
+			return nil, fmt.Errorf("cannot extract an expression with contextual Option construction without preserving its target type")
+		}
+	}
 	if _, ok := ast.Unparen(expr).(*ast.CondExpr); ok {
 		// A fresh := loses the contextual target type, which can change
 		// branch conversions (notably nil converted to an interface).
@@ -508,6 +513,8 @@ func canExtractVariable(info *types.Info, curFile inspector.Cursor, start, end t
 			switch cur.ParentEdgeKind() {
 			case edge.LambdaExpr_Body:
 				return nil, fmt.Errorf("cannot extract from a lambda expression body")
+			case edge.MatchArm_Value, edge.MatchArm_Guard, edge.MatchArm_Pattern:
+				return nil, fmt.Errorf("cannot extract from a match arm expression")
 			case edge.CondExpr_Then, edge.CondExpr_Else:
 				// Branch braces hold expressions, not statements. Hoisting
 				// into the enclosing scope would eagerly evaluate this branch.
@@ -2075,7 +2082,7 @@ func unsupportedGonExtraction(n ast.Node) bool {
 			return false
 		}
 		switch n := n.(type) {
-		case *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr:
+		case *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.OptionalExpr, *ast.MatchExpr, *ast.MatchStmt, *ast.ContextualVariantExpr:
 			found = true
 		case *ast.BinaryExpr:
 			found = n.Op == token.COALESCE

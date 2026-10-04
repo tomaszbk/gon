@@ -93,6 +93,9 @@ func CopyExpr(node ast.Expr) (ast.Expr, bool) {
 		cp.Y, ok2 = CopyExpr(cp.Y)
 		return &cp, ok1 && ok2
 	case *ast.CallExpr:
+		if len(node.ArgNames) != 0 {
+			return nil, false
+		}
 		var ok bool
 		cp := *node
 		cp.Fun, ok = CopyExpr(cp.Fun)
@@ -252,6 +255,9 @@ func Equal(a, b ast.Node) bool {
 		return Equal(a.X, b.X) && a.Op == b.Op && Equal(a.Y, b.Y)
 	case *ast.CallExpr:
 		b := b.(*ast.CallExpr)
+		if len(a.ArgNames) != 0 || len(b.ArgNames) != 0 {
+			return false
+		}
 		if len(a.Args) != len(b.Args) {
 			return false
 		}

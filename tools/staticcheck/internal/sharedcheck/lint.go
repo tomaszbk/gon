@@ -138,16 +138,10 @@ func RedundantTypeInDeclarationChecker(verb string, flagHelpfulTypes bool) *anal
 				}
 				Tlhs := pass.TypesInfo.TypeOf(spec.Type)
 				for i, v := range spec.Values {
-					// These expressions use the declared target to type their
-					// parameters or alternatives. Removing it may reject valid
-					// source or change nil/interface conversions.
-					switch e := ast.Unparen(v).(type) {
-					case *ast.LambdaExpr, *ast.CondExpr, *ast.SafeNavExpr:
+					// Rechecking without the declaration's target is only
+					// valid for expressions whose type is independent of it.
+					if declarationNeedsTarget(v, pass.TypesInfo) {
 						continue specLoop
-					case *ast.BinaryExpr:
-						if e.Op == token.COALESCE {
-							continue specLoop
-						}
 					}
 					if !flagHelpfulTypes && spec.Names[i].Name == "_" {
 						continue specLoop
@@ -217,4 +211,32 @@ func RedundantTypeInDeclarationChecker(verb string, flagHelpfulTypes bool) *anal
 		Run:      fn,
 		Requires: []*analysis.Analyzer{generated.Analyzer, inspect.Analyzer, tokenfile.Analyzer},
 	}
+}
+
+// declarationNeedsTarget reports Gon expressions whose inferred types may depend
+// on an expected target. CheckExpr deliberately omits assignment context, so
+// removing that context is not a supported redundant-type transformation.
+// Visit nested argument/branch expressions as well as the root, but preserve
+// the independent signature boundary of explicitly typed function literals.
+func declarationNeedsTarget(value ast.Expr, info *types.Info) bool {
+	needed := false
+	ast.Inspect(value, func(node ast.Node) bool {
+		if needed {
+			return false
+		}
+		if expr, ok := node.(ast.Expr); ok && info.OptionalConversions[expr] != nil {
+			needed = true
+			return false
+		}
+		switch node := node.(type) {
+		case *ast.FuncLit:
+			return false // its written signature supplies its body's context
+		case *ast.ContextualVariantExpr, *ast.LambdaExpr, *ast.CondExpr, *ast.MatchExpr, *ast.SafeNavExpr:
+			needed = true
+		case *ast.BinaryExpr:
+			needed = node.Op == token.COALESCE
+		}
+		return !needed
+	})
+	return needed
 }

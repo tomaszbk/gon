@@ -122,6 +122,21 @@ func deepValueEqual(v1, v2 Value, visited map[visit]bool) bool {
 		}
 		return deepValueEqual(v1.Elem(), v2.Elem(), visited)
 	case Struct:
+		if IsOptional(v1.Type()) {
+			present := OptionalValuePresent(v1)
+			return present == OptionalValuePresent(v2) && (!present || deepValueEqual(OptionalValuePayload(v1), OptionalValuePayload(v2), visited))
+		}
+		if IsEnum(v1.Type()) {
+			if EnumValueVariant(v1).Name != EnumValueVariant(v2).Name {
+				return false
+			}
+			for i := range EnumValueVariant(v1).Fields {
+				if !deepValueEqual(EnumValuePayload(v1, i), EnumValuePayload(v2, i), visited) {
+					return false
+				}
+			}
+			return true
+		}
 		for i, n := 0, v1.NumField(); i < n; i++ {
 			if !deepValueEqual(v1.Field(i), v2.Field(i), visited) {
 				return false

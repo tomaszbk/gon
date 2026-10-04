@@ -483,6 +483,11 @@ func (u *unifier) nify(x, y types.Type, mode unifyMode) (result bool) {
 			}
 		}
 
+	case *types.Optional:
+		if y, ok := y.(*types.Optional); ok {
+			return u.nify(x.Elem(), y.Elem(), emode)
+		}
+
 	case *types.Pointer:
 		// Two pointer types unify if their base types unify.
 		if y, ok := y.(*types.Pointer); ok {

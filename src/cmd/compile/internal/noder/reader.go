@@ -528,6 +528,12 @@ func (r *reader) doTyp() *types.Type {
 		return r.signature(nil)
 	case pkgbits.TypeSlice:
 		return types.NewSlice(r.typ())
+	case pkgbits.TypeOptional:
+		return optionalBacking(r.typ())
+	case pkgbits.TypeEnum:
+		return r.enumType()
+	case pkgbits.TypeCanonicalEnum:
+		return r.canonicalEnumType()
 	case pkgbits.TypeStruct:
 		return r.structType()
 	case pkgbits.TypeInterface:
@@ -1812,6 +1818,8 @@ func (r *reader) stmt1(tag codeStmt, out *ir.Nodes) ir.Node {
 		rhs := r.expr()
 		return ir.NewAssignOpStmt(pos, op, lhs, rhs)
 
+	case stmtOptionCoalesceAssign:
+		return r.optionCoalesceAssign()
 	case stmtCoalesceAssign:
 		return r.coalesceAssign()
 
@@ -1873,6 +1881,9 @@ func (r *reader) stmt1(tag codeStmt, out *ir.Nodes) ir.Node {
 		ch := r.expr()
 		value := r.expr()
 		return ir.NewSendStmt(pos, ch, value)
+
+	case stmtMatch:
+		return r.matchExpr(true, label)
 
 	case stmtSwitch:
 		return r.switchStmt(label)
@@ -2243,8 +2254,21 @@ func (r *reader) expr() (res ir.Node) {
 		typ := r.typ()
 		return ir.NewZero(pos, typ)
 
+	case exprOption:
+		return r.optionExpr()
+	case exprResultError:
+		return r.resultErrorExpr()
+	case exprOptionCoalesce:
+		return r.optionCoalesce()
+	case exprOptionSafeNav:
+		return r.optionSafeNav()
+	case exprOptionGuard:
+		return r.optionGuard()
 	case exprError:
 		return r.errorExpr()
+
+	case exprMatch:
+		return r.matchExpr(false, nil)
 
 	case exprCond:
 		return r.condExpr()
@@ -2262,6 +2286,10 @@ func (r *reader) expr() (res ir.Node) {
 		assert(r.nilSafety != nil && r.nilSafety.value != nil)
 		return r.nilSafety.value
 
+	case exprEnumConstruct:
+		return r.enumConstruct()
+	case exprEnumConstructor:
+		return r.enumConstructor()
 	case exprCompLit:
 		return r.compLit()
 
@@ -2463,7 +2491,7 @@ func (r *reader) expr() (res ir.Node) {
 		}
 		return x
 
-	case exprCall:
+	case exprCall, exprNamedCall:
 		var fun ir.Node
 		var args ir.Nodes
 		if r.Bool() { // method call
@@ -2506,9 +2534,33 @@ func (r *reader) expr() (res ir.Node) {
 			fun = r.expr()
 		}
 		pos := r.pos()
+		prefix := len(args)
 		args.Append(r.multiExpr()...)
 		dots := r.Bool()
+		var init ir.Nodes
+		if tag == exprNamedCall {
+			// Capture the callee (or interface receiver), then every argument,
+			// including implicit method/dictionary arguments, before permutation.
+			if selector, ok := fun.(*ir.SelectorExpr); ok && selector.Op() == ir.ODOTINTER {
+				selector.X = r.tempCopy(pos, selector.X, &init)
+			} else {
+				fun = r.tempCopy(pos, fun, &init)
+			}
+			for i, arg := range args {
+				args[i] = r.tempCopy(pos, arg, &init)
+			}
+			count := r.Len()
+			reordered := make(ir.Nodes, len(args))
+			copy(reordered, args[:prefix])
+			for i := 0; i < count; i++ {
+				reordered[prefix+r.Len()] = args[prefix+i]
+			}
+			args = reordered
+		}
 		n := typecheck.Call(pos, fun, args, dots)
+		if len(init) != 0 {
+			n = ir.InitExpr(init, n)
+		}
 		switch n.Op() {
 		case ir.OAPPEND:
 			n := n.(*ir.CallExpr)

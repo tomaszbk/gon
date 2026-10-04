@@ -120,7 +120,12 @@ func walkChildren(v Visitor, node Node) {
 
 	case *CallExpr:
 		Walk(v, n.Fun)
-		walkList(v, n.Args)
+		for i, arg := range n.Args {
+			if i < len(n.ArgNames) && n.ArgNames[i] != nil {
+				Walk(v, n.ArgNames[i])
+			}
+			Walk(v, arg)
+		}
 
 	case *ErrorExpr:
 		Walk(v, n.X)
@@ -145,6 +150,67 @@ func walkChildren(v Visitor, node Node) {
 
 	case *SafeNavExpr:
 		Walk(v, n.X)
+
+	case *ContextualVariantExpr:
+		Walk(v, n.Name)
+		walkList(v, n.Args)
+
+	case *OptionalExpr:
+		Walk(v, n.X)
+
+	case *EnumType:
+		walkList(v, n.Variants)
+
+	case *EnumVariant:
+		if n.Doc != nil {
+			Walk(v, n.Doc)
+		}
+		Walk(v, n.Name)
+		if n.Payload != nil {
+			Walk(v, n.Payload)
+		}
+		if n.Comment != nil {
+			Walk(v, n.Comment)
+		}
+
+	case *MatchExpr:
+		if n.Tag != nil {
+			Walk(v, n.Tag)
+		}
+		walkList(v, n.Arms)
+
+	case *MatchStmt:
+		Walk(v, n.Match)
+
+	case *MatchArm:
+		if n.Pattern != nil {
+			Walk(v, n.Pattern)
+		}
+		if n.Guard != nil {
+			Walk(v, n.Guard)
+		}
+		if n.Value != nil {
+			Walk(v, n.Value)
+		}
+		if n.Body != nil {
+			Walk(v, n.Body)
+		}
+
+	case *MatchPattern:
+		if n.Inner != nil {
+			Walk(v, n.Inner)
+		}
+		if n.Value != nil {
+			Walk(v, n.Value)
+		}
+		walkList(v, n.Args)
+		walkList(v, n.Fields)
+
+	case *MatchField:
+		Walk(v, n.Name)
+		if n.Pattern != nil {
+			Walk(v, n.Pattern)
+		}
 
 	case *CondExpr:
 		Walk(v, n.Cond)

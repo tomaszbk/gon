@@ -106,6 +106,62 @@ func (w walker) node(n Node) {
 		}
 
 	// expressions
+	case *ContextualVariantExpr:
+		w.node(n.Name)
+		w.exprList(n.ArgList)
+	case *EnumConstructExpr:
+		w.exprList(n.ArgList)
+	case *OptionalExpr:
+		w.node(n.X)
+		if n.Body != nil {
+			w.node(n.Body)
+		}
+	case *EnumType:
+		for _, v := range n.Variants {
+			w.node(v)
+		}
+	case *EnumVariant:
+		w.node(n.Name)
+		w.fieldList(n.Payload)
+	case *MatchExpr:
+		if n.Tag != nil {
+			w.node(n.Tag)
+		}
+		for _, a := range n.Arms {
+			w.node(a)
+		}
+	case *MatchStmt:
+		w.node(n.Match)
+	case *MatchArm:
+		if n.Pattern != nil {
+			w.node(n.Pattern)
+		}
+		if n.Guard != nil {
+			w.node(n.Guard)
+		}
+		if n.Value != nil {
+			w.node(n.Value)
+		}
+		if n.Body != nil {
+			w.node(n.Body)
+		}
+	case *MatchPattern:
+		if n.Inner != nil {
+			w.node(n.Inner)
+		}
+		if n.Value != nil {
+			w.node(n.Value)
+		}
+		for _, a := range n.Args {
+			w.node(a)
+		}
+		for _, f := range n.Fields {
+			w.node(f)
+		}
+	case *MatchField:
+		w.node(n.Name)
+		w.node(n.Pattern)
+
 	case *BadExpr: // nothing to do
 	case *Name: // nothing to do
 	case *BasicLit: // nothing to do
@@ -190,7 +246,12 @@ func (w walker) node(n Node) {
 
 	case *CallExpr:
 		w.node(n.Fun)
-		w.exprList(n.ArgList)
+		for i, arg := range n.ArgList {
+			if i < len(n.ArgNames) && n.ArgNames[i] != nil {
+				w.node(n.ArgNames[i])
+			}
+			w.node(arg)
+		}
 
 	case *ListExpr:
 		w.exprList(n.ElemList)

@@ -269,9 +269,10 @@ type (
 
 	// Fun(ArgList[0], ArgList[1], ...)
 	CallExpr struct {
-		Fun     Expr
-		ArgList []Expr // nil means no arguments
-		HasDots bool   // last argument is followed by ...
+		Fun      Expr
+		ArgList  []Expr  // nil means no arguments
+		ArgNames []*Name // nil, or aligned argument labels; nil entries are positional
+		HasDots  bool    // last argument is followed by ...
 		expr
 	}
 
@@ -281,6 +282,9 @@ type (
 		X    Expr
 		Err  *Name
 		Body *BlockStmt
+		// SynthesizedHandler distinguishes postfix propagation's implicit
+		// return locals from a source-written or-handler binding.
+		SynthesizedHandler bool
 		expr
 	}
 
@@ -491,9 +495,12 @@ type (
 	}
 
 	CaseClause struct {
-		Cases Expr // nil means default clause
-		Body  []Stmt
-		Colon Pos
+		Pattern *MatchPattern
+		Guard   Expr
+		Arrow   Pos
+		Cases   Expr // nil means default clause
+		Body    []Stmt
+		Colon   Pos
 		node
 	}
 

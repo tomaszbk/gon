@@ -1,0 +1,28 @@
+{"Time":"2026-10-03T22:46:24.959328-03:00","Action":"start","Package":"cmd/compile/internal/syntax"}
+{"Time":"2026-10-03T22:46:24.960561-03:00","Action":"start","Package":"go/parser"}
+{"Time":"2026-10-03T22:46:24.960637-03:00","Action":"start","Package":"go/printer"}
+{"Time":"2026-10-03T22:46:24.96069-03:00","Action":"start","Package":"go/format"}
+{"Time":"2026-10-03T22:46:24.960895-03:00","Action":"start","Package":"cmd/gofmt"}
+{"Time":"2026-10-03T22:46:25.178733-03:00","Action":"output","Package":"go/printer","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-10-03T22:46:25.178847-03:00","Action":"output","Package":"go/printer","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:25.178798-03:00","Action":"output","Package":"go/format","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-10-03T22:46:25.178872-03:00","Action":"output","Package":"go/format","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:25.179262-03:00","Action":"output","Package":"cmd/gofmt","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-10-03T22:46:25.179314-03:00","Action":"output","Package":"cmd/gofmt","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:25.179502-03:00","Action":"output","Package":"go/format","Output":"ok  \tgo/format\t0.219s [no tests to run]\n"}
+{"Time":"2026-10-03T22:46:25.179527-03:00","Action":"pass","Package":"go/format","Elapsed":0.219}
+{"Time":"2026-10-03T22:46:25.179506-03:00","Action":"output","Package":"go/printer","Output":"ok  \tgo/printer\t0.219s [no tests to run]\n"}
+{"Time":"2026-10-03T22:46:25.179562-03:00","Action":"pass","Package":"go/printer","Elapsed":0.219}
+{"Time":"2026-10-03T22:46:25.179949-03:00","Action":"output","Package":"cmd/gofmt","Output":"ok  \tcmd/gofmt\t0.219s [no tests to run]\n"}
+{"Time":"2026-10-03T22:46:25.179972-03:00","Action":"pass","Package":"cmd/gofmt","Elapsed":0.219}
+{"Time":"2026-10-03T22:46:25.180404-03:00","Action":"run","Package":"go/parser","Test":"TestNamedArguments"}
+{"Time":"2026-10-03T22:46:25.180442-03:00","Action":"output","Package":"go/parser","Test":"TestNamedArguments","Output":"=== RUN   TestNamedArguments\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:25.180815-03:00","Action":"output","Package":"go/parser","Test":"TestNamedArguments","Output":"--- PASS: TestNamedArguments (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:25.180834-03:00","Action":"pass","Package":"go/parser","Test":"TestNamedArguments","Elapsed":0}
+{"Time":"2026-10-03T22:46:25.180845-03:00","Action":"output","Package":"go/parser","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:25.18146-03:00","Action":"output","Package":"go/parser","Output":"ok  \tgo/parser\t0.221s\n"}
+{"Time":"2026-10-03T22:46:25.181497-03:00","Action":"pass","Package":"go/parser","Elapsed":0.221}
+{"Time":"2026-10-03T22:46:25.209344-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-10-03T22:46:25.209394-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:25.210092-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Output":"ok  \tcmd/compile/internal/syntax\t0.251s [no tests to run]\n"}
+{"Time":"2026-10-03T22:46:25.210108-03:00","Action":"pass","Package":"cmd/compile/internal/syntax","Elapsed":0.251}

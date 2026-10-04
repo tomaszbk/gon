@@ -107,6 +107,9 @@ func ForEachElement(methodSetOf func(types.Type) *types.MethodSet, T types.Type,
 			// so mark it inaccessible during recursion.
 			visit(T.Underlying(), false) // skip the unnamed type
 
+		case *types.Optional:
+			visit(T.Elem(), true)
+
 		case *types.Array:
 			visit(T.Elem(), true)
 

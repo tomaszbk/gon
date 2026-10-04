@@ -17,6 +17,8 @@ func TestGonErrorBoundary(t *testing.T) {
 		{`consume((x) => read(x)!)`, false}, {`consume(() => { read()! })`, false},
 		{`consume(func() { read()! })`, false},
 		{`consume((x) => read(x)!, read()!)`, true},
+		{`consume(option?)`, true}, {`option? ?? fallback()`, true},
+		{`consume(() => option?)`, false}, {`consume(func() { option? })`, false},
 	} {
 		e, err := parser.ParseExpr(test.src)
 		if err != nil {
@@ -35,6 +37,7 @@ func TestGonTargetType(t *testing.T) {
 	}{
 		{`() => nil`, true}, {`p?.Field`, true}, {`(p?.Field)`, true}, {`a ?? b`, true},
 		{`(a ?? b)`, true}, {`a+b`, false}, {`func() {}`, false},
+		{`.Some(C.int(3))`, true}, {`.Ok(C.f())`, true}, {`.None`, true},
 	} {
 		e, err := parser.ParseExpr(test.src)
 		if err != nil {
@@ -47,7 +50,7 @@ func TestGonTargetType(t *testing.T) {
 }
 
 func TestGonWalk(t *testing.T) {
-	for _, src := range []string{`(x) => C.f(x)`, `() => { C.f() }`, `p?.Field ?? C.f()`, `f?(C.f())`} {
+	for _, src := range []string{`(x) => C.f(x)`, `() => { C.f() }`, `p?.Field ?? C.f()`, `f?(C.f())`, `C.f()?`, `.Ok(C.f())`, `.Some(C.f())`} {
 		e, err := parser.ParseExpr(src)
 		if err != nil {
 			t.Fatal(err)

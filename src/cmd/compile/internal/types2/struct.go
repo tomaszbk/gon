@@ -11,6 +11,7 @@ import (
 
 // A Struct represents a struct type.
 type Struct struct {
+	enum   *Enum
 	fields []*Var   // fields != nil indicates the struct is set up (possibly with len(fields) == 0)
 	tags   []string // field tags; nil if there are no tags
 }

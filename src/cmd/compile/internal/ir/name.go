@@ -30,17 +30,18 @@ func (n *Ident) Sym() *types.Sym { return n.sym }
 // Name holds Node fields used only by named nodes (ONAME, OTYPE, some OLITERAL).
 type Name struct {
 	miniExpr
-	BuiltinOp Op         // uint8
-	Class     Class      // uint8
-	pragma    PragmaFlag // int16
-	flags     bitset16
-	DictIndex uint16 // index of the dictionary entry describing the type of this variable declaration plus 1
-	sym       *types.Sym
-	Func      *Func // TODO(austin): nil for I.M
-	Offset_   int64
-	val       constant.Value
-	Opt       any      // for use by escape or slice analysis
-	Embed     *[]Embed // list of embedded files, for ONAME var
+	BuiltinOp    Op         // uint8
+	Class        Class      // uint8
+	pragma       PragmaFlag // int16
+	flags        bitset16
+	GonTemporary bool   // generated propagation local; inlining cost only, not DWARF scope
+	DictIndex    uint16 // index of the dictionary entry describing the type of this variable declaration plus 1
+	sym          *types.Sym
+	Func         *Func // TODO(austin): nil for I.M
+	Offset_      int64
+	val          constant.Value
+	Opt          any      // for use by escape or slice analysis
+	Embed        *[]Embed // list of embedded files, for ONAME var
 
 	// For a local variable (not param) or extern, the initializing assignment (OAS or OAS2).
 	// For a closure var, the ONAME node of the original (outermost) captured variable.

@@ -1255,6 +1255,9 @@ func (v Value) Elem() Value {
 // Field returns the i'th field of the struct v.
 // It panics if v's Kind is not [Struct] or i is out of range.
 func (v Value) Field(i int) Value {
+	if v.IsValid() && v.typ().TFlag&abi.TFlagEnum != 0 {
+		panic("reflect: enum storage is inaccessible")
+	}
 	if v.kind() != Struct {
 		panic(&ValueError{"reflect.Value.Field", v.kind()})
 	}
@@ -1698,6 +1701,21 @@ func (v Value) IsZero() bool {
 	case String:
 		return v.Len() == 0
 	case Struct:
+		if IsOptional(v.Type()) {
+			return !OptionalValuePresent(v)
+		}
+		if IsEnum(v.Type()) {
+			variant := EnumValueVariant(v)
+			if !variant.Default {
+				return false
+			}
+			for i := range variant.Fields {
+				if !EnumValuePayload(v, i).IsZero() {
+					return false
+				}
+			}
+			return true
+		}
 		if v.flag&flagIndir == 0 {
 			return v.ptr == nil
 		}
@@ -1939,6 +1957,9 @@ func (v Value) MethodByName(name string) Value {
 // It panics if v's Kind is not [Struct].
 func (v Value) NumField() int {
 	v.mustBe(Struct)
+	if v.typ().TFlag&abi.TFlagEnum != 0 {
+		return 0
+	}
 	tt := (*structType)(unsafe.Pointer(v.typ()))
 	return len(tt.Fields)
 }
@@ -3238,6 +3259,20 @@ func (v Value) Comparable() bool {
 		return v.IsNil() || v.Elem().Comparable()
 
 	case Struct:
+		if IsOptional(v.Type()) {
+			return v.Type().Comparable() && (!OptionalValuePresent(v) || OptionalValuePayload(v).Comparable())
+		}
+		if IsEnum(v.Type()) {
+			if !v.Type().Comparable() {
+				return false
+			}
+			for i := range EnumValueVariant(v).Fields {
+				if !EnumValuePayload(v, i).Comparable() {
+					return false
+				}
+			}
+			return true
+		}
 		for _, value := range v.Fields() {
 			if !value.Comparable() {
 				return false
@@ -3310,6 +3345,27 @@ func (v Value) Equal(u Value) bool {
 		}
 		return true
 	case Struct:
+		if IsOptional(v.Type()) {
+			if !v.Type().Comparable() {
+				break
+			}
+			present := OptionalValuePresent(v)
+			return present == OptionalValuePresent(u) && (!present || OptionalValuePayload(v).Equal(OptionalValuePayload(u)))
+		}
+		if IsEnum(v.Type()) {
+			if !v.Type().Comparable() {
+				break
+			}
+			if EnumValueVariant(v).Name != EnumValueVariant(u).Name {
+				return false
+			}
+			for i := range EnumValueVariant(v).Fields {
+				if !EnumValuePayload(v, i).Equal(EnumValuePayload(u, i)) {
+					return false
+				}
+			}
+			return true
+		}
 		// u and v have the same type so they have the same fields
 		nf := v.NumField()
 		for i := 0; i < nf; i++ {

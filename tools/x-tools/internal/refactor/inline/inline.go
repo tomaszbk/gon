@@ -608,7 +608,7 @@ func (st *state) inlineCall() (*inlineCallResult, error) {
 	context := ast.Node(caller.Call)
 	for _, n := range caller.path {
 		switch n.(type) {
-		case *ast.CondExpr, *ast.ErrorExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr:
+		case *ast.CondExpr, *ast.ErrorExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.MatchStmt, *ast.OptionalExpr, *ast.ContextualVariantExpr:
 			return nil, fmt.Errorf("cannot inline call within Gon control-flow expressions")
 		case ast.Stmt, *ast.ValueSpec:
 			if context == caller.Call {
@@ -617,7 +617,14 @@ func (st *state) inlineCall() (*inlineCallResult, error) {
 		}
 	}
 	for n := range ast.Preorder(context) {
+		if e, ok := n.(ast.Expr); ok && (caller.Info.OptionalConversions[e] != nil || caller.Info.OptionalConversions == nil && types.IsOptional(caller.Info.TypeOf(e))) {
+			return nil, fmt.Errorf("cannot inline call containing Gon contextual Option conversion")
+		}
 		switch n := n.(type) {
+		case *ast.CallExpr:
+			if len(n.ArgNames) != 0 {
+				return nil, fmt.Errorf("cannot inline call containing Gon named arguments")
+			}
 		case *ast.BinaryExpr:
 			if n.Op == token.COALESCE {
 				return nil, fmt.Errorf("cannot inline call containing Gon control-flow expressions")
@@ -626,7 +633,7 @@ func (st *state) inlineCall() (*inlineCallResult, error) {
 			if n.Tok == token.COALESCE_ASSIGN {
 				return nil, fmt.Errorf("cannot inline call containing Gon control-flow expressions")
 			}
-		case *ast.CondExpr, *ast.ErrorExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr:
+		case *ast.CondExpr, *ast.ErrorExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.MatchStmt, *ast.OptionalExpr, *ast.ContextualVariantExpr:
 			return nil, fmt.Errorf("cannot inline call containing Gon control-flow expressions")
 		}
 	}

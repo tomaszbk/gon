@@ -107,13 +107,15 @@ const (
 	opTypeParam     = 'T' // .TypeParams.At(i)	(Named, Signature)
 	opRecvTypeParam = 'r' // .RecvTypeParams.At(i)	(Signature)
 	opConstraint    = 'C' // .Constraint()		(TypeParam)
+	opPayload       = 'B' // enum variant payload struct
 	opRhs           = 'a' // .Rhs()			(Alias)
 
 	// type->object operators
-	opAt     = 'A' // .At(i)	(Tuple)
-	opField  = 'F' // .Field(i)	(Struct)
-	opMethod = 'M' // .Method(i)	(Named or Interface; not Struct: "promoted" names are ignored)
-	opObj    = 'O' // .Obj()	(Named, TypeParam)
+	opAt      = 'A' // .At(i)	(Tuple)
+	opField   = 'F' // .Field(i)	(Struct)
+	opMethod  = 'M' // .Method(i)	(Named or Interface; not Struct: "promoted" names are ignored)
+	opVariant = 'V' // enum variant constructor object
+	opObj     = 'O' // .Obj()	(Named, TypeParam)
 )
 
 // For is equivalent to new(Encoder).For(obj).
@@ -286,6 +288,13 @@ func (enc *Encoder) For(obj types.Object) (Path, error) {
 		return Path(obj.Name()), nil
 	}
 
+	// Enum descriptors hold constructor and payload objects outside lexical
+	// scopes. Instantiations preserve their declaration positions, so encode
+	// them through the origin enum for stable cross-package identities.
+	if path, ok := enumObjectPath(pkg, obj); ok {
+		return path, nil
+	}
+
 	// 3. Not a package-level object.
 	//    Reject obviously non-viable cases.
 	switch obj := obj.(type) {
@@ -406,7 +415,15 @@ func (tr *traversal) traverse() {
 			tr.typ(path, offset, opRhs, -1, t.Rhs())
 		case *types.Named:
 			tr.tparams(t.TypeParams(), path, offset, opTypeParam)
-			tr.typ(path, offset, opUnderlying, -1, t.Underlying())
+			if enum := types.EnumOf(t); enum != nil {
+				for i := 0; i < enum.NumVariants(); i++ {
+					variant := enum.Variant(i)
+					tr.object(path, offset, opVariant, i, variant.Object())
+					tr.typ(path, offset, opPayload, i, enumPayloadStruct(variant))
+				}
+			} else {
+				tr.typ(path, offset, opUnderlying, -1, t.Underlying())
+			}
 		}
 	}
 
@@ -469,7 +486,7 @@ func (tr *traversal) visitType(path []byte, offset uint32, T types.Type) {
 		// so T must belong to another package. No path.
 		return
 
-	case *types.Pointer, *types.Slice, *types.Array, *types.Chan:
+	case *types.Pointer, *types.Slice, *types.Array, *types.Chan, *types.Optional:
 		type hasElem interface{ Elem() types.Type } // note: includes Map
 		tr.typ(path, offset, opElem, -1, T.(hasElem).Elem())
 
@@ -574,7 +591,7 @@ func (p *pkgIndex) emitPathSegment(parent uint32, op byte, index int) uint32 {
 	p.data = binary.AppendUvarint(p.data, uint64(parent))
 	p.data = append(p.data, op)
 	switch op {
-	case opAt, opField, opMethod, opTypeParam, opRecvTypeParam:
+	case opAt, opField, opMethod, opTypeParam, opRecvTypeParam, opVariant, opPayload:
 		p.data = binary.AppendUvarint(p.data, uint64(index))
 	}
 	return off
@@ -597,7 +614,7 @@ func (p *pkgIndex) path(offset uint32) Path {
 
 		// The [AFMTr] operators have a numeric operand.
 		switch op {
-		case opAt, opField, opMethod, opTypeParam, opRecvTypeParam:
+		case opAt, opField, opMethod, opTypeParam, opRecvTypeParam, opVariant, opPayload:
 			val, n := binary.Uvarint(p.data[offset:])
 			offset += uint32(n)
 			elems = append(elems, strconv.Itoa(int(val)))
@@ -781,7 +798,7 @@ func Object(pkg *types.Package, p Path) (types.Object, error) {
 		// Codes [AFMTr] have an integer operand.
 		var index int
 		switch code {
-		case opAt, opField, opMethod, opTypeParam, opRecvTypeParam:
+		case opAt, opField, opMethod, opTypeParam, opRecvTypeParam, opVariant, opPayload:
 			rest := strings.TrimLeft(suffix, "0123456789")
 			numerals := suffix[:len(suffix)-len(rest)]
 			suffix = rest
@@ -790,6 +807,9 @@ func Object(pkg *types.Package, p Path) (types.Object, error) {
 				return nil, fmt.Errorf("invalid path: bad numeric operand %q for code %q", numerals, code)
 			}
 			index = int(i)
+			if code == opPayload && suffix == "" {
+				return nil, fmt.Errorf("invalid path: enum payload requires an object-valued suffix")
+			}
 		case opObj:
 			// no operand
 		default:
@@ -901,6 +921,18 @@ func Object(pkg *types.Package, p Path) (types.Object, error) {
 			obj = tuple.At(index)
 			t = nil
 
+		case opVariant, opPayload:
+			enum := types.EnumOf(t)
+			if enum == nil || index >= enum.NumVariants() {
+				return nil, fmt.Errorf("invalid enum variant index %d for %s", index, t)
+			}
+			variant := enum.Variant(index)
+			if code == opVariant {
+				obj, t = variant.Object(), nil
+			} else {
+				t = enumPayloadStruct(variant)
+			}
+
 		case opField:
 			structType, ok := t.(*types.Struct)
 			if !ok {
@@ -953,4 +985,47 @@ func Object(pkg *types.Package, p Path) (types.Object, error) {
 	}
 
 	return obj, nil // success
+}
+
+// enumObjectPath also canonicalizes objects from generic enum instances.
+func enumObjectPath(pkg *types.Package, obj types.Object) (Path, bool) {
+	if obj.Parent() != nil {
+		return "", false
+	}
+	if variable, ok := obj.(*types.Var); ok && variable.Kind() == types.ParamVar {
+		return "", false // constructor parameters have their own signature paths
+	}
+	match := func(candidate types.Object) bool {
+		return candidate == obj || candidate.Pos().IsValid() && candidate.Pos() == obj.Pos() && candidate.Name() == obj.Name() && candidate.Pkg() == obj.Pkg()
+	}
+	for _, name := range pkg.Scope().Names() {
+		owner, ok := pkg.Scope().Lookup(name).(*types.TypeName)
+		if !ok {
+			continue
+		}
+		enum := types.EnumOf(owner.Type())
+		if enum == nil {
+			continue
+		}
+		for i := 0; i < enum.NumVariants(); i++ {
+			variant := enum.Variant(i)
+			if match(variant.Object()) {
+				return Path(fmt.Sprintf("%s.V%d", name, i)), true
+			}
+			for j := 0; j < variant.NumFields(); j++ {
+				if match(variant.Field(j)) {
+					return Path(fmt.Sprintf("%s.B%dF%d", name, i, j)), true
+				}
+			}
+		}
+	}
+	return "", false
+}
+
+func enumPayloadStruct(variant *types.EnumVariant) *types.Struct {
+	fields := make([]*types.Var, variant.NumFields())
+	for i := range fields {
+		fields[i] = variant.Field(i)
+	}
+	return types.NewStruct(fields, nil)
 }

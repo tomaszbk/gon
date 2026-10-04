@@ -378,6 +378,40 @@ func (r *reader) doTyp() (res types.Type) {
 		return types.NewSlice(r.typ())
 	case pkgbits.TypeStruct:
 		return r.structType()
+	case pkgbits.TypeOptional:
+		return types.NewOptional(r.typ())
+	case pkgbits.TypeEnum:
+		variants := make([]*types.EnumVariant, r.Len())
+		defaultIndex := r.Len()
+		for i := range variants {
+			pos := r.pos()
+			pkg, name, record := r.pkg(), r.String(), r.Bool()
+			fields := make([]*types.Var, r.Len())
+			for j := range fields {
+				pos, pkg, name := r.pos(), r.pkg(), r.String()
+				fields[j] = types.NewField(pos, pkg, name, r.typ(), false)
+			}
+			variants[i] = types.NewEnumVariantAt(pos, pkg, name, fields, record)
+		}
+		return types.NewEnum(variants, defaultIndex)
+	case pkgbits.TypeCanonicalEnum:
+		name := r.String()
+		targs := make([]types.Type, r.Len())
+		for i := range targs {
+			targs[i] = r.typ()
+		}
+		obj := types.Universe.Lookup(name)
+		if obj == nil || name != "Result" {
+			panic("invalid canonical enum in export data")
+		}
+		if len(targs) == 0 {
+			return obj.Type()
+		}
+		typ, err := types.Instantiate(r.p.ctxt, obj.Type(), targs, false)
+		if err != nil {
+			panic(err)
+		}
+		return typ
 	case pkgbits.TypeInterface:
 		return r.interfaceType()
 	case pkgbits.TypeUnion:

@@ -361,6 +361,26 @@ func tconv2(b *bytes.Buffer, t *Type, verb rune, mode fmtMode, visited map[*Type
 	visited[t] = b.Len()
 	defer delete(visited, t)
 
+	if t.IsOptional() && t.Sym() == nil {
+		elem := t.Field(2).Type.Field(0).Type
+		parens := elem.IsOptional() && elem.Sym() == nil
+		if elem.Sym() == nil {
+			switch elem.Kind() {
+			case TPTR, TARRAY, TSLICE, TMAP, TCHAN, TFUNC:
+				parens = true
+			}
+		}
+		if parens {
+			b.WriteByte('(')
+		}
+		tconv2(b, elem, 'v', mode, visited)
+		if parens {
+			b.WriteByte(')')
+		}
+		b.WriteByte('?')
+		return
+	}
+
 	switch t.Kind() {
 	case TPTR:
 		b.WriteByte('*')

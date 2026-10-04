@@ -234,7 +234,7 @@ func reflectKind(t types.Type) reflect.Kind {
 		return reflect.Pointer
 	case *types.Slice:
 		return reflect.Slice
-	case *types.Struct:
+	case *types.Struct, *types.Optional:
 		return reflect.Struct
 	}
 	panic(fmt.Sprint("unexpected type: ", t))

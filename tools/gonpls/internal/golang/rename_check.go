@@ -100,7 +100,9 @@ func (r *renamer) check(from types.Object) {
 	r.objsToUpdate[from] = true
 
 	// NB: order of conditions is important.
-	if from_, ok := from.(*types.PkgName); ok {
+	if owner := enumObjectOwnerInPackage(r.pkg, from); owner != nil {
+		r.checkEnumObject(from, owner)
+	} else if from_, ok := from.(*types.PkgName); ok {
 		r.checkInFileBlock(from_)
 	} else if from_, ok := from.(*types.Label); ok {
 		r.checkLabel(from_)
@@ -108,6 +110,26 @@ func (r *renamer) check(from types.Object) {
 		r.checkInPackageBlock(from)
 	} else if v, ok := from.(*types.Var); ok && v.IsField() {
 		r.checkStructField(v)
+	} else if v, ok := from.(*types.Var); ok && v.Kind() == types.ParamVar {
+		// Parameter names are part of the static named-call contract, even
+		// for signatures without a function body or lexical scope.
+		for _, tv := range r.pkg.TypesInfo().Types {
+			if sig, ok := tv.Type.(*types.Signature); ok {
+				contains := false
+				for param := range sig.Params().Variables() {
+					contains = contains || param == v
+				}
+				if contains {
+					for param := range sig.Params().Variables() {
+						if param != v && param.Name() == r.to {
+							r.errorf(v.Pos(), "renaming parameter %q to %q would duplicate a signature name", v.Name(), r.to)
+							return
+						}
+					}
+				}
+			}
+		}
+		r.checkInLexicalScope(from)
 	} else if f, ok := from.(*types.Func); ok && recv(f) != nil {
 		r.checkMethod(f)
 	} else if isLocal(from) {
@@ -355,6 +377,9 @@ func forEachLexicalRef(pkg *cache.Package, obj types.Object, fn func(id *ast.Ide
 		}
 		switch n := cur.Node().(type) {
 		case *ast.Ident:
+			if cur.ParentEdgeKind() == edge.CallExpr_ArgNames {
+				return true // a named label resolves through the signature
+			}
 			if pkg.TypesInfo().Uses[n] == obj {
 				block := typesinternal.EnclosingScope(pkg.TypesInfo(), cur)
 				if !fn(n, block) {

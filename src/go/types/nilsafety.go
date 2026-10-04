@@ -7,15 +7,18 @@ import (
 )
 
 func isTargetExpr(e ast.Expr) bool {
+	if isOptionContextExpr(e) {
+		return true
+	}
 	switch e := e.(type) {
 	case *ast.LambdaExpr, *ast.SafeNavExpr:
 		return true
 	case *ast.BinaryExpr:
 		return e.Op == token.COALESCE
 	case *ast.ParenExpr:
-		return isNilTargetExpr(e.X) || isCondExpr(e)
+		return isNilTargetExpr(e.X) || isCondExpr(e) || isMatchExpr(e)
 	}
-	return isCondExpr(e)
+	return isCondExpr(e) || isMatchExpr(e)
 }
 
 func isNilTargetExpr(e ast.Expr) bool {
@@ -37,6 +40,25 @@ func (check *Checker) nilGuard(x *operand, e *ast.NilGuardExpr) {
 	}
 	check.expr(nil, x, e.X)
 	if x.isValid() {
+		if IsOptional(x.typ()) {
+			if check.nilLegacyGuardSeen {
+				check.error(e, InvalidNilSafety, "mixed Option and nil navigation requires an explicit boundary")
+				x.invalidate()
+				x.expr = e
+				return
+			}
+			check.nilOptionGuardSeen = true
+			x.typ_ = canonicalPayload(x.typ(), "$present")
+			x.mode_, x.expr = value, e
+			return
+		}
+		if check.nilOptionGuardSeen {
+			check.error(e, InvalidNilSafety, "mixed Option and nil navigation requires an explicit boundary")
+			x.invalidate()
+			x.expr = e
+			return
+		}
+		check.nilLegacyGuardSeen = true
 		ok := underIs(x.typ(), func(t Type) bool {
 			switch t.(type) {
 			case *Pointer, *Signature:
@@ -57,6 +79,9 @@ func (check *Checker) nilGuard(x *operand, e *ast.NilGuardExpr) {
 }
 
 func (check *Checker) safeNavExpr(T *target, x *operand, e *ast.SafeNavExpr, consume bool) exprKind {
+	previousOption, previousLegacy := check.nilOptionGuardSeen, check.nilLegacyGuardSeen
+	check.nilOptionGuardSeen, check.nilLegacyGuardSeen = false, false
+	defer func() { check.nilOptionGuardSeen, check.nilLegacyGuardSeen = previousOption, previousLegacy }()
 	check.nilGuardDepth++
 	kind := check.rawExpr(nil, x, e.X, false)
 	check.nilGuardDepth--
@@ -65,7 +90,17 @@ func (check *Checker) safeNavExpr(T *target, x *operand, e *ast.SafeNavExpr, con
 		x.expr = e
 		return kind
 	}
-	if !consume && (x.mode() == novalue || !hasNil(x.typ())) {
+	if check.nilOptionGuardSeen {
+		check.singleValue(x)
+		if !x.isValid() {
+			x.expr = e
+			return kind
+		}
+		if x.mode() != novalue {
+			x.typ_ = optionType(x.typ())
+		}
+	}
+	if !check.nilOptionGuardSeen && !consume && (x.mode() == novalue || !hasNil(x.typ())) {
 		check.errorf(e, InvalidNilSafety, "%s cannot be nil; use ?? to provide a value when it is absent", x)
 		x.invalidate()
 		x.expr = e
@@ -111,6 +146,11 @@ func (check *Checker) coalesceExpr(T *target, x *operand, e *ast.BinaryExpr) {
 	}
 	check.exclude(&a, 1<<novalue|1<<builtin|1<<typexpr)
 	check.singleValue(&a)
+	if a.isValid() && IsOptional(a.typ()) {
+		a.typ_ = canonicalPayload(a.typ(), "$present")
+		a.mode_ = value
+		guarded = true
+	}
 	if a.isValid() && (!guarded && !hasNil(a.typ()) || a.isNil()) {
 		check.errorf(e.X, InvalidNilSafety, "invalid operation: operator ?? not defined on %s", &a)
 		a.invalidate()
@@ -158,6 +198,13 @@ func (check *Checker) coalesceAssign(lhs, rhs ast.Expr) {
 	check.expr(nil, &a, lhs)
 	if !a.isValid() {
 		check.use(rhs)
+		return
+	}
+	if IsOptional(a.typ()) {
+		payload := canonicalPayload(a.typ(), "$present")
+		check.lhsVar(lhs)
+		check.expr(newTarget(payload, "Option coalescing assignment"), &b, rhs)
+		check.assignment(&b, payload, "Option coalescing assignment")
 		return
 	}
 	if !hasNil(a.typ()) {

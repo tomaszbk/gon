@@ -181,7 +181,7 @@ func (check *Checker) blockBranches(all *Scope, parent *block, lstmt *ast.Labele
 				valid := false
 				if t := b.enclosingTarget(name); t != nil {
 					switch t.Stmt.(type) {
-					case *ast.SwitchStmt, *ast.TypeSwitchStmt, *ast.SelectStmt, *ast.ForStmt, *ast.RangeStmt:
+					case *ast.MatchStmt, *ast.SwitchStmt, *ast.TypeSwitchStmt, *ast.SelectStmt, *ast.ForStmt, *ast.RangeStmt:
 						valid = true
 					}
 				}
@@ -238,6 +238,14 @@ func (check *Checker) blockBranches(all *Scope, parent *block, lstmt *ast.Labele
 
 		case *ast.CaseClause:
 			blockBranches(nil, s.Body)
+
+		case *ast.MatchStmt:
+			parent := &block{b, lstmt, nil}
+			for _, a := range s.Match.Arms {
+				if a.Body != nil {
+					fwdJumps = append(fwdJumps, check.blockBranches(all, parent, nil, a.Body.List)...)
+				}
+			}
 
 		case *ast.SwitchStmt:
 			stmtBranches(lstmt, s.Body)

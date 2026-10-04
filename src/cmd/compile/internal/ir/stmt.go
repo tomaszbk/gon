@@ -11,7 +11,8 @@ import (
 // A Decl is a declaration of a const, type, or var. (A declared func is a Func.)
 type Decl struct {
 	miniNode
-	X *Name // the thing being declared
+	X          *Name // the thing being declared
+	GonBinding bool  // implicit handler capture; not a source declaration statement
 }
 
 func NewDecl(pos src.XPos, op Op, x *Name) *Decl {
@@ -85,9 +86,10 @@ func (n *AssignListStmt) SetOp(op Op) {
 // If Def is true, the assignment is a :=.
 type AssignStmt struct {
 	miniStmt
-	X   Node
-	Def bool
-	Y   Node
+	X          Node
+	Def        bool
+	Y          Node
+	GonBinding bool // implicit handler capture; RHS still has full inlining cost
 }
 
 func NewAssignStmt(pos src.XPos, x, y Node) *AssignStmt {
@@ -125,7 +127,8 @@ func NewAssignOpStmt(pos src.XPos, asOp Op, x, y Node) *AssignOpStmt {
 // A BlockStmt is a block: { List }.
 type BlockStmt struct {
 	miniStmt
-	List Nodes
+	List        Nodes
+	GonLowering bool // administrative native Gon lowering; see InlinedCallExpr
 }
 
 func NewBlockStmt(pos src.XPos, list []Node) *BlockStmt {

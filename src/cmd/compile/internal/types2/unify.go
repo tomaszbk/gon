@@ -603,6 +603,11 @@ func (u *unifier) nify(x, y Type, mode unifyMode, p *ifacePair) (result bool) {
 			return u.nify(x.elem, y.elem, emode, p)
 		}
 
+	case *Optional:
+		if y, ok := y.(*Optional); ok {
+			return u.nify(x.elem, y.elem, emode, p)
+		}
+
 	case *Struct:
 		// Two struct types unify if they have the same sequence of fields,
 		// and if corresponding fields have the same names, their (field) types unify,

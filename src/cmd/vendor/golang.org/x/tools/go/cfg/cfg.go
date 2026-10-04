@@ -54,6 +54,7 @@ import (
 	"go/ast"
 	"go/format"
 	"go/token"
+	"go/types"
 )
 
 // A CFG represents the control-flow graph of a single function.
@@ -75,10 +76,10 @@ func (cfg *CFG) NoReturn() bool { return cfg.noreturn }
 // normal (jump) block; and two for a conditional (if) block.
 //
 // In a conditional block, the last entry in Nodes is the condition and always
-// an [ast.Expr], Succs[0] is the successor if the condition is true, and
+// an [ast.Expr] or [ast.MatchPattern], Succs[0] is the successor if the condition is true, and
 // Succs[1] is the successor if the condition is false.
 type Block struct {
-	Nodes   []ast.Node // statements, expressions, and ValueSpecs
+	Nodes   []ast.Node // statements, expressions, ValueSpecs, and MatchPatterns
 	Succs   []*Block   // successor nodes in the graph
 	Index   int32      // index within CFG.Blocks
 	Live    bool       // block is reachable from entry
@@ -123,6 +124,11 @@ const (
 	KindNilPresent      // guarded non-nil continuation
 	KindNilFallback     // fallback of ?? or ??=
 	KindNilDone         // continuation after nil handling
+	KindMatchTest       // pattern or guard of a match; Stmt may be MatchStmt
+	KindMatchArm        // selected match arm; Stmt may be MatchStmt
+	KindMatchDone       // continuation after match; Stmt may be MatchStmt
+	KindOptionAbsent    // absence propagation; Stmt=nil
+	KindOptionDone      // continuation after OptionalExpr; Stmt=nil
 )
 
 func (kind BlockKind) String() string {
@@ -155,6 +161,11 @@ func (kind BlockKind) String() string {
 		KindNilPresent:      "NilPresent",
 		KindNilFallback:     "NilFallback",
 		KindNilDone:         "NilDone",
+		KindMatchTest:       "MatchTest",
+		KindMatchArm:        "MatchArm",
+		KindMatchDone:       "MatchDone",
+		KindOptionAbsent:    "OptionAbsent",
+		KindOptionDone:      "OptionDone",
 	}[kind]
 }
 
@@ -167,7 +178,14 @@ func (kind BlockKind) String() string {
 // following such calls.  The builder calls mayReturn only for a
 // CallExpr beneath an ExprStmt.
 func New(body *ast.BlockStmt, mayReturn func(*ast.CallExpr) bool) *CFG {
+	return NewWithTypes(body, mayReturn, nil)
+}
+
+// NewWithTypes is like New, with type information to distinguish optional
+// type notation from runtime Option propagation.
+func NewWithTypes(body *ast.BlockStmt, mayReturn func(*ast.CallExpr) bool, info *types.Info) *CFG {
 	b := builder{
+		info:      info,
 		mayReturn: mayReturn,
 	}
 	b.current = b.newBlock(KindBody, body)

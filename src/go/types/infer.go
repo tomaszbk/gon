@@ -169,6 +169,9 @@ func (check *Checker) infer(posn positioner, tparams []*TypeParam, targs []Type,
 	}
 
 	for i, arg := range args {
+		if check.deferredOptionContexts[arg.expr] || IsOptional(params.At(i).typ) && !IsOptional(arg.typ()) {
+			continue
+		}
 		if e, ok := arg.expr.(*ast.LambdaExpr); ok && check.lambdaTypes[e] == nil {
 			pending[i] = e
 			continue
@@ -341,7 +344,7 @@ func (check *Checker) infer(posn positioner, tparams []*TypeParam, targs []Type,
 				core = subst(core)
 			}
 			fsig, _ := core.(*Signature)
-			if fsig == nil || unknown(fsig.params) || e.Block != nil && unknown(fsig.results) {
+			if fsig == nil || unknown(fsig.params) || (e.Block != nil || lambdaNeedsOptionContext(e, fsig)) && unknown(fsig.results) {
 				continue
 			}
 			if len(e.Params) != fsig.params.Len() {
@@ -394,7 +397,7 @@ func (check *Checker) infer(posn positioner, tparams []*TypeParam, targs []Type,
 					continue
 				}
 				for _, tp := range tparams {
-					if u.at(tp) == nil && (isParameterized([]*TypeParam{tp}, subst(sig.params)) || e.Block != nil && isParameterized([]*TypeParam{tp}, subst(sig.results))) {
+					if u.at(tp) == nil && (isParameterized([]*TypeParam{tp}, subst(sig.params)) || (e.Block != nil || lambdaNeedsOptionContext(e, sig)) && isParameterized([]*TypeParam{tp}, subst(sig.results))) {
 						needed[tp] = true
 					}
 				}
@@ -765,6 +768,9 @@ func (w *tpWalker) isParameterized(typ Type) (res bool) {
 	case *Slice:
 		return w.isParameterized(t.elem)
 
+	case *Optional:
+		return w.isParameterized(t.elem)
+
 	case *Struct:
 		return w.varList(t.fields)
 
@@ -919,6 +925,9 @@ func (w *cycleFinder) typ(typ Type) {
 		w.typ(t.elem)
 
 	case *Slice:
+		w.typ(t.elem)
+
+	case *Optional:
 		w.typ(t.elem)
 
 	case *Struct:

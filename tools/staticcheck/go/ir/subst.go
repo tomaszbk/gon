@@ -126,6 +126,12 @@ func (subst *subster) typ(t types.Type) (res types.Type) {
 	case *types.Tuple:
 		return subst.tuple(t)
 
+	case *types.Optional:
+		if elem := subst.typ(t.Elem()); elem != t.Elem() {
+			return types.NewOptional(elem)
+		}
+		return t
+
 	case *types.Struct:
 		return subst.struct_(t)
 

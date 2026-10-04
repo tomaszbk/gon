@@ -33,7 +33,7 @@ func TestGonTokens(t *testing.T) {
 	if TILDE != 88 || IDENT != 4 || ADD != 12 || VAR != 85 {
 		t.Fatal("legacy token values changed")
 	}
-	for _, tok := range []Token{FATARROW, SAFE_PERIOD, SAFE_LPAREN, COALESCE, COALESCE_ASSIGN} {
+	for _, tok := range []Token{FATARROW, SAFE_PERIOD, SAFE_LPAREN, COALESCE, COALESCE_ASSIGN, QUESTION} {
 		if !tok.IsOperator() || tok.IsKeyword() || tok.IsLiteral() {
 			t.Errorf("token classification: %v", tok)
 		}

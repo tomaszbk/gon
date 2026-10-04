@@ -1,0 +1,45 @@
+=== RUN   TestPropagation
+--- PASS: TestPropagation (0.00s)
+=== RUN   TestHandler
+--- PASS: TestHandler (0.00s)
+=== RUN   TestConditionalLaziness
+--- PASS: TestConditionalLaziness (0.00s)
+=== RUN   TestLambdaCapture
+--- PASS: TestLambdaCapture (0.00s)
+=== RUN   TestSafeField
+--- PASS: TestSafeField (0.00s)
+=== RUN   TestSafeCall
+--- PASS: TestSafeCall (0.00s)
+=== RUN   TestCoalescingAssignment
+--- PASS: TestCoalescingAssignment (0.00s)
+=== RUN   TestPipeline
+=== RUN   TestPipeline/present
+=== RUN   TestPipeline/absent
+=== RUN   TestPipeline/zero_factor
+=== RUN   TestPipeline/zero_callback
+=== RUN   TestPipeline/parse_failure
+=== RUN   TestPipeline/late_failure
+--- PASS: TestPipeline (0.00s)
+    --- PASS: TestPipeline/present (0.00s)
+    --- PASS: TestPipeline/absent (0.00s)
+    --- PASS: TestPipeline/zero_factor (0.00s)
+    --- PASS: TestPipeline/zero_callback (0.00s)
+    --- PASS: TestPipeline/parse_failure (0.00s)
+    --- PASS: TestPipeline/late_failure (0.00s)
+=== RUN   TestBatchCoverage
+--- PASS: TestBatchCoverage (0.00s)
+=== RUN   TestEnumConstructionAndCopies
+--- PASS: TestEnumConstructionAndCopies (0.00s)
+=== RUN   TestMatchingGuardsAndBodies
+--- PASS: TestMatchingGuardsAndBodies (0.00s)
+=== RUN   TestOptionPresencePropagationAndDefaults
+--- PASS: TestOptionPresencePropagationAndDefaults (0.00s)
+=== RUN   TestOptionAssignment
+--- PASS: TestOptionAssignment (0.00s)
+=== RUN   TestResultVariantsPropagationAndHandlers
+--- PASS: TestResultVariantsPropagationAndHandlers (0.00s)
+=== RUN   TestNamedWrittenOrder
+--- PASS: TestNamedWrittenOrder (0.00s)
+=== RUN   TestRetainedPointerGC
+--- PASS: TestRetainedPointerGC (0.00s)
+PASS

@@ -521,6 +521,39 @@ func visitExpr(expr ast.Expr, f refVisitor) {
 		visitExpr(n.X, f)
 	case *ast.SafeNavExpr:
 		visitExpr(n.X, f)
+	case *ast.OptionalExpr:
+		visitExpr(n.X, f)
+	case *ast.ContextualVariantExpr:
+		for _, arg := range n.Args {
+			visitExpr(arg, f)
+		}
+	case *ast.EnumType:
+		for _, variant := range n.Variants {
+			if variant.Payload != nil {
+				visitFieldList(variant.Payload, f)
+			}
+		}
+	case *ast.MatchExpr:
+		visitExpr(n.Tag, f)
+		for _, arm := range n.Arms {
+			if arm.Value != nil {
+				bound := make(map[string]bool)
+				if arm.Pattern != nil {
+					for node := range ast.Preorder(arm.Pattern) {
+						if pattern, ok := node.(*ast.MatchPattern); ok {
+							if id, ok := pattern.Value.(*ast.Ident); ok && id.Name != "_" && id.Name != "true" && id.Name != "false" && id.Name != "nil" {
+								bound[id.Name] = true
+							}
+						}
+					}
+				}
+				visitExpr(arm.Value, func(name, sel string) {
+					if !bound[name] {
+						f(name, sel)
+					}
+				})
+			}
+		}
 	case *ast.ErrorExpr:
 		visitExpr(n.X, f) // the handler cannot determine successful result types
 

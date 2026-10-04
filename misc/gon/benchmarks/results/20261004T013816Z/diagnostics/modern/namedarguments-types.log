@@ -1,0 +1,128 @@
+{"Time":"2026-10-03T22:46:26.450759-03:00","Action":"start","Package":"cmd/compile/internal/types2"}
+{"Time":"2026-10-03T22:46:26.620664-03:00","Action":"start","Package":"go/types"}
+{"Time":"2026-10-03T22:46:26.672669-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments"}
+{"Time":"2026-10-03T22:46:26.672711-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments","Output":"=== RUN   TestNamedArguments\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.67275-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(b:_\"b\",_a:_1)"}
+{"Time":"2026-10-03T22:46:26.672754-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(b:_\"b\",_a:_1)","Output":"=== RUN   TestNamedArguments/f(b:_\"b\",_a:_1)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673218-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(b:_\"b\",_a:_1)","Output":"--- PASS: TestNamedArguments/f(b:_\"b\",_a:_1) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673234-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(b:_\"b\",_a:_1)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.673251-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(1,_b:_\"b\")"}
+{"Time":"2026-10-03T22:46:26.673255-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(1,_b:_\"b\")","Output":"=== RUN   TestNamedArguments/f(1,_b:_\"b\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673263-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(1,_b:_\"b\")","Output":"--- PASS: TestNamedArguments/f(1,_b:_\"b\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673266-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(1,_b:_\"b\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.673269-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)"}
+{"Time":"2026-10-03T22:46:26.673273-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)","Output":"=== RUN   TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.67334-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)","Output":"--- PASS: TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673346-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.67335-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\")"}
+{"Time":"2026-10-03T22:46:26.673353-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\")","Output":"=== RUN   TestNamedArguments/v(prefix:_\"p\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673361-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\")","Output":"--- PASS: TestNamedArguments/v(prefix:_\"p\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673365-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.673368-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/generic(second:_[]int{1},_first:_2)"}
+{"Time":"2026-10-03T22:46:26.673371-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/generic(second:_[]int{1},_first:_2)","Output":"=== RUN   TestNamedArguments/generic(second:_[]int{1},_first:_2)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.67341-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/generic(second:_[]int{1},_first:_2)","Output":"--- PASS: TestNamedArguments/generic(second:_[]int{1},_first:_2) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673413-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/generic(second:_[]int{1},_first:_2)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.673417-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1,_a:_2)"}
+{"Time":"2026-10-03T22:46:26.673421-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1,_a:_2)","Output":"=== RUN   TestNamedArguments/f(a:_1,_a:_2)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.67344-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1,_a:_2)","Output":"--- PASS: TestNamedArguments/f(a:_1,_a:_2) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673444-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1,_a:_2)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.673447-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1)"}
+{"Time":"2026-10-03T22:46:26.67345-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1)","Output":"=== RUN   TestNamedArguments/f(a:_1)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673458-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1)","Output":"--- PASS: TestNamedArguments/f(a:_1) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.67346-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.673464-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(c:_1,_b:_\"b\")"}
+{"Time":"2026-10-03T22:46:26.673466-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(c:_1,_b:_\"b\")","Output":"=== RUN   TestNamedArguments/f(c:_1,_b:_\"b\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.67348-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(c:_1,_b:_\"b\")","Output":"--- PASS: TestNamedArguments/f(c:_1,_b:_\"b\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673484-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(c:_1,_b:_\"b\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.673487-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1,_\"b\")"}
+{"Time":"2026-10-03T22:46:26.673489-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1,_\"b\")","Output":"=== RUN   TestNamedArguments/f(a:_1,_\"b\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.6735-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1,_\"b\")","Output":"--- PASS: TestNamedArguments/f(a:_1,_\"b\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673503-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_1,_\"b\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.673506-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_1)"}
+{"Time":"2026-10-03T22:46:26.673508-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_1)","Output":"=== RUN   TestNamedArguments/v(prefix:_\"p\",_values:_1)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673529-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_1)","Output":"--- PASS: TestNamedArguments/v(prefix:_\"p\",_values:_1) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673533-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_1)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.67354-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")"}
+{"Time":"2026-10-03T22:46:26.673543-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")","Output":"=== RUN   TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673562-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")","Output":"--- PASS: TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673569-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.673571-03:00","Action":"run","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")"}
+{"Time":"2026-10-03T22:46:26.673574-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")","Output":"=== RUN   TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673609-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")","Output":"--- PASS: TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673613-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.673615-03:00","Action":"output","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments","Output":"--- PASS: TestNamedArguments (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.673619-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Test":"TestNamedArguments","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.673652-03:00","Action":"output","Package":"cmd/compile/internal/types2","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.674018-03:00","Action":"output","Package":"cmd/compile/internal/types2","Output":"ok  \tcmd/compile/internal/types2\t0.223s\n"}
+{"Time":"2026-10-03T22:46:26.674025-03:00","Action":"pass","Package":"cmd/compile/internal/types2","Elapsed":0.223}
+{"Time":"2026-10-03T22:46:26.878131-03:00","Action":"run","Package":"go/types","Test":"TestGenerate"}
+{"Time":"2026-10-03T22:46:26.878179-03:00","Action":"output","Package":"go/types","Test":"TestGenerate","Output":"=== RUN   TestGenerate\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.932417-03:00","Action":"output","Package":"go/types","Test":"TestGenerate","Output":"--- PASS: TestGenerate (0.05s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.932445-03:00","Action":"pass","Package":"go/types","Test":"TestGenerate","Elapsed":0.05}
+{"Time":"2026-10-03T22:46:26.932497-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments"}
+{"Time":"2026-10-03T22:46:26.932507-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments","Output":"=== RUN   TestNamedArguments\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.932523-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/f(b:_\"b\",_a:_1)"}
+{"Time":"2026-10-03T22:46:26.932527-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(b:_\"b\",_a:_1)","Output":"=== RUN   TestNamedArguments/f(b:_\"b\",_a:_1)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.932906-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(b:_\"b\",_a:_1)","Output":"--- PASS: TestNamedArguments/f(b:_\"b\",_a:_1) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.932926-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/f(b:_\"b\",_a:_1)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.93293-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/f(1,_b:_\"b\")"}
+{"Time":"2026-10-03T22:46:26.932934-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(1,_b:_\"b\")","Output":"=== RUN   TestNamedArguments/f(1,_b:_\"b\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.932939-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(1,_b:_\"b\")","Output":"--- PASS: TestNamedArguments/f(1,_b:_\"b\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.932943-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/f(1,_b:_\"b\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.932946-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)"}
+{"Time":"2026-10-03T22:46:26.93295-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)","Output":"=== RUN   TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.932995-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)","Output":"--- PASS: TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933005-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\")"}
+{"Time":"2026-10-03T22:46:26.933009-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\")","Output":"=== RUN   TestNamedArguments/v(prefix:_\"p\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933014-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\")","Output":"--- PASS: TestNamedArguments/v(prefix:_\"p\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933018-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933022-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/generic(second:_[]int{1},_first:_2)"}
+{"Time":"2026-10-03T22:46:26.933025-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/generic(second:_[]int{1},_first:_2)","Output":"=== RUN   TestNamedArguments/generic(second:_[]int{1},_first:_2)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933075-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/generic(second:_[]int{1},_first:_2)","Output":"--- PASS: TestNamedArguments/generic(second:_[]int{1},_first:_2) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.93308-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/generic(second:_[]int{1},_first:_2)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933085-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/f(a:_1,_a:_2)"}
+{"Time":"2026-10-03T22:46:26.933089-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(a:_1,_a:_2)","Output":"=== RUN   TestNamedArguments/f(a:_1,_a:_2)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933123-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(a:_1,_a:_2)","Output":"--- PASS: TestNamedArguments/f(a:_1,_a:_2) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933128-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/f(a:_1,_a:_2)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933132-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/f(a:_1)"}
+{"Time":"2026-10-03T22:46:26.933136-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(a:_1)","Output":"=== RUN   TestNamedArguments/f(a:_1)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933148-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(a:_1)","Output":"--- PASS: TestNamedArguments/f(a:_1) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933152-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/f(a:_1)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933156-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/f(c:_1,_b:_\"b\")"}
+{"Time":"2026-10-03T22:46:26.93316-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(c:_1,_b:_\"b\")","Output":"=== RUN   TestNamedArguments/f(c:_1,_b:_\"b\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933168-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(c:_1,_b:_\"b\")","Output":"--- PASS: TestNamedArguments/f(c:_1,_b:_\"b\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933172-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/f(c:_1,_b:_\"b\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933176-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/f(a:_1,_\"b\")"}
+{"Time":"2026-10-03T22:46:26.933179-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(a:_1,_\"b\")","Output":"=== RUN   TestNamedArguments/f(a:_1,_\"b\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933184-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(a:_1,_\"b\")","Output":"--- PASS: TestNamedArguments/f(a:_1,_\"b\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933187-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/f(a:_1,_\"b\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933191-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_1)"}
+{"Time":"2026-10-03T22:46:26.933195-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_1)","Output":"=== RUN   TestNamedArguments/v(prefix:_\"p\",_values:_1)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933206-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_1)","Output":"--- PASS: TestNamedArguments/v(prefix:_\"p\",_values:_1) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.93321-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/v(prefix:_\"p\",_values:_1)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933214-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/int(value:_1)"}
+{"Time":"2026-10-03T22:46:26.933218-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/int(value:_1)","Output":"=== RUN   TestNamedArguments/int(value:_1)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933222-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/int(value:_1)","Output":"--- PASS: TestNamedArguments/int(value:_1) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933227-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/int(value:_1)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.93323-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/len(value:_\"x\")"}
+{"Time":"2026-10-03T22:46:26.933233-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/len(value:_\"x\")","Output":"=== RUN   TestNamedArguments/len(value:_\"x\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933243-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/len(value:_\"x\")","Output":"--- PASS: TestNamedArguments/len(value:_\"x\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933247-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/len(value:_\"x\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933251-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")"}
+{"Time":"2026-10-03T22:46:26.933254-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")","Output":"=== RUN   TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933269-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")","Output":"--- PASS: TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933274-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933278-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/func(a_int,_b_string)_{}(b:_\"b\",_a:_1)"}
+{"Time":"2026-10-03T22:46:26.933281-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/func(a_int,_b_string)_{}(b:_\"b\",_a:_1)","Output":"=== RUN   TestNamedArguments/func(a_int,_b_string)_{}(b:_\"b\",_a:_1)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933307-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/func(a_int,_b_string)_{}(b:_\"b\",_a:_1)","Output":"--- PASS: TestNamedArguments/func(a_int,_b_string)_{}(b:_\"b\",_a:_1) (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933321-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/func(a_int,_b_string)_{}(b:_\"b\",_a:_1)","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933329-03:00","Action":"run","Package":"go/types","Test":"TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")"}
+{"Time":"2026-10-03T22:46:26.933332-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")","Output":"=== RUN   TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933353-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")","Output":"--- PASS: TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\") (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.93336-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933365-03:00","Action":"output","Package":"go/types","Test":"TestNamedArguments","Output":"--- PASS: TestNamedArguments (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.93337-03:00","Action":"pass","Package":"go/types","Test":"TestNamedArguments","Elapsed":0}
+{"Time":"2026-10-03T22:46:26.933397-03:00","Action":"output","Package":"go/types","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:26.933971-03:00","Action":"output","Package":"go/types","Output":"ok  \tgo/types\t0.313s\n"}
+{"Time":"2026-10-03T22:46:26.933987-03:00","Action":"pass","Package":"go/types","Elapsed":0.313}

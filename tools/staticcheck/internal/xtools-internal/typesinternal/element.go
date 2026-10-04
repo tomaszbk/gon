@@ -110,6 +110,9 @@ func ForEachElement(rtypes *typeutil.Map, msets *typeutil.MethodSetCache, T type
 			// so set 'skip' flag during recursion.
 			visit(T.Underlying(), true) // skip the unnamed type
 
+		case *types.Optional:
+			visit(T.Elem(), true)
+
 		case *types.Array:
 			visit(T.Elem(), false)
 

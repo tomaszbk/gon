@@ -42,17 +42,29 @@ jobs:
         working-directory: src
         run: >-
           env -u GOROOT GO_ERROR_HANDLING_BASELINE="$BASELINE" ../gon/bin/gon test -short -count=1
-          runtime cmd/cgo/internal/test cmd/cgo/internal/testerrors cmd/cgo/internal/testerrorhandling cmd/cover
+          runtime cmd/cgo/internal/test cmd/cgo/internal/testerrors cmd/cgo/internal/testerrorhandling
+          cmd/cgo/internal/testconditional cmd/cover
       - name: Language tests, with the legacy programs also run by upstream Go
         working-directory: src
         run: >-
           env -u GOROOT GO_ERROR_HANDLING_BASELINE="$BASELINE" ../gon/bin/gon test -count=1
-          cmd/internal/testdir -run '^Test/(errorhandling|conditional|lambda|nullsafety)\.go$'
+          cmd/internal/testdir -run '^Test/(errorhandling|conditional|lambda|nullsafety|namedarguments|enums|matching|optionresult|optionsyntax)\.go$'
       - name: Syntax modernization analyzers
         working-directory: tools/x-tools
         run: ../../gon/bin/gon test -count=1 ./go/analysis/passes/gonmodernize
       - name: Syntax modernization CLI, editor and executable pairs
         run: python3 misc/gon/test_fix.py
+      - name: Named arguments and alternatives editor regressions
+        run: |
+          python3 misc/gon/test_namedarguments.py
+          python3 misc/gon/test_alternatives.py
+          python3 misc/gon/test_simplification.py
+
+      - name: README examples and benchmark equivalence
+        run: |
+          gon/bin/gon test cmd/compile/internal/inline -run '^TestGon' -count=1
+          python3 misc/gon/test_readme.py
+          python3 misc/gon/benchmark.py --correctness-only
 
   linux-riscv64:
     runs-on: ubuntu-latest
@@ -67,12 +79,16 @@ jobs:
         with:
           platforms: riscv64
       - name: Build Gon
-        run: cd src && env -u GOROOT GOROOT_BOOTSTRAP="$(go env GOROOT)" ./make.bash
-      - name: Error-handling pair
+        run: |
+          echo "GON_BASELINE_GO=$(go env GOROOT)/bin/go" >> "$GITHUB_ENV"
+          cd src && env -u GOROOT GOROOT_BOOTSTRAP="$(go env GOROOT)" ./make.bash
+      - name: Build public Gon tools
+        run: python3 misc/gon/build.py
+      - name: All feature executable pairs
         run: misc/gon/cross_pair.sh linux riscv64
       - name: Standard library tests
         working-directory: src
-        run: env -u GOROOT GOARCH=riscv64 ../bin/go test -short -count=1 errors strconv sort math/big
+        run: env -u GOROOT GOARCH=riscv64 ../gon/bin/gon test -short -count=1 errors strconv sort math/big
 
   wasip1-wasm:
     runs-on: ubuntu-latest
@@ -85,12 +101,16 @@ jobs:
           cache: false
       - uses: bytecodealliance/actions/wasmtime/setup@v1
       - name: Build Gon
-        run: cd src && env -u GOROOT GOROOT_BOOTSTRAP="$(go env GOROOT)" ./make.bash
-      - name: Error-handling pair
+        run: |
+          echo "GON_BASELINE_GO=$(go env GOROOT)/bin/go" >> "$GITHUB_ENV"
+          cd src && env -u GOROOT GOROOT_BOOTSTRAP="$(go env GOROOT)" ./make.bash
+      - name: Build public Gon tools
+        run: python3 misc/gon/build.py
+      - name: All feature executable pairs
         run: misc/gon/cross_pair.sh wasip1 wasm
       - name: Standard library tests
         working-directory: src
-        run: env -u GOROOT PATH="$PWD/../lib/wasm:$PATH" GOOS=wasip1 GOARCH=wasm ../bin/go test -short -count=1 errors strconv sort
+        run: env -u GOROOT PATH="$PWD/../lib/wasm:$PATH" GOOS=wasip1 GOARCH=wasm ../gon/bin/gon test -short -count=1 errors strconv sort
 
   windows-amd64:
     runs-on: windows-latest
@@ -114,20 +134,23 @@ jobs:
           cd src
           .\make.bat
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-      - name: Error-handling, cgo and coverage tests
-        working-directory: src
-        run: |
-          Remove-Item Env:GOROOT -ErrorAction SilentlyContinue
-          $env:GO_ERROR_HANDLING_BASELINE = $env:BASELINE
-          ..\bin\go.exe test -count=1 cmd/internal/testdir -run 'Test/errorhandling.go$'
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          ..\bin\go.exe test -short -count=1 cmd/cgo/internal/testerrorhandling cmd/cover
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-      - name: gon launcher and gonpls
+      - name: Build public Gon tools
         run: |
           Remove-Item Env:GOROOT -ErrorAction SilentlyContinue
           python misc/gon/build.py
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: All language harnesses, cgo and coverage tests
+        working-directory: src
+        run: |
+          Remove-Item Env:GOROOT -ErrorAction SilentlyContinue
+          $env:GO_ERROR_HANDLING_BASELINE = $env:BASELINE
+          ..\gon\bin\gon.exe test -count=1 cmd/internal/testdir -run '^Test/(errorhandling|conditional|lambda|nullsafety|namedarguments|enums|matching|optionresult|optionsyntax)\.go$'
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          ..\gon\bin\gon.exe test -short -count=1 cmd/cgo/internal/testerrorhandling cmd/cgo/internal/testconditional cmd/cover
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: gon launcher and gonpls
+        run: |
+          Remove-Item Env:GOROOT -ErrorAction SilentlyContinue
           gon\bin\gon.exe version
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           $legacy = gon\bin\gon.exe run test/errorhandling.dir/common.go test/errorhandling.dir/legacy.go

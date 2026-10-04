@@ -36,6 +36,8 @@ func StartPos(n Node) Pos {
 			m = n.Key
 		// case *FuncLit:
 		// case *ParenExpr:
+		case *OptionalExpr:
+			m = n.X
 		case *NilGuardExpr:
 			m = n.X
 		case *SafeNavExpr:
@@ -173,6 +175,54 @@ func EndPos(n Node) Pos {
 				continue
 			}
 			m = n.Type
+
+		case *ContextualVariantExpr:
+			if n.Rparen.IsKnown() {
+				return n.Rparen
+			}
+			m = n.Name
+		case *OptionalExpr:
+			return n.Question
+		case *EnumType:
+			return n.Rbrace
+		case *EnumVariant:
+			if n.Rdelim.IsKnown() {
+				return n.Rdelim
+			}
+			m = n.Name
+		case *MatchExpr:
+			return n.Rbrace
+		case *MatchStmt:
+			m = n.Match
+		case *MatchArm:
+			if n.Body != nil {
+				m = n.Body
+			} else if n.Value != nil {
+				m = n.Value
+			} else {
+				return n.Arrow
+			}
+		case *MatchPattern:
+			if n.Question.IsKnown() {
+				return n.Question
+			}
+			if n.Inner != nil && !n.Rparen.IsKnown() {
+				m = n.Inner
+				continue
+			}
+			if n.Rbrace.IsKnown() {
+				return n.Rbrace
+			}
+			if n.Rparen.IsKnown() {
+				return n.Rparen
+			}
+			if n.Value != nil {
+				m = n.Value
+			} else {
+				return n.Pos()
+			}
+		case *MatchField:
+			m = n.Pattern
 
 		// expressions
 		case *BadExpr:

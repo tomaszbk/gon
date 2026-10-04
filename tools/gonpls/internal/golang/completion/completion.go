@@ -470,6 +470,9 @@ type candidate struct {
 	// See comment in (*completer).selector for explanation.
 	obj types.Object
 
+	// enumVariant preserves record constructor syntax when formatting suggestions.
+	enumVariant *types.EnumVariant
+
 	// score is used to rank candidates.
 	score float64
 
@@ -735,6 +738,13 @@ func (c *completer) collectCompletions(ctx context.Context) error {
 		}
 	}
 
+	if c.matchPatternFields() {
+		return nil
+	}
+	if c.contextualVariants() {
+		return nil
+	}
+
 	// Struct literals are handled entirely separately.
 	if wantStructFieldCompletions(c.enclosingCompositeLiteral) {
 		// If we are definitely completing a struct field name, deep completions
@@ -753,6 +763,11 @@ func (c *completer) collectCompletions(ctx context.Context) error {
 	if c.emptySwitchStmt() {
 		// Empty switch statements only admit "default" and "case" keywords.
 		c.addKeywordItems(map[string]bool{}, highScore, CASE, DEFAULT)
+		return nil
+	}
+
+	labelOnly := c.namedArgumentLabels()
+	if labelOnly {
 		return nil
 	}
 
@@ -1342,6 +1357,16 @@ func (c *completer) selector(ctx context.Context, sel *ast.SelectorExpr) error {
 
 	// True selector?
 	if tv, ok := c.pkg.TypesInfo().Types[sel.X]; ok {
+		if tv.IsType() {
+			if enum := types.EnumOf(tv.Type); enum != nil {
+				for i := 0; i < enum.NumVariants(); i++ {
+					variant := enum.Variant(i)
+					if variant.Pkg() == c.pkg.Types() || variant.Pkg() == nil || variant.Object().Exported() {
+						c.deepState.enqueue(candidate{obj: variant.Object(), enumVariant: variant, score: stdScore})
+					}
+				}
+			}
+		}
 		c.methodsAndFields(tv.Type, tv.Addressable(), nil, c.deepState.enqueue)
 		if _, guarded := sel.X.(*ast.NilGuardExpr); !guarded {
 			c.addPostfixSnippetCandidates(ctx, sel)
@@ -1924,6 +1949,23 @@ func enclosingCompositeLiteral(path []ast.Node, pos token.Pos, info *types.Info)
 				cl:     n,
 				clType: typesinternal.Unpointer(tv.Type).Underlying(),
 			}
+			// Record constructors use the enum value type, but their keys
+			// select the declared payload fields rather than backing storage.
+			if sel, ok := n.Type.(*ast.SelectorExpr); ok {
+				if enum := types.EnumOf(info.TypeOf(sel.X)); enum != nil {
+					for i := 0; i < enum.NumVariants(); i++ {
+						variant := enum.Variant(i)
+						if variant.Name() == sel.Sel.Name && variant.IsRecord() {
+							fields := make([]*types.Var, variant.NumFields())
+							for j := range fields {
+								fields[j] = variant.Field(j)
+							}
+							clInfo.clType = types.NewStruct(fields, nil)
+							break
+						}
+					}
+				}
+			}
 
 			var (
 				expr    ast.Expr
@@ -2244,6 +2286,27 @@ func expectedCandidate(ctx context.Context, c *completer) (inf candidateInferenc
 Nodes:
 	for i, node := range c.path {
 		switch node := node.(type) {
+		case *ast.ContextualVariantExpr:
+			if c.pos <= node.Name.End() {
+				if typ := c.pkg.TypesInfo().TypeOf(node); types.IsOptional(typ) || types.IsCanonicalResult(typ) {
+					inf.objType = typ
+					return inf
+				}
+				continue
+			}
+			if typ := c.pkg.TypesInfo().TypeOf(node); types.IsOptional(typ) || types.IsCanonicalResult(typ) {
+				if variant := types.EnumStorageOf(typ).Lookup(node.Name.Name, nil); variant != nil && variant.NumFields() == 1 {
+					inf.objType = variant.Field(0).Type()
+					return inf
+				}
+			}
+			defer func() {
+				if types.IsOptional(inf.objType) || types.IsCanonicalResult(inf.objType) {
+					if variant := types.EnumStorageOf(inf.objType).Lookup(node.Name.Name, nil); variant != nil && variant.NumFields() == 1 {
+						inf.objType = variant.Field(0).Type()
+					}
+				}
+			}()
 		case *ast.LambdaExpr:
 			if node.Body != nil && c.pos >= node.Arrow {
 				if typ := c.pkg.TypesInfo().TypeOf(node); typ != nil {
@@ -2744,13 +2807,24 @@ func (c *completer) expectedCallParamType(inf candidateInference, node *ast.Call
 	}
 
 	exprIdx := exprAtPos(c.pos, node.Args)
+	named := false
+	if exprIdx < len(node.ArgNames) && node.ArgNames[exprIdx] != nil {
+		named = true
+		name := node.ArgNames[exprIdx].Name
+		for j := range numParams {
+			if sig.Params().At(j).Name() == name {
+				exprIdx = j
+				break
+			}
+		}
+	}
 
 	// If we have one or zero arg expressions, we may be
 	// completing to a function call that returns multiple
 	// values, in turn getting passed in to the surrounding
 	// call. Record the assignees so we can favor function
 	// calls that return matching values.
-	if len(node.Args) <= 1 && exprIdx == 0 {
+	if len(node.ArgNames) == 0 && len(node.Args) <= 1 && exprIdx == 0 {
 		for v := range sig.Params().Variables() {
 			inf.assignees = append(inf.assignees, v.Type())
 		}
@@ -2766,7 +2840,7 @@ func (c *completer) expectedCallParamType(inf candidateInference, node *ast.Call
 		inf.objType = sig.Params().At(exprIdx).Type()
 	}
 
-	if sig.Variadic() && exprIdx >= (numParams-1) {
+	if sig.Variadic() && exprIdx >= (numParams-1) && !named {
 		// If we are completing a variadic param, deslice the variadic type.
 		inf.objType = deslice(inf.objType)
 		// Record whether we are completing the initial variadic param.
@@ -3157,7 +3231,7 @@ func (c *completer) matchingCandidate(cand *candidate) bool {
 		return true
 	}
 
-	if isTypeName(cand.obj) {
+	if isTypeName(cand.obj) || c.enumRecordLiteralCandidate(cand) {
 		return c.matchingTypeName(cand)
 	} else if c.wantTypeName() {
 		// If we want a type, a non-type object never matches.
@@ -3334,6 +3408,15 @@ func considerTypeConversion(from, to types.Type, path []types.Object) bool {
 // typeMatches reports whether an object of candType makes a good
 // completion candidate given the expected type expType.
 func (ci *candidateInference) typeMatches(expType, candType types.Type) bool {
+	if types.IsOptional(expType) {
+		if assignableTo(candType, expType) {
+			return true
+		}
+		if basic, ok := candType.(*types.Basic); ok && basic.Kind() == types.UntypedNil {
+			return true
+		}
+		expType = types.OptionalOf(expType).Elem()
+	}
 	// Handle untyped values specially since AssignableTo gives false negatives
 	// for them (see https://golang.org/issue/32146).
 	if candBasic, ok := candType.Underlying().(*types.Basic); ok {

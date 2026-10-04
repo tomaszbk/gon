@@ -282,6 +282,21 @@ func (r *reader) doTyp() (res types2.Type) {
 		return r.signature(nil, nil, nil)
 	case pkgbits.TypeSlice:
 		return types2.NewSlice(r.typ())
+	case pkgbits.TypeOptional:
+		return types2.NewOptional(r.typ())
+	case pkgbits.TypeEnum:
+		return r.enumType()
+	case pkgbits.TypeCanonicalEnum:
+		name := r.String()
+		args := make([]types2.Type, r.Len())
+		for i := range args {
+			args[i] = r.typ()
+		}
+		instance, err := types2.Instantiate(nil, types2.Universe.Lookup(name).Type(), args, false)
+		if err != nil {
+			panic(err)
+		}
+		return instance
 	case pkgbits.TypeStruct:
 		return r.structType()
 	case pkgbits.TypeInterface:
@@ -674,4 +689,22 @@ func newAliasTypeName(aliases bool, pos syntax.Pos, pkg *types2.Package, name st
 	}
 	assert(len(tparams) == 0)
 	return types2.NewTypeName(pos, pkg, name, rhs)
+}
+
+func (r *reader) enumType() *types2.Struct {
+	n, defaultIndex := r.Len(), r.Len()
+	variants := make([]*types2.EnumVariant, n)
+	for i := range variants {
+		pos := r.pos()
+		pkg := r.pkg()
+		name := r.String()
+		record := r.Bool()
+		fields := make([]*types2.Var, r.Len())
+		for j := range fields {
+			p, owner, fieldName := r.pos(), r.pkg(), r.String()
+			fields[j] = types2.NewField(p, owner, fieldName, r.typ(), false)
+		}
+		variants[i] = types2.NewEnumVariantAt(pos, pkg, name, fields, record)
+	}
+	return types2.NewEnum(variants, defaultIndex)
 }

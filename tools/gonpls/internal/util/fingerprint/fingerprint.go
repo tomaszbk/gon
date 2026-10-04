@@ -73,6 +73,7 @@ func Matches(x, y Tree) bool {
 //      τ = IDENT                       -- named or basic type
 //        | (qual STRING IDENT)         -- qualified named type
 //        | (array INTEGER τ)
+//        | (optional τ)
 //        | (slice τ)
 //        | (ptr τ)
 //        | (chan IDENT τ)
@@ -118,6 +119,11 @@ func fingerprint(t types.Type) (string, bool) {
 
 		case *types.Array:
 			fmt.Fprintf(&buf, "(array %d ", t.Len())
+			print(t.Elem())
+			buf.WriteByte(')')
+
+		case *types.Optional:
+			buf.WriteString("(optional ")
 			print(t.Elem())
 			buf.WriteByte(')')
 

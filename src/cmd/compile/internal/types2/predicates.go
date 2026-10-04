@@ -169,6 +169,8 @@ func comparableType(T Type, dynamic bool, seen map[Type]bool) *typeError {
 	case *Pointer, *Chan:
 		// always comparable
 
+	case *Optional:
+		return comparableType(t.elem, dynamic, seen)
 	case *Struct:
 		for _, f := range t.fields {
 			if comparableType(f.typ, dynamic, seen) != nil {
@@ -275,6 +277,11 @@ func (c *comparer) identical(x, y Type, p *ifacePair) bool {
 	case *Slice:
 		// Two slice types are identical if they have identical element types.
 		if y, ok := y.(*Slice); ok {
+			return c.identical(x.elem, y.elem, p)
+		}
+
+	case *Optional:
+		if y, ok := y.(*Optional); ok {
 			return c.identical(x.elem, y.elem, p)
 		}
 

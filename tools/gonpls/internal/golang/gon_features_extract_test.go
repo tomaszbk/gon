@@ -19,6 +19,9 @@ func TestGonFeatureExtraction(t *testing.T) {
 		{"safe chain whole", `var p *S; return p?.V ?? 0`, `p?.V ?? 0`, "target and evaluation order"},
 		{"safe chain argument", `var p *S; return p?.M(touch(1)) ?? 0`, `touch(1)`, "safe-navigation chain"},
 		{"coalesce right operand", `var p *S; return p?.V ?? touch(1)`, `touch(1)`, "nil-coalescing operand"},
+		{"match whole", `return switch true { case true => touch(1); case false => 0 }`, `switch true { case true => touch(1); case false => 0 }`, "target and evaluation order"},
+		{"match arm", `return switch true { case true => touch(1); case false => 0 }`, `touch(1)`, "match arm expression"},
+		{"option whole", `func() Option[int]{ n:=Option[int].Some(1)?; return Option[int].Some(n) }();return 0`, `Option[int].Some(1)?`, "target and evaluation order"},
 		{"ordinary code", `return touch(1)`, `touch(1)`, ""},
 	} {
 		t.Run(test.name, func(t *testing.T) {

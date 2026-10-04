@@ -1,7 +1,10 @@
 package cfg
 
 import (
+	"go/ast"
+	"go/parser"
 	"go/token"
+	"go/types"
 	"testing"
 )
 
@@ -49,5 +52,36 @@ func TestGonNilAbsentPaths(t *testing.T) {
 	if len(entry.Succs) != 2 || entry.Succs[1].Kind != KindNilFallback ||
 		len(entry.Succs[0].Succs) != 2 || entry.Succs[0].Succs[1] != entry.Succs[1] {
 		t.Fatalf("both guarded dereferences must share the fallback\n%s", g.Format(token.NewFileSet()))
+	}
+}
+
+func TestGonOptionalTypeControlFlow(t *testing.T) {
+	const src = `package p
+func identity[T any](value T) T { return value }
+func f() { var value int?; _ = identity[int?](value); panic(0) }
+func g() int? { return (int)(1) }
+func h(value int?) int? { var x int? = (int)(value?); _ = x; panic(0) }
+`
+	fs := token.NewFileSet()
+	file, err := parser.ParseFile(fs, "p.go", src, parser.SkipObjectResolution)
+	if err != nil {
+		t.Fatal(err)
+	}
+	info := &types.Info{Types: map[ast.Expr]types.TypeAndValue{}, OptionalConversions: map[ast.Expr]types.Type{}}
+	if _, err := new(types.Config).Check("p", fs, []*ast.File{file}, info); err != nil {
+		t.Fatal(err)
+	}
+	for _, decl := range file.Decls[1:] {
+		fn := decl.(*ast.FuncDecl)
+		graph := NewWithTypes(fn.Body, func(call *ast.CallExpr) bool { return false }, info)
+		propagates := false
+		for _, block := range graph.Blocks {
+			if block.Kind == KindOptionAbsent {
+				propagates = true
+			}
+		}
+		if propagates != (fn.Name.Name == "h") {
+			t.Fatalf("%s: unexpected propagation %v\n%s", fn.Name.Name, propagates, graph.Format(fs))
+		}
 	}
 }

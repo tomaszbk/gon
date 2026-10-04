@@ -4,14 +4,13 @@
 
 package inspector
 
-// This file defines func typeOf(ast.Node) uint64.
+// This file defines func typeOf(ast.Node) nodeMask.
 //
 // The initial map-based implementation was too slow;
 // see https://go-review.googlesource.com/c/tools/+/135655/1/go/ast/inspector/inspector.go#196
 
 import (
 	"go/ast"
-	"math"
 )
 
 const (
@@ -76,6 +75,15 @@ const (
 	nLambdaExpr
 	nNilGuardExpr
 	nSafeNavExpr
+	nEnumType
+	nEnumVariant
+	nMatchExpr
+	nMatchStmt
+	nMatchArm
+	nMatchPattern
+	nMatchField
+	nOptionalExpr
+	nContextualVariantExpr
 )
 
 // typeOf returns a distinct single-bit value that represents the type of n.
@@ -96,147 +104,195 @@ const (
 // with constant conditions and good branch prediction.
 // (Sadly it is the most verbose in source code.)
 // Binary search suffered from poor branch prediction.
-func typeOf(n ast.Node) uint64 {
+func typeOf(n ast.Node) nodeMask {
 	// Fast path: nearly half of all nodes are identifiers.
 	if _, ok := n.(*ast.Ident); ok {
-		return 1 << nIdent
+		return nodeBit(nIdent)
 	}
 
 	// These cases include all nodes encountered by ast.Inspect.
 	switch n.(type) {
+	case *ast.ContextualVariantExpr:
+		return nodeBit(nContextualVariantExpr)
+	case *ast.OptionalExpr:
+		return nodeBit(nOptionalExpr)
+
+	case *ast.EnumType:
+		return nodeBit(nEnumType)
+
+	case *ast.EnumVariant:
+		return nodeBit(nEnumVariant)
+
+	case *ast.MatchExpr:
+		return nodeBit(nMatchExpr)
+
+	case *ast.MatchStmt:
+		return nodeBit(nMatchStmt)
+
+	case *ast.MatchArm:
+		return nodeBit(nMatchArm)
+
+	case *ast.MatchPattern:
+		return nodeBit(nMatchPattern)
+
+	case *ast.MatchField:
+		return nodeBit(nMatchField)
+
 	case *ast.ArrayType:
-		return 1 << nArrayType
+		return nodeBit(nArrayType)
 	case *ast.AssignStmt:
-		return 1 << nAssignStmt
+		return nodeBit(nAssignStmt)
 	case *ast.BadDecl:
-		return 1 << nBadDecl
+		return nodeBit(nBadDecl)
 	case *ast.BadExpr:
-		return 1 << nBadExpr
+		return nodeBit(nBadExpr)
 	case *ast.BadStmt:
-		return 1 << nBadStmt
+		return nodeBit(nBadStmt)
 	case *ast.BasicLit:
-		return 1 << nBasicLit
+		return nodeBit(nBasicLit)
 	case *ast.BinaryExpr:
-		return 1 << nBinaryExpr
+		return nodeBit(nBinaryExpr)
 	case *ast.BlockStmt:
-		return 1 << nBlockStmt
+		return nodeBit(nBlockStmt)
 	case *ast.BranchStmt:
-		return 1 << nBranchStmt
+		return nodeBit(nBranchStmt)
 	case *ast.ErrorExpr:
-		return 1 << nErrorExpr
+		return nodeBit(nErrorExpr)
 	case *ast.CondExpr:
-		return 1 << nCondExpr
+		return nodeBit(nCondExpr)
 	case *ast.LambdaExpr:
-		return 1 << nLambdaExpr
+		return nodeBit(nLambdaExpr)
 	case *ast.NilGuardExpr:
-		return 1 << nNilGuardExpr
+		return nodeBit(nNilGuardExpr)
 	case *ast.SafeNavExpr:
-		return 1 << nSafeNavExpr
+		return nodeBit(nSafeNavExpr)
 	case *ast.CallExpr:
-		return 1 << nCallExpr
+		return nodeBit(nCallExpr)
 	case *ast.CaseClause:
-		return 1 << nCaseClause
+		return nodeBit(nCaseClause)
 	case *ast.ChanType:
-		return 1 << nChanType
+		return nodeBit(nChanType)
 	case *ast.CommClause:
-		return 1 << nCommClause
+		return nodeBit(nCommClause)
 	case *ast.Comment:
-		return 1 << nComment
+		return nodeBit(nComment)
 	case *ast.CommentGroup:
-		return 1 << nCommentGroup
+		return nodeBit(nCommentGroup)
 	case *ast.CompositeLit:
-		return 1 << nCompositeLit
+		return nodeBit(nCompositeLit)
 	case *ast.DeclStmt:
-		return 1 << nDeclStmt
+		return nodeBit(nDeclStmt)
 	case *ast.DeferStmt:
-		return 1 << nDeferStmt
+		return nodeBit(nDeferStmt)
 	case *ast.Ellipsis:
-		return 1 << nEllipsis
+		return nodeBit(nEllipsis)
 	case *ast.EmptyStmt:
-		return 1 << nEmptyStmt
+		return nodeBit(nEmptyStmt)
 	case *ast.ExprStmt:
-		return 1 << nExprStmt
+		return nodeBit(nExprStmt)
 	case *ast.Field:
-		return 1 << nField
+		return nodeBit(nField)
 	case *ast.FieldList:
-		return 1 << nFieldList
+		return nodeBit(nFieldList)
 	case *ast.File:
-		return 1 << nFile
+		return nodeBit(nFile)
 	case *ast.ForStmt:
-		return 1 << nForStmt
+		return nodeBit(nForStmt)
 	case *ast.FuncDecl:
-		return 1 << nFuncDecl
+		return nodeBit(nFuncDecl)
 	case *ast.FuncLit:
-		return 1 << nFuncLit
+		return nodeBit(nFuncLit)
 	case *ast.FuncType:
-		return 1 << nFuncType
+		return nodeBit(nFuncType)
 	case *ast.GenDecl:
-		return 1 << nGenDecl
+		return nodeBit(nGenDecl)
 	case *ast.GoStmt:
-		return 1 << nGoStmt
+		return nodeBit(nGoStmt)
 	case *ast.Ident:
-		return 1 << nIdent
+		return nodeBit(nIdent)
 	case *ast.IfStmt:
-		return 1 << nIfStmt
+		return nodeBit(nIfStmt)
 	case *ast.ImportSpec:
-		return 1 << nImportSpec
+		return nodeBit(nImportSpec)
 	case *ast.IncDecStmt:
-		return 1 << nIncDecStmt
+		return nodeBit(nIncDecStmt)
 	case *ast.IndexExpr:
-		return 1 << nIndexExpr
+		return nodeBit(nIndexExpr)
 	case *ast.IndexListExpr:
-		return 1 << nIndexListExpr
+		return nodeBit(nIndexListExpr)
 	case *ast.InterfaceType:
-		return 1 << nInterfaceType
+		return nodeBit(nInterfaceType)
 	case *ast.KeyValueExpr:
-		return 1 << nKeyValueExpr
+		return nodeBit(nKeyValueExpr)
 	case *ast.LabeledStmt:
-		return 1 << nLabeledStmt
+		return nodeBit(nLabeledStmt)
 	case *ast.MapType:
-		return 1 << nMapType
+		return nodeBit(nMapType)
 	case *ast.Package:
-		return 1 << nPackage
+		return nodeBit(nPackage)
 	case *ast.ParenExpr:
-		return 1 << nParenExpr
+		return nodeBit(nParenExpr)
 	case *ast.RangeStmt:
-		return 1 << nRangeStmt
+		return nodeBit(nRangeStmt)
 	case *ast.ReturnStmt:
-		return 1 << nReturnStmt
+		return nodeBit(nReturnStmt)
 	case *ast.SelectStmt:
-		return 1 << nSelectStmt
+		return nodeBit(nSelectStmt)
 	case *ast.SelectorExpr:
-		return 1 << nSelectorExpr
+		return nodeBit(nSelectorExpr)
 	case *ast.SendStmt:
-		return 1 << nSendStmt
+		return nodeBit(nSendStmt)
 	case *ast.SliceExpr:
-		return 1 << nSliceExpr
+		return nodeBit(nSliceExpr)
 	case *ast.StarExpr:
-		return 1 << nStarExpr
+		return nodeBit(nStarExpr)
 	case *ast.StructType:
-		return 1 << nStructType
+		return nodeBit(nStructType)
 	case *ast.SwitchStmt:
-		return 1 << nSwitchStmt
+		return nodeBit(nSwitchStmt)
 	case *ast.TypeAssertExpr:
-		return 1 << nTypeAssertExpr
+		return nodeBit(nTypeAssertExpr)
 	case *ast.TypeSpec:
-		return 1 << nTypeSpec
+		return nodeBit(nTypeSpec)
 	case *ast.TypeSwitchStmt:
-		return 1 << nTypeSwitchStmt
+		return nodeBit(nTypeSwitchStmt)
 	case *ast.UnaryExpr:
-		return 1 << nUnaryExpr
+		return nodeBit(nUnaryExpr)
 	case *ast.ValueSpec:
-		return 1 << nValueSpec
+		return nodeBit(nValueSpec)
 	}
-	return 0
+	return nodeMask{}
 }
 
-func maskOf(nodes []ast.Node) uint64 {
+func maskOf(nodes []ast.Node) nodeMask {
 	if len(nodes) == 0 {
-		return math.MaxUint64 // match all node types
+		return nodeMask{^uint64(0), ^uint64(0)} // match all node types
 	}
-	var mask uint64
+	var mask nodeMask
 	for _, n := range nodes {
-		mask |= typeOf(n)
+		mask = mask.union(typeOf(n))
 	}
 	return mask
+}
+
+// nodeMask keeps distinct filters for both Go and additive Gon nodes. Two
+// words avoid aliasing node kinds once the inventory exceeds 64 types.
+type nodeMask struct{ lo, hi uint64 }
+
+func nodeBit(bit uint) nodeMask {
+	if bit < 64 {
+		return nodeMask{lo: 1 << bit}
+	}
+	if bit < 128 {
+		return nodeMask{hi: 1 << (bit - 64)}
+	}
+	panic("inspector node inventory exceeds 128 types")
+}
+
+func (m nodeMask) union(n nodeMask) nodeMask {
+	return nodeMask{m.lo | n.lo, m.hi | n.hi}
+}
+
+func (m nodeMask) intersects(n nodeMask) bool {
+	return m.lo&n.lo != 0 || m.hi&n.hi != 0
 }

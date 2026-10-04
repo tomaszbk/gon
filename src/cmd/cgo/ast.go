@@ -354,7 +354,7 @@ func (f *File) walk(x any, context astContext, visit func(*File, any, astContext
 
 	// everything else just recurs
 	default:
-		if f.walkErrorExpr(x, visit) || f.walkCondExpr(x, visit) || f.walkGonExpr(x, visit) {
+		if f.walkErrorExpr(x, visit) || f.walkCondExpr(x, visit) || f.walkGonExpr(x, context, visit) {
 			break
 		}
 		error_(token.NoPos, "unexpected type %T in walk", x)

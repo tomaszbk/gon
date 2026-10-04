@@ -166,7 +166,7 @@ func (c *completer) deepSearch(ctx context.Context, minDepth int, deadline *time
 			// However, do offer package names since they can contain type names,
 			// and do offer any candidate without a type since we aren't sure if it
 			// is a type name or not (i.e. unimported candidate).
-			if c.wantTypeName() && obj.Type() != nil && !isTypeName(obj) && !isPkgName(obj) {
+			if c.wantTypeName() && obj.Type() != nil && !isTypeName(obj) && !isPkgName(obj) && !c.enumRecordLiteralCandidate(&cand) {
 				continue
 			}
 

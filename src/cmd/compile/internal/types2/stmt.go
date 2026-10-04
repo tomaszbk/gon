@@ -624,6 +624,9 @@ func (check *Checker) stmt(ctxt stmtContext, s syntax.Stmt) {
 			check.error(s.Else, InvalidSyntaxTree, "invalid else branch in if statement")
 		}
 
+	case *syntax.MatchStmt:
+		check.matchExpr(nil, nil, s.Match, inner, true)
+
 	case *syntax.SwitchStmt:
 		inner |= breakOk
 		check.openScope(s, "switch")

@@ -459,6 +459,13 @@ func (b *builder) addr(fn *Function, e ast.Expr, escaping bool) lvalue {
 		return &address{addr: v, pos: e.Pos(), expr: e}
 
 	case *ast.CompositeLit:
+		if typ, variant := enumSelector(fn, e.Type); variant != nil {
+			value := b.enumLiteral(fn, e, typ, variant)
+			addr := emitNew(fn, typ, e.Pos(), "enum literal")
+			emitStore(fn, addr, value, e.Pos())
+			return &address{addr: addr, pos: e.Lbrace, expr: e}
+		}
+
 		typ := typeparams.Deref(fn.typeOf(e))
 		var v *Alloc
 		if escaping {
@@ -575,6 +582,27 @@ func (sb *storebuf) emit(fn *Function) {
 // in-place update of existing variables when the RHS is a composite
 // literal that may reference parts of the LHS.
 func (b *builder) assign(fn *Function, loc lvalue, e ast.Expr, isZero bool, sb *storebuf) {
+	if fn.info.OptionalConversions[e] != nil || fn.info.OptionalConversions[ast.Unparen(e)] != nil {
+		rhs := b.expr(fn, e)
+		if sb != nil {
+			sb.store(loc, rhs)
+		} else {
+			loc.store(fn, rhs)
+		}
+		return
+	}
+	if literal, ok := ast.Unparen(e).(*ast.CompositeLit); ok {
+		if typ, variant := enumSelector(fn, literal.Type); variant != nil {
+			value := b.enumLiteral(fn, literal, typ, variant)
+			if sb != nil {
+				sb.store(loc, value)
+			} else {
+				loc.store(fn, value)
+			}
+			return
+		}
+	}
+
 	// Can we initialize it in place?
 	if e, ok := ast.Unparen(e).(*ast.CompositeLit); ok {
 		// A CompositeLit never evaluates to a pointer,
@@ -604,6 +632,22 @@ func (b *builder) assign(fn *Function, loc lvalue, e ast.Expr, isZero bool, sb *
 // expr lowers a single-result expression e to SSA form, emitting code
 // to fn and returning the Value defined by the expression.
 func (b *builder) expr(fn *Function, e ast.Expr) Value {
+	target := fn.info.OptionalConversions[e]
+	if target == nil {
+		target = fn.info.OptionalConversions[ast.Unparen(e)]
+	}
+	value := b.exprUnwrapped(fn, e)
+	if target == nil {
+		return value
+	}
+	target = fn.typ(target)
+	if basic, ok := value.Type().Underlying().(*types.Basic); ok && basic.Kind() == types.UntypedNil {
+		return zeroConst(target)
+	}
+	return enumValue(fn, target, enumAlternative(target, "$present"), []Value{value}, e.Pos())
+}
+
+func (b *builder) exprUnwrapped(fn *Function, e ast.Expr) Value {
 	e = ast.Unparen(e)
 
 	tv := fn.info.Types[e]
@@ -629,7 +673,27 @@ func (b *builder) expr(fn *Function, e ast.Expr) Value {
 }
 
 func (b *builder) expr0(fn *Function, e ast.Expr, tv types.TypeAndValue) Value {
+	if typ, variant := enumSelector(fn, e); variant != nil {
+		return b.enumConstructor(fn, typ, variant, e)
+	}
+	if literal, ok := e.(*ast.CompositeLit); ok && literal.Type != nil {
+		if typ, variant := enumSelector(fn, literal.Type); variant != nil {
+			return b.enumLiteral(fn, literal, typ, variant)
+		}
+	}
 	switch e := e.(type) {
+	case *ast.MatchExpr:
+		return b.match(fn, e, false, nil)
+	case *ast.ContextualVariantExpr:
+		typ := fn.typeOf(e)
+		variant := enumAlternative(typ, e.Name.Name)
+		values := make([]Value, len(e.Args))
+		for i, arg := range e.Args {
+			values[i] = b.expr(fn, arg)
+		}
+		return enumValue(fn, typ, variant, values, e.Pos())
+	case *ast.OptionalExpr:
+		return b.optionExpr(fn, e)
 	case *ast.ErrorExpr:
 		return b.errorExpr(fn, e)[0]
 
@@ -639,6 +703,9 @@ func (b *builder) expr0(fn *Function, e ast.Expr, tv types.TypeAndValue) Value {
 		v := b.expr(fn, e.X)
 		if fn.nilAbsent == nil {
 			panic("nil guard outside safe chain")
+		}
+		if types.IsOptional(v.Type()) {
+			return b.optionPresent(fn, v, fn.nilAbsent, e)
 		}
 		b.nilPresent(fn, v, fn.nilAbsent, e)
 		return v
@@ -1124,6 +1191,9 @@ func (b *builder) setCallFunc(fn *Function, e *ast.CallExpr, c *CallCommon) {
 // a (possibly built-in) function of effective type sig.
 // The argument values are appended to args, which is then returned.
 func (b *builder) emitCallArgs(fn *Function, sig *types.Signature, e *ast.CallExpr, args []Value) []Value {
+	if len(e.ArgNames) != 0 {
+		return b.emitNamedCallArgs(fn, sig, e, args)
+	}
 	// f(x, y, z...): pass slice z straight through.
 	if e.Ellipsis != 0 {
 		for i, arg := range e.Args {
@@ -2785,6 +2855,8 @@ func (b *builder) stmt(fn *Function, _s ast.Stmt) {
 	var label *lblock
 start:
 	switch s := _s.(type) {
+	case *ast.MatchStmt:
+		b.match(fn, s.Match, true, label)
 	case *ast.EmptyStmt:
 		// ignore.  (Usually removed by gofmt.)
 

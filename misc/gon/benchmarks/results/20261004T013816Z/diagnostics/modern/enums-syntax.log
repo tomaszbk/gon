@@ -1,0 +1,139 @@
+{"Time":"2026-10-03T22:46:51.647684-03:00","Action":"start","Package":"cmd/compile/internal/syntax"}
+{"Time":"2026-10-03T22:46:51.651603-03:00","Action":"start","Package":"go/parser"}
+{"Time":"2026-10-03T22:46:51.651634-03:00","Action":"start","Package":"go/printer"}
+{"Time":"2026-10-03T22:46:51.652564-03:00","Action":"start","Package":"go/format"}
+{"Time":"2026-10-03T22:46:51.656404-03:00","Action":"start","Package":"cmd/gofmt"}
+{"Time":"2026-10-03T22:46:51.839929-03:00","Action":"output","Package":"go/printer","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-10-03T22:46:51.840096-03:00","Action":"output","Package":"go/printer","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.840136-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesSyntax"}
+{"Time":"2026-10-03T22:46:51.840159-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesSyntax","Output":"=== RUN   TestAlternativesSyntax\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.84041-03:00","Action":"output","Package":"go/printer","Output":"ok  \tgo/printer\t0.189s [no tests to run]\n"}
+{"Time":"2026-10-03T22:46:51.840447-03:00","Action":"pass","Package":"go/printer","Elapsed":0.189}
+{"Time":"2026-10-03T22:46:51.840749-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesSyntax","Output":"--- PASS: TestAlternativesSyntax (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.840802-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesSyntax","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.840814-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesNestedPatterns"}
+{"Time":"2026-10-03T22:46:51.840821-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesNestedPatterns","Output":"=== RUN   TestAlternativesNestedPatterns\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.840834-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesNestedPatterns","Output":"--- PASS: TestAlternativesNestedPatterns (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.840876-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesNestedPatterns","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.840894-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesLegacySyntax"}
+{"Time":"2026-10-03T22:46:51.840904-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesLegacySyntax","Output":"=== RUN   TestAlternativesLegacySyntax\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.840918-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesLegacySyntax","Output":"--- PASS: TestAlternativesLegacySyntax (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.840939-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesLegacySyntax","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.840949-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax"}
+{"Time":"2026-10-03T22:46:51.840955-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax","Output":"=== RUN   TestAlternativesInvalidSyntax\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.840965-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum;_{_default_V_}"}
+{"Time":"2026-10-03T22:46:51.840976-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum;_{_default_V_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_type_E_enum;_{_default_V_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.84099-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum;_{_default_V_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_type_E_enum;_{_default_V_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.840996-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum;_{_default_V_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841005-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_=_enum_{_default_V_}"}
+{"Time":"2026-10-03T22:46:51.841024-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_=_enum_{_default_V_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_type_E_=_enum_{_default_V_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841032-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_=_enum_{_default_V_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_type_E_=_enum_{_default_V_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841039-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_=_enum_{_default_V_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841052-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V(x_int)_}"}
+{"Time":"2026-10-03T22:46:51.84106-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V(x_int)_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V(x_int)_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841067-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V(x_int)_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V(x_int)_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841078-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V(x_int)_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841091-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_Embedded_}_}"}
+{"Time":"2026-10-03T22:46:51.841099-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_Embedded_}_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_Embedded_}_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841107-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_Embedded_}_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_Embedded_}_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841115-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_Embedded_}_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841123-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_*Embedded_}_}"}
+{"Time":"2026-10-03T22:46:51.84113-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_*Embedded_}_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_*Embedded_}_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841139-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_*Embedded_}_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_*Embedded_}_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841149-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_*Embedded_}_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841163-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_X_int_\"tag\"_}_}"}
+{"Time":"2026-10-03T22:46:51.841169-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_X_int_\"tag\"_}_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_X_int_\"tag\"_}_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841186-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_X_int_\"tag\"_}_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_X_int_\"tag\"_}_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841194-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_X_int_\"tag\"_}_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.8412-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V_=\u003e_1;_default:_2_}"}
+{"Time":"2026-10-03T22:46:51.841206-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V_=\u003e_1;_default:_2_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V_=\u003e_1;_default:_2_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841212-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V_=\u003e_1;_default:_2_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V_=\u003e_1;_default:_2_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841218-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V_=\u003e_1;_default:_2_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841231-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_func_f()_{_switch_y_{_case_E.V_=\u003e_1_}_}"}
+{"Time":"2026-10-03T22:46:51.841237-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_func_f()_{_switch_y_{_case_E.V_=\u003e_1_}_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_func_f()_{_switch_y_{_case_E.V_=\u003e_1_}_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841244-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_func_f()_{_switch_y_{_case_E.V_=\u003e_1_}_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_func_f()_{_switch_y_{_case_E.V_=\u003e_1_}_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841251-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_func_f()_{_switch_y_{_case_E.V_=\u003e_1_}_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.84126-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X:_x,_...,_Y:_y}_=\u003e_x_}"}
+{"Time":"2026-10-03T22:46:51.841266-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X:_x,_...,_Y:_y}_=\u003e_x_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X:_x,_...,_Y:_y}_=\u003e_x_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841273-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X:_x,_...,_Y:_y}_=\u003e_x_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X:_x,_...,_Y:_y}_=\u003e_x_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841279-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X:_x,_...,_Y:_y}_=\u003e_x_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841285-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X}_=\u003e_1_}"}
+{"Time":"2026-10-03T22:46:51.841291-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X}_=\u003e_1_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X}_=\u003e_1_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841307-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X}_=\u003e_1_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X}_=\u003e_1_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841314-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X}_=\u003e_1_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841321-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_f()+g()_=\u003e_1_}"}
+{"Time":"2026-10-03T22:46:51.841328-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_f()+g()_=\u003e_1_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_f()+g()_=\u003e_1_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841334-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_f()+g()_=\u003e_1_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_f()+g()_=\u003e_1_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.84134-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_f()+g()_=\u003e_1_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841345-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_init();_y_{_default_=\u003e_1_}"}
+{"Time":"2026-10-03T22:46:51.841351-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_init();_y_{_default_=\u003e_1_}","Output":"=== RUN   TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_init();_y_{_default_=\u003e_1_}\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841363-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_init();_y_{_default_=\u003e_1_}","Output":"--- PASS: TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_init();_y_{_default_=\u003e_1_} (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841374-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_init();_y_{_default_=\u003e_1_}","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841381-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesInvalidSyntax","Output":"--- PASS: TestAlternativesInvalidSyntax (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841389-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesInvalidSyntax","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841396-03:00","Action":"run","Package":"go/parser","Test":"TestAlternativesGroupedRecord"}
+{"Time":"2026-10-03T22:46:51.841403-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesGroupedRecord","Output":"=== RUN   TestAlternativesGroupedRecord\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841409-03:00","Action":"output","Package":"go/parser","Test":"TestAlternativesGroupedRecord","Output":"--- PASS: TestAlternativesGroupedRecord (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841415-03:00","Action":"pass","Package":"go/parser","Test":"TestAlternativesGroupedRecord","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841421-03:00","Action":"run","Package":"go/parser","Test":"TestSimplifiedAlternativesSyntax"}
+{"Time":"2026-10-03T22:46:51.841426-03:00","Action":"output","Package":"go/parser","Test":"TestSimplifiedAlternativesSyntax","Output":"=== RUN   TestSimplifiedAlternativesSyntax\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841708-03:00","Action":"output","Package":"go/parser","Test":"TestSimplifiedAlternativesSyntax","Output":"--- PASS: TestSimplifiedAlternativesSyntax (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841738-03:00","Action":"pass","Package":"go/parser","Test":"TestSimplifiedAlternativesSyntax","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841763-03:00","Action":"run","Package":"go/parser","Test":"TestSimplifiedAlternativesSyntaxErrors"}
+{"Time":"2026-10-03T22:46:51.841773-03:00","Action":"output","Package":"go/parser","Test":"TestSimplifiedAlternativesSyntaxErrors","Output":"=== RUN   TestSimplifiedAlternativesSyntaxErrors\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841783-03:00","Action":"output","Package":"go/parser","Test":"TestSimplifiedAlternativesSyntaxErrors","Output":"--- PASS: TestSimplifiedAlternativesSyntaxErrors (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841793-03:00","Action":"pass","Package":"go/parser","Test":"TestSimplifiedAlternativesSyntaxErrors","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841801-03:00","Action":"run","Package":"go/parser","Test":"TestSimplifiedAlternativesMultiline"}
+{"Time":"2026-10-03T22:46:51.841808-03:00","Action":"output","Package":"go/parser","Test":"TestSimplifiedAlternativesMultiline","Output":"=== RUN   TestSimplifiedAlternativesMultiline\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841842-03:00","Action":"run","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax"}
+{"Time":"2026-10-03T22:46:51.841867-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax","Output":"=== RUN   TestAlternativesSyntax\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841879-03:00","Action":"run","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/variants"}
+{"Time":"2026-10-03T22:46:51.841886-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/variants","Output":"=== RUN   TestAlternativesSyntax/variants\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841916-03:00","Action":"output","Package":"go/parser","Test":"TestSimplifiedAlternativesMultiline","Output":"--- PASS: TestSimplifiedAlternativesMultiline (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.841933-03:00","Action":"pass","Package":"go/parser","Test":"TestSimplifiedAlternativesMultiline","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.841944-03:00","Action":"output","Package":"go/parser","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.84214-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/variants","Output":"--- PASS: TestAlternativesSyntax/variants (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842159-03:00","Action":"pass","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/variants","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.842174-03:00","Action":"run","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/expression"}
+{"Time":"2026-10-03T22:46:51.842183-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/expression","Output":"=== RUN   TestAlternativesSyntax/expression\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842276-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/expression","Output":"--- PASS: TestAlternativesSyntax/expression (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842287-03:00","Action":"pass","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/expression","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.842304-03:00","Action":"run","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/statement"}
+{"Time":"2026-10-03T22:46:51.842312-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/statement","Output":"=== RUN   TestAlternativesSyntax/statement\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842396-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/statement","Output":"--- PASS: TestAlternativesSyntax/statement (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842408-03:00","Action":"pass","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/statement","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.842431-03:00","Action":"run","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/nested"}
+{"Time":"2026-10-03T22:46:51.842439-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/nested","Output":"=== RUN   TestAlternativesSyntax/nested\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.8425-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/nested","Output":"--- PASS: TestAlternativesSyntax/nested (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842521-03:00","Action":"pass","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/nested","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.842541-03:00","Action":"run","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/legacy"}
+{"Time":"2026-10-03T22:46:51.842552-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/legacy","Output":"=== RUN   TestAlternativesSyntax/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842625-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/legacy","Output":"--- PASS: TestAlternativesSyntax/legacy (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842661-03:00","Action":"pass","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax/legacy","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.842672-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax","Output":"--- PASS: TestAlternativesSyntax (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842689-03:00","Action":"pass","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntax","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.842704-03:00","Action":"run","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntaxErrors"}
+{"Time":"2026-10-03T22:46:51.842712-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntaxErrors","Output":"=== RUN   TestAlternativesSyntaxErrors\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842725-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntaxErrors","Output":"--- PASS: TestAlternativesSyntaxErrors (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842736-03:00","Action":"pass","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesSyntaxErrors","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.842749-03:00","Action":"run","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesGroupedRecord"}
+{"Time":"2026-10-03T22:46:51.842703-03:00","Action":"output","Package":"go/parser","Output":"ok  \tgo/parser\t0.191s\n"}
+{"Time":"2026-10-03T22:46:51.842775-03:00","Action":"pass","Package":"go/parser","Elapsed":0.191}
+{"Time":"2026-10-03T22:46:51.842757-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesGroupedRecord","Output":"=== RUN   TestAlternativesGroupedRecord\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842807-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesGroupedRecord","Output":"--- PASS: TestAlternativesGroupedRecord (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842827-03:00","Action":"pass","Package":"cmd/compile/internal/syntax","Test":"TestAlternativesGroupedRecord","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.842837-03:00","Action":"run","Package":"cmd/compile/internal/syntax","Test":"TestSimplifiedAlternativesSyntax"}
+{"Time":"2026-10-03T22:46:51.842844-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestSimplifiedAlternativesSyntax","Output":"=== RUN   TestSimplifiedAlternativesSyntax\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842963-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Test":"TestSimplifiedAlternativesSyntax","Output":"--- PASS: TestSimplifiedAlternativesSyntax (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.842997-03:00","Action":"pass","Package":"cmd/compile/internal/syntax","Test":"TestSimplifiedAlternativesSyntax","Elapsed":0}
+{"Time":"2026-10-03T22:46:51.843083-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.843751-03:00","Action":"output","Package":"cmd/compile/internal/syntax","Output":"ok  \tcmd/compile/internal/syntax\t0.196s\n"}
+{"Time":"2026-10-03T22:46:51.843765-03:00","Action":"pass","Package":"cmd/compile/internal/syntax","Elapsed":0.196}
+{"Time":"2026-10-03T22:46:51.843936-03:00","Action":"output","Package":"go/format","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-10-03T22:46:51.843976-03:00","Action":"output","Package":"go/format","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.8445-03:00","Action":"output","Package":"go/format","Output":"ok  \tgo/format\t0.192s [no tests to run]\n"}
+{"Time":"2026-10-03T22:46:51.844511-03:00","Action":"pass","Package":"go/format","Elapsed":0.192}
+{"Time":"2026-10-03T22:46:51.846677-03:00","Action":"output","Package":"cmd/gofmt","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-10-03T22:46:51.846697-03:00","Action":"output","Package":"cmd/gofmt","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:51.847196-03:00","Action":"output","Package":"cmd/gofmt","Output":"ok  \tcmd/gofmt\t0.191s [no tests to run]\n"}
+{"Time":"2026-10-03T22:46:51.847207-03:00","Action":"pass","Package":"cmd/gofmt","Elapsed":0.191}

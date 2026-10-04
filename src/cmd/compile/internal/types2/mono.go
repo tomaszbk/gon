@@ -221,6 +221,8 @@ func (w *monoGraph) assign(pkg *Package, pos syntax.Pos, tpar *TypeParam, targ T
 				do(targs.At(i))
 			}
 
+		case *Optional:
+			do(typ.Elem())
 		case *Array:
 			do(typ.Elem())
 		case *Basic:

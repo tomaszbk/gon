@@ -79,7 +79,7 @@ def command(*args, cwd=None, env=None):
 
 
 class Client:
-    def __init__(self, folder, log, options=None):
+    def __init__(self, folder, log, options=None, snippet_support=False):
         self.process = subprocess.Popen([str(LSP), "serve"], cwd=folder,
                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=log)
         self.messages = queue.Queue()
@@ -91,6 +91,7 @@ class Client:
             "workspaceFolders": [{"uri": folder.as_uri(), "name": "gon-test"}],
             "capabilities": {"textDocument": {
                 "publishDiagnostics": {"versionSupport": True},
+                "completion": {"completionItem": {"snippetSupport": snippet_support}},
                 "semanticTokens": {"requests": {"full": True}, "formats": ["relative"],
                     "tokenTypes": ["namespace", "type", "class", "enum", "interface", "struct", "typeParameter", "parameter", "variable", "property", "enumMember", "event", "function", "method", "macro", "keyword", "modifier", "comment", "string", "number", "regexp", "operator"],
                     "tokenModifiers": ["declaration", "definition", "readonly", "static", "deprecated", "abstract", "async", "modification", "documentation", "defaultLibrary"]}}},
@@ -448,8 +449,8 @@ def main():
         # Installer is idempotent, resolves symlinks, and refuses collisions.
         public = folder / "public"
         install = ROOT / "misc" / "gon" / "install.py"
-        command(sys.executable, install, "--bin-dir", public)
-        command(sys.executable, install, "--bin-dir", public)
+        command(sys.executable, install, "--no-modify-path", "--bin-dir", public)
+        command(sys.executable, install, "--no-modify-path", "--bin-dir", public)
         assert command(public / ("gon" + SUFFIX), "env", "GOROOT").strip() == str(ROOT)
         other = folder / "occupied"
         other.mkdir()

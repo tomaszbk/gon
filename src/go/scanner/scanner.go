@@ -975,9 +975,8 @@ scanAgain:
 				s.next()
 				tok = s.switch2(token.COALESCE, token.COALESCE_ASSIGN)
 			default:
-				s.errorf(s.file.Offset(pos), "illegal character %#U", ch)
-				tok = token.ILLEGAL
-				lit = string(ch)
+				tok = token.QUESTION
+				insertSemi = true
 			}
 
 		case '!':

@@ -25,9 +25,10 @@ import (
 
 // gonEngineConfig selects the analyzed build configuration.
 type gonEngineConfig struct {
-	Root        string // workspace root: nearest go.work or go.mod directory
-	Tags        string
-	Staticcheck bool
+	Root             string // workspace root: nearest go.work or go.mod directory
+	Tags             string
+	Staticcheck      bool
+	MigrateOptionals bool
 }
 
 // A gonEngine is an in-process gonpls session with a command-line client.
@@ -47,6 +48,7 @@ func newGonEngine(ctx context.Context, cfg gonEngineConfig) (*gonEngine, error) 
 		o.SymbolScope = settings.WorkspaceSymbolScope
 		o.RelatedInformationSupported = true
 		o.OnDemandDiagnostics = true
+		o.MigrateOptionals = cfg.MigrateOptionals
 		if cfg.Tags != "" {
 			o.BuildFlags = append(o.BuildFlags, "-tags="+cfg.Tags)
 		}
@@ -95,9 +97,10 @@ func gonWorkspaceRoot(dir string, env []string) string {
 
 func (r *gonRequest) engineConfig() gonEngineConfig {
 	return gonEngineConfig{
-		Root:        gonWorkspaceRoot(r.inv.cwd, r.inv.env),
-		Tags:        r.str("tags"),
-		Staticcheck: r.bool("staticcheck"),
+		Root:             gonWorkspaceRoot(r.inv.cwd, r.inv.env),
+		Tags:             r.str("tags"),
+		Staticcheck:      r.bool("staticcheck"),
+		MigrateOptionals: r.cmd.path == "refactor optionals",
 	}
 }
 

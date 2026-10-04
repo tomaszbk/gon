@@ -48,13 +48,13 @@ func (in *Inspector) PreorderSeq(types ...ast.Node) iter.Seq[ast.Node] {
 			ev := in.events[i]
 			if ev.index > i {
 				// push
-				if ev.typ&mask != 0 {
+				if ev.typ.intersects(mask) {
 					if !yield(ev.node) {
 						break
 					}
 				}
 				pop := ev.index
-				if in.events[pop].typ&mask == 0 {
+				if !in.events[pop].typ.intersects(mask) {
 					// Subtrees do not contain types: skip them and pop.
 					i = pop + 1
 					continue
@@ -95,13 +95,13 @@ func All[N interface {
 			ev := in.events[i]
 			if ev.index > i {
 				// push
-				if ev.typ&mask != 0 {
+				if ev.typ.intersects(mask) {
 					if !yield(ev.node.(N)) {
 						break
 					}
 				}
 				pop := ev.index
-				if in.events[pop].typ&mask == 0 {
+				if !in.events[pop].typ.intersects(mask) {
 					// Subtrees do not contain types: skip them and pop.
 					i = pop + 1
 					continue

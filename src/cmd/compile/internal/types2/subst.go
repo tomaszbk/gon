@@ -125,9 +125,15 @@ func (subst *subster) typ(typ Type) Type {
 			return &Slice{elem: elem}
 		}
 
+	case *Optional:
+		if elem := subst.typ(t.elem); elem != t.elem {
+			return NewOptional(elem)
+		}
+
 	case *Struct:
 		if fields := substList(t.fields, subst.var_); fields != nil {
 			s := &Struct{fields: fields, tags: t.tags}
+			s.enum = cloneEnum(t.enum, s)
 			s.markComplete()
 			return s
 		}

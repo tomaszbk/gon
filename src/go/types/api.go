@@ -116,6 +116,10 @@ type ImporterFrom interface {
 // A Config specifies the configuration for type checking.
 // The zero value for Config is a ready-to-use default configuration.
 type Config struct {
+	// MigrateOptionals permits retired Option constructors for migration analysis only.
+	// It does not change Universe and must not be enabled for ordinary checking.
+	MigrateOptionals bool
+
 	// Context is the context used for resolving global identifiers. If nil, the
 	// type checker will initialize this field with a newly created context.
 	Context *Context
@@ -222,6 +226,12 @@ type Info struct {
 	// Instead, the function type is found in the Defs map entry for
 	// the corresponding function declaration.
 	Types map[ast.Expr]TypeAndValue
+
+	// OptionalConversions records single-layer native optional construction.
+	// Each key retains its source type in Types; the value is the native
+	// optional target. Untyped nil constructs absence; an immediate payload
+	// constructs presence. Already assignable optionals are not recorded.
+	OptionalConversions map[ast.Expr]Type
 
 	// Instances maps identifiers denoting generic types or functions to their
 	// type arguments and instantiated type.

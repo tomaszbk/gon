@@ -113,7 +113,7 @@ func usesBuiltinMap(t types.Type) bool {
 		return true
 	case *types.Named, *types.Alias:
 		return usesBuiltinMap(t.Underlying())
-	case *types.Interface, *types.Array, *types.Struct:
+	case *types.Interface, *types.Array, *types.Struct, *types.Optional:
 		return false
 	}
 	panic(fmt.Sprintf("invalid map key type: %T", t))
@@ -141,7 +141,7 @@ func (x array) hash(t types.Type) int {
 
 func (x structure) eq(t types.Type, _y any) bool {
 	y := _y.(structure)
-	tStruct := t.Underlying().(*types.Struct)
+	tStruct := interpStruct(t)
 	for i, n := 0, tStruct.NumFields(); i < n; i++ {
 		if f := tStruct.Field(i); !f.Anonymous() {
 			if !equals(f.Type(), x[i], y[i]) {
@@ -153,7 +153,7 @@ func (x structure) eq(t types.Type, _y any) bool {
 }
 
 func (x structure) hash(t types.Type) int {
-	tStruct := t.Underlying().(*types.Struct)
+	tStruct := interpStruct(t)
 	h := 0
 	for i, n := 0, tStruct.NumFields(); i < n; i++ {
 		if f := tStruct.Field(i); !f.Anonymous() {
@@ -314,6 +314,9 @@ func hash(outer, t types.Type, x value) int {
 
 // load returns the value of type T in *addr.
 func load(T types.Type, addr *value) value {
+	if o := types.OptionalStorage(T); o != nil {
+		T = o
+	}
 	switch T := T.Underlying().(type) {
 	case *types.Struct:
 		v := (*addr).(structure)
@@ -336,6 +339,9 @@ func load(T types.Type, addr *value) value {
 
 // store stores value v of type T into *addr.
 func store(T types.Type, addr *value, v value) {
+	if o := types.OptionalStorage(T); o != nil {
+		T = o
+	}
 	switch T := T.Underlying().(type) {
 	case *types.Struct:
 		lhs := (*addr).(structure)
@@ -517,4 +523,11 @@ func (it *hashmapIter) next() tuple {
 		}
 		it.cur = it.iter.Value().Interface().(*entry)
 	}
+}
+
+func interpStruct(t types.Type) *types.Struct {
+	if o := types.OptionalStorage(t); o != nil {
+		return o
+	}
+	return t.Underlying().(*types.Struct)
 }

@@ -272,7 +272,8 @@ func ordinaryReferences(ctx context.Context, snapshot *cache.Snapshot, uri proto
 	)
 	// TODO(adonovan): what about generic functions? Need to consider both
 	// uninstantiated and instantiated. The latter have no objectpath. Use Origin?
-	if path, err := objectpath.For(obj); err == nil && obj.Exported() {
+	param, _ := obj.(*types.Var)
+	if path, err := objectpath.For(obj); err == nil && (obj.Exported() || param != nil && param.Kind() == types.ParamVar) {
 		pkgPath := variants[0].PkgPath // (all variants have same package path)
 		globalTargets = map[PackagePath]map[objectpath.Path]unit{
 			pkgPath: {path: {}}, // primary target

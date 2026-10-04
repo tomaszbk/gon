@@ -556,7 +556,20 @@ func (pw *pkgWriter) typIdx(typ types2.Type, dict *writerDict) typeInfo {
 			w.namedType(obj, nil)
 		}
 
+	case *types2.Optional:
+		w.Code(pkgbits.TypeOptional)
+		w.typ(typ.Elem())
+
 	case *types2.Named:
+		if types2.IsCanonicalResult(typ) {
+			w.Code(pkgbits.TypeCanonicalEnum)
+			w.String(typ.Obj().Name())
+			w.Len(typ.TypeArgs().Len())
+			for i := 0; i < typ.TypeArgs().Len(); i++ {
+				w.typ(typ.TypeArgs().At(i))
+			}
+			break
+		}
 		w.Code(pkgbits.TypeNamed)
 		w.namedType(splitNamed(typ))
 
@@ -598,6 +611,11 @@ func (pw *pkgWriter) typIdx(typ types2.Type, dict *writerDict) typeInfo {
 		w.typ(typ.Elem())
 
 	case *types2.Struct:
+		if desc := types2.EnumOf(typ); desc != nil {
+			w.Code(pkgbits.TypeEnum)
+			w.enumType(desc)
+			break
+		}
 		w.Code(pkgbits.TypeStruct)
 		w.structType(typ)
 
@@ -1386,6 +1404,10 @@ func (w *writer) stmt1(stmt syntax.Stmt) {
 	case *syntax.AssignStmt:
 		switch {
 		case stmt.Op == syntax.Coalesce:
+			if types2.IsOptional(w.p.typeOf(stmt.Lhs)) {
+				w.optionCoalesceAssign(stmt)
+				break
+			}
 			w.Code(stmtCoalesceAssign)
 			w.pos(stmt)
 			w.expr(stmt.Lhs)
@@ -1497,6 +1519,9 @@ func (w *writer) stmt1(stmt syntax.Stmt) {
 		w.pos(stmt)
 		w.expr(stmt.Chan)
 		w.implicitConvExpr(chanType.Elem(), stmt.Value)
+
+	case *syntax.MatchStmt:
+		w.matchExpr(stmt.Match, true)
 
 	case *syntax.SwitchStmt:
 		w.Code(stmtSwitch)
@@ -1900,6 +1925,9 @@ func (w *writer) expr(expr syntax.Expr) {
 	base.Assertf(expr != nil, "missing expression")
 
 	expr = syntax.Unparen(expr) // skip parens; unneeded after typecheck
+	if w.tryEnumExpr(expr) {
+		return
+	}
 	if expr == w.nilValue {
 		w.Code(exprNilValue)
 		return
@@ -1978,14 +2006,24 @@ func (w *writer) expr(expr syntax.Expr) {
 	default:
 		w.p.unexpected("expression", expr)
 
+	case *syntax.OptionalExpr:
+		w.optionExpr(expr)
 	case *syntax.ErrorExpr:
+		if types2.IsCanonicalResult(w.p.typeOf(expr.X)) {
+			w.resultErrorExpr(expr)
+			break
+		}
 		w.Code(exprError)
 		w.pos(expr)
+		w.Bool(expr.SynthesizedHandler)
 		w.expr(expr.X)
 		w.openScope(expr.Pos())
 		w.assign(expr.Err)
 		w.blockStmt(expr.Body)
 		w.closeScope(expr.Body.Rbrace)
+
+	case *syntax.MatchExpr:
+		w.matchExpr(expr, false)
 
 	case *syntax.CondExpr:
 		w.condExpr(expr)
@@ -1994,6 +2032,10 @@ func (w *writer) expr(expr syntax.Expr) {
 		w.safeNavExpr(expr, false)
 
 	case *syntax.NilGuardExpr:
+		if types2.IsOptional(w.p.typeOf(expr.X)) {
+			w.optionGuard(expr)
+			break
+		}
 		w.Code(exprNilGuard)
 		w.pos(expr)
 		w.expr(expr.X)
@@ -2254,11 +2296,20 @@ func (w *writer) expr(expr syntax.Expr) {
 		sigType := types2.CoreType(tv.Type).(*types2.Signature)
 		paramTypes := sigType.Params()
 
-		w.Code(exprCall)
+		var argumentOrder []int
+		if len(expr.ArgNames) != 0 {
+			argumentOrder = namedCallOrder(expr, sigType)
+			w.Code(exprNamedCall)
+		} else {
+			w.Code(exprCall)
+		}
 		writeFunExpr()
 		w.pos(expr)
 
 		paramType := func(i int) types2.Type {
+			if argumentOrder != nil {
+				i = argumentOrder[i]
+			}
 			if sigType.Variadic() && !expr.HasDots && i >= paramTypes.Len()-1 {
 				return paramTypes.At(paramTypes.Len() - 1).Type().(*types2.Slice).Elem()
 			}
@@ -2267,6 +2318,12 @@ func (w *writer) expr(expr syntax.Expr) {
 
 		w.multiExpr(expr, paramType, expr.ArgList)
 		w.Bool(expr.HasDots)
+		if argumentOrder != nil {
+			w.Len(len(argumentOrder))
+			for _, index := range argumentOrder {
+				w.Len(index)
+			}
+		}
 		if rtype != nil {
 			w.rtype(rtype)
 		}
@@ -2494,6 +2551,16 @@ func (w *writer) implicitConvExpr(dst types2.Type, expr syntax.Expr) {
 
 func (w *writer) convertExpr(dst types2.Type, expr syntax.Expr, implicit bool) {
 	src := w.p.typeOf(expr)
+	if lift := w.p.info.OptionalConversions[expr]; lift != nil && dst != nil && types2.Identical(lift, dst) {
+		variant := types2.EnumStorageOf(dst).Lookup("$present", nil)
+		if basic, ok := src.(*types2.Basic); ok && basic.Kind() == types2.UntypedNil {
+			variant = types2.EnumStorageOf(dst).Lookup("$absent", nil)
+			w.enumConstruct(expr.Pos(), dst, variant, nil, nil)
+		} else {
+			w.enumConstruct(expr.Pos(), dst, variant, []syntax.Expr{expr}, nil)
+		}
+		return
+	}
 
 	// Omit implicit no-op conversions.
 	identical := dst == nil || types2.Identical(src, dst)
@@ -3030,7 +3097,11 @@ func (w *writer) pkgInitOrder() {
 		for _, v := range init.Lhs {
 			w.obj(v, nil)
 		}
-		w.expr(init.Rhs)
+		if len(init.Lhs) == 1 && w.p.info.OptionalConversions[init.Rhs] != nil {
+			w.implicitConvExpr(init.Lhs[0].Type(), init.Rhs)
+		} else {
+			w.expr(init.Rhs)
+		}
 	}
 }
 

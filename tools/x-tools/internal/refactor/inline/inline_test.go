@@ -1887,7 +1887,7 @@ func runTests(t *testing.T, tests []testcase) {
 			}
 
 			// Type check both files as one package.
-			info := &types.Info{
+			info := &types.Info{OptionalConversions: map[ast.Expr]types.Type{},
 				Defs:         make(map[*ast.Ident]types.Object),
 				Uses:         make(map[*ast.Ident]types.Object),
 				Types:        make(map[ast.Expr]types.TypeAndValue),

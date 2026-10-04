@@ -49,7 +49,8 @@ func NewIndex(files []*parsego.File, pkg *types.Package, info *types.Info) *Inde
 				// Report a reference for each identifier that
 				// uses a symbol exported from another package.
 				// (The built-in error.Error method has no package.)
-				if n.IsExported() {
+				param, _ := info.Uses[n].(*types.Var)
+				if n.IsExported() || param != nil && param.Kind() == types.ParamVar {
 					if obj, ok := info.Uses[n]; ok &&
 						obj.Pkg() != nil &&
 						obj.Pkg() != pkg {

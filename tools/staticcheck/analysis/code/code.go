@@ -348,7 +348,19 @@ func MayHaveSideEffects(pass *analysis.Pass, expr ast.Expr, purity purity.Result
 			}
 		}
 		return false
-	case *ast.ErrorExpr:
+	case *ast.ContextualVariantExpr:
+		for _, arg := range expr.Args {
+			if MayHaveSideEffects(pass, arg, purity) {
+				return true
+			}
+		}
+		return false
+	case *ast.OptionalExpr:
+		if pass != nil && pass.TypesInfo != nil && pass.TypesInfo.Types[expr].IsType() {
+			return false
+		}
+		return true
+	case *ast.ErrorExpr, *ast.MatchExpr:
 		// Propagation and handlers can change control flow, even for pure calls.
 		return true
 	case *ast.BadExpr:
@@ -359,7 +371,7 @@ func MayHaveSideEffects(pass *analysis.Pass, expr ast.Expr, purity purity.Result
 		// the literal itself cannot have side effects, only calling it
 		// might, which is handled by CallExpr.
 		return false
-	case *ast.ArrayType, *ast.StructType, *ast.FuncType, *ast.InterfaceType, *ast.MapType, *ast.ChanType:
+	case *ast.ArrayType, *ast.StructType, *ast.EnumType, *ast.FuncType, *ast.InterfaceType, *ast.MapType, *ast.ChanType:
 		// types cannot have side effects
 		return false
 	case *ast.BasicLit:

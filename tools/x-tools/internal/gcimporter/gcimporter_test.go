@@ -34,8 +34,9 @@ import (
 
 func TestMain(m *testing.M) {
 	testenv.ExitIfSmallMachine()
-	// TODO(mark): Express this suite in terms of "go list -export" and enable.
-	// os.Exit(m.Run())
+	// Run selected tests, including the Gon cache/export regressions.
+	// Returning without m.Run silently reports success without executing them.
+	os.Exit(m.Run())
 }
 
 // ----------------------------------------------------------------------------

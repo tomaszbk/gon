@@ -810,7 +810,7 @@ func (check *Checker) builtin(x *operand, call *syntax.CallExpr, id builtinId) (
 			if x.mode() == variable || indirect {
 				mode = variable
 			}
-			check.record(&operand{mode, selx, obj.Type(), nil, 0})
+			check.record(&operand{mode, selx, obj.Type(), nil, 0, false})
 		}
 
 		// The field offset is considered a variable even if the field is declared before
@@ -1120,6 +1120,9 @@ func (check *Checker) hasVarSize(t Type) bool {
 		}
 
 		return varSize
+
+	case *Optional:
+		return check.hasVarSize(t.elem)
 
 	case *Array:
 		// The array length is already computed. If it was a valid length, it

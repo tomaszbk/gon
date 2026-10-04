@@ -14,6 +14,9 @@ import (
 // conversion type-checks the conversion T(x).
 // The result is in x.
 func (check *Checker) conversion(x *operand, T Type) {
+	if check.optionAssignment(x, T, "optional conversion") {
+		return
+	}
 	constArg := x.mode() == constant_
 
 	var ok bool

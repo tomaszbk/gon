@@ -402,7 +402,15 @@ func hover(ctx context.Context, snapshot *cache.Snapshot, fh file.Handle, rng pr
 	decl, spec, field, assign := findDeclInfo(declPGF, declPos) // may be nil^4
 
 	var docText string
-	if docComment := chooseDocComment(declPGF, decl, spec, field, assign); docComment != nil {
+	docComment := chooseDocComment(declPGF, decl, spec, field, assign)
+	variant, owner := enumVariantDecl(declPGF, declPos)
+	if variant != nil {
+		docComment = variant.Doc
+		if docComment == nil {
+			docComment = variant.Comment
+		}
+	}
+	if docComment != nil {
 		docBuf := new(strings.Builder)
 		docBuf.WriteString(docComment.Text())
 
@@ -448,6 +456,10 @@ func hover(ctx context.Context, snapshot *cache.Snapshot, fh file.Handle, rng pr
 
 	// By default, types.ObjectString provides a reasonable signature.
 	signature := objectString(obj, qual, declPos, declPGF.Tok, spec)
+	if variant != nil {
+		start, end := declPGF.Tok.Offset(variant.Name.Pos()), declPGF.Tok.Offset(variant.End())
+		signature = "variant " + owner.Name.Name + "." + string(declPGF.Src[start:end])
+	}
 
 	// When hovering over a reference to a promoted struct field or method,
 	// show the implicitly selected intervening fields.
@@ -858,6 +870,28 @@ func hoverBuiltin(ctx context.Context, snapshot *cache.Snapshot, obj types.Objec
 	pgf, ident, err := builtinDecl(ctx, snapshot, obj)
 	if err != nil {
 		return nil, err
+	}
+
+	if typ, variant := canonicalEnumConstructor(obj); variant != nil {
+		declaration, _ := enumVariantDecl(pgf, ident.Pos())
+		comment := declaration.Doc
+		if comment == nil {
+			comment = declaration.Comment
+		}
+		signature := "variant " + types.TypeString(typ, nil) + "." + variant.Name()
+		if variant.NumFields() != 0 {
+			var fields []string
+			for i := 0; i < variant.NumFields(); i++ {
+				fields = append(fields, types.TypeString(variant.Field(i).Type(), nil))
+			}
+			signature += "(" + strings.Join(fields, ", ") + ")"
+		}
+		docText := comment.Text()
+		return &hoverResult{
+			Signature: signature, SingleLine: signature,
+			Synopsis: doc.Synopsis(docText), FullDocumentation: docText,
+			SymbolName: types.Unalias(typ).(*types.Named).Obj().Name() + "." + variant.Name(),
+		}, nil
 	}
 
 	var (

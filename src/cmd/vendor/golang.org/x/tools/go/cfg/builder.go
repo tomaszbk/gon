@@ -10,9 +10,11 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"go/types"
 )
 
 type builder struct {
+	info      *types.Info
 	blocks    []*Block
 	mayReturn func(*ast.CallExpr) bool
 	current   *Block
@@ -104,6 +106,9 @@ start:
 		}
 
 		b.current = done
+
+	case *ast.MatchStmt:
+		b.match(s.Match, s, label)
 
 	case *ast.SwitchStmt:
 		b.switchStmt(s, label)
@@ -508,7 +513,22 @@ func (b *builder) add(n ast.Node) {
 	// As with ordinary expressions, this graph conservatively ignores the
 	// short-circuiting of && and ||.
 	ast.Inspect(n, func(node ast.Node) bool {
+		if e, ok := node.(ast.Expr); ok && b.info != nil && b.info.Types[e].IsType() {
+			return false
+		}
 		switch e := node.(type) {
+		case *ast.ValueSpec:
+			for _, value := range e.Values {
+				b.add(value)
+			}
+			return false
+		case *ast.TypeSpec, *ast.ArrayType, *ast.StructType, *ast.EnumType, *ast.FuncType, *ast.InterfaceType, *ast.MapType, *ast.ChanType:
+			return false
+		case *ast.ContextualVariantExpr:
+			for _, arg := range e.Args {
+				b.add(arg)
+			}
+			return false
 		case *ast.FuncLit, *ast.LambdaExpr:
 			return false
 		case *ast.SafeNavExpr:
@@ -553,6 +573,19 @@ func (b *builder) add(n ast.Node) {
 				b.current = done
 				return false
 			}
+		case *ast.OptionalExpr:
+			b.add(e.X)
+			absent := b.newBlock(KindOptionAbsent, nil)
+			done := b.newBlock(KindOptionDone, nil)
+			b.ifelse(absent, done)
+			b.current = absent
+			b.stmt(&ast.ReturnStmt{Return: e.Question, Results: []ast.Expr{}})
+			b.jump(done)
+			b.current = done
+			return false
+		case *ast.MatchExpr:
+			b.match(e, nil, nil)
+			return false
 		case *ast.ErrorExpr:
 			b.add(e.X)
 			handler := b.newBlock(KindErrorHandler, nil)

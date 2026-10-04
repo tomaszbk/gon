@@ -1153,7 +1153,7 @@ func writtenByWriteBasicTypes(typ *types.Type) bool {
 
 	// Basic types.
 	sym := typ.Sym()
-	if sym != nil && (sym.Pkg == types.BuiltinPkg || sym.Pkg == types.UnsafePkg) {
+	if sym != nil && (sym.Pkg == types.BuiltinPkg || sym.Pkg == types.UnsafePkg) && !typ.IsFullyInstantiated() {
 		return true
 	}
 	// any or error

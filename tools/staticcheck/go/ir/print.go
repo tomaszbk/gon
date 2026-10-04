@@ -360,6 +360,8 @@ func (v *CompositeValue) String() string {
 
 	var printValue func(idx int, vv Value)
 	switch typ := typeutil.CoreType(v.typ).(type) {
+	case *types.Optional:
+		printValue = func(idx int, vv Value) { fmt.Fprintf(&b, "%d: %s", idx, relName(vv, v)) }
 	case *types.Struct:
 		printValue = func(idx int, vv Value) {
 			fieldName := typ.Field(idx).Name()

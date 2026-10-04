@@ -1,0 +1,20 @@
+{"Time":"2026-10-03T22:48:03.520724-03:00","Action":"start","Package":"cmd/internal/testdir"}
+{"Time":"2026-10-03T22:48:03.727539-03:00","Action":"run","Package":"cmd/internal/testdir","Test":"Test"}
+{"Time":"2026-10-03T22:48:03.727674-03:00","Action":"output","Package":"cmd/internal/testdir","Test":"Test","Output":"=== RUN   Test\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:03.781612-03:00","Action":"run","Package":"cmd/internal/testdir","Test":"Test/errorhandling.go"}
+{"Time":"2026-10-03T22:48:03.781632-03:00","Action":"output","Package":"cmd/internal/testdir","Test":"Test/errorhandling.go","Output":"=== RUN   Test/errorhandling.go\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:03.781651-03:00","Action":"output","Package":"cmd/internal/testdir","Test":"Test/errorhandling.go","Output":"=== PAUSE Test/errorhandling.go\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:03.781657-03:00","Action":"pause","Package":"cmd/internal/testdir","Test":"Test/errorhandling.go"}
+{"Time":"2026-10-03T22:48:03.790093-03:00","Action":"cont","Package":"cmd/internal/testdir","Test":"Test/errorhandling.go"}
+{"Time":"2026-10-03T22:48:03.790111-03:00","Action":"output","Package":"cmd/internal/testdir","Test":"Test/errorhandling.go","Output":"=== CONT  Test/errorhandling.go\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:08.165228-03:00","Action":"output","Package":"cmd/internal/testdir","Test":"Test/errorhandling.go","Output":"--- PASS: Test/errorhandling.go (4.38s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:08.165752-03:00","Action":"pass","Package":"cmd/internal/testdir","Test":"Test/errorhandling.go","Elapsed":4.38}
+{"Time":"2026-10-03T22:48:08.16577-03:00","Action":"output","Package":"cmd/internal/testdir","Test":"Test","Output":"--- PASS: Test (0.06s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:08.165776-03:00","Action":"pass","Package":"cmd/internal/testdir","Test":"Test","Elapsed":0.06}
+{"Time":"2026-10-03T22:48:08.165782-03:00","Action":"run","Package":"cmd/internal/testdir","Test":"TestShouldTest"}
+{"Time":"2026-10-03T22:48:08.165786-03:00","Action":"output","Package":"cmd/internal/testdir","Test":"TestShouldTest","Output":"=== RUN   TestShouldTest\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:08.165826-03:00","Action":"output","Package":"cmd/internal/testdir","Test":"TestShouldTest","Output":"--- PASS: TestShouldTest (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:08.165833-03:00","Action":"pass","Package":"cmd/internal/testdir","Test":"TestShouldTest","Elapsed":0}
+{"Time":"2026-10-03T22:48:08.165843-03:00","Action":"output","Package":"cmd/internal/testdir","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:08.16635-03:00","Action":"output","Package":"cmd/internal/testdir","Output":"ok  \tcmd/internal/testdir\t4.645s\n"}
+{"Time":"2026-10-03T22:48:08.166365-03:00","Action":"pass","Package":"cmd/internal/testdir","Elapsed":4.646}

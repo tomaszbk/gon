@@ -266,6 +266,7 @@ func (check *Checker) updateExprType(x syntax.Expr, typ Type, final bool) {
 	case *syntax.BadExpr,
 		*syntax.FuncLit,
 		*syntax.ErrorExpr,
+		*syntax.OptionalExpr,
 		*syntax.CompositeLit,
 		*syntax.IndexExpr,
 		*syntax.SliceExpr,
@@ -300,6 +301,13 @@ func (check *Checker) updateExprType(x syntax.Expr, typ Type, final bool) {
 
 	case *syntax.ParenExpr:
 		check.updateExprType(x.X, typ, final)
+
+	case *syntax.MatchExpr:
+		for _, arm := range x.Arms {
+			if arm.Value != nil {
+				check.updateExprType(arm.Value, typ, final)
+			}
+		}
 
 	case *syntax.CondExpr:
 		// The branches get the type of the conditional expression. Unlike
@@ -390,7 +398,7 @@ func (check *Checker) updateExprType(x syntax.Expr, typ Type, final bool) {
 	}
 	if old.val != nil {
 		// If x is a constant, it must be representable as a value of typ.
-		c := operand{old.mode, x, old.typ, old.val, 0}
+		c := operand{old.mode, x, old.typ, old.val, 0, false}
 		check.convertUntyped(&c, typ)
 		if !c.isValid() {
 			return
@@ -782,7 +790,7 @@ func (check *Checker) shift(x, y *operand, e syntax.Expr, op syntax.Operator) {
 	// final type from the context, which must then be an integer type (see
 	// updateExprType): mark them like an untyped constant lhs.
 	if isUntyped(x.typ()) {
-		untypedCondExprs(x.expr, func(e *syntax.CondExpr) {
+		untypedCondExprs(x.expr, func(e syntax.Expr) {
 			if info, found := check.untyped[e]; found {
 				info.isLhs = true
 				check.untyped[e] = info
@@ -793,9 +801,9 @@ func (check *Checker) shift(x, y *operand, e syntax.Expr, op syntax.Operator) {
 	x.mode_ = value
 }
 
-// untypedCondExprs calls f for each conditional expression whose type is
+// untypedCondExprs calls f for each conditional or match expression whose type is
 // the type of the untyped non-constant expression e.
-func untypedCondExprs(e syntax.Expr, f func(*syntax.CondExpr)) {
+func untypedCondExprs(e syntax.Expr, f func(syntax.Expr)) {
 	switch e := e.(type) {
 	case *syntax.ParenExpr:
 		untypedCondExprs(e.X, f)
@@ -808,7 +816,7 @@ func untypedCondExprs(e syntax.Expr, f func(*syntax.CondExpr)) {
 				untypedCondExprs(e.Y, f)
 			}
 		}
-	case *syntax.CondExpr:
+	case *syntax.CondExpr, *syntax.MatchExpr:
 		f(e)
 	}
 }
@@ -816,7 +824,7 @@ func untypedCondExprs(e syntax.Expr, f func(*syntax.CondExpr)) {
 // hasUntypedCondExprs reports whether untypedCondExprs(e, f) calls f.
 func hasUntypedCondExprs(e syntax.Expr) bool {
 	found := false
-	untypedCondExprs(e, func(*syntax.CondExpr) { found = true })
+	untypedCondExprs(e, func(syntax.Expr) { found = true })
 	return found
 }
 
@@ -1107,6 +1115,15 @@ func (check *Checker) rawExpr(T *target, x *operand, e syntax.Expr, allowGeneric
 		T = nil
 	}
 
+	if T != nil && T.kind == inferTarget && isOptionContextExpr(e) {
+		if check.deferredOptionContexts == nil {
+			check.deferredOptionContexts = make(map[syntax.Expr]bool)
+		}
+		check.deferredOptionContexts[e] = true
+		x.mode_, x.typ_, x.expr = value, T.typ, e
+		return expression
+	}
+
 	kind := check.exprInternal(T, x, e)
 
 	if !allowGeneric {
@@ -1202,7 +1219,7 @@ func (check *Checker) exprInternal(T *target, x *operand, e syntax.Expr) exprKin
 		// type inference doesn't go past parentheses (target types T/U = nil),
 		// but a parenthesized conditional expression keeps its target: the
 		// target determines the conversions of its branches.
-		if _, ok := syntax.Unparen(e.X).(*syntax.CondExpr); !ok && !isNilTargetExpr(e.X) {
+		if !isCondExpr(e.X) && !isMatchExpr(e.X) && !isNilTargetExpr(e.X) && !isOptionContextExpr(e.X) {
 			T = nil
 		}
 		kind := check.rawExpr(T, x, e.X, false)
@@ -1265,6 +1282,15 @@ func (check *Checker) exprInternal(T *target, x *operand, e syntax.Expr) exprKin
 		check.use(e.X)
 		goto Error
 
+	case *syntax.ContextualVariantExpr:
+		check.contextualVariant(T, x, e)
+		if !x.isValid() {
+			goto Error
+		}
+
+	case *syntax.OptionalExpr:
+		return check.optionExpr(x, e)
+
 	case *syntax.ErrorExpr:
 		return check.errorExpr(x, e)
 
@@ -1272,6 +1298,12 @@ func (check *Checker) exprInternal(T *target, x *operand, e syntax.Expr) exprKin
 		check.nilGuard(x, e)
 	case *syntax.SafeNavExpr:
 		return check.safeNavExpr(T, x, e, false)
+
+	case *syntax.MatchExpr:
+		check.matchExpr(T, x, e, 0, false)
+		if !x.isValid() {
+			goto Error
+		}
 
 	case *syntax.CondExpr:
 		check.condExpr(T, x, e)
@@ -1490,7 +1522,7 @@ func (check *Checker) multiExpr(e syntax.Expr, allowCommaOk bool) (list []*opera
 		for i, v := range t.vars {
 			// create a dummy expression (in place of e) for better error messages
 			dummy := syntax.NewName(syntax.StartPos(e), nth(i+1, "function result"))
-			list[i] = &operand{mode_: value, expr: dummy, typ_: v.typ}
+			list[i] = &operand{mode_: value, expr: dummy, typ_: v.typ, multiValue: true}
 		}
 		return
 	}
@@ -1506,7 +1538,8 @@ func (check *Checker) multiExpr(e syntax.Expr, allowCommaOk bool) (list []*opera
 		}
 		// create a dummy expression (in place of e) for better error messages
 		dummy := syntax.NewName(syntax.StartPos(e), what)
-		x2 := &operand{mode_: value, expr: dummy, typ_: typ}
+		x2 := &operand{mode_: value, expr: dummy, typ_: typ, multiValue: true}
+		x.multiValue = true
 		list = append(list, x2)
 		commaOk = true
 	}

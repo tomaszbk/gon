@@ -176,6 +176,44 @@ Suffixes:
 		}
 	}
 
+	if variant := cand.enumVariant; variant != nil {
+		kind = protocol.EnumMemberCompletion
+		if variant.IsRecord() {
+			inPattern, haveBraces := c.enumRecordContext()
+			var fields []string
+			written, omitted := 0, false
+			if !haveBraces {
+				snip.WriteText("{")
+			}
+			for i := 0; i < variant.NumFields(); i++ {
+				field := variant.Field(i)
+				if !field.Exported() && field.Pkg() != c.pkg.Types() {
+					omitted = true
+					continue // inaccessible construction fields use their zero values
+				}
+				fields = append(fields, field.Name()+" "+types.TypeString(field.Type(), c.qual))
+				if !haveBraces {
+					if written > 0 {
+						snip.WriteText(", ")
+					}
+					snip.WriteText(field.Name() + ": ")
+					snip.WritePlaceholder(nil)
+				}
+				written++
+			}
+			if !haveBraces {
+				if inPattern && omitted {
+					if written > 0 {
+						snip.WriteText(", ")
+					}
+					snip.WriteText("...")
+				}
+				snip.WriteText("}")
+			}
+			detail += " { " + strings.Join(fields, "; ") + " }"
+		}
+	}
+
 	// If this candidate needs an additional import statement,
 	// add the additional text edits needed.
 	if cand.imp != nil {
@@ -390,6 +428,8 @@ func inferableTypeParams(sig *types.Signature) map[*types.TypeParam]bool {
 	var visit func(t types.Type)
 	visit = func(t types.Type) {
 		switch t := t.(type) {
+		case *types.Optional:
+			visit(t.Elem())
 		case *types.Array:
 			visit(t.Elem())
 		case *types.Chan:

@@ -271,6 +271,39 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.CallExpr:
 		a.apply(n, "Fun", nil, n.Fun)
 		a.applyList(n, "Args")
+		a.applyList(n, "ArgNames")
+
+	case *ast.ContextualVariantExpr:
+		a.apply(n, "Name", nil, n.Name)
+		a.applyList(n, "Args")
+	case *ast.OptionalExpr:
+		a.apply(n, "X", nil, n.X)
+
+	case *ast.EnumType:
+		a.applyList(n, "Variants")
+	case *ast.EnumVariant:
+		a.apply(n, "Doc", nil, n.Doc)
+		a.apply(n, "Name", nil, n.Name)
+		a.apply(n, "Payload", nil, n.Payload)
+		a.apply(n, "Comment", nil, n.Comment)
+	case *ast.MatchExpr:
+		a.apply(n, "Tag", nil, n.Tag)
+		a.applyList(n, "Arms")
+	case *ast.MatchStmt:
+		a.apply(n, "Match", nil, n.Match)
+	case *ast.MatchArm:
+		a.apply(n, "Pattern", nil, n.Pattern)
+		a.apply(n, "Guard", nil, n.Guard)
+		a.apply(n, "Value", nil, n.Value)
+		a.apply(n, "Body", nil, n.Body)
+	case *ast.MatchPattern:
+		a.apply(n, "Inner", nil, n.Inner)
+		a.apply(n, "Value", nil, n.Value)
+		a.applyList(n, "Args")
+		a.applyList(n, "Fields")
+	case *ast.MatchField:
+		a.apply(n, "Name", nil, n.Name)
+		a.apply(n, "Pattern", nil, n.Pattern)
 
 	case *ast.ErrorExpr:
 		a.apply(n, "X", nil, n.X)

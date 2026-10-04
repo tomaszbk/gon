@@ -122,6 +122,9 @@ const (
 	// This flag is just a cached computation of Size_ == PtrBytes == goarch.PtrSize.
 	TFlagDirectIface TFlag = 1 << 5
 
+	// TFlagEnum marks a closed Gon enum. Its GC representation remains Struct.
+	TFlagEnum TFlag = 1 << 6
+
 	// Leaving this breadcrumb behind for dlv. It should not be used, and no
 	// Kind should be big enough to set this bit.
 	KindDirectIface Kind = 1 << 5

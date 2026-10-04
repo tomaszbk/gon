@@ -53,11 +53,12 @@ var operandModeString = [...]string{
 // for built-in functions.
 // The zero value of operand is a ready to use invalid operand.
 type operand struct {
-	mode_ operandMode
-	expr  ast.Expr
-	typ_  Type
-	val   constant.Value
-	id    builtinId
+	mode_      operandMode
+	expr       ast.Expr
+	typ_       Type
+	val        constant.Value
+	id         builtinId
+	multiValue bool // one component of a multi-valued expression
 }
 
 func (x *operand) mode() operandMode {
@@ -248,6 +249,8 @@ func compositeKind(typ Type) string {
 	switch typ.Underlying().(type) {
 	case *Basic:
 		return ""
+	case *Optional:
+		return "optional"
 	case *Array:
 		return "array"
 	case *Slice:

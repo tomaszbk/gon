@@ -332,8 +332,8 @@ redo:
 			s.op, s.prec = Coalesce, precOrOr
 			goto assignop
 		default:
-			s.errorf("invalid character %#U", '?')
-			goto redo
+			s.tok = _Question
+			s.nlsemi = true
 		}
 
 	case '=':

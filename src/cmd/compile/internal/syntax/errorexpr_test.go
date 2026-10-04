@@ -11,6 +11,8 @@ func TestErrorHandlingSyntax(t *testing.T) {
 		"func f() { f()!\n f()! // comment\n f()! /* comment */\n f()! /*\n comment */\n}",
 		`func f() { _ = !true; _ = ! false; _ = true != false }`,
 		`type or int; func f(or or) { _ = or }; type G[P or] struct{}`,
+		`type or[T any] interface{ ~int }; type G[P or[int]] struct{ Value P }`,
+		`type or interface{ ~int }; type G[P or | ~string] struct{ Value P }`,
 		`func f() { if f() or e { _ = e; return } { }; for f() or e { return } { } }`,
 		`func f() { f() or e { for { break }; switch { default: break }; return } }`,
 	} {
@@ -46,6 +48,19 @@ func TestErrorHandlerBranchBoundary(t *testing.T) {
 		_, err := Parse(NewFileBase("test.go"), strings.NewReader(src), nil, nil, CheckBranches)
 		if err == nil {
 			t.Errorf("accepted escaping handler branch: %s", body)
+		}
+	}
+}
+
+func TestGenericOrConstraintErrors(t *testing.T) {
+	for _, src := range []string{
+		`package p; type G[P or]`,
+		`package p; type G[P or,]`,
+		`package p; type G[P or |] struct{}`,
+		`package p; type G[P or[int] struct{}`,
+	} {
+		if _, err := Parse(NewFileBase("bad.go"), strings.NewReader(src), func(error) {}, nil, 0); err == nil {
+			t.Errorf("accepted malformed generic constraint: %s", src)
 		}
 	}
 }

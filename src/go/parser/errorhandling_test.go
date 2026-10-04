@@ -42,6 +42,9 @@ func f() error {
 func TestErrorHandlingLegacySyntax(t *testing.T) {
 	for _, src := range []string{
 		`package p; type or bool; func f(x or) or { return !x }`,
+		`package p; type or interface{ ~int }; type G[P or] struct{ Value P }`,
+		`package p; type or[T any] interface{ ~int }; type G[P or[int]] struct{ Value P }`,
+		`package p; type or interface{ ~int }; type G[P or | ~string] struct{ Value P }`,
 		`package p; type or interface{ ~bool }; func f[T or](x T) T { return ! x }`,
 		`package p; func f() { or := true; _ = !or; _ = or != false }`,
 		`package p; func f() { x := call()!; _ = x }`,
@@ -55,6 +58,19 @@ func TestErrorHandlingLegacySyntax(t *testing.T) {
 		src := "package p; var x = !" + gap + "true"
 		if _, err := ParseFile(token.NewFileSet(), "p.go", src, 0); err == nil {
 			t.Errorf("accepted removed multiline prefix negation: %q", src)
+		}
+	}
+}
+
+func TestGenericOrConstraintErrors(t *testing.T) {
+	for _, src := range []string{
+		`package p; type G[P or]`,
+		`package p; type G[P or,]`,
+		`package p; type G[P or |] struct{}`,
+		`package p; type G[P or[int] struct{}`,
+	} {
+		if _, err := ParseFile(token.NewFileSet(), "bad.go", src, AllErrors); err == nil {
+			t.Errorf("accepted malformed generic constraint: %s", src)
 		}
 	}
 }

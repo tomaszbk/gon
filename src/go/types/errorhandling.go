@@ -17,17 +17,20 @@ func (check *Checker) errorExpr(x *operand, e *ast.ErrorExpr) exprKind {
 		x.expr = e
 		return statement
 	}
-	if _, ok := ast.Unparen(e.X).(*ast.CallExpr); !ok {
-		check.use(e.X)
-		return fail("error handling requires a function or method call")
-	}
 	kind := check.rawExpr(nil, x, e.X, false)
-	if kind == conversion {
-		return fail("error handling requires a function or method call")
-	}
 	if !x.isValid() {
 		x.expr = e
 		return statement
+	}
+
+	if IsCanonicalResult(x.typ()) {
+		return check.resultErrorExpr(x, e)
+	}
+	if kind == conversion {
+		return fail("error handling requires a function or method call")
+	}
+	if _, ok := ast.Unparen(e.X).(*ast.CallExpr); !ok {
+		return fail("error handling requires a function or method call or canonical Result")
 	}
 	if check.sig == nil {
 		return fail("error handling is only permitted inside a function")

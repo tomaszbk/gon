@@ -1,0 +1,3 @@
+{"Time":"2026-10-03T11:32:49.170423-03:00","Action":"start","Package":"golang.org/x/tools/internal/gcimporter"}
+{"Time":"2026-10-03T11:32:49.436613-03:00","Action":"output","Package":"golang.org/x/tools/internal/gcimporter","Output":"ok  \tgolang.org/x/tools/internal/gcimporter\t0.266s\n"}
+{"Time":"2026-10-03T11:32:49.436935-03:00","Action":"pass","Package":"golang.org/x/tools/internal/gcimporter","Elapsed":0.267}

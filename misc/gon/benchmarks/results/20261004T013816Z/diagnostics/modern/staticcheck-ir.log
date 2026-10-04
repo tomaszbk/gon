@@ -1,0 +1,80 @@
+{"Time":"2026-10-03T22:46:31.408003-03:00","Action":"start","Package":"honnef.co/go/tools/go/ir"}
+{"Time":"2026-10-03T22:46:31.700608-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives"}
+{"Time":"2026-10-03T22:46:31.700861-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives","Output":"=== RUN   TestGonAlternatives\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.700986-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives/legacy"}
+{"Time":"2026-10-03T22:46:31.700999-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives/legacy","Output":"=== RUN   TestGonAlternatives/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.705964-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives/legacy","Output":"--- PASS: TestGonAlternatives/legacy (0.01s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.706004-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives/legacy","Elapsed":0.01}
+{"Time":"2026-10-03T22:46:31.706037-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives/modern"}
+{"Time":"2026-10-03T22:46:31.706046-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives/modern","Output":"=== RUN   TestGonAlternatives/modern\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.708693-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives/modern","Output":"--- PASS: TestGonAlternatives/modern (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.708704-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives/modern","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.708722-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives","Output":"--- PASS: TestGonAlternatives (0.01s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.708738-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonAlternatives","Elapsed":0.01}
+{"Time":"2026-10-03T22:46:31.708745-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification"}
+{"Time":"2026-10-03T22:46:31.708752-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification","Output":"=== RUN   TestGonSyntaxSimplification\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.708758-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification/legacy"}
+{"Time":"2026-10-03T22:46:31.708764-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification/legacy","Output":"=== RUN   TestGonSyntaxSimplification/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.710523-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification/legacy","Output":"--- PASS: TestGonSyntaxSimplification/legacy (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.71055-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification/legacy","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.710562-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification/modern"}
+{"Time":"2026-10-03T22:46:31.710569-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification/modern","Output":"=== RUN   TestGonSyntaxSimplification/modern\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.711659-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification/modern","Output":"--- PASS: TestGonSyntaxSimplification/modern (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.711671-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification/modern","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.71168-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification","Output":"--- PASS: TestGonSyntaxSimplification (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.7117-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSyntaxSimplification","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.711708-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional"}
+{"Time":"2026-10-03T22:46:31.711714-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional","Output":"=== RUN   TestGonConditional\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.71172-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional/conditional_legacy"}
+{"Time":"2026-10-03T22:46:31.711725-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional/conditional_legacy","Output":"=== RUN   TestGonConditional/conditional_legacy\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.715932-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional/conditional_legacy","Output":"--- PASS: TestGonConditional/conditional_legacy (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.715942-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional/conditional_legacy","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.715949-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional/conditional_modern"}
+{"Time":"2026-10-03T22:46:31.715953-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional/conditional_modern","Output":"=== RUN   TestGonConditional/conditional_modern\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.719468-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional/conditional_modern","Output":"--- PASS: TestGonConditional/conditional_modern (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.719476-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional/conditional_modern","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.719481-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional","Output":"--- PASS: TestGonConditional (0.01s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.719486-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonConditional","Elapsed":0.01}
+{"Time":"2026-10-03T22:46:31.719496-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSwitchTag"}
+{"Time":"2026-10-03T22:46:31.719501-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSwitchTag","Output":"=== RUN   TestGonSwitchTag\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.719637-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSwitchTag","Output":"--- PASS: TestGonSwitchTag (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.719656-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonSwitchTag","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.719665-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures"}
+{"Time":"2026-10-03T22:46:31.719671-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures","Output":"=== RUN   TestGonFeatures\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.719678-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures/legacy"}
+{"Time":"2026-10-03T22:46:31.719684-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures/legacy","Output":"=== RUN   TestGonFeatures/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.723643-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures/legacy","Output":"--- PASS: TestGonFeatures/legacy (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.723663-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures/legacy","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.723669-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures/modern"}
+{"Time":"2026-10-03T22:46:31.723684-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures/modern","Output":"=== RUN   TestGonFeatures/modern\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.727223-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures/modern","Output":"--- PASS: TestGonFeatures/modern (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.727232-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures/modern","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.727238-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures","Output":"--- PASS: TestGonFeatures (0.01s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.727243-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonFeatures","Elapsed":0.01}
+{"Time":"2026-10-03T22:46:31.727248-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow"}
+{"Time":"2026-10-03T22:46:31.727252-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow","Output":"=== RUN   TestGonErrorFlow\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.727257-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow/legacy"}
+{"Time":"2026-10-03T22:46:31.727261-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow/legacy","Output":"=== RUN   TestGonErrorFlow/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.728644-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow/legacy","Output":"--- PASS: TestGonErrorFlow/legacy (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.728651-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow/legacy","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.728656-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow/modern"}
+{"Time":"2026-10-03T22:46:31.72866-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow/modern","Output":"=== RUN   TestGonErrorFlow/modern\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.730135-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow/modern","Output":"--- PASS: TestGonErrorFlow/modern (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.730159-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow/modern","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.730173-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow","Output":"--- PASS: TestGonErrorFlow (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.730179-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonErrorFlow","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.730185-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments"}
+{"Time":"2026-10-03T22:46:31.730193-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments","Output":"=== RUN   TestGonNamedArguments\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.730199-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments/legacy"}
+{"Time":"2026-10-03T22:46:31.730204-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments/legacy","Output":"=== RUN   TestGonNamedArguments/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.730937-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments/legacy","Output":"--- PASS: TestGonNamedArguments/legacy (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.730944-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments/legacy","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.730949-03:00","Action":"run","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments/modern"}
+{"Time":"2026-10-03T22:46:31.730961-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments/modern","Output":"=== RUN   TestGonNamedArguments/modern\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.73162-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments/modern","Output":"--- PASS: TestGonNamedArguments/modern (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.731626-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments/modern","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.73163-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments","Output":"--- PASS: TestGonNamedArguments (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.731635-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Test":"TestGonNamedArguments","Elapsed":0}
+{"Time":"2026-10-03T22:46:31.73164-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:46:31.732337-03:00","Action":"output","Package":"honnef.co/go/tools/go/ir","Output":"ok  \thonnef.co/go/tools/go/ir\t0.324s\n"}
+{"Time":"2026-10-03T22:46:31.732357-03:00","Action":"pass","Package":"honnef.co/go/tools/go/ir","Elapsed":0.324}

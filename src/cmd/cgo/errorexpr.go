@@ -33,7 +33,7 @@ func (f *File) walkErrorExpr(x any, visit func(*File, any, astContext)) bool {
 // or nil if there is none. It does not look inside function literals,
 // which are their own propagation boundary.
 func findErrorExpr(x ast.Expr) ast.Node {
-	var found *ast.ErrorExpr
+	var found ast.Node
 	ast.Inspect(x, func(n ast.Node) bool {
 		if found != nil {
 			return false
@@ -41,7 +41,7 @@ func findErrorExpr(x ast.Expr) ast.Node {
 		switch n := n.(type) {
 		case *ast.FuncLit, *ast.LambdaExpr:
 			return false
-		case *ast.ErrorExpr:
+		case *ast.ErrorExpr, *ast.OptionalExpr:
 			found = n
 			return false
 		}

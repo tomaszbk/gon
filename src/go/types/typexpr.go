@@ -273,6 +273,9 @@ func (check *Checker) typInternal(e0 ast.Expr, def *TypeName) (T Type) {
 		check.verifyVersionf(inNode(e, ix.lbrack), go1_18, "type instantiation")
 		return check.instantiatedType(ix)
 
+	case *ast.OptionalExpr:
+		return optionType(check.varType(e.X))
+
 	case *ast.ParenExpr:
 		// Generic types must be instantiated before they can be used in any form.
 		// Consequently, generic types cannot be parenthesized.
@@ -303,6 +306,9 @@ func (check *Checker) typInternal(e0 ast.Expr, def *TypeName) (T Type) {
 	case *ast.Ellipsis:
 		// dots are handled explicitly where they are valid
 		check.error(e, InvalidSyntaxTree, "invalid use of ...")
+
+	case *ast.EnumType:
+		return check.enumType(e, def)
 
 	case *ast.StructType:
 		typ := new(Struct)

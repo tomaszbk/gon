@@ -820,6 +820,47 @@ func (p *pp) printValue(value reflect.Value, verb rune, depth int) {
 			p.buf.writeByte(']')
 		}
 	case reflect.Struct:
+		if reflect.IsOptional(f.Type()) {
+			if p.fmt.sharpV {
+				p.buf.writeByte('(')
+				p.buf.writeString(f.Type().String())
+				p.buf.writeString(")(")
+			}
+			if reflect.OptionalValuePresent(f) {
+				p.printValue(reflect.OptionalValuePayload(f), verb, depth+1)
+			} else {
+				p.buf.writeString("nil")
+			}
+			if p.fmt.sharpV {
+				p.buf.writeByte(')')
+			}
+			return
+		}
+		if reflect.IsEnum(f.Type()) {
+			variant := reflect.EnumValueVariant(f)
+			p.buf.writeString(f.Type().String())
+			p.buf.writeByte('.')
+			p.buf.writeString(variant.Name)
+			if len(variant.Fields) != 0 || variant.Record {
+				open, close := byte('('), byte(')')
+				if variant.Record {
+					open, close = '{', '}'
+				}
+				p.buf.writeByte(open)
+				for i, field := range variant.Fields {
+					if i != 0 {
+						p.buf.writeString(commaSpaceString)
+					}
+					if variant.Record {
+						p.buf.writeString(field.Name)
+						p.buf.writeByte(':')
+					}
+					p.printValue(reflect.EnumValuePayload(f, i), verb, depth+1)
+				}
+				p.buf.writeByte(close)
+			}
+			return
+		}
 		if p.fmt.sharpV {
 			p.buf.writeString(f.Type().String())
 		}

@@ -97,7 +97,14 @@ type object struct {
 func AnalyzeCallee(logf func(string, ...any), fset *token.FileSet, pkg *types.Package, info *types.Info, decl *ast.FuncDecl, content []byte) (*Callee, error) {
 	checkInfoFields(info)
 	for n := range ast.Preorder(decl) {
+		if e, ok := n.(ast.Expr); ok && (info.OptionalConversions[e] != nil || info.OptionalConversions == nil && types.IsOptional(info.TypeOf(e))) {
+			return nil, fmt.Errorf("cannot inline function containing Gon contextual Option conversion")
+		}
 		switch n := n.(type) {
+		case *ast.CallExpr:
+			if len(n.ArgNames) != 0 {
+				return nil, fmt.Errorf("cannot inline function containing Gon named arguments")
+			}
 		case *ast.BinaryExpr:
 			if n.Op == token.COALESCE {
 				return nil, fmt.Errorf("cannot inline Gon control-flow expressions")
@@ -106,7 +113,7 @@ func AnalyzeCallee(logf func(string, ...any), fset *token.FileSet, pkg *types.Pa
 			if n.Tok == token.COALESCE_ASSIGN {
 				return nil, fmt.Errorf("cannot inline Gon control-flow expressions")
 			}
-		case *ast.ErrorExpr, *ast.CondExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr:
+		case *ast.ErrorExpr, *ast.CondExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.MatchStmt, *ast.OptionalExpr, *ast.ContextualVariantExpr:
 			return nil, fmt.Errorf("cannot inline function containing Gon control-flow expressions")
 		}
 	}

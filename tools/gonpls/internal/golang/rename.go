@@ -634,7 +634,8 @@ func renameOrdinary(ctx context.Context, snapshot *cache.Snapshot, uri protocol.
 
 	// Find objectpath, if object is exported ("" otherwise).
 	var declObjPath objectpath.Path
-	if obj.Exported() {
+	param, _ := obj.(*types.Var)
+	if obj.Exported() || param != nil && param.Kind() == types.ParamVar {
 		// objectpath.For requires the origin of a generic function or type, not an
 		// instantiation (a bug?).
 		//
@@ -662,7 +663,7 @@ func renameOrdinary(ctx context.Context, snapshot *cache.Snapshot, uri protocol.
 			// objectpath, the classifies them as local vars, but as
 			// they came from export data they lack syntax and the
 			// correct scope tree (issue #61294).
-			if !obj0.IsField() && !typesinternal.IsPackageLevel(obj) {
+			if obj0.Kind() != types.ParamVar && !obj0.IsField() && !typesinternal.IsPackageLevel(obj) && enumObjectOwner(obj) == nil {
 				goto skipObjectPath
 			}
 		}
@@ -718,7 +719,7 @@ func renameOrdinary(ctx context.Context, snapshot *cache.Snapshot, uri protocol.
 	// For exported fields and methods, the scope is the
 	// transitive rdeps. (The exportedness of the field's struct
 	// or method's receiver is irrelevant.)
-	transitive := false
+	transitive := enumObjectOwner(obj) != nil
 	switch obj := obj.(type) {
 	case *types.TypeName:
 		// Renaming an exported package-level type
@@ -1353,6 +1354,13 @@ func renameObjects(newName string, pkg *cache.Package, targets ...types.Object) 
 
 	// Check that the renaming of the identifier is ok.
 	for _, obj := range targets {
+		// Imported parameter objects are referenced only by named argument
+		// labels. Their lexical scope is owned and checked in the declaring
+		// package, before reverse dependencies are processed.
+		if v, ok := obj.(*types.Var); ok && v.Kind() == types.ParamVar && v.Pkg() != pkg.Types() {
+			r.objsToUpdate[obj] = true
+			continue
+		}
 		r.check(obj)
 		if len(r.conflicts) > 0 {
 			// Stop at first error.
@@ -1702,6 +1710,11 @@ func docComment(pgf *parsego.File, curId inspector.Cursor) *ast.CommentGroup {
 		switch decl := cur.Node().(type) {
 		case *ast.FuncDecl:
 			return decl.Doc
+		case *ast.EnumVariant:
+			if decl.Doc != nil {
+				return decl.Doc
+			}
+			return decl.Comment
 		case *ast.Field:
 			return decl.Doc
 		case *ast.GenDecl:

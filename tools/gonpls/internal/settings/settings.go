@@ -48,6 +48,9 @@ const (
 // field name rendered in camelCase. Unlike most Go doc comments,
 // these fields should be documented using GitHub markdown.
 type Options struct {
+	// MigrateOptionals is internal to the source migration command.
+	MigrateOptionals bool
+
 	ClientOptions
 	ServerOptions
 	UserOptions

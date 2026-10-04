@@ -11,9 +11,25 @@ import time
 
 ROOT = Path(__file__).resolve().parents[2]
 GON = ROOT / 'gon/bin' / ('gon.exe' if os.name == 'nt' else 'gon')
+MODERN_FEATURES = ('namedarguments', 'enums', 'matching', 'option', 'result')
 
 
 def checks(feature):
+    if feature == 'modern':
+        steps = [(name, step) for name in MODERN_FEATURES for step in checks(name)]
+        commands_by_name = {}
+        for _, (name, cwd, cmd) in steps:
+            commands_by_name.setdefault(name, set()).add((cwd, tuple(cmd)))
+        selected, seen = [], set()
+        for profile, (name, cwd, cmd) in steps:
+            key = cwd, tuple(cmd)
+            if key in seen:
+                continue
+            seen.add(key)
+            if len(commands_by_name[name]) > 1:
+                name = profile+'-'+name
+            selected.append((name, cwd, cmd))
+        return selected
     def test(name, cwd, packages, pattern=None):
         args = [str(GON), 'test', '-json', *packages]
         if pattern:
@@ -21,16 +37,22 @@ def checks(feature):
         return name, cwd, args + ['-count=1']
     common = [
         ('vendor', '.', [sys.executable, 'misc/gon/vendor.py', '--check']),
-        ('install-tools', '.', [str(GON), 'install', 'cmd/vet', 'cmd/fix', 'cmd/gofmt', 'cmd/cover', 'cmd/cgo']),
+        ('install-tools', '.', [str(GON), 'install', 'cmd/vet', 'cmd/fix', 'cmd/gofmt', 'cmd/cover', 'cmd/cgo', 'cmd/export']),
         ('build-tooling', '.', [sys.executable, 'misc/gon/build.py']),
+        ('installer', '.', [sys.executable, 'misc/gon/test_install.py']),
         test('ast', '.', ['go/ast']),
+        test('compiler-inline', '.', ['cmd/compile/internal/inline'], '^TestGon'),
+        test('compiler-ssa', '.', ['cmd/compile/internal/ssacompile']),
+        ('readme-examples', '.', [sys.executable, 'misc/gon/test_readme.py']),
+        ('benchmark-correctness', '.', [sys.executable, 'misc/gon/benchmark.py', '--correctness-only']),
         test('structural-tools', 'tools/x-tools', ['./go/ast/inspector', './go/ast/astutil', './go/ast/edge', './go/cfg', './refactor/satisfy', './internal/typesinternal'], 'TestGon|TestCond|TestError|TestInspectAllNodes'),
         test('analyzers', 'tools/gonpls', ['./internal/settings'], '^TestGonAnalyzers$'),
         test('refactor-safety', 'tools/x-tools', ['./internal/refactor/inline'], '^(TestGon|TestCalleeEffects|TestBasics|TestPrecedenceParens)'),
-        test('staticcheck-safety', 'tools/staticcheck', ['./analysis/code', './go/ast/astutil'], '^TestGon'),
+        test('staticcheck-safety', 'tools/staticcheck', ['./analysis/code', './go/ast/astutil', './go/types/typeutil'], '^TestGon'),
+        test('optional-inference', 'tools/gonpls', ['./internal/golang', './internal/golang/completion'], '^TestGonOptional'),
     ]
     pairs = []
-    features = ['errorhandling', 'conditional', 'lambda', 'nullsafety'] if feature == 'tooling' else [feature]
+    features = ['errorhandling', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'matching', 'optionresult', 'optionsyntax'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature in ('option', 'result') else [feature])
     for name in features:
         pairs.append(test(name+'-execution', '.', ['cmd/internal/testdir'], 'Test/'+name+r'.go$'))
     if feature == 'tooling':
@@ -41,12 +63,19 @@ def checks(feature):
             test('typerefs', 'tools/gonpls', ['./internal/cache/typerefs'], '^TestRefs$'),
             test('unusedfunc', 'tools/gonpls', ['./internal/analysis/unusedfunc']),
             ('lsp', '.', [sys.executable, 'misc/gon/test.py']),
+            ('namedarguments-lsp', '.', [sys.executable, 'misc/gon/test_namedarguments.py']),
+            ('alternatives-lsp', '.', [sys.executable, 'misc/gon/test_alternatives.py']),
+            ('simplification-lsp', '.', [sys.executable, 'misc/gon/test_simplification.py']),
+            test('export-data', 'tools/x-tools', ['./internal/gcimporter'], '^TestGonAlternatives'),
             ('cli', '.', [sys.executable, 'misc/gon/test_cli.py']),
             test('syntax-fixes', 'tools/x-tools', ['./go/analysis/passes/gonmodernize']),
             ('fix-execution', '.', [sys.executable, 'misc/gon/test_fix.py']),
         ]
     pattern = {'conditional': 'CondExpr|CondParen', 'errorhandling': 'ErrorHandling|ErrorExpr',
-               'lambda': 'Lambda|NilSafety|NullSafety', 'nullsafety': 'Lambda|NilSafety|NullSafety'}[feature]
+               'lambda': 'Lambda|NilSafety|NullSafety', 'nullsafety': 'Lambda|NilSafety|NullSafety',
+               'namedarguments': 'NamedArguments', 'enums': 'Enum|Alternatives',
+               'matching': 'Match|Alternatives', 'option': 'NativeOptional|OptionResult|OptionContext|Alternatives',
+               'result': 'OptionResult|OptionContext|Alternatives'}[feature]
     extra = []
     if feature == 'conditional':
         extra = [
@@ -77,6 +106,30 @@ def checks(feature):
             test('staticcheck-diagnostics', 'tools/staticcheck', ['./internal/sharedcheck', './simple/s1023'] +
                  ['./staticcheck/'+p for p in ['sa4004', 'sa4009', 'sa5003', 'sa9001']], '^TestGon'),
         ]
+    elif feature in ('namedarguments', 'enums', 'matching', 'option', 'result'):
+        cgo_pattern = {'namedarguments': 'NamedArguments', 'enums': 'Matching',
+                       'matching': 'Matching', 'option': 'OptionResult', 'result': 'OptionResult'}[feature]
+        fixture = 'optionresult' if feature in ('option', 'result') else feature
+        extra = [
+            test('lexical', '.', ['go/token', 'go/scanner'], '^Test(GonTokens|Scan|Semis|ScanErrors)$'),
+            # Verify the adapted cgo source still builds against the baseline AST.
+            test('cgo-bootstrap', '.', ['cmd/cgo/internal/testconditional'], '^TestCgoConditionalBootstrap$'),
+            # Paired Cgo checks also compile and execute instrumented programs.
+            test('cgo-cover', '.', ['cmd/cgo/internal/testconditional'], '^TestPairedCgo'+cgo_pattern+'$'),
+            ('vet', '.', [str(GON), 'vet', 'test/'+fixture+'.dir/common.go', 'test/'+fixture+'.dir/modern.go']),
+            test('explain', 'tools/gonpls', ['./internal/cmd'], '^TestGon(Explain|FeatureExplain|AlternativesQuery)$'),
+            ('editor-lsp', '.', [sys.executable, 'misc/gon/test_namedarguments.py' if feature == 'namedarguments' else 'misc/gon/test_alternatives.py']),
+        ]
+        if feature != 'namedarguments':
+            extra.append(test('export-data', 'tools/x-tools', ['./internal/gcimporter'], '^TestGonAlternatives'))
+        if feature == 'option':
+            extra.append(test('optional-migration', 'tools/gonpls', ['./internal/cmd'], '^TestGon(NativeOptionalMigration|OptionalMigrationPlan)$'))
+        if feature in ('option', 'result'):
+            extra.append(('simplification-lsp', '.', [sys.executable, 'misc/gon/test_simplification.py']))
+        if feature == 'enums':
+            extra.append(('representation', '.', [str(GON), 'test', '-json', 'test/enums.dir/representation_test.go',
+                         '-run', '^TestAlternativeRepresentation$', '-bench', '^BenchmarkAlternatives$',
+                         '-benchtime=100ms', '-benchmem', '-count=1']))
     return common + pairs + extra + [
         test('syntax', '.', ['cmd/compile/internal/syntax', 'go/parser', 'go/printer', 'go/format', 'cmd/gofmt'], pattern),
         test('types', '.', ['cmd/compile/internal/types2', 'go/types'], pattern+'|TestGenerate'),
@@ -90,7 +143,7 @@ def checks(feature):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('feature', choices=['tooling', 'errorhandling', 'conditional', 'lambda', 'nullsafety'])
+    parser.add_argument('feature', choices=['tooling', 'errorhandling', 'conditional', 'lambda', 'nullsafety', *MODERN_FEATURES, 'modern'])
     parser.add_argument('--list', action='store_true', help='show commands without executing')
     parser.add_argument('--only', action='append', help='run selected check IDs; reports a partial run')
     args = parser.parse_args()
@@ -144,7 +197,9 @@ def main():
                 results.extend(dict(check=n, command=c, cwd=d, status='not-run', reason='setup failed')
                                for n, d, c in plan[index+1:])
                 break
-    pending = json.loads((ROOT/'misc/gon/features.json').read_text())[args.feature]['pending']
+    inventory = json.loads((ROOT/'misc/gon/features.json').read_text())
+    pending = ([name+': '+item for name in MODERN_FEATURES for item in inventory[name]['pending']]
+               if args.feature == 'modern' else inventory[args.feature]['pending'])
     summary = dict(feature=args.feature, partial=bool(args.only), pending=pending, results=results)
     (out/'summary.json').write_text(json.dumps(summary, indent=2)+'\n')
     if pending:

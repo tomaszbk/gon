@@ -39,6 +39,7 @@ func FormatType(typ types.Type, qual types.Qualifier) (detail string, kind proto
 type signature struct {
 	name, doc                   string
 	typeParams, params, results []string
+	paramNames                  []string // visible names for named call arguments
 	variadic                    bool
 	needResultParens            bool
 }
@@ -184,8 +185,10 @@ func NewSignature(ctx context.Context, s *cache.Snapshot, pkg *cache.Package, si
 	}
 
 	params := make([]string, 0, sig.Params().Len())
+	paramNames := make([]string, 0, sig.Params().Len())
 	for i := 0; i < sig.Params().Len(); i++ {
 		el := sig.Params().At(i)
+		paramNames = append(paramNames, el.Name())
 		typ, err := FormatVarType(ctx, s, pkg, el, qual, mq)
 		if err != nil {
 			return nil, err
@@ -234,6 +237,7 @@ func NewSignature(ctx context.Context, s *cache.Snapshot, pkg *cache.Package, si
 		doc:              d,
 		typeParams:       tparams,
 		params:           params,
+		paramNames:       paramNames,
 		results:          results,
 		variadic:         sig.Variadic(),
 		needResultParens: needResultParens,

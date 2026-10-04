@@ -105,6 +105,9 @@ func (check *Checker) funcLit(x *operand, e *ast.FuncLit) {
 }
 
 func (check *Checker) compositeLit(T *target, x *operand, e *ast.CompositeLit) {
+	if e.Type != nil && check.enumCompositeLit(x, e) {
+		return
+	}
 	var typ, base Type
 	var isElem bool // true if composite literal is an untyped element of an enclosing composite literal
 
@@ -154,6 +157,11 @@ func (check *Checker) compositeLit(T *target, x *operand, e *ast.CompositeLit) {
 
 	switch u, _ := commonUnder(base, nil); utyp := u.(type) {
 	case *Struct:
+		if utyp.enum != nil {
+			check.error(e, InvalidLit, "enum construction requires a qualified variant")
+			x.invalidate()
+			return
+		}
 		if len(e.Elts) == 0 {
 			break
 		}

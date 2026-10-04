@@ -32,6 +32,19 @@ import (
 //
 // See [ZeroExpr] for a variant that returns an [ast.Expr].
 func ZeroString(t types.Type, qual types.Qualifier) (_ string, isValid bool) {
+	if types.IsOptional(t) {
+		return "*new(" + types.TypeString(t, qual) + ")", true
+	}
+	if types.EnumOf(t) != nil {
+		if _, named := types.Unalias(t).(*types.Named); !named {
+			// An unnamed enum descriptor has no denotable source type.
+			return "invalid", false
+		}
+		// Enum composite literals select a variant; *new(T) also works when
+		// the default variant is private. Assume builtin new is not shadowed,
+		// as for type parameters below.
+		return "*new(" + types.TypeString(t, qual) + ")", true
+	}
 	switch t := t.(type) {
 	case *types.Basic:
 		switch {
@@ -125,6 +138,16 @@ func ZeroString(t types.Type, qual types.Qualifier) (_ string, isValid bool) {
 //
 // See [ZeroString] for a variant that returns a string.
 func ZeroExpr(t types.Type, qual types.Qualifier) (_ ast.Expr, isValid bool) {
+	if types.IsOptional(t) {
+		return &ast.StarExpr{X: &ast.CallExpr{Fun: ast.NewIdent("new"), Args: []ast.Expr{TypeExpr(t, qual)}}}, true
+	}
+	if types.EnumOf(t) != nil {
+		if _, named := types.Unalias(t).(*types.Named); !named {
+			return &ast.BasicLit{Kind: token.STRING, Value: `"invalid"`}, false
+		}
+		// See ZeroString for the builtin-new assumption and private defaults.
+		return &ast.StarExpr{X: &ast.CallExpr{Fun: ast.NewIdent("new"), Args: []ast.Expr{TypeExpr(t, qual)}}}, true
+	}
 	switch t := t.(type) {
 	case *types.Basic:
 		switch {
@@ -326,6 +349,14 @@ func TypeExpr(t types.Type, qual types.Qualifier) ast.Expr {
 		}
 
 		return expr
+
+	case *types.Optional:
+		x := TypeExpr(t.Elem(), qual)
+		switch types.Unalias(t.Elem()).(type) {
+		case *types.Optional, *types.Pointer, *types.Slice, *types.Array, *types.Map, *types.Chan, *types.Signature:
+			x = &ast.ParenExpr{X: x}
+		}
+		return &ast.OptionalExpr{X: x, Question: token.Pos(1)}
 
 	case *types.Struct:
 		return ast.NewIdent(types.TypeString(t, qual))

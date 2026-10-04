@@ -1,0 +1,9 @@
+{
+	"GOAMD64": "",
+	"GOARCH": "arm64",
+	"GOARM64": "v8.0",
+	"GOEXPERIMENT": "",
+	"GOOS": "darwin",
+	"GOROOT": "/opt/homebrew/Cellar/go/1.27.1/libexec",
+	"GOVERSION": "go1.27.1"
+}

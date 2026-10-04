@@ -60,6 +60,30 @@ loop:
 				}
 				break loop
 			}
+		case *ast.ContextualVariantExpr:
+			if node.Lparen.IsValid() && node.Lparen <= start && end <= node.Rparen {
+				// The source constructor is a value expression, but its canonical
+				// variant object carries the payload signature. Keep the source AST
+				// intact and use a call-shaped view only for active-parameter ranges.
+				obj := info.ObjectOf(node.Name)
+				if obj == nil {
+					return nil, nil
+				}
+				sig, ok := obj.Type().Underlying().(*types.Signature)
+				if !ok {
+					return nil, nil
+				}
+				mq := MetadataQualifierForFile(snapshot, pgf.File, pkg.Metadata())
+				qual := typesinternal.FileQualifier(pgf.File, pkg.Types())
+				s, err := NewSignature(ctx, snapshot, pkg, sig, nil, qual, mq)
+				if err != nil {
+					return nil, err
+				}
+				s.name = "." + node.Name.Name
+				call := &ast.CallExpr{Fun: node.Name, Lparen: node.Lparen, Rparen: node.Rparen, Args: node.Args}
+				return signatureInformation(s, snapshot.Options(), start, end, call)
+			}
+
 		case *ast.CallExpr:
 			// Beware: the ')' may be missing.
 			if node.Lparen <= start && end <= node.Rparen {
@@ -181,8 +205,16 @@ func activeParameter(sig *signature, start, end token.Pos, call *ast.CallExpr) *
 	}
 
 	var activeParam uint32
-	for _, arg := range call.Args {
+	for i, arg := range call.Args {
 		if end <= arg.End() {
+			if i < len(call.ArgNames) && call.ArgNames[i] != nil {
+				for j, name := range sig.paramNames {
+					if name == call.ArgNames[i].Name {
+						activeParam = uint32(j)
+						break
+					}
+				}
+			}
 			break
 		}
 		// Don't advance the active parameter for the last parameter of a variadic function.

@@ -1,0 +1,51 @@
+{"Time":"2026-10-03T12:07:05.342049-03:00","Action":"start","Package":"command-line-arguments"}
+{"Time":"2026-10-03T12:07:05.554073-03:00","Action":"run","Package":"command-line-arguments","Test":"TestAlternativeRepresentation"}
+{"Time":"2026-10-03T12:07:05.55414-03:00","Action":"output","Package":"command-line-arguments","Test":"TestAlternativeRepresentation","Output":"=== RUN   TestAlternativeRepresentation\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:05.554181-03:00","Action":"output","Package":"command-line-arguments","Test":"TestAlternativeRepresentation","Output":"    representation_test.go:44: sizes (bytes): Option[int]=16 tagged=16; Result[int,string]=32 tagged=32; Payload=24 tagged=24; Option[*int]=16 tagged=16\n"}
+{"Time":"2026-10-03T12:07:05.554199-03:00","Action":"output","Package":"command-line-arguments","Test":"TestAlternativeRepresentation","Output":"    representation_test.go:45: unit and zero-size payload (bytes): Unit=16 tagged=8; Option[struct{}]=16 tagged=2\n"}
+{"Time":"2026-10-03T12:07:05.55427-03:00","Action":"output","Package":"command-line-arguments","Test":"TestAlternativeRepresentation","Output":"    representation_test.go:56: construct allocations/run: modern=0 tagged=0\n"}
+{"Time":"2026-10-03T12:07:05.554849-03:00","Action":"output","Package":"command-line-arguments","Test":"TestAlternativeRepresentation","Output":"    representation_test.go:74: 10k retained pointer Options: heap delta=240544 bytes, GC cycles=1\n"}
+{"Time":"2026-10-03T12:07:05.555391-03:00","Action":"output","Package":"command-line-arguments","Test":"TestAlternativeRepresentation","Output":"    representation_test.go:92: 10k retained pointer tagged: heap delta=242040 bytes, GC cycles=1\n"}
+{"Time":"2026-10-03T12:07:05.555412-03:00","Action":"output","Package":"command-line-arguments","Test":"TestAlternativeRepresentation","Output":"--- PASS: TestAlternativeRepresentation (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:05.555422-03:00","Action":"pass","Package":"command-line-arguments","Test":"TestAlternativeRepresentation","Elapsed":0}
+{"Time":"2026-10-03T12:07:05.555619-03:00","Action":"output","Package":"command-line-arguments","Output":"goos: darwin\n"}
+{"Time":"2026-10-03T12:07:05.555635-03:00","Action":"output","Package":"command-line-arguments","Output":"goarch: arm64\n"}
+{"Time":"2026-10-03T12:07:05.555644-03:00","Action":"output","Package":"command-line-arguments","Output":"cpu: Apple M4\n"}
+{"Time":"2026-10-03T12:07:05.555653-03:00","Action":"run","Package":"command-line-arguments","Test":"BenchmarkAlternatives"}
+{"Time":"2026-10-03T12:07:05.555659-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives","Output":"=== RUN   BenchmarkAlternatives\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:05.555664-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives","Output":"BenchmarkAlternatives\n"}
+{"Time":"2026-10-03T12:07:05.555811-03:00","Action":"run","Package":"command-line-arguments","Test":"BenchmarkAlternatives/OptionModern"}
+{"Time":"2026-10-03T12:07:05.555821-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/OptionModern","Output":"=== RUN   BenchmarkAlternatives/OptionModern\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:05.555827-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/OptionModern","Output":"BenchmarkAlternatives/OptionModern\n"}
+{"Time":"2026-10-03T12:07:05.80817-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/OptionModern","Output":"BenchmarkAlternatives/OptionModern-10         \t473857597\t         0.2550 ns/op\t       0 B/op\t       0 allocs/op\n"}
+{"Time":"2026-10-03T12:07:05.80822-03:00","Action":"run","Package":"command-line-arguments","Test":"BenchmarkAlternatives/OptionTagged"}
+{"Time":"2026-10-03T12:07:05.808226-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/OptionTagged","Output":"=== RUN   BenchmarkAlternatives/OptionTagged\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:05.808242-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/OptionTagged","Output":"BenchmarkAlternatives/OptionTagged\n"}
+{"Time":"2026-10-03T12:07:05.963832-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/OptionTagged","Output":"BenchmarkAlternatives/OptionTagged-10         \t375474235\t         0.3260 ns/op\t       0 B/op\t       0 allocs/op\n"}
+{"Time":"2026-10-03T12:07:05.963882-03:00","Action":"run","Package":"command-line-arguments","Test":"BenchmarkAlternatives/ResultModern"}
+{"Time":"2026-10-03T12:07:05.963888-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/ResultModern","Output":"=== RUN   BenchmarkAlternatives/ResultModern\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:05.963893-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/ResultModern","Output":"BenchmarkAlternatives/ResultModern\n"}
+{"Time":"2026-10-03T12:07:06.138957-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/ResultModern","Output":"BenchmarkAlternatives/ResultModern-10         \t216697929\t         0.5457 ns/op\t       0 B/op\t       0 allocs/op\n"}
+{"Time":"2026-10-03T12:07:06.138999-03:00","Action":"run","Package":"command-line-arguments","Test":"BenchmarkAlternatives/ResultTagged"}
+{"Time":"2026-10-03T12:07:06.139006-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/ResultTagged","Output":"=== RUN   BenchmarkAlternatives/ResultTagged\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:06.139012-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/ResultTagged","Output":"BenchmarkAlternatives/ResultTagged\n"}
+{"Time":"2026-10-03T12:07:06.324624-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/ResultTagged","Output":"BenchmarkAlternatives/ResultTagged-10         \t185658880\t         0.6433 ns/op\t       0 B/op\t       0 allocs/op\n"}
+{"Time":"2026-10-03T12:07:06.324666-03:00","Action":"run","Package":"command-line-arguments","Test":"BenchmarkAlternatives/EnumModern"}
+{"Time":"2026-10-03T12:07:06.324677-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/EnumModern","Output":"=== RUN   BenchmarkAlternatives/EnumModern\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:06.324682-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/EnumModern","Output":"BenchmarkAlternatives/EnumModern\n"}
+{"Time":"2026-10-03T12:07:06.495313-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/EnumModern","Output":"BenchmarkAlternatives/EnumModern-10           \t240210784\t         0.4965 ns/op\t       0 B/op\t       0 allocs/op\n"}
+{"Time":"2026-10-03T12:07:06.495342-03:00","Action":"run","Package":"command-line-arguments","Test":"BenchmarkAlternatives/EnumTagged"}
+{"Time":"2026-10-03T12:07:06.495348-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/EnumTagged","Output":"=== RUN   BenchmarkAlternatives/EnumTagged\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:06.495413-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/EnumTagged","Output":"BenchmarkAlternatives/EnumTagged\n"}
+{"Time":"2026-10-03T12:07:06.667974-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/EnumTagged","Output":"BenchmarkAlternatives/EnumTagged-10           \t242108356\t         0.5023 ns/op\t       0 B/op\t       0 allocs/op\n"}
+{"Time":"2026-10-03T12:07:06.668039-03:00","Action":"run","Package":"command-line-arguments","Test":"BenchmarkAlternatives/MatchModern"}
+{"Time":"2026-10-03T12:07:06.668047-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/MatchModern","Output":"=== RUN   BenchmarkAlternatives/MatchModern\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:06.668052-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/MatchModern","Output":"BenchmarkAlternatives/MatchModern\n"}
+{"Time":"2026-10-03T12:07:06.833043-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/MatchModern","Output":"BenchmarkAlternatives/MatchModern-10          \t261017329\t         0.4500 ns/op\t       0 B/op\t       0 allocs/op\n"}
+{"Time":"2026-10-03T12:07:06.833076-03:00","Action":"run","Package":"command-line-arguments","Test":"BenchmarkAlternatives/MatchTagged"}
+{"Time":"2026-10-03T12:07:06.833081-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/MatchTagged","Output":"=== RUN   BenchmarkAlternatives/MatchTagged\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:06.833086-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/MatchTagged","Output":"BenchmarkAlternatives/MatchTagged\n"}
+{"Time":"2026-10-03T12:07:07.008113-03:00","Action":"output","Package":"command-line-arguments","Test":"BenchmarkAlternatives/MatchTagged","Output":"BenchmarkAlternatives/MatchTagged-10          \t229403472\t         0.5281 ns/op\t       0 B/op\t       0 allocs/op\n"}
+{"Time":"2026-10-03T12:07:07.00818-03:00","Action":"output","Package":"command-line-arguments","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T12:07:07.008649-03:00","Action":"output","Package":"command-line-arguments","Output":"ok  \tcommand-line-arguments\t1.666s\n"}
+{"Time":"2026-10-03T12:07:07.008669-03:00","Action":"pass","Package":"command-line-arguments","Elapsed":1.667}

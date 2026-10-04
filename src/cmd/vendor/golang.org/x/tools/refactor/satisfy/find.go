@@ -137,11 +137,15 @@ func (f *Finder) exprN(e ast.Expr) types.Type {
 
 	case *ast.ErrorExpr:
 		f.errorExpr(e)
+	case *ast.OptionalExpr:
+		f.expr(e.X)
+	case *ast.MatchExpr:
+		f.matchExpr(e)
 
 	case *ast.CallExpr:
 		// x, err := f(args)
 		if sig := hasUnderlyingTermOf[*types.Signature](f.expr(e.Fun)); sig != nil {
-			f.call(sig, e.Args)
+			f.callExpr(sig, e)
 		}
 
 	case *ast.IndexExpr:
@@ -218,6 +222,31 @@ func (f *Finder) call(sig *types.Signature, args []ast.Expr) {
 		for i := nnormals; i < len(argtypes); i++ {
 			f.assign(tElem, argtypes[i])
 		}
+	}
+}
+
+// callExpr associates named arguments using the visible signature. Traversal
+// still follows source order; labels themselves are references, not values.
+func (f *Finder) callExpr(sig *types.Signature, e *ast.CallExpr) {
+	if len(e.ArgNames) == 0 {
+		f.call(sig, e.Args)
+		return
+	}
+	for i, arg := range e.Args {
+		index := i
+		if name := e.ArgNames[i]; name != nil {
+			index = -1
+			for j := range sig.Params().Len() {
+				if sig.Params().At(j).Name() == name.Name {
+					index = j
+					break
+				}
+			}
+		}
+		if index < 0 || index >= sig.Params().Len() {
+			panic("invalid named argument in well-typed call")
+		}
+		f.assign(sig.Params().At(index).Type(), f.expr(arg))
 	}
 }
 
@@ -357,12 +386,36 @@ func (f *Finder) errorExpr(e *ast.ErrorExpr) {
 	}
 	if e.Body != nil {
 		f.stmt(e.Body)
+	} else if types.IsCanonicalResult(f.info.TypeOf(e.X)) && f.sig != nil && f.sig.Results().Len() == 1 {
+		source, target := types.EnumOf(f.info.TypeOf(e.X)), types.EnumOf(f.sig.Results().At(0).Type())
+		if target != nil {
+			for i := range source.NumVariants() {
+				if src := source.Variant(i); src.Name() == "Err" {
+					for j := range target.NumVariants() {
+						if dst := target.Variant(j); dst.Name() == "Err" {
+							f.assign(dst.Field(0).Type(), src.Field(0).Type())
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
 // expr visits a true expression (not a type or defining ident)
 // and returns its type.
 func (f *Finder) expr(e ast.Expr) types.Type {
+	typ := f.exprUnwrapped(e)
+	if target := f.info.OptionalConversions[e]; target != nil {
+		if typ != tUntypedNil {
+			f.assign(optionPayload(target), typ)
+		}
+		return target
+	}
+	return typ
+}
+
+func (f *Finder) exprUnwrapped(e ast.Expr) types.Type {
 	tv := f.info.Types[e]
 	if tv.Value != nil {
 		return tv.Type // prune the descent for constants
@@ -390,6 +443,21 @@ func (f *Finder) expr(e ast.Expr) types.Type {
 			f.expr(e.Elt)
 		}
 
+	case *ast.ContextualVariantExpr:
+		desc := types.EnumOf(tv.Type)
+		for i := range desc.NumVariants() {
+			variant := desc.Variant(i)
+			if variant.Name() == e.Name.Name {
+				for j, arg := range e.Args {
+					f.assign(variant.Field(j).Type(), f.expr(arg))
+				}
+				break
+			}
+		}
+	case *ast.OptionalExpr:
+		if !tv.IsType() {
+			f.expr(e.X)
+		}
 	case *ast.ErrorExpr:
 		f.errorExpr(e)
 
@@ -402,7 +470,7 @@ func (f *Finder) expr(e ast.Expr) types.Type {
 	case *ast.NilGuardExpr:
 		f.expr(e.X)
 	case *ast.SafeNavExpr:
-		f.assign(tv.Type, f.expr(e.X))
+		f.assign(optionPayload(tv.Type), f.expr(e.X))
 	case *ast.LambdaExpr:
 		saved := f.sig
 		f.sig, _ = tv.Type.(*types.Signature)
@@ -536,7 +604,7 @@ func (f *Finder) expr(e ast.Expr) types.Type {
 			if s, ok := ast.Unparen(e.Fun).(*ast.SelectorExpr); ok {
 				if obj, ok := f.info.Uses[s.Sel].(*types.Builtin); ok && obj.Pkg().Path() == "unsafe" {
 					sig := f.info.Types[e.Fun].Type.(*types.Signature)
-					f.call(sig, e.Args)
+					f.callExpr(sig, e)
 					return tv.Type
 				}
 			}
@@ -552,7 +620,7 @@ func (f *Finder) expr(e ast.Expr) types.Type {
 
 			// ordinary call
 			if sig := hasUnderlyingTermOf[*types.Signature](f.expr(e.Fun)); sig != nil {
-				f.call(sig, e.Args)
+				f.callExpr(sig, e)
 			}
 		}
 
@@ -566,7 +634,7 @@ func (f *Finder) expr(e ast.Expr) types.Type {
 		x := f.expr(e.X)
 		y := f.expr(e.Y)
 		if e.Op == token.COALESCE {
-			f.assign(tv.Type, x)
+			f.assign(tv.Type, optionPayload(x))
 			f.assign(tv.Type, y)
 		}
 		if e.Op == token.EQL || e.Op == token.NEQ {
@@ -613,6 +681,8 @@ func (f *Finder) stmt(s ast.Stmt) {
 
 	case *ast.ExprStmt:
 		f.expr(s.X)
+	case *ast.MatchStmt:
+		f.matchExpr(s.Match)
 
 	case *ast.SendStmt:
 		ch := f.expr(s.Chan)
@@ -649,6 +719,9 @@ func (f *Finder) stmt(s ast.Stmt) {
 				}
 				if lhs == nil {
 					lhs = f.expr(s.Lhs[i]) // assignment
+				}
+				if s.Tok == token.COALESCE_ASSIGN {
+					lhs = optionPayload(lhs)
 				}
 				f.assign(lhs, rhs)
 			}

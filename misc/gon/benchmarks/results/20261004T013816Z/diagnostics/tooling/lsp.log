@@ -1,0 +1,1 @@
+PASS: executable legacy/modern pair, baseline, isolation, CLI errors, LSP diagnostics, hover, definition, rename, completion, formatting, semantic tokens, imports, unsaved edits, SSA/Staticcheck diagnostics

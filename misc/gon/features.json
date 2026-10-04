@@ -30,7 +30,49 @@
     "limitations": [
       "source inliner and variable extraction: affected lazy expressions and call sites are deliberately declined",
       "cgo: existing restriction on error propagation inside pointer-check rewritten C-call arguments still applies",
-      "operators provide runtime nil conveniences, not static non-null guarantees or Option types"
+      "legacy nil operators provide runtime conveniences; optional guards use the native presence tag; neither adds static non-null guarantees"
+    ]
+  },
+  "namedarguments": {
+    "pending": [],
+    "limitations": [
+      "source inliner declines calls and function bodies containing named arguments until source-order-safe substitution is implemented"
+    ]
+  },
+  "enums": {
+    "pending": [],
+    "limitations": [
+      "initial representation uses a discriminant and separate typed variant storage; no stable layout ABI is promised",
+      "checked reflection uses package functions; reflect.Type and Value method sets remain unchanged",
+      "unit-only and zero-size payloads have measured size overhead",
+      "external serialization requires explicitly written adapters; no automatic enum encoding or stable storage ABI is provided",
+      "synthesized first-class positional constructors currently disable compiler inlining"
+    ]
+  },
+  "matching": {
+    "pending": [],
+    "limitations": [
+      "source inlining and extraction across match arms are conservatively declined",
+      "variant patterns require qualification; bare payload identifiers bind new variables except contextual true, false and nil; use guards for local constants"
+    ]
+  },
+  "option": {
+    "pending": [],
+    "limitations": [
+      "Optional payload extraction is a value operation; a present nil payload keeps ordinary Go nil behavior",
+      "Optional and legacy nil guards cannot be mixed within one chain; use an explicit payload boundary and preserve nested optionals without automatic flattening",
+      "cgo pointer-check rewritten call arguments decline propagation across hidden function boundaries",
+      "source inlining and extraction across propagation or lazy operators are conservatively declined",
+      "native optional lifting is single-valued and one layer; source transformations decline changes that lose the target context"
+    ]
+  },
+  "result": {
+    "pending": [],
+    "limitations": [
+      "Go tuple/Result interoperability requires explicit adapters; Err(nil) remains an error variant",
+      "cgo pointer-check rewritten call arguments decline propagation across hidden function boundaries",
+      "source inlining and extraction across propagation or handlers are conservatively declined",
+      "contextual Result constructors need a fully known canonical target; source transformations decline changes that lose this context"
     ]
   }
 }

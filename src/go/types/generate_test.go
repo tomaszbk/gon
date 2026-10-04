@@ -96,7 +96,9 @@ func generate(t *testing.T, filename string, write bool) {
 type action func(in *ast.File)
 
 var filemap = map[string]action{
-	"alias.go": fixTokenPos,
+	"enum.go":     fixTokenPos,
+	"optional.go": nil,
+	"alias.go":    fixTokenPos,
 	"alias_test.go": func(f *ast.File) {
 		renameImportPath(f, `"cmd/compile/internal/types2"->"go/types"`)
 		renameIdents(f, "types2->types")
@@ -122,6 +124,21 @@ var filemap = map[string]action{
 		renameIdents(f, "syntax->ast")
 	},
 	"chan.go": nil,
+	"matching.go": func(f *ast.File) {
+		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`)
+		renameSelectorExprs(f, "syntax.Name->ast.Ident", "n.Value->n.Name", "sel.Sel.Value->sel.Sel.Name", "f.Name.Value->f.Name.Name", "b.name.Value->b.name.Name")
+		ast.Inspect(f, func(n ast.Node) bool {
+			x, ok := n.(*ast.SelectorExpr)
+			if ok && x.Sel.Name == "Value" {
+				if base, ok := x.X.(*ast.SelectorExpr); ok && (base.Sel.Name == "Name" || base.Sel.Name == "Sel" || base.Sel.Name == "name") {
+					x.Sel.Name = "Name"
+				}
+			}
+			return true
+		})
+		renameIdents(f, "syntax->ast")
+		renameSelectors(f, "IsKnown->IsValid")
+	},
 	"condexpr.go": func(f *ast.File) {
 		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`)
 		renameIdents(f, "syntax->ast")
@@ -176,6 +193,46 @@ var filemap = map[string]action{
 	},
 	"main_test.go": nil,
 	"map.go":       nil,
+	"optioncontext_test.go": func(f *ast.File) {
+		renameImportPath(f, `"cmd/compile/internal/types2"->"go/types"`, `"cmd/compile/internal/syntax"->"go/ast"`)
+		renameSelectorExprs(f, "syntax.Name->ast.Ident")
+		renameIdents(f, "types2->types", "syntax->ast")
+		fixFSet(f)
+	},
+	"optioncontext.go": func(f *ast.File) {
+		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`)
+		renameSelectors(f, "ArgList->Args")
+		ast.Inspect(f, func(n ast.Node) bool {
+			if sel, ok := n.(*ast.SelectorExpr); ok && sel.Sel.Name == "Value" {
+				if recv, ok := sel.X.(*ast.SelectorExpr); ok && recv.Sel.Name == "Name" {
+					sel.Sel.Name = "Name"
+				}
+			}
+			return true
+		})
+		renameIdents(f, "syntax->ast")
+		fixTokenPos(f)
+	},
+	"optionresult.go": func(f *ast.File) {
+		insertImportPath(f, `"go/token"`)
+		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`)
+		renameSelectorExprs(f, "syntax.Goto->token.GOTO")
+		ast.Inspect(f, func(n ast.Node) bool {
+			if sel, ok := n.(*ast.SelectorExpr); ok && sel.Sel.Name == "Value" {
+				if receiver, ok := sel.X.(*ast.SelectorExpr); ok && receiver.Sel.Name == "Err" {
+					sel.Sel.Name = "Name"
+				}
+			}
+			return true
+		})
+		renameIdents(f, "syntax->ast")
+	},
+	"namedarguments.go": func(f *ast.File) {
+		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`)
+		renameSelectorExprs(f, "syntax.Name->ast.Ident", "label.Value->label.Name")
+		renameIdents(f, "syntax->ast")
+		renameSelectors(f, "ArgList->Args")
+	},
 	"mono.go": func(f *ast.File) {
 		fixTokenPos(f)
 		insertImportPath(f, `"go/ast"`)

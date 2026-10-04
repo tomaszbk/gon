@@ -4,9 +4,9 @@
 gopls. Both pin their subprocesses to this toolchain without replacing the user's
 Go installation. Source files still use `.go`.
 
-Gon 1.0 targets backward compatibility with **Go 1.27+**, subject to the
+Gon 2.27 targets backward compatibility with **Go 1.27+**, subject to the
 accepted newline-after-prefix-`!` exception. The user selected this support
-floor on 2026-10-02, replacing Go 1.26+. Use stable Go 1.27.1 as the current
+floor. Use stable Go 1.27.1 as the current
 unmodified baseline; the fork's Go 1.28 development version is not a released
 Go baseline. Module language directives retain their independent meaning.
 
@@ -15,6 +15,116 @@ Go baseline. Module language directives retain their independent meaning.
 conditional expressions, nil-safety operators and contextually typed lambdas.
 The same optional hints are available in the editor and with `gon check
 --severity=hint ./...`. See [the modernization commands and limits](CLI.md#syntax-modernization).
+
+Current implementation and evidence are consolidated in [STATUS.md](STATUS.md)
+and [VALIDATION.md](VALIDATION.md). The [native optional contract](OPTIONALS.md)
+describes presence, absence and assisted migration.
+
+## Closed alternatives and named calls
+
+Gon implements contextual `type Name enum` declarations, qualified unit,
+positional and record constructors, exhaustive statement/expression matching,
+native optional `T?`, shadowable `Result[T, E]`, and named arguments.
+Existing Go switches, function types and positional calls retain their semantics.
+
+```go
+type Message enum {
+    default Empty
+    Text(string)
+    Count { Number int }
+}
+func describe(m Message) string {
+    return switch m {
+    case Message.Empty => "empty"
+    case Message.Text(text) => text
+    case Message.Count{Number: n} => fmt.Sprint(n)
+    }
+}
+var selected int? = 3
+value := selected ?? 0
+out := combine(second: 2, first: 1)
+```
+
+`T?` is a native optional type. Assign an immediate payload for presence or
+untyped `nil` for absence. A typed nil pointer remains present. The postfix
+binds tightly: `*T?` is a pointer to an optional, `(*T)?` is an optional pointer,
+`([]T)?` is an optional slice, and `(T?)?` contains two distinct optional layers.
+Aliases preserve this protocol; separately defined types do not adopt it.
+
+```go
+func parsePort(text string) (port Result[int?, error]) {
+    if text == "" { return .Ok(nil) }
+    value := strconv.Atoi(text) or problem { return .Err(problem) }
+    return .Ok(value)
+}
+var selected int? = 3
+var absent int? = nil
+var pointer *int
+var presentPointer (*int)? = pointer // present, with a nil payload
+```
+
+There are no predeclared `Option`, `Some` or `None` constructors. Existing user
+identifiers with those spellings remain ordinary Go declarations. Native
+presence patterns use `case value?`; `case nil` matches absence. For optional
+pointers, `case nil?` matches a present nil pointer. Nested `(value?)?` patterns
+check both presence layers. An explicit `(T?)(payload)` conversion is available
+when no assignment target provides the type. Each lift constructs exactly one
+layer; nested values never flatten or recursively lift.
+
+Leading-dot `.Ok(value)` and `.Err(problem)` require a fully known canonical
+Result target from a return, declaration, assignment or parameter. Qualified
+`Result[T, E].Ok/Err` constructors and patterns remain available. There is no
+implicit conversion into Result or between Result and Go error tuples. The
+`port` in `(port Result[int?, error])` is a real Go named result visible to
+defers, not a descriptive label inside a generic argument.
+
+Enums require qualified variants and an explicit default variant. Record
+construction uses field names and Go zeros for omitted fields; partial record
+patterns require `...`. New matching is exhaustive. Payload identifiers bind
+fresh arm variables; true/false/nil are contextual values even under shadowing.
+Use guards to compare outer variables or local constants.
+
+An optional's zero value is absent; Result zero is Ok(zero T). `?` propagates
+absence to a function returning one optional. `!` propagates Result failure;
+`or problem { ... }` handles it locally. Present nil payloads and Err(nil) retain
+their meaning. Optional and legacy nil navigation require an explicit payload
+boundary between chains.
+
+For source that used the retired Gon constructors, `gon refactor optionals
+./...` previews a semantic migration; `--json` writes a hash-checked plan for
+`gon refactor apply`. The analysis recognizes old Gon identities only for this
+migration command and leaves user-declared homonyms unchanged. Normal compiler
+and editor checking use the current language. See [OPTIONALS.md](OPTIONALS.md).
+
+Named calls use visible signature parameter names. Evaluate callee/receiver
+first, then every argument once in written order before passing values in
+parameter order. Arguments are associated before generic inference. Positional
+prefixes may precede named arguments; an unnamed signature is positional-only.
+Named variadics use a final compatible `name: slice...` or omit the parameter.
+There are no defaults, optional parameters or function overloading.
+
+Representation uses a discriminant and separate typed storage for GC safety.
+`reflect.IsEnum`, `reflect.EnumVariants`, `reflect.EnumValueVariant` and
+`reflect.EnumValuePayload` expose checked active metadata/payload copies without
+changing the existing reflect.Type interface. C calls use explicit adapters.
+External serialization also requires explicitly written adapters with an
+application-defined format; no automatic enum encoding or stable storage ABI
+is provided. This policy was accepted on 2026-10-03. No zero overhead is promised.
+The source inliner and extraction decline unsupported lazy/contextual changes,
+including contextual constructors and native optional conversions whose target
+would change after extraction. These forms are not automatically rewritten by
+`gon fix`.
+
+Executable legacy/modern pairs live in `test/{enums,matching,namedarguments,
+optionresult,optionsyntax}.go` and their `.dir` folders. Run the deduplicated focused gate:
+
+```sh
+GON_BASELINE_GO=/absolute/path/to/unmodified/go python3 misc/gon/validate.py modern
+```
+
+See [the validation record](VALIDATION.md) and [feature status](features.json)
+for the executed checks and supported limitations. Snippets above illustrate the
+syntax; the executable fixtures supply the regression assertions.
 
 ## Build
 
@@ -34,9 +144,10 @@ provenance; `go.mod` and `go.sum` pin transitive dependencies. Builds do not
 rewrite maintained modules or apply patches. The old `pkg/gon-tools` trees are
 unused disposable output from the previous workflow.
 
-Vet and gonpls share the maintained x/tools source. `src/cmd/vendor` is generated
+Vet, gonpls and standard-library export readers share the maintained x/tools
+source. `src/vendor` and `src/cmd/vendor` are generated
 with `python3 misc/gon/vendor.py`; `--check` detects drift. Edit `tools/x-tools`
-and regenerate, instead of editing the vendor copy. See
+and regenerate, instead of editing the vendor copies. See
 [INTEGRATION.md](INTEGRATION.md) for the integration checklist and per-feature
 validation command.
 
@@ -78,63 +189,154 @@ globally; to opt another repository into Gon, copy it with
 
 ```sh
 python3 misc/gon/install.py
+```
+
+The installer creates only `gon` and `gonpls` symlinks in `~/.local/bin`, or in
+`--bin-dir /your/chosen/path`. It refuses to overwrite unrelated files. It adds that public directory to PATH persistently when needed, through the
+current shell's startup configuration (zsh, bash, fish or sh-compatible shells),
+or the user PATH on Windows. Repeated installation preserves existing settings
+and does not duplicate the entry. Open a new terminal and restart the editor
+after installation; a child process cannot change the current terminal's PATH.
+Use `--no-modify-path` to manage PATH yourself. Unrelated commands are never
+overwritten; dangling links from a moved Gon checkout can be repaired.
+Global Go settings and upstream `go`/`gopls` commands stay unchanged. Never add
+this fork's private `bin` directory to PATH. Remove the two installed symlinks
+and the Gon PATH block from your shell configuration to uninstall.
+
+In a new terminal, use the public commands:
+
+```sh
 gon run a.go
 gon fmt ./path/to/package
 gonpls check a.go
 ```
 
-The installer creates only `gon` and `gonpls` symlinks in `~/.local/bin`, or in
-`--bin-dir /your/chosen/path`. It refuses to overwrite unrelated files. It does
-not edit shell profiles, global Go settings, or upstream `go`/`gopls` commands.
-If needed, add that **public** directory to `PATH`, not this fork's `bin` directory.
-Remove the two installed symlinks to uninstall the public commands.
+## Adopt Gon in an existing Go project
+
+Start with a built Gon toolchain and keep its directory in place. Expose the
+public commands with the installer above, or use absolute paths to
+`/path/to/toolchain/gon/bin/gon` and `gonpls` throughout. Adding this fork's
+private `bin` directory to PATH would also expose its private `go`; use the
+public commands to select Gon for this project.
+
+1. **Run the existing project with Gon.** In your application's module, run:
+
+   ```sh
+   cd /path/to/your-project
+   gon capabilities --json
+   gon test ./...
+   gon build ./...
+   gon vet ./...
+   ```
+
+   Check the reported toolchain root. Keep your `.go` and `_test.go` files,
+   `go.mod`, `go.sum`, any `go.work`, dependencies and imports. Selecting Gon
+   requires no new language configuration file and does not reinterpret the
+   module's `go` directive. If existing code splits prefix negation immediately
+   after `!`, put the operand on the same line. See the validation record for
+   the supported-platform evidence; your own tests verify your application.
+
+2. **Enable the editor for this workspace.** Install the Gon extension's local
+   VSIX, disable the official Go extension for this workspace, reload VS Code,
+   and open a `.go` file. The extension selects Gon automatically and discovers
+   its installed tools, without `gon.enabled` or a settings file. The
+   [VS Code section](#vs-code) describes optional installation overrides.
+   Enabling the editor selects Gon for its services;
+   terminal and CI commands still need to call `gon` explicitly.
+
+3. **Review syntax modernization separately.** On a branch where you can review
+   your changes, preview the supported rewrites:
+
+   ```sh
+   gon fix -diff ./...
+   ```
+
+   After reviewing the preview, `gon fix ./...` applies those rewrites. To
+   restrict the change, pass selected packages or use individual editor quick
+   fixes. Format and rerun the affected tests:
+
+   ```sh
+   gon fix ./...
+   gon fmt ./...
+   gon test ./...
+   gon vet ./...
+   ```
+
+   The supported conversions cover ordinary Go error handling, conditional
+   expressions, nil checks and lambdas. Optional values, Result, enums and
+   matches are API/design choices you can adopt incrementally. Existing
+   `(value, error)` APIs already work with propagation and local handlers;
+   changing them to Result is optional.
+
+4. **Select Gon in automation.** Provision the same Gon toolchain for CI and
+   other developers. Change project build/test/vet/fmt commands to their `gon`
+   equivalents and use Gon-aware analysis tools. An unmodified Go parser or
+   compiler cannot process packages containing the new syntax. Keep ordinary
+   Go dependencies and imports; Gon compiles them as part of the build.
+
+5. **Keep the source transition reviewable.** A project that still contains
+   only Go syntax can switch its commands back to Go. After adopting Gon
+   syntax, returning to an unmodified Go toolchain also requires reverting or
+   rewriting those source changes. `gon fix` modernizes supported forms; it is
+   not a reverse migration tool.
+
+For coding agents, optionally copy the project-scoped skill from the Gon
+checkout with `python3 misc/gon/install.py --project-skill /path/to/your-project`.
+This is independent of compiler and editor selection.
 
 ## VS Code
 
 The dedicated **Gon** extension (`gon-lang.gon`) is maintained in the separate
-sibling `vscode-gon` repository, cloned from `golang/vscode-go`. Install its local
-VSIX, disable the official Go extension in this workspace, and reload VS Code.
-The Gon extension supports both normal Go projects (official `go` + `gopls`) and
-Gon projects (`gon` + `gonpls`). This repository's `.vscode/settings.json` selects
-Gon and its local tools. For another Gon project, use **Gon: Enable for This
-Project**, or set workspace settings explicitly:
+`vscode-gon` repository, cloned from `golang/vscode-go`. Install its
+local VSIX, disable the official Go extension **for this workspace**, and reload
+VS Code. The enabled extension automatically uses `gon` and `gonpls` for `.go`
+files. No `gon.enabled` flag, project-enabling command or settings file is required.
+For an ordinary Go workspace, disable Gon and enable the official Go extension.
+Extension enablement applies to the whole workspace, including all its folders;
+use separate windows for projects that need different extensions.
+
+The extension searches PATH and the installer's default `~/.local/bin` public
+directory. Its default language server follows the selected compiler's
+`gon capabilities` metadata. For a particular installation, optional workspace
+settings can override either path:
 
 ```json
 {
-  "gon.enabled": true,
   "gon.compilerPath": "/absolute/path/to/toolchain/gon/bin/gon",
-  "gon.languageServerPath": "/absolute/path/to/toolchain/gon/bin/gonpls",
-  "gon.serverSettings": { "semanticTokens": true }
+  "gon.languageServerPath": "/absolute/path/to/toolchain/gon/bin/gonpls"
 }
 ```
 
-The extension switches `.go` documents to the `Gon` editor language only in
-opted-in projects, with a separate language client per folder. It does not claim
-`.go` globally. Ordinary Go projects retain the Go language and official tools;
-Go and Gon folders have been tested together in a multi-root window with only
-the Gon extension active. `gonpls` accepts both `go` and `gon` LSP language
-identifiers and uses its own `gonpls.*` command namespace. The extension routes
-server commands to the correct project even with multiple Gon servers running.
+This toolchain repository overrides the paths to use its development builds.
+Other projects normally need no settings. Paths support `~`, `${workspaceFolder}`
+and project-relative paths. Tools must be installed in the extension host's
+environment (local, SSH, WSL or container).
 
-The editor-title **▶ Run Go/Gon File** button saves the active `.go` file and
-runs it with the appropriate compiler. Use `gon.run.mode: "package"` for programs
-with multiple source files and `gon.run.args` for program arguments. Output goes
-to a task terminal. Test files use `go test` or `gon test` instead.
+The extension switches `.go` documents to the **Gon** editor language while it
+is enabled, and uses a separate language client per folder. It does not claim
+`.go` through a global file association. Gonpls supplies diagnostics, completion,
+navigation, formatting, rename and semantic tokens. Optional `gon.serverSettings`
+configures the server. Commands use the `gonpls.*` namespace and route to the
+correct project when multiple Gon servers are running.
+
+The editor-title **▶ Run Gon File** button saves the active `.go` file and runs
+it with Gon. Use `gon.run.mode: "package"` for programs with multiple source files
+and `gon.run.args` for program arguments. Output goes to a task terminal. Test
+files use `gon test` instead. The extension also provides native Delve DAP
+debugging and a test explorer, both using Gon.
 
 The extension neither installs tools automatically nor changes the terminal's
-Go environment. Run **Gon: Restart Language Server** after rebuilding gonpls.
-An older setup can still use the official Go extension's `go.alternateTools`
-setting to point at Gon tools, but remove that override when switching to the
-Gon extension. The extension includes native Delve DAP debugging and a test
-explorer; both select Go or Gon per project.
+Go environment. Terminal and CI commands must call `gon` explicitly. Run
+**Gon: Restart Language Server** after rebuilding gonpls. Remove an old official
+Go extension `go.alternateTools` override when adopting this dedicated extension.
 
 ## Repository layout
 
 This repository owns the compiler, public launchers and the maintained modules
 `tools/gonpls`, `tools/x-tools`, and `tools/staticcheck`, plus the project skill
-and build/test scripts. `src/cmd/vendor` is generated from selected dependencies
+and build/test scripts. `src/vendor` and `src/cmd/vendor` are generated from selected dependencies
 and the maintained x/tools module. The
-VS Code extension has its own Git repository at `../vscode-gon`; its build emits
+VS Code extension has its own `vscode-gon` Git repository; its build emits
 `gon-0.1.0.vsix`. Neither the local clone nor the VSIX implies publication to
 GitHub or the VS Code marketplace.
 
@@ -165,11 +367,16 @@ value := callback?(arg()) ?? 0
 config ??= defaults()
 ```
 
-Safe navigation (`?.`, `?(`) skips the rest of its chain when its guarded
-operand is nil. Coalescing (`??`) evaluates a fallback only for absence or nil;
-`??=` stores only when the current value is nil. Zero and empty values remain
-present. Ordinary interface nil semantics are preserved. These operators do
-not add static non-null types or change ordinary Go nil behavior.
+Safe navigation (`?.`, `?(`) skips the rest of its chain when a Go operand is
+nil or a native optional is absent. Coalescing (`??`) evaluates a fallback only
+on those absent paths; `??=` stores only on nil or optional absence, according to its
+operand type. Zero and empty values remain present, including a present nil payload.
+Ordinary interface nil semantics are preserved. Mixed optional/nil chains
+require explicit payload extraction, for example `p := optionalPointer ?? nil`
+followed by `name := p?.Name ?? "guest"`. Collapsing absence and a present nil payload in the
+first step is explicit; parentheses alone do not extract or flatten a payload.
+These operators do not add static
+non-null types or change ordinary Go nil behavior.
 
 The compiler, public parser/type checker, formatter, cgo, coverage, SSA and
 Staticcheck IR understand these constructs. Gonpls supports tokens, inferred

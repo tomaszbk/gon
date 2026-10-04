@@ -891,6 +891,29 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		p.signature(x.Type)
 		p.funcBody(p.distanceFrom(x.Type.Pos(), startCol), blank, x.Body)
 
+	case *ast.ContextualVariantExpr:
+		p.setPos(x.Dot)
+		p.print(token.PERIOD)
+		p.expr(x.Name)
+		if x.Lparen.IsValid() {
+			p.setPos(x.Lparen)
+			p.print(token.LPAREN)
+			p.exprList(x.Lparen, x.Args, depth, commaTerm, x.Rparen, false)
+			p.setPos(x.Rparen)
+			p.print(token.RPAREN)
+		}
+
+	case *ast.OptionalExpr:
+		p.expr1(x.X, token.HighestPrec, depth)
+		p.setPos(x.Question)
+		p.print(token.QUESTION)
+
+	case *ast.EnumType:
+		p.enumType(x)
+
+	case *ast.MatchExpr:
+		p.matchExpr(x)
+
 	case *ast.LambdaExpr:
 		p.setPos(x.Lparen)
 		startCol := p.out.Column
@@ -1062,15 +1085,24 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 
 		p.setPos(x.Lparen)
 		p.print(token.LPAREN)
+		args := x.Args
+		if len(x.ArgNames) != 0 {
+			args = append([]ast.Expr(nil), args...)
+			for i, name := range x.ArgNames {
+				if name != nil {
+					args[i] = &ast.KeyValueExpr{Key: name, Colon: name.End(), Value: args[i]}
+				}
+			}
+		}
 		if x.Ellipsis.IsValid() {
-			p.exprList(x.Lparen, x.Args, depth, 0, x.Ellipsis, false)
+			p.exprList(x.Lparen, args, depth, 0, x.Ellipsis, false)
 			p.setPos(x.Ellipsis)
 			p.print(token.ELLIPSIS)
 			if x.Rparen.IsValid() && p.lineFor(x.Ellipsis) < p.lineFor(x.Rparen) {
 				p.print(token.COMMA, formfeed)
 			}
 		} else {
-			p.exprList(x.Lparen, x.Args, depth, commaTerm, x.Rparen, false)
+			p.exprList(x.Lparen, args, depth, commaTerm, x.Rparen, false)
 		}
 		p.setPos(x.Rparen)
 		p.print(token.RPAREN)
@@ -1381,7 +1413,7 @@ func stripParens(x ast.Expr) ast.Expr {
 					strip = false // do not strip parentheses
 				}
 				return false
-			case *ast.CondExpr, *ast.LambdaExpr, *ast.SafeNavExpr:
+			case *ast.CondExpr, *ast.LambdaExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.OptionalExpr:
 				strip = false // do not strip parentheses
 				return false
 			}
@@ -1691,6 +1723,9 @@ func (p *printer) stmt1(stmt ast.Stmt, nextIsRBrace bool) {
 		p.setPos(s.Colon)
 		p.print(token.COLON)
 		p.stmtList(s.Body, 1, nextIsRBrace)
+
+	case *ast.MatchStmt:
+		p.matchExpr(s.Match)
 
 	case *ast.SwitchStmt:
 		p.print(token.SWITCH)

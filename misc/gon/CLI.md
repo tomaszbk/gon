@@ -50,11 +50,29 @@ signatures (lambdas).
 
 Conversions are deliberately conservative. They decline cases that would lose
 partial results, remove a still-used error binding, alter evaluation or typing,
-or discard comments or required imports. They do not offer syntax for the
-unimplemented Result, Option, sum-type or matching proposals. The absence of a
-suggestion does not mean a manual rewrite is impossible. If nested fixes overlap,
-the existing fix driver applies compatible edits and asks for another run;
+or discard comments or required imports. They do not automatically convert
+qualified Result constructors to contextual forms, introduce `T?`, lift
+payloads into optionals, or rewrite enums and matching. These constructs are
+implemented, but no automatic modernization analyzer is supplied for them.
+The absence of a suggestion does not mean a manual rewrite is impossible.
+If nested fixes overlap, the existing fix driver applies compatible edits and
+asks for another run;
 newly exposed source shapes may also need a manual rewrite.
+
+`T?` is a native optional type. `case value?` extracts presence and `case nil`
+matches absence. Typed nil remains present; nested layers never flatten.
+Contextual `.Ok/.Err` require a fully known Result target. Ordinary named results
+such as `(port Result[int?, error])` remain Go result variables.
+
+`gon refactor optionals --dry-run ./...` previews migration of retired optional
+syntax. `--json` emits a revision-checked plan for `gon refactor apply`.
+Migration checks source using gonpls, preserves user-defined homonyms, and
+retains typed nil and nested layers. Normal checking rejects retired constructs.
+
+Semantic output spells optionals with `T?`, including imported types. Type
+queries identify `optional-type`, `optional-propagation` and
+`optional-coalescing`. Source inlining and extraction conservatively decline
+unsupported lazy/context-sensitive transformations.
 
 ## Arguments
 
@@ -66,7 +84,8 @@ A **target** is a position or a symbol:
 - `file.go:line:column`: 1-based line and 1-based column counted in UTF-8
   bytes, as in compiler diagnostics. `file.go:#offset` is a 0-based byte offset.
   Positions address anything, including local variables, handler bindings,
-  function literals and the `!` or `or` of a Gon error-handling construct.
+  function literals, the `!` or `or` of a Gon error-handling construct, the `?`
+  of an optional type, and the leading dot of a contextual constructor.
 - A symbol: `Name`, `Type.Method` or `Type.Field` in the package of the
   current directory; `pkg.Name` for a package imported there; `./dir.Name`
   (or `../dir`, or an absolute directory); or an import path such as
@@ -124,10 +143,12 @@ location, object), or `query` for symbols; `total`; `items` (location, source
 kind, package and signature, `hover` documentation for definitions,
 `container` for symbols); `truncated` (`omitted`, `nextOffset`) when paged; and
 `error` for a target that failed. `query type` returns `type` with the
-expression, type, underlying type, mode, constant value and, for Gon error
-handling, conditional expressions, lambdas or nil safety, `construct`:
-`error-propagation`, `error-handler`, `conditional-expression`, `lambda`,
-`nil-guard`, `safe-navigation`, or `nil-coalescing`.
+expression, type, underlying type, mode, constant value and a Gon `construct`
+when relevant: `enum-type`, `match-expression`, `error-propagation`,
+`error-handler`, `result-propagation`, `result-handler`, `conditional-expression`,
+`lambda`, `option-propagation`, `option-type` for `T?`, `contextual-constructor`
+for leading-dot construction, `nil-guard`, `option-guard`, `safe-navigation`,
+`nil-coalescing`, or `option-coalescing`.
 
 **`check`** returns `patterns`, `packages`, `verified` (`parse`,
 `type-check`, `analysis`), `analyzers` (names), `notVerified` (for example

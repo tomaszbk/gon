@@ -92,7 +92,8 @@ func (d *deadState) findLabels(stmt ast.Stmt) {
 		*ast.IncDecStmt,
 		*ast.ReturnStmt,
 		*ast.SendStmt:
-		// no statements inside
+		// Expressions may contain local handlers or statement arms.
+		d.findExpressionLabels(x)
 
 	case *ast.BlockStmt:
 		for _, stmt := range x.List {
@@ -151,6 +152,18 @@ func (d *deadState) findLabels(stmt ast.Stmt) {
 		outer := d.breakTarget
 		d.breakTarget = x
 		d.findLabels(x.Body)
+		d.breakTarget = outer
+
+	case *ast.MatchStmt:
+		outer := d.breakTarget
+		d.breakTarget = x
+		d.findExpressionLabels(x.Match.Tag)
+		for _, arm := range x.Match.Arms {
+			if arm.Guard != nil {
+				d.findExpressionLabels(arm.Guard)
+			}
+			d.findLabels(arm.Body)
+		}
 		d.breakTarget = outer
 
 	case *ast.TypeSwitchStmt:
@@ -314,6 +327,16 @@ func (d *deadState) findDead(stmt ast.Stmt) {
 		}
 		d.reachable = anyReachable || d.hasBreak[x] || !hasDefault
 
+	case *ast.MatchStmt:
+		anyReachable := false
+		for _, arm := range x.Match.Arms {
+			d.reachable = true
+			d.findDead(arm.Body)
+			anyReachable = anyReachable || d.reachable
+		}
+		// Typed matches are exhaustive even without a default arm.
+		d.reachable = anyReachable || d.hasBreak[x]
+
 	case *ast.TypeSwitchStmt:
 		anyReachable := false
 		hasDefault := false
@@ -330,4 +353,36 @@ func (d *deadState) findDead(stmt ast.Stmt) {
 		}
 		d.reachable = anyReachable || d.hasBreak[x] || !hasDefault
 	}
+}
+
+// findExpressionLabels visits embedded statement bodies without crossing a
+// function boundary or treating pattern bindings as executable expressions.
+func (d *deadState) findExpressionLabels(n ast.Node) {
+	ast.Inspect(n, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.FuncLit, *ast.LambdaExpr:
+			return false
+		case *ast.ErrorExpr:
+			d.findExpressionLabels(n.X)
+			if n.Body != nil {
+				d.findLabels(n.Body)
+			}
+			return false
+		case *ast.MatchExpr:
+			d.findExpressionLabels(n.Tag)
+			for _, a := range n.Arms {
+				if a.Guard != nil {
+					d.findExpressionLabels(a.Guard)
+				}
+				if a.Value != nil {
+					d.findExpressionLabels(a.Value)
+				}
+				if a.Body != nil {
+					d.findLabels(a.Body)
+				}
+			}
+			return false
+		}
+		return true
+	})
 }

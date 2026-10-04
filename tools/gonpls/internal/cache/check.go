@@ -1465,6 +1465,7 @@ type typeCheckInputs struct {
 	goFiles, compiledGoFiles []file.Handle
 	sizes                    types.Sizes
 	depsByImpPath            map[ImportPath]PackageID
+	migrateOptionals         bool
 	goVersion                string // packages.Module.GoVersion, e.g. "1.18"
 
 	// Used for type check diagnostics:
@@ -1505,14 +1506,15 @@ func (s *Snapshot) typeCheckInputs(ctx context.Context, mp *metadata.Package) (*
 	}
 
 	return &typeCheckInputs{
-		id:              mp.ID,
-		pkgPath:         mp.PkgPath,
-		name:            mp.Name,
-		goFiles:         goFiles,
-		compiledGoFiles: compiledGoFiles,
-		sizes:           mp.TypesSizes,
-		depsByImpPath:   mp.DepsByImpPath,
-		goVersion:       goVersion,
+		id:               mp.ID,
+		pkgPath:          mp.PkgPath,
+		name:             mp.Name,
+		goFiles:          goFiles,
+		compiledGoFiles:  compiledGoFiles,
+		sizes:            mp.TypesSizes,
+		depsByImpPath:    mp.DepsByImpPath,
+		goVersion:        goVersion,
+		migrateOptionals: s.Options().MigrateOptionals,
 
 		supportsRelatedInformation: s.Options().RelatedInformationSupported,
 		linkTarget:                 s.Options().LinkTarget,
@@ -1546,7 +1548,7 @@ func localPackageKey(inputs *typeCheckInputs) file.Hash {
 	fmt.Fprintf(hasher, "package: %s %s %s\n", inputs.id, inputs.name, inputs.pkgPath)
 
 	// module Go version
-	fmt.Fprintf(hasher, "go %s\n", inputs.goVersion)
+	fmt.Fprintf(hasher, "go %s migrate-optionals %t\n", inputs.goVersion, inputs.migrateOptionals)
 
 	// import map
 	for impPath, depID := range moremaps.Sorted(inputs.depsByImpPath) {
@@ -1591,14 +1593,15 @@ func (b *typeCheckBatch) checkPackage(ctx context.Context, fset *token.FileSet, 
 		types:      types.NewPackage(string(inputs.pkgPath), string(inputs.name)),
 		typesSizes: inputs.sizes,
 		typesInfo: &types.Info{
-			Types:        make(map[ast.Expr]types.TypeAndValue),
-			Defs:         make(map[*ast.Ident]types.Object),
-			Uses:         make(map[*ast.Ident]types.Object),
-			Implicits:    make(map[ast.Node]types.Object),
-			Instances:    make(map[*ast.Ident]types.Instance),
-			Selections:   make(map[*ast.SelectorExpr]*types.Selection),
-			Scopes:       make(map[ast.Node]*types.Scope),
-			FileVersions: make(map[*ast.File]string),
+			Types:               make(map[ast.Expr]types.TypeAndValue),
+			Defs:                make(map[*ast.Ident]types.Object),
+			Uses:                make(map[*ast.Ident]types.Object),
+			Implicits:           make(map[ast.Node]types.Object),
+			Instances:           make(map[*ast.Ident]types.Instance),
+			Selections:          make(map[*ast.SelectorExpr]*types.Selection),
+			Scopes:              make(map[ast.Node]*types.Scope),
+			FileVersions:        make(map[*ast.File]string),
+			OptionalConversions: make(map[ast.Expr]types.Type),
 		},
 	}
 
@@ -1726,8 +1729,9 @@ var goVersionRx = regexp.MustCompile(`^go[1-9][0-9]*(?:\.(0|[1-9][0-9]*)){0,2}$`
 
 func (b *typeCheckBatch) typesConfig(ctx context.Context, inputs *typeCheckInputs, imports map[PackagePath]*types.Package, onError func(e error)) *types.Config {
 	cfg := &types.Config{
-		Sizes: inputs.sizes,
-		Error: onError,
+		MigrateOptionals: inputs.migrateOptionals,
+		Sizes:            inputs.sizes,
+		Error:            onError,
 		Importer: importerFunc(func(path string) (*types.Package, error) {
 			// While all of the import errors could be reported
 			// based on the metadata before we start type checking,

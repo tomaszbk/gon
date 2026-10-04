@@ -184,6 +184,14 @@ func (check *Checker) callExpr(x *operand, call *ast.CallExpr) exprKind {
 	}
 	// x.typ may be generic
 
+	if len(call.ArgNames) > 0 && (x.mode() == typexpr || x.mode() == builtin) {
+		check.error(call, InvalidCall, "named arguments require a function signature")
+		check.use(call.Args...)
+		x.invalidate()
+		x.expr = call
+		return statement
+	}
+
 	switch x.mode() {
 	case invalid:
 		check.use(call.Args...)
@@ -305,6 +313,17 @@ func (check *Checker) callExpr(x *operand, call *ast.CallExpr) exprKind {
 	}
 
 	// evaluate arguments
+
+	var order []int
+	if len(call.ArgNames) > 0 {
+		order = check.namedArgumentOrder(call, sig)
+		if order == nil {
+			check.use(call.Args...)
+			x.invalidate()
+			x.expr = call
+			return statement
+		}
+	}
 	targetAt := func(i int) *target {
 		typ := sig.argType(i)
 		// An argument is not assigned to a parameter type that depends on
@@ -316,7 +335,18 @@ func (check *Checker) callExpr(x *operand, call *ast.CallExpr) exprKind {
 		}
 		return newTarget(typ, "function parameter")
 	}
-	args, atargs := check.genericExprList(targetAt, call.Args)
+	var args []*operand
+	var atargs [][]Type
+	if order != nil {
+		args, atargs = check.namedArguments(call, sig, order, targetAt)
+		if args == nil {
+			x.invalidate()
+			x.expr = call
+			return statement
+		}
+	} else {
+		args, atargs = check.genericExprList(targetAt, call.Args)
+	}
 	sig = check.arguments(call, sig, targs, xlist, args, atargs)
 
 	if wasGeneric && sig.TypeParams().Len() == 0 {
@@ -432,7 +462,7 @@ func (check *Checker) genericExprList(targetAt func(int) *target, elist []ast.Ex
 				// x is a function call returning multiple values; it cannot be generic.
 				resList = make([]*operand, t.Len())
 				for i, v := range t.vars {
-					resList[i] = &operand{mode_: value, expr: e, typ_: v.typ}
+					resList[i] = &operand{mode_: value, expr: e, typ_: v.typ, multiValue: true}
 				}
 			} else {
 				// x is exactly one value (possibly invalid or uninstantiated generic function).
@@ -674,6 +704,10 @@ func (check *Checker) arguments(call *ast.CallExpr, sig *Signature, targs []Type
 	if len(args) > 0 {
 		context := check.sprintf("argument to %s", call.Fun)
 		for i, a := range args {
+			if check.deferredOptionContexts[a.expr] {
+				delete(check.deferredOptionContexts, a.expr)
+				check.expr(newTarget(sigParams.vars[i].typ, context), a, a.expr)
+			}
 			if e, ok := a.expr.(*ast.LambdaExpr); ok {
 				if check.lambdaTypes[e] == nil {
 					check.lambdaExpr(newTarget(sigParams.vars[i].typ, context), a, e)
@@ -682,8 +716,8 @@ func (check *Checker) arguments(call *ast.CallExpr, sig *Signature, targs []Type
 			}
 			// A conditional expression for a parameter of the callee whose
 			// type depends on its type parameters had no target type.
-			if n > 0 && isCondExpr(a.expr) && !(ddd && i == nargs-1) && isParameterized(sig.TypeParams().list(), sig.argType(i)) {
-				if check.condNilArg(a, sigParams.vars[i].typ, context) {
+			if n > 0 && (isCondExpr(a.expr) || isMatchExpr(a.expr)) && !(ddd && i == nargs-1) && isParameterized(sig.TypeParams().list(), sig.argType(i)) {
+				if check.condNilArg(a, sigParams.vars[i].typ, context) || check.matchNilArg(a, sigParams.vars[i].typ, context) {
 					continue
 				}
 			}
@@ -831,6 +865,10 @@ func (check *Checker) selector(x *operand, e *ast.SelectorExpr, wantType bool) {
 	// We cannot select on an incomplete type; make sure it's complete.
 	if !check.isComplete(x.typ()) {
 		goto Error
+	}
+
+	if check.enumSelector(x, e, wantType) {
+		return
 	}
 
 	// Avoid crashing when checking an invalid selector in a method declaration.

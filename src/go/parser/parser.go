@@ -60,8 +60,9 @@ type parser struct {
 	syncCnt int       // number of parser.advance calls without progress
 
 	// Non-syntactic parser control
-	exprLev int  // < 0: in control clause, >= 0: in expression
-	inRhs   bool // if set, the parser is parsing a rhs expression
+	exprLev    int  // < 0: in control clause, >= 0: in expression
+	inRhs      bool // if set, the parser is parsing a rhs expression
+	matchGuard bool // a top-level => terminates the current arm guard
 
 	imports []*ast.ImportSpec // list of imports
 
@@ -540,7 +541,7 @@ func (p *parser) parseQualifiedIdent(ident *ast.Ident) ast.Expr {
 		typ = p.parseTypeInstance(typ)
 	}
 
-	return typ
+	return p.optionalType(typ)
 }
 
 // If the result is an identifier, it is not resolved.
@@ -859,6 +860,13 @@ func (p *parser) parseParamDecl(name *ast.Ident, typeSetsOK bool) (f field) {
 		p.advance(exprEnd)
 	}
 
+	if p.tok == token.QUESTION {
+		if f.typ == nil {
+			f.typ, f.name = f.name, nil
+		}
+		f.typ = p.optionalType(f.typ)
+	}
+
 	// [name] type "|"
 	if typeSetsOK && p.tok == token.OR && f.typ != nil {
 		f.typ = p.embeddedElem(f.typ)
@@ -1089,6 +1097,16 @@ func (p *parser) parseParameters(result bool) *ast.FieldList {
 			list = p.parseParameterList(nil, nil, token.RPAREN, !result)
 		}
 		rparen := p.expect(token.RPAREN)
+		if result && p.tok == token.QUESTION {
+			// A postfix question disambiguates a grouped type from a result
+			// list. Only a single unnamed type can be optional as a whole.
+			if len(list) == 1 && len(list[0].Names) == 0 {
+				typ := &ast.ParenExpr{Lparen: lparen, X: list[0].Type, Rparen: rparen}
+				return &ast.FieldList{List: []*ast.Field{{Type: p.optionalType(typ)}}}
+			}
+			p.error(p.pos, "optional return suffix requires one unnamed type")
+			p.next()
+		}
 		return &ast.FieldList{Opening: lparen, List: list, Closing: rparen}
 	}
 
@@ -1365,7 +1383,20 @@ func (p *parser) parseTypeInstance(typ ast.Expr) ast.Expr {
 	return packIndexExpr(typ, opening, list, closing)
 }
 
+func (p *parser) optionalType(typ ast.Expr) ast.Expr {
+	if typ != nil && p.tok == token.QUESTION {
+		pos := p.pos
+		p.next()
+		return &ast.OptionalExpr{X: typ, Question: pos}
+	}
+	return typ
+}
+
 func (p *parser) tryIdentOrType() ast.Expr {
+	return p.optionalType(p.tryIdentOrTypeBase())
+}
+
+func (p *parser) tryIdentOrTypeBase() ast.Expr {
 	defer decNestLev(incNestLev(p))
 
 	switch p.tok {
@@ -1470,6 +1501,19 @@ func (p *parser) parseOperand() ast.Expr {
 	}
 
 	switch p.tok {
+	case token.PERIOD:
+		x := &ast.ContextualVariantExpr{Dot: p.pos}
+		p.next()
+		x.Name = p.parseIdent()
+		if p.tok == token.LPAREN {
+			call := p.parseCallOrConversion(x.Name)
+			x.Lparen, x.Rparen, x.Args = call.Lparen, call.Rparen, call.Args
+			if call.ArgNames != nil || call.Ellipsis.IsValid() {
+				p.error(x.Pos(), "contextual variants do not accept named or expanded arguments")
+			}
+		}
+		return x
+
 	case token.IDENT:
 		return p.parseIdent()
 
@@ -1526,6 +1570,9 @@ func (p *parser) parseOperand() ast.Expr {
 
 	case token.FUNC:
 		return p.parseFuncTypeOrLit()
+
+	case token.SWITCH:
+		return p.parseMatchExpr()
 
 	case token.IF:
 		// An "if" at the start of a statement is an if statement (see
@@ -1614,7 +1661,7 @@ func (p *parser) parseCondExprFrom(base int) *ast.CondExpr {
 func exprStart(tok token.Token) bool {
 	switch tok {
 	case token.IDENT, token.INT, token.FLOAT, token.IMAG, token.CHAR, token.STRING, // literals
-		token.FUNC, token.LPAREN, token.LBRACE, token.IF, // other operands
+		token.FUNC, token.LPAREN, token.LBRACE, token.IF, token.PERIOD, // other operands
 		token.LBRACK, token.STRUCT, token.MAP, token.CHAN, token.INTERFACE, // types
 		token.ADD, token.SUB, token.MUL, token.AND, token.XOR, token.ARROW, token.NOT, token.TILDE: // unary operators
 		return true
@@ -1836,9 +1883,27 @@ func (p *parser) parseCallOrConversion(fun ast.Expr) *ast.CallExpr {
 	lparen := p.expect(token.LPAREN)
 	p.exprLev++
 	var list []ast.Expr
+	var names []*ast.Ident
 	var ellipsis token.Pos
 	for p.tok != token.RPAREN && p.tok != token.EOF && !ellipsis.IsValid() {
-		list = append(list, p.parseRhs()) // builtins may expect a type: make(some type, ...)
+		arg := p.parseRhs() // builtins may expect a type
+		var name *ast.Ident
+		if p.tok == token.COLON {
+			var ok bool
+			name, ok = arg.(*ast.Ident)
+			if !ok {
+				p.error(arg.Pos(), "argument label must be an identifier")
+			}
+			if names == nil {
+				names = make([]*ast.Ident, len(list))
+			}
+			p.next()
+			arg = p.parseRhs()
+		}
+		list = append(list, arg)
+		if names != nil {
+			names = append(names, name)
+		}
 		if p.tok == token.ELLIPSIS {
 			ellipsis = p.pos
 			p.next()
@@ -1851,7 +1916,7 @@ func (p *parser) parseCallOrConversion(fun ast.Expr) *ast.CallExpr {
 	p.exprLev--
 	rparen := p.expectClosing(token.RPAREN, "argument list")
 
-	return &ast.CallExpr{Fun: fun, Lparen: lparen, Args: list, Ellipsis: ellipsis, Rparen: rparen}
+	return &ast.CallExpr{Fun: fun, Lparen: lparen, Args: list, ArgNames: names, Ellipsis: ellipsis, Rparen: rparen}
 }
 
 func (p *parser) parseElement() ast.Expr {
@@ -1931,7 +1996,7 @@ func (p *parser) parsePrimaryExpr(x ast.Expr) ast.Expr {
 			p.next()
 			x = &ast.ErrorExpr{X: x, OpPos: pos}
 		case token.IDENT:
-			if _, call := ast.Unparen(x).(*ast.CallExpr); p.lit != "or" || !call {
+			if p.lit != "or" {
 				return finish(x)
 			}
 			pos := p.pos
@@ -1943,6 +2008,10 @@ func (p *parser) parsePrimaryExpr(x ast.Expr) ast.Expr {
 			body := p.parseBlockStmt()
 			p.exprLev = level
 			x = &ast.ErrorExpr{X: x, OpPos: pos, Err: err, Body: body}
+		case token.QUESTION:
+			pos := p.pos
+			p.next()
+			x = &ast.OptionalExpr{X: x, Question: pos}
 		case token.SAFE_PERIOD:
 			question := p.pos
 			p.next()
@@ -1965,6 +2034,9 @@ func (p *parser) parsePrimaryExpr(x ast.Expr) ast.Expr {
 			p.pos++
 			x = p.parseCallOrConversion(x)
 		case token.FATARROW:
+			if p.matchGuard {
+				return finish(x)
+			}
 			p.error(p.pos, "lambda parameters must be parenthesized")
 			p.next()
 			p.parseRhs()
@@ -2523,6 +2595,18 @@ func (p *parser) parseSwitchStmt() ast.Stmt {
 
 	typeSwitch := p.isTypeSwitchGuard(s2)
 	lbrace := p.expect(token.LBRACE)
+	if p.matchClauseAhead() {
+		if s1 != nil || typeSwitch {
+			p.error(pos, "matching switch does not allow an init statement or type switch guard")
+		}
+		x := &ast.MatchExpr{Switch: pos, Tag: p.makeExpr(s2, "match expression"), Lbrace: lbrace}
+		if x.Tag == nil {
+			p.error(pos, "matching switch requires an operand")
+		}
+		p.parseMatchArms(x, true)
+		p.expectSemi()
+		return &ast.MatchStmt{Match: x}
+	}
 	var list []ast.Stmt
 	for p.tok == token.CASE || p.tok == token.DEFAULT {
 		list = append(list, p.parseCaseClause())
@@ -2852,7 +2936,7 @@ func (p *parser) parseGenericType(spec *ast.TypeSpec, openPos token.Pos, name0 *
 		spec.Assign = p.pos
 		p.next()
 	}
-	spec.Type = p.parseType()
+	spec.Type = p.parseDeclaredType(!spec.Assign.IsValid())
 }
 
 func (p *parser) parseTypeSpec(doc *ast.CommentGroup, _ token.Token, _ int) ast.Spec {
@@ -2885,7 +2969,9 @@ func (p *parser) parseTypeSpec(doc *ast.CommentGroup, _ token.Token, _ int) ast.
 			// is not a concern because name <- x is a statement and
 			// not an expression.
 			var x ast.Expr = p.parseIdent()
-			if p.tok != token.LBRACK {
+			// A following contextual identifier or may name the constraint.
+			// Leave it for the parameter parser rather than interpreting a handler.
+			if p.tok != token.LBRACK && !(p.tok == token.IDENT && p.lit == "or") {
 				// To parse the expression starting with name, expand
 				// the call sequence we would get by passing in name
 				// to parser.expr, and pass in name to parsePrimaryExpr.
@@ -2922,7 +3008,7 @@ func (p *parser) parseTypeSpec(doc *ast.CommentGroup, _ token.Token, _ int) ast.
 			spec.Assign = p.pos
 			p.next()
 		}
-		spec.Type = p.parseType()
+		spec.Type = p.parseDeclaredType(!spec.Assign.IsValid())
 	}
 
 	spec.Comment = p.expectSemi()

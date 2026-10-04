@@ -179,13 +179,37 @@ const (
 	NilGuardExpr_X
 	SafeNavExpr_X
 
+	CallExpr_ArgNames
+	EnumType_Variants
+	EnumVariant_Doc
+	EnumVariant_Comment
+	EnumVariant_Name
+	EnumVariant_Payload
+	MatchExpr_Tag
+	MatchExpr_Arms
+	MatchStmt_Match
+	MatchArm_Pattern
+	MatchArm_Guard
+	MatchArm_Value
+	MatchArm_Body
+	MatchPattern_Inner
+	MatchPattern_Value
+	MatchPattern_Args
+	MatchPattern_Fields
+	MatchField_Name
+	MatchField_Pattern
+
+	OptionalExpr_X
+	ContextualVariantExpr_Name
+	ContextualVariantExpr_Args
+
 	maxKind
 )
 
-// Assert that the encoding fits in 7 bits,
+// Assert that the encoding fits in 8 bits,
 // as the inspector relies on this.
-// (We are currently at 104.)
-var _ = [1 << 7]struct{}{}[maxKind]
+// Gon adds enum and pattern nodes to the upstream field inventory.
+var _ = [1 << 8]struct{}{}[maxKind]
 
 type fieldInfo struct {
 	nodeType  reflect.Type // pointer-to-struct type of ast.Node implementation
@@ -204,6 +228,29 @@ func info[N ast.Node](fieldName string) fieldInfo {
 }
 
 var fieldInfos = [...]fieldInfo{
+	ContextualVariantExpr_Name: info[*ast.ContextualVariantExpr]("Name"),
+	ContextualVariantExpr_Args: info[*ast.ContextualVariantExpr]("Args"),
+	OptionalExpr_X:             info[*ast.OptionalExpr]("X"),
+	CallExpr_ArgNames:          info[*ast.CallExpr]("ArgNames"),
+	EnumType_Variants:          info[*ast.EnumType]("Variants"),
+	EnumVariant_Doc:            info[*ast.EnumVariant]("Doc"),
+	EnumVariant_Comment:        info[*ast.EnumVariant]("Comment"),
+	EnumVariant_Name:           info[*ast.EnumVariant]("Name"),
+	EnumVariant_Payload:        info[*ast.EnumVariant]("Payload"),
+	MatchExpr_Tag:              info[*ast.MatchExpr]("Tag"),
+	MatchExpr_Arms:             info[*ast.MatchExpr]("Arms"),
+	MatchStmt_Match:            info[*ast.MatchStmt]("Match"),
+	MatchArm_Pattern:           info[*ast.MatchArm]("Pattern"),
+	MatchArm_Guard:             info[*ast.MatchArm]("Guard"),
+	MatchArm_Value:             info[*ast.MatchArm]("Value"),
+	MatchArm_Body:              info[*ast.MatchArm]("Body"),
+	MatchPattern_Inner:         info[*ast.MatchPattern]("Inner"),
+	MatchPattern_Value:         info[*ast.MatchPattern]("Value"),
+	MatchPattern_Args:          info[*ast.MatchPattern]("Args"),
+	MatchPattern_Fields:        info[*ast.MatchPattern]("Fields"),
+	MatchField_Name:            info[*ast.MatchField]("Name"),
+	MatchField_Pattern:         info[*ast.MatchField]("Pattern"),
+
 	LambdaExpr_Params:     info[*ast.LambdaExpr]("Params"),
 	LambdaExpr_Body:       info[*ast.LambdaExpr]("Body"),
 	LambdaExpr_Block:      info[*ast.LambdaExpr]("Block"),

@@ -1,0 +1,8 @@
+{"Time":"2026-10-03T22:48:58.395224-03:00","Action":"start","Package":"golang.org/x/tools/gopls/internal/analysis/unusedfunc"}
+{"Time":"2026-10-03T22:48:58.669688-03:00","Action":"run","Package":"golang.org/x/tools/gopls/internal/analysis/unusedfunc","Test":"Test"}
+{"Time":"2026-10-03T22:48:58.669891-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/analysis/unusedfunc","Test":"Test","Output":"=== RUN   Test\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:58.840914-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/analysis/unusedfunc","Test":"Test","Output":"--- PASS: Test (0.17s)\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:58.841126-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/analysis/unusedfunc","Test":"Test","Elapsed":0.17}
+{"Time":"2026-10-03T22:48:58.841141-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/analysis/unusedfunc","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-03T22:48:58.841525-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/analysis/unusedfunc","Output":"ok  \tgolang.org/x/tools/gopls/internal/analysis/unusedfunc\t0.446s\n"}
+{"Time":"2026-10-03T22:48:58.841541-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/analysis/unusedfunc","Elapsed":0.446}
