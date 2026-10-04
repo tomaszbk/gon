@@ -244,6 +244,13 @@ individual layers. The language has no predeclared `Option`, `Some` or `None`.
 
 ## Try Gon
 
+Use the [development container image](doc/containers.md) to compile and test
+Gon projects or build application containers for the cloud:
+
+```sh
+docker run --rm ghcr.io/tomaszbk/gon:dev gon version
+```
+
 Build from this checkout with an unmodified bootstrap Go toolchain:
 
 ```sh
