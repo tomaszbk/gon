@@ -76,15 +76,23 @@ func run(pass *analysis.Pass) (any, error) {
 	)
 
 	checkCall := func(curCall inspector.Cursor) {
+		// In Gon, the error result may be handled in place:
+		//
+		//	rows := db.Query("select ...")!
+		//	rows := db.Query("select ...") or err { return err }
+		//
+		// Treat the handler expression like the call it wraps.
+		curValue := lookThroughErrorHandling(curCall)
+
 		var lhs ast.Expr
-		switch curCall.ParentEdgeKind() {
+		switch curValue.ParentEdgeKind() {
 		case edge.ValueSpec_Values:
 			// var sc, err = db.Query(...)
-			curName := curCall.Parent().ChildAt(edge.ValueSpec_Names, 0)
+			curName := curValue.Parent().ChildAt(edge.ValueSpec_Names, 0)
 			lhs = curName.Node().(*ast.Ident)
 		case edge.AssignStmt_Rhs:
 			// sc, err := db.Query(...)   (or '=')
-			curLhs := curCall.Parent().ChildAt(edge.AssignStmt_Lhs, 0)
+			curLhs := curValue.Parent().ChildAt(edge.AssignStmt_Lhs, 0)
 			lhs = curLhs.Node().(ast.Expr)
 		}
 		id, ok := lhs.(*ast.Ident)
@@ -148,4 +156,20 @@ func run(pass *analysis.Pass) (any, error) {
 	}
 
 	return nil, nil
+}
+
+// lookThroughErrorHandling returns the cursor of the Gon error-handling
+// expression ("!" or "or") whose operand, possibly parenthesized, is
+// curCall, or curCall itself if there is none.
+func lookThroughErrorHandling(curCall inspector.Cursor) inspector.Cursor {
+	for cur := curCall; ; {
+		switch cur.ParentEdgeKind() {
+		case edge.ParenExpr_X:
+			cur = cur.Parent()
+		case edge.ErrorExpr_X:
+			return cur.Parent()
+		default:
+			return curCall
+		}
+	}
 }

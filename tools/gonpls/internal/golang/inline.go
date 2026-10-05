@@ -225,8 +225,13 @@ func inlineVariableOne(pkg *cache.Package, pgf *parsego.File, start, end token.P
 		scope = info.Scopes[pgf.File].Innermost(pos)
 	)
 	for curIdent := range curRHS.Preorder((*ast.Ident)(nil)) {
-		if curIdent.ParentEdgeKind() == edge.SelectorExpr_Sel {
+		switch curIdent.ParentEdgeKind() {
+		case edge.SelectorExpr_Sel:
 			continue // ignore f in x.f
+		case edge.ContextualVariantExpr_Name:
+			continue // ignore Err in .Err(e): a variant of the expected type, not a lexical reference
+		case edge.CallExpr_ArgNames:
+			continue // ignore p in f(p: v): a parameter label, not a lexical reference
 		}
 		id := curIdent.Node().(*ast.Ident)
 		obj1 := info.Uses[id]

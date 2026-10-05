@@ -1540,7 +1540,7 @@
 						},
 						{
 							"Name": "\"httpresponse\"",
-							"Doc": "check for mistakes using HTTP responses\n\nA common mistake when using the net/http package is to defer a function\ncall to close the http.Response Body before checking the error that\ndetermines whether the response is valid:\n\n\tresp, err := http.Head(url)\n\tdefer resp.Body.Close()\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\t// (defer statement belongs here)\n\nThis checker helps uncover latent nil dereference bugs by reporting a\ndiagnostic for such mistakes.",
+							"Doc": "check for mistakes using HTTP responses\n\nA common mistake when using the net/http package is to defer a function\ncall to close the http.Response Body before checking the error that\ndetermines whether the response is valid:\n\n\tresp, err := http.Head(url)\n\tdefer resp.Body.Close()\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\t// (defer statement belongs here)\n\nThis checker helps uncover latent nil dereference bugs by reporting a\ndiagnostic for such mistakes.\n\nIn Gon source, a call whose final error result is handled by postfix !\npropagation or an \"or\" handler is already checked: the handler of a call\nwith success results must terminate, so the response is valid in the\nstatements that follow and a deferred Close is not reported.",
 							"Default": "true",
 							"Status": ""
 						},
@@ -3597,7 +3597,7 @@
 		},
 		{
 			"Name": "httpresponse",
-			"Doc": "check for mistakes using HTTP responses\n\nA common mistake when using the net/http package is to defer a function\ncall to close the http.Response Body before checking the error that\ndetermines whether the response is valid:\n\n\tresp, err := http.Head(url)\n\tdefer resp.Body.Close()\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\t// (defer statement belongs here)\n\nThis checker helps uncover latent nil dereference bugs by reporting a\ndiagnostic for such mistakes.",
+			"Doc": "check for mistakes using HTTP responses\n\nA common mistake when using the net/http package is to defer a function\ncall to close the http.Response Body before checking the error that\ndetermines whether the response is valid:\n\n\tresp, err := http.Head(url)\n\tdefer resp.Body.Close()\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\t// (defer statement belongs here)\n\nThis checker helps uncover latent nil dereference bugs by reporting a\ndiagnostic for such mistakes.\n\nIn Gon source, a call whose final error result is handled by postfix !\npropagation or an \"or\" handler is already checked: the handler of a call\nwith success results must terminate, so the response is valid in the\nstatements that follow and a deferred Close is not reported.",
 			"URL": "https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/httpresponse",
 			"Default": true
 		},

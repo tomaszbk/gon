@@ -1,0 +1,53 @@
+This is a test of the refactor.inline.variable code action on Gon initializers
+whose identifiers are not lexical references: named-argument labels, and the
+contextual variants of the predeclared Result, which has no package.
+
+-- go.mod --
+module example.com/a
+go 1.27
+
+-- a/a.go --
+package a
+
+func scale(width, height int) int { return width * height }
+
+func _() int {
+	v := scale(height: 2, width: 3)
+	return v //@codeaction("v", "refactor.inline.variable", result=inlineNamed)
+}
+
+func _(err error) Result[int, error] {
+	var res Result[int, error] = .Err(err)
+	return res //@codeaction("res", "refactor.inline.variable", result=inlineVariant)
+}
+
+-- @inlineNamed/a/a.go --
+package a
+
+func scale(width, height int) int { return width * height }
+
+func _() int {
+	v := scale(height: 2, width: 3)
+	return scale(height: 2, width: 3) //@codeaction("v", "refactor.inline.variable", result=inlineNamed)
+}
+
+func _(err error) Result[int, error] {
+	var res Result[int, error] = .Err(err)
+	return res //@codeaction("res", "refactor.inline.variable", result=inlineVariant)
+}
+
+-- @inlineVariant/a/a.go --
+package a
+
+func scale(width, height int) int { return width * height }
+
+func _() int {
+	v := scale(height: 2, width: 3)
+	return v //@codeaction("v", "refactor.inline.variable", result=inlineNamed)
+}
+
+func _(err error) Result[int, error] {
+	var res Result[int, error] = .Err(err)
+	return .Err(err) //@codeaction("res", "refactor.inline.variable", result=inlineVariant)
+}
+

@@ -15,3 +15,9 @@ func Test(t *testing.T) {
 	testdata := analysistest.TestData()
 	analysistest.RunWithSuggestedFixes(t, testdata, sqlrowserr.Analyzer, "a")
 }
+
+// TestGon checks that Gon "!" and "or" handlers on a query are analyzed
+// like the Go assignment form.
+func TestGon(t *testing.T) {
+	analysistest.Run(t, analysistest.TestData(), sqlrowserr.Analyzer, "gon")
+}
