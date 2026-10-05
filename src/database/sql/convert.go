@@ -151,6 +151,15 @@ func driverArgsConnLocked(ci driver.Conn, ds *driverStmt, args []any) ([]driver.
 		}
 		nv.Ordinal = n + 1
 		nv.Value = arg
+		// Normalize the opt-in native enum before driver-specific checkers.
+		// Some drivers accept arbitrary values here and bypass the default
+		// converter; they should still receive the enum's text spelling.
+		if stringEnumArgument(arg) {
+			nv.Value, err = driver.DefaultParameterConverter.ConvertValue(arg)
+			if err != nil {
+				return nil, fmt.Errorf("sql: converting argument %s type: %w", describeNamedValue(nv), err)
+			}
+		}
 
 		// Checking sequence has four routes:
 		// A: 1. Default
@@ -489,6 +498,9 @@ func convertAssignRows(dest, src any, rows *Rows) error {
 	}
 
 	dv := reflect.Indirect(dpv)
+	if reflect.IsStringEnum(dv.Type()) {
+		return scanStringEnum(dv, src)
+	}
 	if sv.IsValid() && sv.Type().AssignableTo(dv.Type()) {
 		switch b := src.(type) {
 		case []byte:

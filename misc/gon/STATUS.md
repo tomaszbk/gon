@@ -27,10 +27,24 @@ records supported limits; [INTEGRATION.md](INTEGRATION.md) defines the maintaine
 workflow. These checks do not establish a complete release pass on every
 supported platform.
 
+String enums opt in with `type Role enum string`, a default string payload and
+unit variants with unique constant spellings. Native `Role.Parse`, `String`,
+`MarshalText` and pointer `UnmarshalText` remove per-enum text/JSON adapters.
+Unknown text is preserved and JSON null preserves an existing value. Both
+frontends/checkers, imports, reflection metadata, SSA/IR, cgo/coverage and editor
+services retain the protocol. See [the contract](README.md) and the executable
+`test/stringenums.go` pair. Gon's `database/sql` maps string enums directly to
+text parameters and parses text/byte results, including direct-column scanners.
+Use `sql.Null[Role]` or `*Role` for SQL NULL; explicit Scanner/Valuer overrides
+retain precedence. No enum registration or driver changes are needed through
+database/sql.
+Native pgx and native optional SQL mapping remain separate adapter boundaries.
+
 Representation uses a discriminator and separate typed storage for GC safety.
 Unit and zero-sized shapes have measured overhead. There is no stable storage
-ABI or automatic serialization; C and serialization boundaries need explicit
-adapters. First-class positional constructors disable compiler inlining.
+ABI. Ordinary enums/optionals and C boundaries need explicit adapters; string
+enums supply the standard text interfaces. First-class positional constructors,
+string parsers and generated string enum methods disable compiler inlining.
 Source inlining/extraction conservatively decline unsupported named, lazy and
 contextual moves. The [current benchmark](benchmarks/README.md) publishes all
 24 workloads and their costs. No zero-overhead claim is made.

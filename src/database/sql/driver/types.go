@@ -205,7 +205,8 @@ func IsScanValue(v any) bool {
 // bool, string, and []byte to themselves. If the argument is a nil
 // pointer, defaultConverter.ConvertValue returns a nil [Value].
 // If the argument is a non-nil pointer, it is dereferenced and
-// defaultConverter.ConvertValue is called recursively. Other types
+// defaultConverter.ConvertValue is called recursively. Gon string enums use
+// their declared text spelling, unless they implement Valuer. Other types
 // are an error.
 var DefaultParameterConverter defaultConverter
 
@@ -260,6 +261,13 @@ func (defaultConverter) ConvertValue(v any) (Value, error) {
 	}
 
 	rv := reflect.ValueOf(v)
+	// Gon string enums opt in to textual SQL values. Keep Valuer above this
+	// fallback so application-defined database mappings retain precedence.
+	if reflect.IsStringEnum(rv.Type()) {
+		if text, ok := v.(fmt.Stringer); ok {
+			return text.String(), nil
+		}
+	}
 	switch rv.Kind() {
 	case reflect.Pointer:
 		// indirect pointers

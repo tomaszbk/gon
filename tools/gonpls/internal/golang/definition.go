@@ -400,6 +400,9 @@ func importDefinition(ctx context.Context, s *cache.Snapshot, pkg *cache.Package
 // It may need to read the declaring file content, hence (ctx, s).
 // It supports the builtin and unsafe pseudo-packages.
 func ObjectLocation(ctx context.Context, fset *token.FileSet, snapshot *cache.Snapshot, obj types.Object) (protocol.Location, error) {
+	if owner := stringEnumGeneratedOwner(obj); owner != nil {
+		obj = owner
+	}
 	if isBuiltin(obj) {
 		// Returns fake source declaration in {builtin,unsafe}.go.
 		pgf, ident, err := builtinDecl(ctx, snapshot, obj)

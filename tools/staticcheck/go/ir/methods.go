@@ -104,6 +104,19 @@ func (prog *Program) objectMethod(obj *types.Func, targs []types.Type, b *builde
 
 	// Belongs to a created package?
 	if fn := prog.FuncValue(obj); fn != nil {
+		// Binary packages have no syntax and Package.Build leaves their
+		// functions external. String enum methods still have a native body;
+		// schedule it once using the same synchronization as on-demand methods.
+		if fn.Synthetic == "string enum method" {
+			prog.objectMethodsMu.Lock()
+			if fn.buildshared == nil {
+				fn.buildshared = b.shared()
+				b.enqueue(fn)
+			} else {
+				b.waitForSharedFunction(fn)
+			}
+			prog.objectMethodsMu.Unlock()
+		}
 		return fn
 	}
 

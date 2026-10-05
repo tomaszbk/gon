@@ -50,6 +50,30 @@ func References(ctx context.Context, snapshot *cache.Snapshot, fh file.Handle, r
 	return locations, nil
 }
 
+// ReferencesToObject serves semantic callers that already resolved an object.
+// Compiler-supplied members share a source position with their owning type, so
+// selecting that position again would query references to the type instead.
+func ReferencesToObject(ctx context.Context, snapshot *cache.Snapshot, pkg *cache.Package, obj types.Object, includeDeclaration bool) ([]protocol.Location, error) {
+	refs, err := objectReferences(ctx, snapshot, pkg, obj)
+	if err != nil {
+		return nil, err
+	}
+	var locations []protocol.Location
+	for _, ref := range refs {
+		if includeDeclaration || !ref.isDeclaration {
+			locations = append(locations, ref.location)
+		}
+	}
+	sort.Slice(locations, func(i, j int) bool { return protocol.CompareLocation(locations[i], locations[j]) < 0 })
+	out := locations[:0]
+	for _, loc := range locations {
+		if len(out) == 0 || out[len(out)-1] != loc {
+			out = append(out, loc)
+		}
+	}
+	return out, nil
+}
+
 // A reference describes an identifier that refers to the same
 // object as the subject of a References query.
 type reference struct {
@@ -244,6 +268,14 @@ func ordinaryReferences(ctx context.Context, snapshot *cache.Snapshot, uri proto
 	// The case variables of a type switch have different
 	// types but that difference is immaterial here.
 	obj := candidates[0].obj
+	return objectReferences(ctx, snapshot, pkg, obj)
+}
+
+func objectReferences(ctx context.Context, snapshot *cache.Snapshot, pkg *cache.Package, obj types.Object) ([]reference, error) {
+	var generatedPath objectpath.Path
+	if stringEnumGeneratedOwner(obj) != nil {
+		generatedPath, _ = objectpath.For(obj)
+	}
 
 	// nil, error, error.Error, iota, or other built-in?
 	if isBuiltin(obj) {
@@ -416,6 +448,14 @@ func ordinaryReferences(ctx context.Context, snapshot *cache.Snapshot, uri proto
 			objects, err := objectsAt(pkg.TypesInfo(), cur)
 			if err != nil {
 				return err // unreachable? (probably caught earlier)
+			}
+			if generatedPath != "" {
+				generated, err := objectpath.Object(pkg.Types(), generatedPath)
+				if err != nil {
+					return err
+				}
+				objects = objects[:1]
+				objects[0].obj = generated
 			}
 
 			// Report the locations of the declaration(s).

@@ -103,19 +103,74 @@ prefixes may precede named arguments; an unnamed signature is positional-only.
 Named variadics use a final compatible `name: slice...` or omit the parameter.
 There are no defaults, optional parameters or function overloading.
 
+String enums declare their text once and retain closed, exhaustive alternatives:
+
+```go
+type Role enum string {
+    default Unknown(string)
+    Teacher = "teacher"
+    Student = "student"
+}
+
+type loginRequest struct {
+    Role Role `json:"role"`
+}
+
+role := Role.Parse("teacher")
+text := role.String()
+```
+
+The default is one positional `string` payload (aliases of string are allowed);
+its zero is `Unknown("")`. Other variants are units with distinct constant string
+spellings, including an empty spelling if desired. `enum` and its contextual
+`string` marker reserve no ordinary Go identifiers. `Role.Parse(text)` returns
+a known variant when its spelling matches, otherwise `Role.Unknown(text)`.
+The parser is also a function value and accepts `text:` named arguments.
+An explicitly constructed `Role.Unknown("teacher")` retains its alternative
+until parsed or decoded from text; wire text carries the spelling, not variant
+identity.
+
+The compiler supplies `String() string`, `MarshalText() ([]byte, error)` and
+`(*Role).UnmarshalText([]byte) error`. These are ordinary methods for interfaces,
+method expressions, aliases, generics and imported packages. Their names and
+`Parse` cannot be redeclared on a string enum. Text marshaling copies the bytes;
+unmarshaling copies the text and replaces the whole value. Standard JSON uses
+these text interfaces for values and map keys, preserving unknown strings.
+JSON `null` leaves an existing value unchanged; non-string input fails without
+changing it. Ordinary JSON options, escaping and UTF-8 replacement still apply.
+The type retains enum storage and zero semantics: struct-related tags such as
+`omitempty` or `,string` do not acquire the rules of an underlying Go string.
+Gon's `database/sql` also accepts string enums directly: pass `role` to `Exec`
+or `Query` and scan into `&role`. It maps arguments to strings before driver
+checking, including drivers that bypass the default parameter converter. Text
+and byte-slice results use the enum's parser; other source types and SQL `NULL`
+fail without changing the enum. Unknown text is preserved. Aliases, generics,
+prepared statements, transactions and named SQL parameters use the same path.
+Use standard `sql.Null[Role]` or `*Role` for nullable columns; native `Role?`
+does not acquire a SQL mapping. The zero `Unknown("")` is present empty text,
+distinct from SQL `NULL`. Explicit `sql.Scanner` and `driver.Valuer` methods
+retain precedence. Drivers with direct column scanning receive an internal
+Scanner adapter automatically.
+
+This support is shared by drivers used through `database/sql`, including pgx's
+stdlib adapter; no enum registration or driver changes are needed. pgx's native
+API bypasses `database/sql` and still needs its own scanner adapter or codec.
+No SQL methods or database dependency are added to the enum by the compiler.
+
 Representation uses a discriminant and separate typed storage for GC safety.
 `reflect.IsEnum`, `reflect.EnumVariants`, `reflect.EnumValueVariant` and
 `reflect.EnumValuePayload` expose checked active metadata/payload copies without
 changing the existing reflect.Type interface. C calls use explicit adapters.
-External serialization also requires explicitly written adapters with an
-application-defined format; no automatic enum encoding or stable storage ABI
-is provided. This policy was accepted on 2026-10-03. No zero overhead is promised.
+Ordinary enums and optionals require explicitly written serialization adapters
+with an application-defined format. The opt-in `enum string` text protocol above
+also enables standard JSON automatically. Neither exposes a stable storage ABI.
+No zero overhead is promised.
 The source inliner and extraction decline unsupported lazy/contextual changes,
 including contextual constructors and native optional conversions whose target
 would change after extraction. These forms are not automatically rewritten by
 `gon fix`.
 
-Executable legacy/modern pairs live in `test/{enums,matching,namedarguments,
+Executable legacy/modern pairs live in `test/{enums,stringenums,stringenums_sql,matching,namedarguments,
 optionresult,optionsyntax}.go` and their `.dir` folders. Run the deduplicated focused gate:
 
 ```sh

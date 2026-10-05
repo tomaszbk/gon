@@ -12,6 +12,8 @@ import (
 func TestGonAlternativesInventory(t *testing.T) {
 	f, err := parser.ParseFile(token.NewFileSet(), "p.go", `package p
  type Choice enum { default Empty; Value(int); Record { Number int } }
+ type Role enum string { default Unknown(string); Teacher = teacher }
+ const teacher = "teacher"
  func f(c Choice) string { return switch c {
  case Choice.Empty => "empty"
  case Choice.Value(n) if n > 0 => "positive"
@@ -75,5 +77,18 @@ func TestGonAlternativesInventory(t *testing.T) {
 				t.Fatal("missing named-label cursor")
 			}
 		}
+	}
+	var spellings int
+	for cur := range in.Root().Preorder((*ast.EnumVariant)(nil)) {
+		variant := cur.Node().(*ast.EnumVariant)
+		if variant.Value != nil {
+			if cur.ChildAt(edge.EnumVariant_Value, -1).Node() != variant.Value {
+				t.Fatal("missing string spelling cursor")
+			}
+			spellings++
+		}
+	}
+	if spellings != 1 {
+		t.Fatal("missing string enum spelling")
 	}
 }

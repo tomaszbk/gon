@@ -371,6 +371,9 @@ func funcKeywordDecl(start, end token.Pos, cursor inspector.Cursor) *ast.FuncDec
 // checkRenamable returns an error if the object cannot be renamed.
 // node is the name-like syntax node from which the renaming originated.
 func checkRenamable(obj types.Object, node ast.Node) error {
+	if stringEnumGeneratedOwner(obj) != nil {
+		return fmt.Errorf("cannot rename automatic string enum member %s", obj.Name())
+	}
 	switch obj := obj.(type) {
 	case *types.Var:
 		// Allow renaming an embedded field only at its declaration.

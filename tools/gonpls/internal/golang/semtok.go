@@ -398,6 +398,9 @@ func (tv *tokenVisitor) inspect(n ast.Node) (descend bool) {
 		tv.token(n.Dot, 1, semtok.TokOperator)
 	case *ast.EnumType:
 		tv.token(n.Enum, len("enum"), semtok.TokKeyword)
+		if n.String.IsValid() {
+			tv.token(n.String, len("string"), semtok.TokKeyword)
+		}
 	case *ast.EnumVariant:
 		if n.Default.IsValid() {
 			tv.token(n.Default, len("default"), semtok.TokKeyword)
@@ -844,7 +847,10 @@ func (tv *tokenVisitor) unkIdent(id *ast.Ident) (semtok.Type, []semtok.Modifier)
 		}
 		return semtok.TokVariable, nil
 	case *ast.EnumVariant:
-		return semtok.TokEnumMember, def
+		if parent.Name == id {
+			return semtok.TokEnumMember, def
+		}
+		return semtok.TokVariable, nil
 	case *ast.MatchPattern:
 		return semtok.TokVariable, def
 	case *ast.MatchField:

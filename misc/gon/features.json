@@ -45,8 +45,8 @@
       "initial representation uses a discriminant and separate typed variant storage; no stable layout ABI is promised",
       "checked reflection uses package functions; reflect.Type and Value method sets remain unchanged",
       "unit-only and zero-size payloads have measured size overhead",
-      "external serialization requires explicitly written adapters; no automatic enum encoding or stable storage ABI is provided",
-      "synthesized first-class positional constructors currently disable compiler inlining"
+      "ordinary enums require explicit serialization adapters; opt-in string enums supply standard text interfaces, JSON and general database/sql conversions; SQL NULL uses sql.Null[T] or pointers; native pgx and native optional SQL mapping require explicit adapters; no stable storage ABI is provided",
+      "synthesized first-class positional constructors, string parsers and generated string enum methods currently disable compiler inlining"
     ]
   },
   "matching": {

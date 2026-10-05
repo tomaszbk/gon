@@ -40,19 +40,24 @@ def checks(feature):
         ('install-tools', '.', [str(GON), 'install', 'cmd/vet', 'cmd/fix', 'cmd/gofmt', 'cmd/cover', 'cmd/cgo', 'cmd/export']),
         ('build-tooling', '.', [sys.executable, 'misc/gon/build.py']),
         ('installer', '.', [sys.executable, 'misc/gon/test_install.py']),
+        ('stringenums-vet', '.', [str(GON), 'vet', 'test/stringenums.dir/common.go', 'test/stringenums.dir/modern.go']),
         test('ast', '.', ['go/ast']),
         test('compiler-inline', '.', ['cmd/compile/internal/inline'], '^TestGon'),
         test('compiler-ssa', '.', ['cmd/compile/internal/ssacompile']),
         ('readme-examples', '.', [sys.executable, 'misc/gon/test_readme.py']),
         ('benchmark-correctness', '.', [sys.executable, 'misc/gon/benchmark.py', '--correctness-only']),
-        test('structural-tools', 'tools/x-tools', ['./go/ast/inspector', './go/ast/astutil', './go/ast/edge', './go/cfg', './refactor/satisfy', './internal/typesinternal'], 'TestGon|TestCond|TestError|TestInspectAllNodes'),
+        test('structural-tools', 'tools/x-tools', ['./go/ast/inspector', './go/ast/astutil', './go/ast/edge', './go/cfg', './refactor/satisfy', './internal/typesinternal', './go/types/objectpath'], 'TestGon|TestCond|TestError|TestInspectAllNodes|TestEnumPaths|TestStringEnum'),
         test('analyzers', 'tools/gonpls', ['./internal/settings'], '^TestGonAnalyzers$'),
         test('refactor-safety', 'tools/x-tools', ['./internal/refactor/inline'], '^(TestGon|TestCalleeEffects|TestBasics|TestPrecedenceParens)'),
         test('staticcheck-safety', 'tools/staticcheck', ['./analysis/code', './go/ast/astutil', './go/types/typeutil'], '^TestGon'),
         test('optional-inference', 'tools/gonpls', ['./internal/golang', './internal/golang/completion'], '^TestGonOptional'),
     ]
     pairs = []
-    features = ['errorhandling', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'matching', 'optionresult', 'optionsyntax'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature in ('option', 'result') else [feature])
+    if feature in ('enums', 'tooling'):
+        common.append(test('sql', '.', ['database/sql', 'database/sql/driver']))
+        if os.environ.get('GON_SQL_POSTGRES') == '1':
+            common.append(('stringenums-postgres', '.', [sys.executable, 'misc/gon/test_stringenums_postgres.py']))
+    features = ['errorhandling', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'stringenums', 'stringenums_sql', 'matching', 'optionresult', 'optionsyntax'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature in ('option', 'result') else (['enums', 'stringenums', 'stringenums_sql'] if feature == 'enums' else [feature]))
     for name in features:
         pairs.append(test(name+'-execution', '.', ['cmd/internal/testdir'], 'Test/'+name+r'.go$'))
     if feature == 'tooling':
@@ -65,8 +70,9 @@ def checks(feature):
             ('lsp', '.', [sys.executable, 'misc/gon/test.py']),
             ('namedarguments-lsp', '.', [sys.executable, 'misc/gon/test_namedarguments.py']),
             ('alternatives-lsp', '.', [sys.executable, 'misc/gon/test_alternatives.py']),
+            ('stringenums-lsp', '.', [sys.executable, 'misc/gon/test_stringenums.py']),
             ('simplification-lsp', '.', [sys.executable, 'misc/gon/test_simplification.py']),
-            test('export-data', 'tools/x-tools', ['./internal/gcimporter'], '^TestGonAlternatives'),
+            test('export-data', 'tools/x-tools', ['./internal/gcimporter'], '^TestGon(Alternatives|StringEnums)'),
             ('cli', '.', [sys.executable, 'misc/gon/test_cli.py']),
             test('syntax-fixes', 'tools/x-tools', ['./go/analysis/passes/gonmodernize']),
             ('fix-execution', '.', [sys.executable, 'misc/gon/test_fix.py']),
@@ -107,7 +113,7 @@ def checks(feature):
                  ['./staticcheck/'+p for p in ['sa4004', 'sa4009', 'sa5003', 'sa9001']], '^TestGon'),
         ]
     elif feature in ('namedarguments', 'enums', 'matching', 'option', 'result'):
-        cgo_pattern = {'namedarguments': 'NamedArguments', 'enums': 'Matching',
+        cgo_pattern = {'namedarguments': 'NamedArguments', 'enums': '(Matching|StringEnums)',
                        'matching': 'Matching', 'option': 'OptionResult', 'result': 'OptionResult'}[feature]
         fixture = 'optionresult' if feature in ('option', 'result') else feature
         extra = [
@@ -115,18 +121,19 @@ def checks(feature):
             # Verify the adapted cgo source still builds against the baseline AST.
             test('cgo-bootstrap', '.', ['cmd/cgo/internal/testconditional'], '^TestCgoConditionalBootstrap$'),
             # Paired Cgo checks also compile and execute instrumented programs.
-            test('cgo-cover', '.', ['cmd/cgo/internal/testconditional'], '^TestPairedCgo'+cgo_pattern+'$'),
+            test('cgo-cover', '.', ['cmd/cgo/internal/testconditional'], ('^Test(PairedCgo(Matching|StringEnums)|CgoStringEnumDiagnostics)$' if feature == 'enums' else '^TestPairedCgo'+cgo_pattern+'$')),
             ('vet', '.', [str(GON), 'vet', 'test/'+fixture+'.dir/common.go', 'test/'+fixture+'.dir/modern.go']),
             test('explain', 'tools/gonpls', ['./internal/cmd'], '^TestGon(Explain|FeatureExplain|AlternativesQuery)$'),
             ('editor-lsp', '.', [sys.executable, 'misc/gon/test_namedarguments.py' if feature == 'namedarguments' else 'misc/gon/test_alternatives.py']),
         ]
         if feature != 'namedarguments':
-            extra.append(test('export-data', 'tools/x-tools', ['./internal/gcimporter'], '^TestGonAlternatives'))
+            extra.append(test('export-data', 'tools/x-tools', ['./internal/gcimporter'], '^TestGon(Alternatives|StringEnums)'))
         if feature == 'option':
             extra.append(test('optional-migration', 'tools/gonpls', ['./internal/cmd'], '^TestGon(NativeOptionalMigration|OptionalMigrationPlan)$'))
         if feature in ('option', 'result'):
             extra.append(('simplification-lsp', '.', [sys.executable, 'misc/gon/test_simplification.py']))
         if feature == 'enums':
+            extra.append(('stringenums-lsp', '.', [sys.executable, 'misc/gon/test_stringenums.py']))
             extra.append(('representation', '.', [str(GON), 'test', '-json', 'test/enums.dir/representation_test.go',
                          '-run', '^TestAlternativeRepresentation$', '-bench', '^BenchmarkAlternatives$',
                          '-benchtime=100ms', '-benchmem', '-count=1']))

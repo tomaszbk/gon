@@ -134,6 +134,9 @@ func walk(v *visitor, ek edge.Kind, index int, node ast.Node) {
 		if n.Payload != nil {
 			walk(v, edge.EnumVariant_Payload, -1, n.Payload)
 		}
+		if n.Value != nil {
+			walk(v, edge.EnumVariant_Value, -1, n.Value)
+		}
 		if n.Comment != nil {
 			walk(v, edge.EnumVariant_Comment, -1, n.Comment)
 		}

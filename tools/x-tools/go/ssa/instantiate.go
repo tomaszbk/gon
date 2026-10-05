@@ -113,6 +113,9 @@ func createInstance(fn *Function, rtargs, targs []types.Type) *Function {
 			build = (*builder).buildFromSyntax
 		} else {
 			build = (*builder).buildParamsOnly
+			if stringEnumMethod(sig, fn.object.Name()) {
+				build = (*builder).buildStringEnumMethod
+			}
 		}
 	} else {
 		synthetic = fmt.Sprintf("instantiation wrapper of %s", fn.Name())

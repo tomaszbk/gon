@@ -43,7 +43,11 @@ func WriteExpr(buf *bytes.Buffer, x ast.Expr) {
 		buf.WriteString(x.Value)
 
 	case *ast.EnumType:
-		buf.WriteString("enum{")
+		buf.WriteString("enum")
+		if x.String.IsValid() {
+			buf.WriteString(" string")
+		}
+		buf.WriteByte('{')
 		for i, v := range x.Variants {
 			if i > 0 {
 				buf.WriteString("; ")
@@ -62,6 +66,10 @@ func WriteExpr(buf *bytes.Buffer, x ast.Expr) {
 					writeFieldList(buf, v.Payload.List, ", ", false)
 					buf.WriteByte(')')
 				}
+			}
+			if v.Value != nil {
+				buf.WriteString(" = ")
+				WriteExpr(buf, v.Value)
 			}
 		}
 		buf.WriteByte('}')

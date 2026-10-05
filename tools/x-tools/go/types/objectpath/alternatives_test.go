@@ -14,7 +14,9 @@ func TestEnumPaths(t *testing.T) {
 	const source = `package p
 	type E enum { default Empty; Int(int); Record { Count int } }
 	type Maybe[T any] enum { default None; Some(T) }
+	type Role[T any] enum string { default Unknown(string); Teacher = "teacher" }
 	var _ = Maybe[int].Some(1)
+	var _ = Role[int].Parse("teacher")
 	`
 	check := func() (*types.Package, *types.Info) {
 		fset := token.NewFileSet()
@@ -46,6 +48,9 @@ func TestEnumPaths(t *testing.T) {
 		if id.Name == "Some" {
 			objects = append(objects, expectation{obj, "Maybe.V1"})
 		}
+		if id.Name == "Parse" {
+			objects = append(objects, expectation{obj, "Role.Z"})
+		}
 	}
 	var encoder objectpath.Encoder
 	for _, item := range objects {
@@ -61,9 +66,38 @@ func TestEnumPaths(t *testing.T) {
 			t.Fatalf("second-package roundtrip = %q, %v; want %q", roundtrip, err, path)
 		}
 	}
-	for _, path := range []objectpath.Path{"E.V99", "E.B99F0", "E.B2F99", "E.B2", "E.V", "E.B"} {
+	for _, path := range []objectpath.Path{"E.V99", "E.B99F0", "E.B2F99", "E.B2", "E.V", "E.B", "E.Z", "Role.Z1"} {
 		if _, err := objectpath.Object(pkg, path); err == nil {
 			t.Errorf("invalid path %q accepted", path)
 		}
+	}
+}
+
+type stringEnumImporter struct{ pkg *types.Package }
+
+func (i stringEnumImporter) Import(string) (*types.Package, error) { return i.pkg, nil }
+
+func TestStringEnumDerivedParserPath(t *testing.T) {
+	check := func(path, source string, importer types.Importer) *types.Package {
+		fset := token.NewFileSet()
+		file, err := parser.ParseFile(fset, path+".go", source, parser.SkipObjectResolution)
+		if err != nil {
+			t.Fatal(err)
+		}
+		pkg, err := (&types.Config{Importer: importer}).Check(path, fset, []*ast.File{file}, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return pkg
+	}
+	lib := check("lib", `package lib; type Role enum string { default Unknown(string); Teacher = "teacher" }`, nil)
+	client := check("client", `package client; import "lib"; type Derived lib.Role; var _ = Derived.Parse("teacher")`, stringEnumImporter{lib})
+	parser := types.EnumOf(client.Scope().Lookup("Derived").Type()).StringParser()
+	path, err := objectpath.For(parser)
+	if err != nil || path != "Derived.Z" || parser.Pkg() != client {
+		t.Fatalf("derived parser path=%q, package=%v, error=%v", path, parser.Pkg(), err)
+	}
+	if object, err := objectpath.Object(client, path); err != nil || object != parser {
+		t.Fatalf("derived parser path did not round trip: %v, %v", object, err)
 	}
 }

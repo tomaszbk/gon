@@ -97,6 +97,47 @@ func sameEnumObject(a, b types.Object) bool {
 	return a == b || a.Pos().IsValid() && a.Pos() == b.Pos() && a.Name() == b.Name() && a.Pkg() == b.Pkg()
 }
 
+// stringEnumGeneratedOwner identifies declarations supplied by the compiler.
+// Their source location is the owning type, and their spelling cannot be
+// changed independently through a source refactor.
+func stringEnumGeneratedOwner(obj types.Object) *types.TypeName {
+	fn, ok := obj.(*types.Func)
+	if !ok {
+		return nil
+	}
+	sig := fn.Signature()
+	var owner types.Type
+	if sig.Recv() != nil {
+		owner = sig.Recv().Type()
+		if ptr, ok := owner.(*types.Pointer); ok {
+			owner = ptr.Elem()
+		}
+	} else if fn.Name() == "Parse" && sig.Results().Len() == 1 {
+		owner = sig.Results().At(0).Type()
+	} else {
+		return nil
+	}
+	named, ok := types.Unalias(owner).(*types.Named)
+	if !ok {
+		return nil
+	}
+	enum := types.EnumOf(named)
+	if enum == nil || !enum.IsString() || fn.Pos() != named.Obj().Pos() {
+		return nil
+	}
+	switch fn.Name() {
+	case "Parse":
+		if parser := enum.StringParser(); parser != nil && sameEnumObject(fn, parser) {
+			return named.Obj()
+		}
+	case "String", "MarshalText", "UnmarshalText":
+		if sig.Recv() != nil {
+			return named.Obj()
+		}
+	}
+	return nil
+}
+
 func (r *renamer) checkEnumObject(from types.Object, owner *types.TypeName) {
 	if r.to == "_" {
 		r.errorf(from.Pos(), "enum variants and payload fields require a non-blank name")
@@ -108,6 +149,10 @@ func (r *renamer) checkEnumObject(from types.Object, owner *types.TypeName) {
 		}
 	}
 	enum := types.EnumOf(owner.Type())
+	if enum.IsString() && r.to == "Parse" {
+		r.errorf(from.Pos(), "renaming enum member to Parse would collide with the automatic parser")
+		return
+	}
 	for i := 0; i < enum.NumVariants(); i++ {
 		variant := enum.Variant(i)
 		if sameEnumObject(from, variant.Object()) {

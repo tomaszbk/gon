@@ -185,6 +185,7 @@ const (
 	EnumVariant_Comment
 	EnumVariant_Name
 	EnumVariant_Payload
+	EnumVariant_Value
 	MatchExpr_Tag
 	MatchExpr_Arms
 	MatchStmt_Match
@@ -237,6 +238,7 @@ var fieldInfos = [...]fieldInfo{
 	EnumVariant_Comment:        info[*ast.EnumVariant]("Comment"),
 	EnumVariant_Name:           info[*ast.EnumVariant]("Name"),
 	EnumVariant_Payload:        info[*ast.EnumVariant]("Payload"),
+	EnumVariant_Value:          info[*ast.EnumVariant]("Value"),
 	MatchExpr_Tag:              info[*ast.MatchExpr]("Tag"),
 	MatchExpr_Arms:             info[*ast.MatchExpr]("Arms"),
 	MatchStmt_Match:            info[*ast.MatchStmt]("Match"),

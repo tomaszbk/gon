@@ -412,6 +412,7 @@ func (n NullTime) Value() (driver.Value, error) {
 //	}
 //
 // T should be one of the types accepted by [driver.Value].
+// In Gon, T may also be a native string enum.
 type Null[T any] struct {
 	V     T
 	Valid bool
@@ -3377,6 +3378,11 @@ func rowsColumnInfoSetupConnLocked(rowsi driver.Rows) []*ColumnType {
 // Source values of type bool may be scanned into types *bool,
 // *interface{}, *string, *[]byte, or [*RawBytes].
 //
+// In Gon, a native string enum destination accepts string and []byte source
+// values, preserving unknown text in its default variant. Other source types,
+// including NULL, return an error without changing the enum. Use Null[T] or
+// a pointer to represent SQL NULL. An explicit Scanner takes precedence.
+//
 // For scanning into *bool, the source may be true, false, 1, 0, or
 // string inputs parseable by [strconv.ParseBool].
 //
@@ -3433,6 +3439,9 @@ func (rs *Rows) scanLocked(dest ...any) error {
 
 		for i, d := range dest {
 			scanCtx := driver.ScanContext(internal.NewScanContext(rs))
+			if stringEnumDestination(d) {
+				d = stringEnumScanner{dest: d, rows: rs}
+			}
 			if err := rscan.ScanColumn(scanCtx, i, d); err != nil {
 				return fmt.Errorf(`sql: Scan error on column index %d, name %q: %w`, i, rs.rowsi.Columns()[i], err)
 			}

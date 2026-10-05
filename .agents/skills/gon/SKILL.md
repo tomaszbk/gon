@@ -141,7 +141,22 @@ payload identifiers bind new arm-local variables. Record omissions need `...`.
 Compare outer values with guards (`case Payment.Rejected(r) if r == wanted`);
 guards do not prove coverage. `default`/`case _` covers the rest. No unqualified
 variants, mixed `:`/`=>` or fallthrough; ordinary Go switches keep `:`.
-Enums/optionals need explicit serialization and C adapters.
+For textual APIs, opt in with `type Role enum string { default Unknown(string);
+Teacher = "teacher"; Student = "student" }`. Unit spellings are unique constant
+strings. `Role.Parse(text)` preserves unknown text in the default payload; zero
+is Unknown(""). `String`, `MarshalText` and pointer `UnmarshalText` are automatic,
+so standard JSON needs no methods per enum. JSON null preserves an existing
+value. Alias/generic/imported enums retain the protocol; `Parse` and the generated
+method names cannot be redeclared. String enums remain enum values, so Go string
+conversion/JSON tag rules do not implicitly apply. In Gon's `database/sql`, pass
+the enum directly to Exec/Query and scan into its pointer: arguments become
+strings and string/[]byte results are parsed automatically. SQL NULL requires
+`sql.Null[Role]` or `*Role`; a plain Role rejects it without mutation, and
+Unknown("") is present empty text. Explicit Scanner/Valuer methods retain
+precedence. No enum registration or driver changes are needed through database/sql,
+including pgx/stdlib. Native pgx uses a separate API and still needs an adapter
+or codec. No SQL methods are generated on the enum. Native optional SQL mapping,
+other enum/optional serialization and C boundaries need explicit adapters.
 
 ## Named arguments
 

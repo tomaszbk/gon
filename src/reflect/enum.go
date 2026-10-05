@@ -3,6 +3,7 @@ package reflect
 import (
 	"internal/abi"
 	"strconv"
+	"strings"
 	"unicode"
 	"unicode/utf8"
 	"unsafe"
@@ -22,6 +23,16 @@ type EnumVariant struct {
 	Record  bool
 	Default bool
 	Fields  []EnumField
+	text    *string
+}
+
+// StringValue returns the declared text of a string enum's unit alternative.
+// It returns false for the fallback alternative and for ordinary enum variants.
+func (v EnumVariant) StringValue() (string, bool) {
+	if v.text == nil {
+		return "", false
+	}
+	return *v.text, true
 }
 
 // IsEnum reports whether t is a closed Gon enum. Enum Kind remains Struct.
@@ -29,6 +40,16 @@ type EnumVariant struct {
 // field lookup finds nothing, and direct Field access panics. Use EnumVariants
 // and EnumValuePayload to inspect alternatives and their active payload.
 func IsEnum(t Type) bool { return t != nil && t.common().TFlag&abi.TFlagEnum != 0 && !IsOptional(t) }
+
+// IsStringEnum reports whether t is a Gon enum declared with enum string.
+// String enums retain the closed enum identity and hidden GC-safe storage.
+func IsStringEnum(t Type) bool {
+	if !IsEnum(t) {
+		return false
+	}
+	st := (*structType)(unsafe.Pointer(t.common()))
+	return len(st.Fields) != 0 && st.Fields[0].Name.Name() == "$gonStringEnum"
+}
 
 // EnumVariants returns alternatives in declaration order and panics for a non-enum.
 func EnumVariants(t Type) []EnumVariant {
@@ -48,18 +69,22 @@ func EnumVariants(t Type) []EnumVariant {
 // never interpret these tags. The format is not a stable public representation.
 func enumVariantMetadata(field abi.StructField) (EnumVariant, uint) {
 	metadata := field.Name.Tag()
-	end := len(metadata) - 1
-	for end >= 0 && metadata[end] != ':' {
-		end--
-	}
-	if end < 2 || metadata[end-2] != ':' {
+	parts := strings.SplitN(metadata, ":", 4)
+	if len(parts) < 3 || parts[1] != "0" && parts[1] != "1" {
 		panic("reflect: invalid enum metadata")
 	}
-	tag, err := strconv.Atoi(metadata[end+1:])
+	tag, err := strconv.Atoi(parts[2])
 	if err != nil || tag < 0 {
 		panic("reflect: invalid enum metadata")
 	}
-	variant := EnumVariant{Name: metadata[:end-2], Record: metadata[end-1] == '1', Default: tag == 0}
+	variant := EnumVariant{Name: parts[0], Record: parts[1] == "1", Default: tag == 0}
+	if len(parts) == 4 {
+		text, err := strconv.Unquote(parts[3])
+		if err != nil {
+			panic("reflect: invalid string enum metadata")
+		}
+		variant.text = &text
+	}
 	payload := (*structType)(unsafe.Pointer(field.Typ))
 	variant.Fields = make([]EnumField, len(payload.Fields))
 	for i, f := range payload.Fields {

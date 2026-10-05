@@ -12,6 +12,10 @@ import (
 func (p *printer) enumType(x *ast.EnumType) {
 	p.setPos(x.Enum)
 	p.print("enum", blank)
+	if x.String.IsValid() {
+		p.setPos(x.String)
+		p.print("string", blank)
+	}
 	p.setPos(x.Lbrace)
 	p.print(token.LBRACE, indent)
 	for _, v := range x.Variants {
@@ -29,6 +33,10 @@ func (p *printer) enumType(x *ast.EnumType) {
 			} else {
 				p.parameters(v.Payload, funcParam)
 			}
+		}
+		if v.Value != nil {
+			p.print(blank, token.ASSIGN, blank)
+			p.expr(v.Value)
 		}
 		p.setComment(v.Comment)
 	}

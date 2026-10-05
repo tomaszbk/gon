@@ -133,6 +133,10 @@ func createFunction(prog *Program, obj *types.Func, name string, syntax ast.Node
 	if syntax == nil {
 		fn.Synthetic = "from type information"
 		fn.build = (*builder).buildParamsOnly
+		if stringEnumMethod(sig, name) {
+			fn.Synthetic = "string enum method"
+			fn.build = (*builder).buildStringEnumMethod
+		}
 	}
 	if fn.hasTypeParams() {
 		fn.generic = new(generic)

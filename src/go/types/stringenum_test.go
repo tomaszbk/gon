@@ -1,0 +1,121 @@
+package types_test
+
+import (
+	"go/ast"
+	"go/parser"
+	"go/token"
+	. "go/types"
+	"strings"
+	"testing"
+)
+
+func TestStringEnumMetadata(t *testing.T) {
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, "stringenum.go", `package p
+const teacher = "teach" + "er"
+type Role[T any] enum string { Student = "student"; default Unknown(string); Teacher = teacher; Empty = "" }
+type Alias = Role[int]
+var role Role[int]
+type Derived Role[int]
+var derived Derived = Derived(role)
+`, parser.SkipObjectResolution)
+	if err != nil {
+		t.Fatal(err)
+	}
+	info := &Info{Uses: map[*ast.Ident]Object{}, Types: map[ast.Expr]TypeAndValue{}}
+	pkg, err := (&Config{}).Check("p", fset, []*ast.File{file}, info)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"Role", "Alias", "role", "Derived", "derived"} {
+		e := EnumOf(pkg.Scope().Lookup(name).Type())
+		if !e.IsString() || e.Default().Name() != "Unknown" || e.Default().Tag() != 0 {
+			t.Fatalf("string enum metadata lost for %s", name)
+		}
+		if _, ok := e.Default().StringValue(); ok {
+			t.Fatal("fallback must not have a fixed spelling")
+		}
+		for variant, want := range map[string]string{"Teacher": "teacher", "Student": "student", "Empty": ""} {
+			if got, ok := e.Lookup(variant, pkg).StringValue(); !ok || got != want {
+				t.Fatalf("%s.%s spelling = %q, %v", name, variant, got, ok)
+			}
+		}
+	}
+	var uses int
+	for id, obj := range info.Uses {
+		if id.Name == "teacher" && obj == pkg.Scope().Lookup("teacher") {
+			uses++
+		}
+	}
+	if uses != 1 {
+		t.Fatal("string enum constant reference is missing from Info.Uses")
+	}
+}
+
+func TestStringEnumInvalidDeclarations(t *testing.T) {
+	for _, body := range []string{
+		`enum string {}`,
+		`enum string { default Unknown; A = "a" }`,
+		`enum string { default Unknown(int); A = "a" }`,
+		`enum string { default Unknown(string, string); A = "a" }`,
+		`enum string { default Unknown { Text string }; A = "a" }`,
+		`enum string { default Unknown(string) = "unknown"; A = "a" }`,
+		`enum string { default Unknown(string); A }`,
+		`enum string { default Unknown(string); A(int) = "a" }`,
+		`enum string { default Unknown(string); A{} = "a" }`,
+		`enum string { default Unknown(string); A = 1 }`,
+		`enum string { default Unknown(string); A = text }`,
+		`enum string { default Unknown(string); A = "a"; B = "a" }`,
+		`enum string { default Unknown(string); Parse = "parse" }`,
+		`enum { default Unknown; A = "a" }`,
+		`enum string { default Unknown(string); A = "a" }; func (Role) Parse() {}`,
+		`enum string { default Unknown(string); A = "a" }; type Ordinary enum { default Unknown(string); A }; var _ = Role(Ordinary.A)`,
+		`enum string { default Unknown(string); A = "a" }; type Derived Role; func (Derived) Parse() {}`,
+	} {
+		t.Run(body, func(t *testing.T) {
+			fset := token.NewFileSet()
+			file, err := parser.ParseFile(fset, "invalid.go", "package p;var text = \"a\";type Role "+body, parser.SkipObjectResolution)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := (&Config{}).Check("p", fset, []*ast.File{file}, nil); err == nil {
+				t.Fatal("accepted invalid string enum")
+			} else if strings.Contains(err.Error(), "panic") {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func TestStringEnumContextualMarker(t *testing.T) {
+	mustTypecheck(`package p; type Text = string; func f() { type string int; type Role enum string { default Unknown(Text); A = "a" }; var role Role; _ = role; var ordinary string; _ = ordinary }`, nil, nil)
+}
+
+func TestStringEnumMalformedParse(t *testing.T) {
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, "empty.go", `package p; type E enum string {}; var e = E.Parse("x")`, parser.SkipObjectResolution)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var diagnostics []error
+	config := &Config{Error: func(err error) { diagnostics = append(diagnostics, err) }}
+	if _, err := config.Check("p", fset, []*ast.File{file}, nil); err == nil || len(diagnostics) == 0 {
+		t.Fatal("malformed string enum must report errors while continuing to check uses")
+	}
+}
+
+func TestStringEnumDerivedParserPackage(t *testing.T) {
+	lib := mustTypecheck(`package lib; type Role enum string { default Unknown(string); Teacher = "teacher" }`, nil, nil)
+	info := &Info{Uses: map[*ast.Ident]Object{}}
+	client := mustTypecheck(`package client; import "lib"; type Derived lib.Role; var _ = Derived.Parse("teacher")`, &Config{Importer: testImporter{"lib": lib}}, info)
+	owner := client.Scope().Lookup("Derived")
+	parser := EnumOf(owner.Type()).StringParser()
+	if parser.Pkg() != client || parser.Pos() != owner.Pos() || parser.Signature().Params().At(0).Pkg() != client {
+		t.Fatalf("derived parser must belong to its declaring package: %v", parser)
+	}
+	for id, obj := range info.Uses {
+		if id.Name == "Parse" && obj != parser {
+			t.Fatalf("derived parser use resolved to %v, want %v", obj, parser)
+		}
+	}
+}

@@ -61,6 +61,7 @@ const (
 	TypeEnum
 	TypeOptional
 	TypeCanonicalEnum
+	TypeStringEnum
 )
 
 // A CodeObj distinguishes among go/types.Object encodings.

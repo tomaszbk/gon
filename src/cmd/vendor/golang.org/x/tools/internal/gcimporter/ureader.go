@@ -380,18 +380,30 @@ func (r *reader) doTyp() (res types.Type) {
 		return r.structType()
 	case pkgbits.TypeOptional:
 		return types.NewOptional(r.typ())
-	case pkgbits.TypeEnum:
+	case pkgbits.TypeEnum, pkgbits.TypeStringEnum:
+		stringEnum := tag == pkgbits.TypeStringEnum
 		variants := make([]*types.EnumVariant, r.Len())
 		defaultIndex := r.Len()
 		for i := range variants {
 			pos := r.pos()
 			pkg, name, record := r.pkg(), r.String(), r.Bool()
+			var text *string
+			if stringEnum && r.Bool() {
+				value := r.String()
+				text = &value
+			}
 			fields := make([]*types.Var, r.Len())
 			for j := range fields {
 				pos, pkg, name := r.pos(), r.pkg(), r.String()
 				fields[j] = types.NewField(pos, pkg, name, r.typ(), false)
 			}
 			variants[i] = types.NewEnumVariantAt(pos, pkg, name, fields, record)
+			if text != nil {
+				variants[i].SetStringValue(*text)
+			}
+		}
+		if stringEnum {
+			return types.NewStringEnum(variants, defaultIndex)
 		}
 		return types.NewEnum(variants, defaultIndex)
 	case pkgbits.TypeCanonicalEnum:

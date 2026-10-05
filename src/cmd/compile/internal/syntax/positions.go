@@ -186,6 +186,10 @@ func EndPos(n Node) Pos {
 		case *EnumType:
 			return n.Rbrace
 		case *EnumVariant:
+			if n.Value != nil {
+				m = n.Value
+				continue
+			}
 			if n.Rdelim.IsKnown() {
 				return n.Rdelim
 			}

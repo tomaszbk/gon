@@ -27,6 +27,13 @@ func (w *writer) enumType(desc *types2.Enum) {
 		w.pkg(v.Pkg())
 		w.String(v.Name())
 		w.Bool(v.IsRecord())
+		if desc.IsString() {
+			text, ok := v.StringValue()
+			w.Bool(ok)
+			if ok {
+				w.String(text)
+			}
+		}
 		w.Len(v.NumFields())
 		for j := 0; j < v.NumFields(); j++ {
 			f := v.Field(j)
@@ -38,17 +45,26 @@ func (w *writer) enumType(desc *types2.Enum) {
 	}
 }
 
-func (r *reader) enumType() *types.Type {
+func (r *reader) enumType(stringEnum bool) *types.Type {
 	n, defaultIndex := r.Len(), r.Len()
-	fields := []*types.Field{types.NewField(src.NoXPos, types.BuiltinPkg.Lookup("$gonTag"), types.Types[types.TUINT])}
+	tagName := "$gonTag"
+	if stringEnum {
+		tagName = "$gonStringEnum"
+	}
+	fields := []*types.Field{types.NewField(src.NoXPos, types.BuiltinPkg.Lookup(tagName), types.Types[types.TUINT])}
 	for i := 0; i < n; i++ {
 		pos := r.pos()
 		pkg := r.pkg()
 		if i == 0 {
-			fields[0].Sym = pkg.Lookup("$gonTag")
+			fields[0].Sym = pkg.Lookup(tagName)
 		}
 		name := r.String()
 		record := r.Bool()
+		var text *string
+		if stringEnum && r.Bool() {
+			value := r.String()
+			text = &value
+		}
 		payload := make([]*types.Field, r.Len())
 		for j := range payload {
 			p := r.pos()
@@ -65,6 +81,9 @@ func (r *reader) enumType() *types.Type {
 			tag = i
 		}
 		field.Note = enumVariantNote(name, record, tag)
+		if text != nil {
+			field.Note += ":" + strconv.Quote(*text)
+		}
 		fields = append(fields, field)
 	}
 	typ := types.NewStruct(fields)

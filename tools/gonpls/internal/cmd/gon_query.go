@@ -123,10 +123,18 @@ func (r *gonRequest) queryTarget(ctx context.Context, kind string, item *gonQuer
 			return gonErrorf(gonKindNotFound, gonExitFindings, "%s: no declaration (not an identifier?)", spec)
 		}
 	case "refs":
-		locs, err = server.References(ctx, &protocol.ReferenceParams{
-			TextDocumentPositionParams: pos,
-			Context:                    protocol.ReferenceContext{IncludeDeclaration: true},
-		})
+		if t.Kind == "symbol" && gonStringEnumGeneratedOwner(t.obj) != nil {
+			snapshot, snapshotErr := r.snapshot(ctx, t.loc.URI)
+			if snapshotErr != nil {
+				return snapshotErr
+			}
+			locs, err = golang.ReferencesToObject(ctx, snapshot, t.pkg, t.obj, true)
+		} else {
+			locs, err = server.References(ctx, &protocol.ReferenceParams{
+				TextDocumentPositionParams: pos,
+				Context:                    protocol.ReferenceContext{IncludeDeclaration: true},
+			})
+		}
 		if err != nil {
 			return err
 		}
@@ -166,10 +174,12 @@ func (r *gonRequest) queryTarget(ctx context.Context, kind string, item *gonQuer
 			// Describe the object declared at each definition, which is
 			// exact even when the position was not on an identifier.
 			it.Object = t.Object
-			if obj := r.declaredAt(ctx, locs[min(i, len(locs)-1)]); obj != nil {
+			if obj := r.declaredAt(ctx, locs[min(i, len(locs)-1)]); obj != nil && (t.obj == nil || t.obj.Name() == obj.Name) {
 				it.Object = obj
 			}
-			if h, err := server.Hover(ctx, &protocol.HoverParams{TextDocumentPositionParams: protocol.LocationTextDocumentPositionParams(locs[min(i, len(locs)-1)])}); err == nil && h != nil {
+			if gonStringEnumGeneratedOwner(t.obj) != nil {
+				it.Hover = "```go\n" + it.Object.Signature + "\n```"
+			} else if h, err := server.Hover(ctx, &protocol.HoverParams{TextDocumentPositionParams: protocol.LocationTextDocumentPositionParams(locs[min(i, len(locs)-1)])}); err == nil && h != nil {
 				it.Hover = strings.TrimSpace(h.Contents.Value)
 			}
 		}

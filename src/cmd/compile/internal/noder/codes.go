@@ -27,6 +27,7 @@ const (
 	stmtCoalesceAssign
 	stmtOptionCoalesceAssign
 	stmtMatch
+	stmtStringEnumMethod
 )
 
 // A codeExpr distinguishes among expression encodings.
@@ -76,6 +77,7 @@ const (
 	exprOptionSafeNav
 	exprOptionGuard
 	exprMatch
+	exprStringEnumParse
 	exprNilValue // a previously evaluated value in a nil-safety expression
 )
 

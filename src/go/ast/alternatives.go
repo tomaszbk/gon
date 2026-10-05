@@ -8,9 +8,11 @@ import "go/token"
 
 // An EnumType declares a closed set of alternatives. Enum is the position
 // of the contextual identifier "enum", which remains an ordinary Go name
-// outside a type declaration followed immediately by its body.
+// outside a type declaration followed immediately by its optional "string"
+// representation marker and body.
 type EnumType struct {
 	Enum     token.Pos
+	String   token.Pos // optional contextual "string" representation marker
 	Lbrace   token.Pos
 	Variants []*EnumVariant
 	Rbrace   token.Pos
@@ -25,6 +27,7 @@ type EnumVariant struct {
 	Name    *Ident
 	Payload *FieldList
 	Record  bool
+	Value   Expr // optional constant string spelling
 	Comment *CommentGroup
 }
 
@@ -88,6 +91,9 @@ func (x *EnumVariant) Pos() token.Pos {
 	return x.Name.Pos()
 }
 func (x *EnumVariant) End() token.Pos {
+	if x.Value != nil {
+		return x.Value.End()
+	}
 	if x.Payload != nil {
 		return x.Payload.End()
 	}

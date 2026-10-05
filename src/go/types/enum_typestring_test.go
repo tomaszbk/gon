@@ -14,6 +14,7 @@ func TestEnumTypeString(t *testing.T) {
 		"enum{Pair(int, string); default Empty}",
 		"enum{default Record{private int; Public string}; Empty}",
 		"enum{default Empty; Record{}}",
+		`enum string{default Unknown(string); Teacher = "teacher"; Student = "student"}`,
 	} {
 		fset := token.NewFileSet()
 		file, err := parser.ParseFile(fset, "enum.go", "package p;type E "+want, parser.SkipObjectResolution)

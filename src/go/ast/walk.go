@@ -169,6 +169,9 @@ func walkChildren(v Visitor, node Node) {
 		if n.Payload != nil {
 			Walk(v, n.Payload)
 		}
+		if n.Value != nil {
+			Walk(v, n.Value)
+		}
 		if n.Comment != nil {
 			Walk(v, n.Comment)
 		}

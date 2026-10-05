@@ -1318,6 +1318,10 @@ func objectString(obj types.Object, qual types.Qualifier, declPos token.Pos, fil
 			buf.WriteString(s)
 			buf.WriteString(".")
 		}
+		if owner := stringEnumGeneratedOwner(obj); owner != nil && sig.Recv() == nil {
+			buf.WriteString(owner.Name())
+			buf.WriteString(".")
+		}
 		buf.WriteString(obj.Name())
 		types.WriteSignature(&buf, sig, qual)
 		str = buf.String()

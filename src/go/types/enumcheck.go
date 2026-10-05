@@ -3,18 +3,27 @@ package types
 import (
 	"fmt"
 	"go/ast"
+	"go/constant"
 	. "internal/types/errors"
 )
 
 func (check *Checker) enumType(e *ast.EnumType, def *TypeName) *Struct {
-	desc := &Enum{defaultIndex: -1}
+	desc := &Enum{defaultIndex: -1, stringEnum: e.String.IsValid()}
 	st := &Struct{enum: desc}
-	st.fields = []*Var{NewField(e.Pos(), check.pkg, "$gonTag", Typ[Uint], false)}
+	tagName := "$gonTag"
+	if desc.stringEnum {
+		tagName = "$gonStringEnum"
+	}
+	st.fields = []*Var{NewField(e.Pos(), check.pkg, tagName, Typ[Uint], false)}
 	names := map[string]bool{}
+	spellings := map[string]bool{}
 	for i, v := range e.Variants {
 		name := v.Name.Name
 		if name == "_" || names[name] {
 			check.errorf(v.Name, DuplicateDecl, "invalid or duplicate enum variant %s", name)
+		}
+		if desc.stringEnum && name == "Parse" {
+			check.error(v.Name, DuplicateDecl, "string enum variant Parse collides with the automatic parser")
 		}
 		names[name] = true
 		variant := &EnumVariant{name: name, pkg: check.pkg, record: v.Record, storage: i + 1}
@@ -58,6 +67,37 @@ func (check *Checker) enumType(e *ast.EnumType, def *TypeName) *Struct {
 			if len(f.Names) > 0 {
 				check.recordDef(f.Names[0], payload)
 			}
+		}
+		if desc.stringEnum {
+			if v.Default.IsValid() {
+				if variant.record || len(variant.fields) != 1 || !Identical(variant.fields[0].Type(), Typ[String]) || v.Value != nil {
+					check.error(v, InvalidSyntaxTree, "string enum default requires one string payload and no spelling")
+				}
+			} else {
+				if variant.record || len(variant.fields) != 0 {
+					check.error(v, InvalidSyntaxTree, "string enum known variants must be unit variants")
+				}
+				if v.Value == nil {
+					check.error(v, InvalidSyntaxTree, "string enum variant requires a constant string spelling")
+				} else {
+					var x operand
+					check.expr(nil, &x, v.Value)
+					if x.mode() != constant_ || x.val.Kind() != constant.String {
+						if x.isValid() {
+							check.error(v.Value, InvalidSyntaxTree, "string enum spelling must be a constant string")
+						}
+					} else {
+						spelling := constant.StringVal(x.val)
+						if spellings[spelling] {
+							check.errorf(v.Value, DuplicateDecl, "duplicate string enum spelling %q", spelling)
+						}
+						spellings[spelling] = true
+						variant.SetStringValue(spelling)
+					}
+				}
+			}
+		} else if v.Value != nil {
+			check.error(v.Value, InvalidSyntaxTree, "enum spellings require enum string")
 		}
 		backing := make([]*Var, len(variant.fields))
 		for j, f := range variant.fields {
@@ -117,6 +157,22 @@ func (check *Checker) enumSelector(x *operand, e *ast.SelectorExpr, wantType boo
 	enum := check.sourceEnum(x.typ())
 	if enum == nil {
 		return false
+	}
+	if enum.IsString() && e.Sel.Name == "Parse" {
+		if enum.parse == nil {
+			// A malformed declaration has already reported an error. Keep
+			// checking its uses without inventing a callable signature.
+			x.invalidate()
+			return true
+		}
+		if wantType {
+			check.error(e, NotAType, "string enum Parse is a function")
+			x.invalidate()
+		} else {
+			check.recordUse(e.Sel, enum.parse)
+			x.mode_, x.typ_ = value, enum.parse.Type()
+		}
+		return true
 	}
 	v := enum.Lookup(e.Sel.Name, check.pkg)
 	if v == nil {

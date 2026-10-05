@@ -532,6 +532,9 @@ func visitExpr(expr ast.Expr, f refVisitor) {
 			if variant.Payload != nil {
 				visitFieldList(variant.Payload, f)
 			}
+			if variant.Value != nil {
+				visitExpr(variant.Value, f)
+			}
 		}
 	case *ast.MatchExpr:
 		visitExpr(n.Tag, f)

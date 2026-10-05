@@ -41,6 +41,7 @@ pkg go/ast, type EnumType struct, Enum token.Pos
 pkg go/ast, type EnumType struct, Lbrace token.Pos
 pkg go/ast, type EnumType struct, Rbrace token.Pos
 pkg go/ast, type EnumType struct, Variants []*EnumVariant
+pkg go/ast, type EnumType struct, String token.Pos
 pkg go/ast, type EnumVariant struct
 pkg go/ast, type EnumVariant struct, Comment *CommentGroup
 pkg go/ast, type EnumVariant struct, Default token.Pos
@@ -48,6 +49,7 @@ pkg go/ast, type EnumVariant struct, Doc *CommentGroup
 pkg go/ast, type EnumVariant struct, Name *Ident
 pkg go/ast, type EnumVariant struct, Payload *FieldList
 pkg go/ast, type EnumVariant struct, Record bool
+pkg go/ast, type EnumVariant struct, Value Expr
 pkg go/ast, type ErrorExpr struct
 pkg go/ast, type ErrorExpr struct, Body *BlockStmt
 pkg go/ast, type ErrorExpr struct, Err *Ident
@@ -112,9 +114,12 @@ pkg go/types, func EnumOf(Type) *Enum
 pkg go/types, func IsOptional(Type) bool
 pkg go/types, func IsCanonicalResult(Type) bool
 pkg go/types, func NewEnum([]*EnumVariant, int) *Struct
+pkg go/types, func NewStringEnum([]*EnumVariant, int) *Struct
 pkg go/types, func NewEnumVariant(string, *Package, []*Var, bool) *EnumVariant
 pkg go/types, func NewEnumVariantAt(token.Pos, *Package, string, []*Var, bool) *EnumVariant
 pkg go/types, method (*Enum) Default() *EnumVariant
+pkg go/types, method (*Enum) IsString() bool
+pkg go/types, method (*Enum) StringParser() *Func
 pkg go/types, method (*Enum) Lookup(string, *Package) *EnumVariant
 pkg go/types, method (*Enum) NumVariants() int
 pkg go/types, method (*Enum) Variant(int) *EnumVariant
@@ -125,12 +130,15 @@ pkg go/types, method (*EnumVariant) NumFields() int
 pkg go/types, method (*EnumVariant) Object() Object
 pkg go/types, method (*EnumVariant) Pkg() *Package
 pkg go/types, method (*EnumVariant) StorageIndex() int
+pkg go/types, method (*EnumVariant) SetStringValue(string)
+pkg go/types, method (*EnumVariant) StringValue() (string, bool)
 pkg go/types, method (*EnumVariant) Tag() int
 pkg go/types, type Enum struct
 pkg go/types, type EnumVariant struct
 pkg reflect, func EnumValuePayload(Value, int) Value
 pkg reflect, func EnumValueVariant(Value) EnumVariant
 pkg reflect, func EnumVariants(Type) []EnumVariant
+pkg reflect, func IsStringEnum(Type) bool
 pkg reflect, func IsEnum(Type) bool
 pkg reflect, type EnumField struct
 pkg reflect, type EnumField struct, Name string
@@ -140,6 +148,7 @@ pkg reflect, type EnumVariant struct, Default bool
 pkg reflect, type EnumVariant struct, Fields []EnumField
 pkg reflect, type EnumVariant struct, Name string
 pkg reflect, type EnumVariant struct, Record bool
+pkg reflect, method (EnumVariant) StringValue() (string, bool)
 pkg go/ast, method (*ContextualVariantExpr) End() token.Pos
 pkg go/ast, method (*ContextualVariantExpr) Pos() token.Pos
 pkg go/ast, type ContextualVariantExpr struct

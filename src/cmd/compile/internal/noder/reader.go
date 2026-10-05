@@ -531,7 +531,9 @@ func (r *reader) doTyp() *types.Type {
 	case pkgbits.TypeOptional:
 		return optionalBacking(r.typ())
 	case pkgbits.TypeEnum:
-		return r.enumType()
+		return r.enumType(false)
+	case pkgbits.TypeStringEnum:
+		return r.enumType(true)
 	case pkgbits.TypeCanonicalEnum:
 		return r.canonicalEnumType()
 	case pkgbits.TypeStruct:
@@ -1160,6 +1162,17 @@ func (r *reader) method(rext *reader) *types.Field {
 	}
 
 	rext.funcExt(name, sym)
+
+	base := recv.Type
+	if base.IsPtr() {
+		base = base.Elem()
+	}
+	if name.Defn != nil && !r.hasTypeParams() && base.IsEnum() && base.Field(0).Sym.Name == "$gonStringEnum" {
+		switch sym.Name {
+		case "String", "MarshalText", "UnmarshalText":
+			typecheck.Target.Funcs = append(typecheck.Target.Funcs, fn)
+		}
+	}
 
 	meth := types.NewField(name.Func.Pos(), sym, typ)
 	meth.Nname = name
@@ -1882,6 +1895,9 @@ func (r *reader) stmt1(tag codeStmt, out *ir.Nodes) ir.Node {
 		value := r.expr()
 		return ir.NewSendStmt(pos, ch, value)
 
+	case stmtStringEnumMethod:
+		return r.stringEnumMethodBody()
+
 	case stmtMatch:
 		return r.matchExpr(true, label)
 
@@ -2288,6 +2304,8 @@ func (r *reader) expr() (res ir.Node) {
 
 	case exprEnumConstruct:
 		return r.enumConstruct()
+	case exprStringEnumParse:
+		return r.stringEnumParse()
 	case exprEnumConstructor:
 		return r.enumConstructor()
 	case exprCompLit:
@@ -3057,7 +3075,7 @@ func (r *reader) methodExpr() (wrapperFn, baseFn, dictPtr ir.Node) {
 		info := r.dict.subdicts[idx]
 		explicits := r.p.typListIdx(info.explicits, r.dict)
 
-		shapedObj := r.p.objIdx(info.idx, nil, explicits, true).(*ir.Name)
+		shapedObj := r.p.objIdx(info.idx, r.dict.targs, explicits, true).(*ir.Name)
 		shapedFn := shapedMethodExpr(pos, shapedObj, sym)
 
 		// TODO(mdempsky): Is there a more robust way to get the

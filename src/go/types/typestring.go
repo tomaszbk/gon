@@ -374,7 +374,11 @@ func (w *typeWriter) typ(typ Type) {
 
 // enum prints the source alternatives rather than their private storage.
 func (w *typeWriter) enum(e *Enum) {
-	w.string("enum{")
+	w.string("enum")
+	if e.IsString() {
+		w.string(" string")
+	}
+	w.byte('{')
 	for i, v := range e.variants {
 		if i > 0 {
 			w.byte(';')
@@ -403,6 +407,10 @@ func (w *typeWriter) enum(e *Enum) {
 				w.typ(f.typ)
 			}
 			w.byte(')')
+		}
+		if value, ok := v.StringValue(); ok {
+			w.string(" = ")
+			w.string(strconv.Quote(value))
 		}
 	}
 	w.byte('}')

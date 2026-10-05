@@ -164,6 +164,15 @@ func describePayment(payment Payment) string {
 Gon checks the new match for exhaustive coverage. Add a state, and the compiler
 points out matches that need updating. Ordinary Go switches keep their rules.
 
+For textual APIs, `type Role enum string` associates each unit variant with a
+constant spelling and keeps unknown text in a default string payload. Gon
+supplies `Role.Parse`, `String` and text methods, so JSON needs no per-enum
+mapping. Gon's `database/sql` also accepts the enum directly as a query argument
+and as a scan destination: `db.Exec(query, role)` and
+`db.QueryRow(query).Scan(&role)`. Use `sql.Null[Role]` or `*Role` for SQL `NULL`.
+This is shared support for drivers using `database/sql`; pgx's native API is a
+separate boundary. See the [string-enum contract](misc/gon/README.md).
+
 ### A missing value is different from a failed operation
 
 **Optional values (`T?`) · Result.** Read an optional port number: empty input means no setting;

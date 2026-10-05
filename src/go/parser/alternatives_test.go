@@ -106,6 +106,7 @@ func f(x int) {
     switch x := enum; x { case 1, 2: println(x) }
     switch interface{}(x).(type) { case int: }
 }
+
 `
 	f, err := parser.ParseFile(token.NewFileSet(), "legacy.go", src, 0)
 	if err != nil {
@@ -115,6 +116,47 @@ func f(x int) {
 		if _, ok := d.(*ast.GenDecl).Specs[0].(*ast.TypeSpec).Type.(*ast.Ident); !ok {
 			t.Fatalf("enum unexpectedly contextual: %#v", d)
 		}
+	}
+}
+
+func TestStringEnumSyntax(t *testing.T) {
+	const source = `package p
+type Role enum string {
+    default Unknown(string)
+    Teacher = "teach" + "er"
+    Student = student
+}
+const student = "student"
+`
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, "stringenum.go", source, parser.ParseComments)
+	if err != nil {
+		t.Fatal(err)
+	}
+	enum := file.Decls[0].(*ast.GenDecl).Specs[0].(*ast.TypeSpec).Type.(*ast.EnumType)
+	if !enum.String.IsValid() || enum.Variants[1].Value == nil || enum.Variants[2].End() != enum.Variants[2].Value.End() {
+		t.Fatalf("incomplete string enum syntax: %#v", enum)
+	}
+	var constants int
+	ast.Inspect(enum, func(n ast.Node) bool {
+		if n, ok := n.(*ast.Ident); ok && n.Name == "student" {
+			constants++
+		}
+		return true
+	})
+	if constants != 1 {
+		t.Fatal("string enum spellings are missing from structural traversal")
+	}
+	var out bytes.Buffer
+	if err := format.Node(&out, fset, file); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), "enum string {") || !strings.Contains(out.String(), `Teacher = "teach" + "er"`) {
+		t.Fatalf("lost string enum spelling:\n%s", out.String())
+	}
+	again, err := format.Source(out.Bytes())
+	if err != nil || !bytes.Equal(out.Bytes(), again) {
+		t.Fatalf("string enum formatting unstable: %v\n%s", err, again)
 	}
 }
 

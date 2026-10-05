@@ -1096,7 +1096,11 @@ func (w *exportWriter) doTyp(t types.Type, pkg *types.Package) {
 
 	case *types.Struct:
 		if enum := types.EnumOf(t); enum != nil {
-			w.startType(enumType)
+			if enum.IsString() {
+				w.startType(stringEnumType)
+			} else {
+				w.startType(enumType)
+			}
 			w.uint64(uint64(enum.NumVariants()))
 			defaultIndex := 0
 			for i := range enum.NumVariants() {
@@ -1115,6 +1119,13 @@ func (w *exportWriter) doTyp(t types.Type, pkg *types.Package) {
 				w.pkg(variantPkg)
 				w.string(variant.Name())
 				w.bool(variant.IsRecord())
+				if enum.IsString() {
+					text, ok := variant.StringValue()
+					w.bool(ok)
+					if ok {
+						w.string(text)
+					}
+				}
 				w.uint64(uint64(variant.NumFields()))
 				for j := range variant.NumFields() {
 					field := variant.Field(j)

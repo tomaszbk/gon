@@ -612,7 +612,11 @@ func (pw *pkgWriter) typIdx(typ types2.Type, dict *writerDict) typeInfo {
 
 	case *types2.Struct:
 		if desc := types2.EnumOf(typ); desc != nil {
-			w.Code(pkgbits.TypeEnum)
+			if desc.IsString() {
+				w.Code(pkgbits.TypeStringEnum)
+			} else {
+				w.Code(pkgbits.TypeEnum)
+			}
 			w.enumType(desc)
 			break
 		}
@@ -1075,7 +1079,7 @@ func (w *writer) typeParamNames(tparams *types2.TypeParamList) {
 
 func (w *writer) method(wext *writer, meth *types2.Func) {
 	decl, ok := w.p.funDecls[meth]
-	assert(ok)
+	assert(ok || stringEnumMethod(meth) != nil)
 	sig := meth.Type().(*types2.Signature)
 
 	w.Sync(pkgbits.SyncMethod)
@@ -1088,7 +1092,11 @@ func (w *writer) method(wext *writer, meth *types2.Func) {
 	w.param(sig.Recv())
 	w.signature(sig)
 
-	w.pos(decl) // XXX: Hack to workaround linker limitations.
+	if decl != nil {
+		w.pos(decl) // XXX: Hack to workaround linker limitations.
+	} else {
+		w.pos(meth)
+	}
 	wext.funcExt(meth)
 }
 
@@ -1163,6 +1171,20 @@ func (pw *pkgWriter) selectorIdx(obj types2.Object) selectorInfo {
 
 func (w *writer) funcExt(obj *types2.Func) {
 	decl, ok := w.p.funDecls[obj]
+	if !ok && stringEnumMethod(obj) != nil {
+		w.Sync(pkgbits.SyncFuncExt)
+		w.pragmaFlag(ir.Noinline)
+		w.linkname(obj)
+		if buildcfg.GOARCH == "wasm" {
+			w.String("")
+			w.String("")
+			w.String("")
+		}
+		w.Bool(false)
+		w.Reloc(pkgbits.SectionBody, w.p.stringEnumBody(obj, w.dict))
+		w.Sync(pkgbits.SyncEOF)
+		return
+	}
 	assert(ok)
 
 	// TODO(mdempsky): Extend these pragma validation flags to account
@@ -1925,7 +1947,7 @@ func (w *writer) expr(expr syntax.Expr) {
 	base.Assertf(expr != nil, "missing expression")
 
 	expr = syntax.Unparen(expr) // skip parens; unneeded after typecheck
-	if w.tryEnumExpr(expr) {
+	if w.tryStringEnumParse(expr) || w.tryEnumExpr(expr) {
 		return
 	}
 	if expr == w.nilValue {
@@ -2478,7 +2500,9 @@ func (w *writer) methodExpr(expr *syntax.SelectorExpr, recv types2.Type, sel *ty
 		// handled by a static call to the shaped method, but require
 		// dynamically looking up the appropriate dictionary argument
 		// in the current function's runtime dictionary.
-		if info.anyDerived() {
+		// Local types in generic functions also depend on the enclosing
+		// dictionary, even when they have no explicit type arguments.
+		if info.anyDerived() || w.p.hasImplicitTypeParams(tname) {
 			w.Bool(true) // dynamic subdictionary
 			w.Len(w.dict.subdictIdx(info))
 			return

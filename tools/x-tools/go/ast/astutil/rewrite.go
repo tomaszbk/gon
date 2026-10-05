@@ -285,6 +285,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Doc", nil, n.Doc)
 		a.apply(n, "Name", nil, n.Name)
 		a.apply(n, "Payload", nil, n.Payload)
+		a.apply(n, "Value", nil, n.Value)
 		a.apply(n, "Comment", nil, n.Comment)
 	case *ast.MatchExpr:
 		a.apply(n, "Tag", nil, n.Tag)

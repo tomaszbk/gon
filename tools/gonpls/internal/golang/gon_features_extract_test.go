@@ -21,7 +21,7 @@ func TestGonFeatureExtraction(t *testing.T) {
 		{"coalesce right operand", `var p *S; return p?.V ?? touch(1)`, `touch(1)`, "nil-coalescing operand"},
 		{"match whole", `return switch true { case true => touch(1); case false => 0 }`, `switch true { case true => touch(1); case false => 0 }`, "target and evaluation order"},
 		{"match arm", `return switch true { case true => touch(1); case false => 0 }`, `touch(1)`, "match arm expression"},
-		{"option whole", `func() Option[int]{ n:=Option[int].Some(1)?; return Option[int].Some(n) }();return 0`, `Option[int].Some(1)?`, "target and evaluation order"},
+		{"option whole", `func() int? { n:=(int?)(1)?; return n }();return 0`, `(int?)(1)?`, "target and evaluation order"},
 		{"ordinary code", `return touch(1)`, `touch(1)`, ""},
 	} {
 		t.Run(test.name, func(t *testing.T) {

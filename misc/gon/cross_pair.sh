@@ -79,6 +79,11 @@ for feature in errorhandling conditional lambda nullsafety; do
 done
 fixtures="$root/misc/gon/analysisfixtures"
 pair "enums/matching/Option/Result" "$fixtures/alternatives_legacy.go" "$fixtures/alternatives_modern.go"
+dir="$root/test/stringenums.dir"
+pair string-enums "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"
+pair string-enum-analysis "$fixtures/stringenums_legacy.go" "$fixtures/stringenums_modern.go"
+dir="$root/test/stringenums_sql.dir"
+pair string-enum-sql "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"
 pair namedarguments "$fixtures/namedarguments_legacy.go" "$fixtures/namedarguments_modern.go"
 dir="$root/test/optionsyntax.dir"
 pair optional-syntax "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"

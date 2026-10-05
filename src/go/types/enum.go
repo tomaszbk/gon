@@ -14,19 +14,41 @@ import (
 type Enum struct {
 	variants     []*EnumVariant
 	defaultIndex int
+	stringEnum   bool
+	parse        *Func
 }
 
 // EnumVariant describes one unit, positional or record alternative.
 type EnumVariant struct {
-	name    string
-	pkg     *Package
-	tag     int
-	record  bool
-	fields  []*Var
-	storage int
-	obj     Object
-	origin  Object // declaration object retained by instantiated descriptors
+	name        string
+	pkg         *Package
+	tag         int
+	record      bool
+	fields      []*Var
+	storage     int
+	obj         Object
+	origin      Object // declaration object retained by instantiated descriptors
+	stringValue *string
 }
+
+// IsString reports whether e has automatic string conversion.
+func (e *Enum) IsString() bool { return e.stringEnum }
+
+// StringParser returns the string enum's Parse function, or nil for an
+// ordinary enum or a descriptor that is not yet bound to an owner type.
+func (e *Enum) StringParser() *Func { return e.parse }
+
+// StringValue returns a unit variant's declared string spelling.
+// The default fallback and ordinary enum variants return false.
+func (v *EnumVariant) StringValue() (string, bool) {
+	if v.stringValue == nil {
+		return "", false
+	}
+	return *v.stringValue, true
+}
+
+// SetStringValue records a spelling when constructing an enum descriptor.
+func (v *EnumVariant) SetStringValue(value string) { v.stringValue = &value }
 
 func (e *Enum) NumVariants() int           { return len(e.variants) }
 func (e *Enum) Variant(i int) *EnumVariant { return e.variants[i] }
@@ -96,13 +118,14 @@ func bindEnumOwner(e *Enum, owner Type) {
 			v.obj = f
 		}
 	}
+	bindStringEnumParse(e, owner)
 }
 
 func cloneEnum(desc *Enum, backing *Struct) *Enum {
 	if desc == nil {
 		return nil
 	}
-	e := &Enum{defaultIndex: desc.defaultIndex}
+	e := &Enum{defaultIndex: desc.defaultIndex, stringEnum: desc.stringEnum}
 	for _, v := range desc.variants {
 		copy := *v
 		copy.origin = v.obj
@@ -156,6 +179,16 @@ func NewEnum(variants []*EnumVariant, defaultIndex int) *Struct {
 		e.variants = append(e.variants, &copy)
 	}
 	st.markComplete()
+	return st
+}
+
+// NewStringEnum creates typed storage for a string enum descriptor.
+// Its default variant carries the original string; other variants have
+// spellings recorded by SetStringValue.
+func NewStringEnum(variants []*EnumVariant, defaultIndex int) *Struct {
+	st := NewEnum(variants, defaultIndex)
+	st.enum.stringEnum = true
+	st.fields[0].name = "$gonStringEnum"
 	return st
 }
 

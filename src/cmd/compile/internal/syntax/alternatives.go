@@ -4,6 +4,7 @@ package syntax
 // outside the right-hand side of a defined type declaration.
 type EnumType struct {
 	Lbrace, Rbrace Pos
+	String         Pos // optional contextual "string" representation marker
 	Variants       []*EnumVariant
 	expr
 }
@@ -13,6 +14,7 @@ type EnumVariant struct {
 	Name           *Name
 	Payload        []*Field // nil for a unit variant
 	Record         bool
+	Value          Expr // optional constant string spelling
 	Ldelim, Rdelim Pos
 	node
 }
@@ -84,8 +86,20 @@ type MatchField struct {
 
 func (p *parser) enumDeclType(allow bool) Expr {
 	typ := p.typeOrNil()
-	if name, ok := typ.(*Name); allow && ok && name.Value == "enum" && p.tok == _Lbrace {
-		return p.enumType(name.Pos())
+	if name, ok := typ.(*Name); allow && ok && name.Value == "enum" {
+		var stringPos Pos
+		if p.tok == _Name && p.lit == "string" {
+			stringPos = p.pos()
+			p.next()
+		}
+		if p.tok == _Lbrace {
+			x := p.enumType(name.Pos())
+			x.String = stringPos
+			return x
+		}
+		if stringPos.IsKnown() {
+			p.syntaxError("expecting {")
+		}
 	}
 	return typ
 }
@@ -137,6 +151,9 @@ func (p *parser) enumType(pos Pos) *EnumType {
 			}
 			v.Rdelim = p.pos()
 			p.want(_Rbrace)
+		}
+		if p.got(_Assign) {
+			v.Value = p.expr()
 		}
 		t.Variants = append(t.Variants, v)
 		if p.tok != _Rbrace {
@@ -375,7 +392,11 @@ func (p *printer) printAlternative(n Node) {
 	case *EnumConstructExpr:
 		p.print(_Name, "<enum construction>")
 	case *EnumType:
-		p.print(_Name, "enum", blank, _Lbrace, newline, indent)
+		p.print(_Name, "enum", blank)
+		if n.String.IsKnown() {
+			p.print(_Name, "string", blank)
+		}
+		p.print(_Lbrace, newline, indent)
 		for _, v := range n.Variants {
 			p.print(v, _Semi, newline)
 		}
@@ -400,6 +421,9 @@ func (p *printer) printAlternative(n Node) {
 				p.print(f.Type)
 			}
 			p.print(_Rparen)
+		}
+		if n.Value != nil {
+			p.print(blank, _Assign, blank, n.Value)
 		}
 	case *MatchExpr:
 		p.print(_Switch, blank, n.Tag, blank, _Lbrace, newline, indent)

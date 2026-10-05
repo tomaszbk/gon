@@ -673,6 +673,9 @@ func (b *builder) exprUnwrapped(fn *Function, e ast.Expr) Value {
 }
 
 func (b *builder) expr0(fn *Function, e ast.Expr, tv types.TypeAndValue) Value {
+	if parser := b.stringEnumParser(fn, e); parser != nil {
+		return parser
+	}
 	if typ, variant := enumSelector(fn, e); variant != nil {
 		return b.enumConstructor(fn, typ, variant, e)
 	}

@@ -11,6 +11,7 @@ import (
 func TestAlternativesSyntax(t *testing.T) {
 	cases := []struct{ name, source string }{
 		{"variants", `package p; type Payment enum { default Pending; Rejected(string); Paid { Receipt string; Amount int64 } }; type Maybe[T any] enum { default None; Some(T) }`},
+		{"stringvariants", `package p; type Role enum string { default Unknown(string); Teacher = "teach" + "er"; Student = text }; const text = "student"`},
 		{"expression", `package p; var label = switch payment { case Payment.Pending => "pending"; case Payment.Rejected(reason) if reason != "" => reason; case Payment.Paid{Receipt: receipt, ...} => receipt; default => "other" }`},
 		{"statement", `package p; func f() { switch payment { case Payment.Pending => {}; case Payment.Rejected(reason) => { println(reason) }; case Payment.Paid{Receipt: receipt, ...} => { println(receipt) } } }`},
 		{"nested", `package p; var x = switch value { case Option[Option[int]].Some(Option[int].Some(x)) => x; case Option[Option[int]].Some(Option[int].None) => 0; case Option[Option[int]].None => 0 }`},
@@ -46,7 +47,7 @@ func TestAlternativesSyntax(t *testing.T) {
 				}
 				return true
 			})
-			if tc.name != "legacy" && tc.name != "variants" && (patterns == 0 || arms == 0) {
+			if tc.name != "legacy" && tc.name != "variants" && tc.name != "stringvariants" && (patterns == 0 || arms == 0) {
 				t.Fatalf("pattern traversal missed nodes: %d patterns, %d arms", patterns, arms)
 			}
 		})
@@ -57,6 +58,8 @@ func TestAlternativesSyntaxErrors(t *testing.T) {
 	for _, src := range []string{
 		`package p; type X enum\n{ default A }`,
 		`package p; type X = enum { default A }`,
+		"package p; type X enum string\n{ default Unknown(string); A = \"a\" }",
+		`package p; type X = enum string { default Unknown(string); A = "a" }`,
 		`package p; func f() (one int, two int)? { return nil }`,
 		`package p; func f() (number int)? { return nil }`,
 		`package p; func f() ()? { return nil }`,

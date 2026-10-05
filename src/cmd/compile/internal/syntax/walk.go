@@ -123,6 +123,9 @@ func (w walker) node(n Node) {
 	case *EnumVariant:
 		w.node(n.Name)
 		w.fieldList(n.Payload)
+		if n.Value != nil {
+			w.node(n.Value)
+		}
 	case *MatchExpr:
 		if n.Tag != nil {
 			w.node(n.Tag)

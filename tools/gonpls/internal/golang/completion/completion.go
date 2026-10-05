@@ -1359,6 +1359,9 @@ func (c *completer) selector(ctx context.Context, sel *ast.SelectorExpr) error {
 	if tv, ok := c.pkg.TypesInfo().Types[sel.X]; ok {
 		if tv.IsType() {
 			if enum := types.EnumOf(tv.Type); enum != nil {
+				if parser := enum.StringParser(); parser != nil {
+					c.deepState.enqueue(candidate{obj: parser, score: stdScore})
+				}
 				for i := 0; i < enum.NumVariants(); i++ {
 					variant := enum.Variant(i)
 					if variant.Pkg() == c.pkg.Types() || variant.Pkg() == nil || variant.Object().Exported() {

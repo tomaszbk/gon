@@ -499,6 +499,7 @@ func (check *Checker) typeDecl(obj *TypeName, tdecl *syntax.TypeDecl) {
 		check.error(tdecl.Type, MisplacedTypeParam, "cannot use a type parameter as RHS in type declaration")
 		named.fromRHS = Typ[Invalid]
 	}
+	check.addStringEnumMethods(named)
 }
 
 func (check *Checker) collectTypeParams(dst **TypeParamList, list []*syntax.Field) {

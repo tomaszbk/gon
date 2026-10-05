@@ -331,7 +331,9 @@ func (r *reader) doTyp() (res types.Type) {
 	case pkgbits.TypeOptional:
 		return types.NewOptional(r.typ())
 	case pkgbits.TypeEnum:
-		return r.enumType()
+		return r.enumType(false)
+	case pkgbits.TypeStringEnum:
+		return r.enumType(true)
 	case pkgbits.TypeCanonicalEnum:
 		name := r.String()
 		args := make([]types.Type, r.Len())
@@ -787,7 +789,7 @@ func newAliasTypeName(pos token.Pos, pkg *types.Package, name string, rhs types.
 	return tname
 }
 
-func (r *reader) enumType() *types.Struct {
+func (r *reader) enumType(stringEnum bool) *types.Struct {
 	n, defaultIndex := r.Len(), r.Len()
 	variants := make([]*types.EnumVariant, n)
 	for i := range variants {
@@ -795,12 +797,23 @@ func (r *reader) enumType() *types.Struct {
 		pkg := r.pkg()
 		name := r.String()
 		record := r.Bool()
+		var text *string
+		if stringEnum && r.Bool() {
+			value := r.String()
+			text = &value
+		}
 		fields := make([]*types.Var, r.Len())
 		for j := range fields {
 			p, owner, fieldName := r.pos(), r.pkg(), r.String()
 			fields[j] = types.NewField(p, owner, fieldName, r.typ(), false)
 		}
 		variants[i] = types.NewEnumVariantAt(pos, pkg, name, fields, record)
+		if text != nil {
+			variants[i].SetStringValue(*text)
+		}
+	}
+	if stringEnum {
+		return types.NewStringEnum(variants, defaultIndex)
 	}
 	return types.NewEnum(variants, defaultIndex)
 }

@@ -20,6 +20,9 @@ func (f *File) walkGonExpr(x any, context astContext, visit func(*File, any, ast
 			if variant.Payload != nil {
 				f.walk(variant.Payload, ctxType, visit)
 			}
+			if variant.Value != nil {
+				f.walk(&variant.Value, ctxExpr, visit)
+			}
 		}
 	case *ast.MatchExpr:
 		f.walk(&n.Tag, ctxExpr, visit)

@@ -268,6 +268,9 @@ func childrenOf(n ast.Node) []ast.Node {
 		children = append(children, tok(n.Question, 1))
 	case *ast.EnumType:
 		children = append(children, tok(n.Enum, 4), tok(n.Lbrace, 1), tok(n.Rbrace, 1))
+		if n.String.IsValid() {
+			children = append(children, tok(n.String, 6))
+		}
 	case *ast.EnumVariant:
 		if n.Default.IsValid() {
 			children = append(children, tok(n.Default, 7))

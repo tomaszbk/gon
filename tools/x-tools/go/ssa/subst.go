@@ -509,6 +509,7 @@ func (subst *subster) named(t *types.Named) types.Type {
 			bound := tparams.At(i).Constraint()
 			ntp.SetConstraint(subst.typ(bound))
 		}
+		subst.stringEnumMethods(t, fresh)
 		return fresh
 	}
 

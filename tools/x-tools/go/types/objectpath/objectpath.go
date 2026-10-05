@@ -111,11 +111,12 @@ const (
 	opRhs           = 'a' // .Rhs()			(Alias)
 
 	// type->object operators
-	opAt      = 'A' // .At(i)	(Tuple)
-	opField   = 'F' // .Field(i)	(Struct)
-	opMethod  = 'M' // .Method(i)	(Named or Interface; not Struct: "promoted" names are ignored)
-	opVariant = 'V' // enum variant constructor object
-	opObj     = 'O' // .Obj()	(Named, TypeParam)
+	opAt           = 'A' // .At(i)	(Tuple)
+	opField        = 'F' // .Field(i)	(Struct)
+	opMethod       = 'M' // .Method(i)	(Named or Interface; not Struct: "promoted" names are ignored)
+	opVariant      = 'V' // enum variant constructor object
+	opStringParser = 'Z' // string enum Parse function
+	opObj          = 'O' // .Obj()	(Named, TypeParam)
 )
 
 // For is equivalent to new(Encoder).For(obj).
@@ -420,6 +421,9 @@ func (tr *traversal) traverse() {
 					variant := enum.Variant(i)
 					tr.object(path, offset, opVariant, i, variant.Object())
 					tr.typ(path, offset, opPayload, i, enumPayloadStruct(variant))
+				}
+				if parser := enum.StringParser(); parser != nil {
+					tr.object(path, offset, opStringParser, -1, parser)
 				}
 			} else {
 				tr.typ(path, offset, opUnderlying, -1, t.Underlying())
@@ -810,7 +814,7 @@ func Object(pkg *types.Package, p Path) (types.Object, error) {
 			if code == opPayload && suffix == "" {
 				return nil, fmt.Errorf("invalid path: enum payload requires an object-valued suffix")
 			}
-		case opObj:
+		case opObj, opStringParser:
 			// no operand
 		default:
 			// The suffix must end with a type->object operation.
@@ -921,6 +925,12 @@ func Object(pkg *types.Package, p Path) (types.Object, error) {
 			obj = tuple.At(index)
 			t = nil
 
+		case opStringParser:
+			enum := types.EnumOf(t)
+			if enum == nil || enum.StringParser() == nil {
+				return nil, fmt.Errorf("invalid string enum parser path for %s", t)
+			}
+			obj, t = enum.StringParser(), nil
 		case opVariant, opPayload:
 			enum := types.EnumOf(t)
 			if enum == nil || index >= enum.NumVariants() {
@@ -1006,6 +1016,9 @@ func enumObjectPath(pkg *types.Package, obj types.Object) (Path, bool) {
 		enum := types.EnumOf(owner.Type())
 		if enum == nil {
 			continue
+		}
+		if parser := enum.StringParser(); parser != nil && match(parser) {
+			return Path(name + ".Z"), true
 		}
 		for i := 0; i < enum.NumVariants(); i++ {
 			variant := enum.Variant(i)

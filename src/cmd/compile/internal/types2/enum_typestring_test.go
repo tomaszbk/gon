@@ -11,6 +11,7 @@ func TestEnumTypeString(t *testing.T) {
 		"enum{Pair(int, string); default Empty}",
 		"enum{default Record{private int; Public string}; Empty}",
 		"enum{default Empty; Record{}}",
+		`enum string{default Unknown(string); Teacher = "teacher"; Student = "student"}`,
 	} {
 		pkg := mustTypecheck("package p;type E "+want, nil, nil)
 		typ := pkg.Scope().Lookup("E").Type().Underlying()

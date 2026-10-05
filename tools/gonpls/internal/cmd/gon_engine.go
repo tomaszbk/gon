@@ -468,6 +468,11 @@ func (r *gonRequest) lookupSymbol(ctx context.Context, c gonSymbolCandidate) (ty
 		}
 		if len(c.names) == 2 {
 			member, _, _ := types.LookupFieldOrMethod(obj.Type(), true, obj.Pkg(), c.names[1])
+			if enum := types.EnumOf(obj.Type()); enum != nil && c.names[1] == "Parse" && enum.IsString() {
+				if parser := enum.StringParser(); parser != nil {
+					member = parser
+				}
+			}
 			if member == nil {
 				return nil, nil, nil, fmt.Errorf("%s has no field or method %s", gonQualified(obj), c.names[1])
 			}
@@ -572,6 +577,11 @@ func gonDescribe(obj types.Object, from *types.Package) *gonObjectInfo {
 		return p.Name()
 	}
 	info := &gonObjectInfo{Name: obj.Name(), Signature: types.ObjectString(obj, qual)}
+	if owner := gonStringEnumGeneratedOwner(obj); owner != nil {
+		if fn := obj.(*types.Func); fn.Signature().Recv() == nil {
+			info.Signature = types.ObjectString(types.NewFunc(fn.Pos(), fn.Pkg(), owner.Name()+"."+fn.Name(), fn.Signature()), qual)
+		}
+	}
 	if obj.Pkg() != nil {
 		info.Package = obj.Pkg().Path()
 	}
@@ -613,6 +623,9 @@ func gonDescribe(obj types.Object, from *types.Package) *gonObjectInfo {
 func gonQualified(obj types.Object) string {
 	name := obj.Name()
 	if fn, ok := obj.(*types.Func); ok {
+		if owner := gonStringEnumGeneratedOwner(fn); owner != nil && fn.Signature().Recv() == nil {
+			name = owner.Name() + "." + name
+		}
 		if recv := fn.Signature().Recv(); recv != nil {
 			t := recv.Type()
 			if p, ok := t.(*types.Pointer); ok {
@@ -627,4 +640,29 @@ func gonQualified(obj types.Object) string {
 		return obj.Pkg().Path() + "." + name
 	}
 	return name
+}
+
+func gonStringEnumGeneratedOwner(obj types.Object) *types.TypeName {
+	fn, ok := obj.(*types.Func)
+	if !ok {
+		return nil
+	}
+	sig := fn.Signature()
+	var typ types.Type
+	if sig.Recv() != nil {
+		typ = sig.Recv().Type()
+		if ptr, ok := typ.(*types.Pointer); ok {
+			typ = ptr.Elem()
+		}
+	} else if fn.Name() == "Parse" && sig.Results().Len() == 1 {
+		typ = sig.Results().At(0).Type()
+	} else {
+		return nil
+	}
+	if named, ok := types.Unalias(typ).(*types.Named); ok {
+		if enum := types.EnumOf(named); enum != nil && enum.IsString() && fn.Pos() == named.Obj().Pos() {
+			return named.Obj()
+		}
+	}
+	return nil
 }

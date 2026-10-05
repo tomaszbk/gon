@@ -17,8 +17,18 @@ func (p *parser) parseDeclaredType(allowEnum bool) ast.Expr {
 		return p.parseType()
 	}
 	name := p.parseIdent()
+	var stringPos token.Pos
+	if p.tok == token.IDENT && p.lit == "string" {
+		stringPos = p.pos
+		p.next()
+	}
 	if p.tok == token.LBRACE {
-		return p.parseEnumType(name.Pos())
+		x := p.parseEnumType(name.Pos())
+		x.String = stringPos
+		return x
+	}
+	if stringPos.IsValid() {
+		p.errorExpected(p.pos, "'{'")
 	}
 	typ := p.parseTypeName(name)
 	if p.tok == token.LBRACK {
@@ -71,6 +81,10 @@ func (p *parser) parseEnumType(pos token.Pos) *ast.EnumType {
 				v.Payload.List = append(v.Payload.List, field)
 			}
 			v.Payload.Closing = p.expect(token.RBRACE)
+		}
+		if p.tok == token.ASSIGN {
+			p.next()
+			v.Value = p.parseRhs()
 		}
 		v.Comment = p.expectSemi()
 		x.Variants = append(x.Variants, v)
