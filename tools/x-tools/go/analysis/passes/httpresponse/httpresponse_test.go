@@ -15,3 +15,10 @@ func Test(t *testing.T) {
 	testdata := analysistest.TestData()
 	analysistest.Run(t, testdata, httpresponse.Analyzer, "a", "typeparams")
 }
+
+// TestGon checks that Gon error propagation ("!") and terminating "or"
+// handlers count as the error check before a deferred Body.Close, while
+// the Go diagnostics remain reported.
+func TestGon(t *testing.T) {
+	analysistest.Run(t, analysistest.TestData(), httpresponse.Analyzer, "gon")
+}

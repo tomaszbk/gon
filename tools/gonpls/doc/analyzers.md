@@ -3336,6 +3336,8 @@ A common mistake when using the net/http package is to defer a function call to 
 
 This checker helps uncover latent nil dereference bugs by reporting a diagnostic for such mistakes.
 
+In Gon source, a call whose final error result is handled by postfix ! propagation or an "or" handler is already checked: the handler of a call with success results must terminate, so the response is valid in the statements that follow and a deferred Close is not reported.
+
 
 Default: on.
 

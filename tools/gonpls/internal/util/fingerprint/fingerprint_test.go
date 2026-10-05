@@ -268,3 +268,98 @@ func (C) F[T any](T) {}
 		check(test.b, test.b, true)
 	}
 }
+
+// TestPredeclaredResult checks types that mention Gon's predeclared Result,
+// a generic named type with no package, as methods of interfaces and
+// concrete types. Their encodings must match across packages, distinguish
+// instantiations, and not be confused with a user-defined Result.
+func TestPredeclaredResult(t *testing.T) {
+	const src = `
+-- go.mod --
+module example.com
+
+go 1.27
+
+-- a/a.go --
+package a
+
+type Course struct{}
+
+type Alias = Result[Course, error]
+
+type Loader interface{ Load(int) Result[Course, error] }
+type AliasLoader interface{ Load(int) Alias }
+type OptionalLoader interface{ Load(int) Result[Course, error]? }
+type Nested interface{ Load(int) Result[Result[Course, error], error] }
+type Pointer interface{ Load(*Result[Course, error]) }
+type Sum interface{ Load(int) Result[int, error] }
+type Mem struct{}
+
+func (Mem) Load(int) Result[Course, error]
+
+-- b/b.go --
+package b
+
+type Result[T, E any] struct{}
+
+type Shadow interface{ Load(int) Result[int, error] }
+`
+	pkgs := testfiles.LoadPackages(t, txtar.Parse([]byte(src)), "./a", "./b")
+	a, b := pkgs[0].Types, pkgs[1].Types
+
+	method := func(pkg *types.Package, typeName string) types.Type {
+		t.Helper()
+		obj := pkg.Scope().Lookup(typeName)
+		if obj == nil {
+			t.Fatalf("Lookup %s failed", typeName)
+		}
+		m, _, _ := types.LookupFieldOrMethod(obj.Type(), true, pkg, "Load")
+		if m == nil {
+			t.Fatalf("Lookup %s.Load failed", typeName)
+		}
+		return m.Type()
+	}
+
+	// The encoding of the predeclared Result is the bare name Result,
+	// whereas a package-level Result is qualified.
+	loader, _ := fingerprint.Encode(method(a, "Loader"))
+	if want := `(func (tuple int) (tuple (inst Result (qual "example.com/a" Course) error)))`; loader != want {
+		t.Errorf("Encode(Loader.Load) = %s, want %s", loader, want)
+	}
+	shadow, _ := fingerprint.Encode(method(b, "Shadow"))
+	if want := `(func (tuple int) (tuple (inst (qual "example.com/b" Result) int error)))`; shadow != want {
+		t.Errorf("Encode(Shadow.Load) = %s, want %s", shadow, want)
+	}
+
+	for _, test := range []struct {
+		x, y *types.Package
+		xn   string
+		yn   string
+		want bool
+	}{
+		{a, a, "Loader", "Mem", true},
+		{a, a, "Loader", "AliasLoader", true}, // aliases are transparent
+		{a, a, "Loader", "Sum", false},        // different instantiation
+		{a, a, "Loader", "Nested", false},
+		{a, a, "Loader", "OptionalLoader", false},
+		{a, a, "Loader", "Pointer", false},
+		{a, a, "Sum", "Mem", false},
+		{a, b, "Sum", "Shadow", false}, // predeclared Result vs user-defined Result
+	} {
+		xfp, _ := fingerprint.Encode(method(test.x, test.xn))
+		yfp, _ := fingerprint.Encode(method(test.y, test.yn))
+
+		// Parsing and printing is lossless.
+		for _, fp := range []string{xfp, yfp} {
+			if got := fingerprint.Parse(fp).String(); got != fp {
+				t.Errorf("parse+print changed fingerprint:\nwas: %s\ngot: %s", fp, got)
+			}
+		}
+
+		got := fingerprint.Matches(fingerprint.Parse(xfp), fingerprint.Parse(yfp))
+		if got != test.want {
+			t.Errorf("Matches(%s.Load, %s.Load) = %t, want %t:\n- %s\n- %s",
+				test.xn, test.yn, got, test.want, xfp, yfp)
+		}
+	}
+}

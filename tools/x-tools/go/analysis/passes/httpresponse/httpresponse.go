@@ -31,7 +31,12 @@ determines whether the response is valid:
 	// (defer statement belongs here)
 
 This checker helps uncover latent nil dereference bugs by reporting a
-diagnostic for such mistakes.`
+diagnostic for such mistakes.
+
+In Gon source, a call whose final error result is handled by postfix !
+propagation or an "or" handler is already checked: the handler of a call
+with success results must terminate, so the response is valid in the
+statements that follow and a deferred Close is not reported.`
 
 var Analyzer = &analysis.Analyzer{
 	Name:     "httpresponse",
@@ -60,6 +65,14 @@ func run(pass *analysis.Pass) (any, error) {
 		call := n.(*ast.CallExpr)
 		if !isHTTPFuncOrMethodOnClient(pass.TypesInfo, call) {
 			return true // the function call is not related to this check.
+		}
+
+		// Skip calls whose error is handled by a Gon "!" or "or"
+		// expression: the failure path has already returned (or the
+		// handler terminated), so the response is valid afterwards.
+		// Example:  resp := client.Do(req) or err { return err }
+		if isErrorHandled(stack) {
+			return true
 		}
 
 		// Find the innermost containing block, and get the list
@@ -137,6 +150,27 @@ func isHTTPFuncOrMethodOnClient(info *types.Info, expr *ast.CallExpr) bool {
 	}
 	ptr, ok := types.Unalias(typ).(*types.Pointer)
 	return ok && typesinternal.IsTypeNamed(ptr.Elem(), "net/http", "Client") // method on *http.Client.
+}
+
+// isErrorHandled reports whether the call at the top of the stack is
+// the operand (possibly parenthesized) of a Gon error-handling
+// expression, either postfix "!" propagation or an "or" handler.
+// Both consume the call's final error result, so the remaining
+// results are valid in the code that follows. For a call with success
+// results the type checker requires an "or" handler to terminate.
+func isErrorHandled(stack []ast.Node) bool {
+	call := stack[len(stack)-1]
+	for i := len(stack) - 2; i >= 0; i-- {
+		switch parent := stack[i].(type) {
+		case *ast.ParenExpr:
+			continue
+		case *ast.ErrorExpr:
+			return ast.Unparen(parent.X) == call
+		default:
+			return false
+		}
+	}
+	return false
 }
 
 // restOfBlock, given a traversal stack, finds the innermost containing

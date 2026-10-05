@@ -1010,6 +1010,12 @@ func refactorRewriteImplementInterface(_ context.Context, req *codeActionsReques
 		return nil
 	}
 
+	// Methods cannot be declared on a predeclared type with no package,
+	// such as an alias of Gon's Result.
+	if named.Obj().Pkg() == nil {
+		return nil
+	}
+
 	// Have: concrete defined type
 	cmdAdd := command.NewImplementInterfaceCommand(
 		fmt.Sprintf("Add methods to %s to implement an interface...", spec.Name.Name),

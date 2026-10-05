@@ -54,6 +54,15 @@ Carried over from the former patch:
 - LSP cancellation codes instead of generic failures for cancelled requests.
 - Standalone loading of compiler test inputs under the toolchain's `test` tree.
 - No upstream telemetry uploads or crash reports.
+- Predeclared named types have no package: `error`, `comparable` and Gon's
+  `Result`. Method-set fingerprints encode them as a bare name (`Result`), never
+  as a `(qual PATH NAME)` of a package-level type, so methods, interface methods
+  and aliases mentioning `Result` are indexed and matched across packages. Code
+  that reaches a `*types.Named` through `Obj().Pkg()` must handle nil, as in the
+  test-function code lens and the implement-interface action; the inline-variable
+  action skips named-argument labels and contextual `.Ok/.Err` names, which are
+  not lexical references. Regression tests: `TestPredeclaredResult*`,
+  `TestGonResult*` and the `inline-var-gon` marker test.
 
 Added for the tooling commands of the public `gon` launcher:
 

@@ -123,6 +123,11 @@ func ImplementInterface(ctx context.Context, snapshot *cache.Snapshot, loc proto
 			return nil, fmt.Errorf("cannot declare concrete methods on a interface type %s", t.Obj().Name())
 		}
 
+		if t.Obj().Pkg() == nil {
+			// Predeclared type with no package: an alias of Gon's Result.
+			return nil, fmt.Errorf("cannot declare methods on predeclared type %s", t.Obj().Name())
+		}
+
 		named = t
 		namedPkgPath := t.Obj().Pkg().Path()
 
