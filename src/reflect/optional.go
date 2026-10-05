@@ -44,3 +44,39 @@ func OptionalValuePayload(v Value) Value {
 	}
 	return alternativePayload(v, 0)
 }
+
+// OptionalValueSetPayload makes the optional v present and stores a copy of
+// payload, which must be assignable to the optional's element type. Use
+// v.SetZero to make an optional absent. It panics if v is not an optional
+// value, if v is not settable, or if payload is not assignable to
+// [OptionalElement](v.Type()). Reference payloads keep Go aliasing.
+func OptionalValueSetPayload(v Value, payload Value) {
+	if !v.IsValid() || !IsOptional(v.Type()) {
+		panic("reflect: OptionalValueSetPayload of non-optional value")
+	}
+	if v.flag&flagRO != 0 {
+		panic("reflect: OptionalValueSetPayload using value obtained using unexported field")
+	}
+	if v.flag&flagAddr == 0 {
+		panic("reflect: OptionalValueSetPayload using unaddressable value")
+	}
+	payload.mustBeExported() // do not let an unexported payload leak
+	st := (*structType)(unsafe.Pointer(v.typ()))
+	storage := &st.Fields[2]
+	_, tag := enumVariantMetadata(*storage)
+	field := &(*structType)(unsafe.Pointer(storage.Typ)).Fields[0]
+	payload = payload.assignTo("reflect.OptionalValueSetPayload", field.Typ, nil)
+	// Store the payload before the discriminator so that the optional is never
+	// present with stale storage.
+	dst := add(v.ptr, storage.Offset+field.Offset, "optional payload")
+	if payload.flag&flagIndir != 0 {
+		if payload.ptr == unsafe.Pointer(&zeroVal[0]) {
+			typedmemclr(field.Typ, dst)
+		} else {
+			typedmemmove(field.Typ, dst, payload.ptr)
+		}
+	} else {
+		*(*unsafe.Pointer)(dst) = payload.ptr
+	}
+	*(*uint)(add(v.ptr, st.Fields[0].Offset, "optional discriminator")) = tag
+}

@@ -75,6 +75,10 @@ type encodeBuffer struct {
 	// bufStats is statistics about buffer utilization.
 	// It is only used with pooled encoders in pools.go.
 	bufStats bufferStatistics
+
+	// holdFlush suspends flushing so that the "json" package can inspect
+	// every byte written since it was set. See HoldFlush.
+	holdFlush bool
 }
 
 // NewEncoder constructs a new streaming encoder writing to w
@@ -224,6 +228,8 @@ func (e *encodeBuffer) unflushedBuffer() []byte  { return e.Buf }
 // enough in the buffer to unwrite the last object member if it were empty.
 func (e *encoderState) avoidFlush() bool {
 	switch {
+	case e.holdFlush:
+		return true
 	case e.Tokens.Last.Length() == 0:
 		// Never flush after BeginObject or BeginArray since we don't know yet
 		// if the object or array will end up being empty.
@@ -240,6 +246,16 @@ func (e *encoderState) avoidFlush() bool {
 		}
 	}
 	return false
+}
+
+// HoldFlush sets whether flushing to the underlying io.Writer is suspended
+// and returns the previous setting. While flushing is held, the unflushed
+// buffer retains everything written since the hold began. The caller must
+// restore the previous setting and flush if NeedFlush reports true.
+func (e *encoderState) HoldFlush(hold bool) (previous bool) {
+	previous = e.holdFlush
+	e.holdFlush = hold
+	return previous
 }
 
 // UnwriteEmptyObjectMember unwrites the last object member if it is empty

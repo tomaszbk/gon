@@ -151,6 +151,14 @@ func driverArgsConnLocked(ci driver.Conn, ds *driverStmt, args []any) ([]driver.
 		}
 		nv.Ordinal = n + 1
 		nv.Value = arg
+		// A native optional is NULL when absent and otherwise its payload,
+		// which follows every route below as if it had been passed directly.
+		if value, ok, err := optionalArgument(arg); ok {
+			if err != nil {
+				return nil, fmt.Errorf("sql: converting argument %s type: %w", describeNamedValue(nv), err)
+			}
+			arg, nv.Value = value, value
+		}
 		// Normalize the opt-in native enum before driver-specific checkers.
 		// Some drivers accept arbitrary values here and bypass the default
 		// converter; they should still receive the enum's text spelling.
@@ -498,6 +506,9 @@ func convertAssignRows(dest, src any, rows *Rows) error {
 	}
 
 	dv := reflect.Indirect(dpv)
+	if reflect.IsOptional(dv.Type()) {
+		return scanOptional(dv, src, rows)
+	}
 	if reflect.IsStringEnum(dv.Type()) {
 		return scanStringEnum(dv, src)
 	}

@@ -95,8 +95,15 @@ func makeDefaultArshaler(t reflect.Type) *arshaler {
 	case reflect.Float32, reflect.Float64:
 		return makeFloatArshaler(t)
 	case reflect.Map:
+		if reflect.IsOptional(t.Key()) && !implementsAny(t.Key(), allMethodTypes...) {
+			// A native optional has no JSON object name representation.
+			return makeInvalidArshaler(t)
+		}
 		return makeMapArshaler(t)
 	case reflect.Struct:
+		if reflect.IsOptional(t) {
+			return makeOptionalArshaler(t)
+		}
 		return makeStructArshaler(t)
 	case reflect.Slice:
 		fncs := makeSliceArshaler(t)
@@ -1457,6 +1464,9 @@ func isLegacyEmpty(v addressableValue) bool {
 		return v.Len() == 0
 	case reflect.Pointer, reflect.Interface:
 		return v.IsNil()
+	case reflect.Struct:
+		// A native optional is empty only when absent; a present zero is kept.
+		return reflect.IsOptional(v.Type()) && !reflect.OptionalValuePresent(v.Value)
 	}
 	return false
 }
