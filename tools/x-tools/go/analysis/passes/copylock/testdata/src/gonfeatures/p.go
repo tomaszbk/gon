@@ -6,8 +6,8 @@ type holder struct{ Mu sync.Mutex }
 
 func legacy(p *holder) any {
 	if p != nil {
-		return p.Mu
-	} // want "return copies lock value"
+		return p.Mu // want "return copies lock value"
+	}
 	return sync.Mutex{}
 }
 

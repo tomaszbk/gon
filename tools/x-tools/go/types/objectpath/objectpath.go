@@ -420,7 +420,7 @@ func (tr *traversal) traverse() {
 				for i := 0; i < enum.NumVariants(); i++ {
 					variant := enum.Variant(i)
 					tr.object(path, offset, opVariant, i, variant.Object())
-					tr.typ(path, offset, opPayload, i, enumPayloadStruct(variant))
+					tr.payload(path, offset, i, variant)
 				}
 				if parser := enum.StringParser(); parser != nil {
 					tr.object(path, offset, opStringParser, -1, parser)
@@ -559,6 +559,24 @@ func (tr *traversal) typ(path []byte, offset uint32, op byte, index int, t types
 		offset = tr.ix.emitPathSegment(offset, op, index)
 	}
 	tr.visitType(path, offset, t)
+}
+
+// payload descends the edge (opPayload, index) to the payload of an enum
+// variant, then records each of its fields.
+//
+// The payload is deliberately not materialized as a types.Struct: positional
+// payload fields are all unnamed, and types.NewStruct rejects a field list in
+// which the same non-blank name (here "") occurs more than once. Visiting the
+// variant's own field objects also preserves their identity for the search.
+func (tr *traversal) payload(path []byte, offset uint32, index int, variant *types.EnumVariant) {
+	if tr.ix == nil {
+		path = appendOpArg(path, opPayload, index)
+	} else {
+		offset = tr.ix.emitPathSegment(offset, opPayload, index)
+	}
+	for i := 0; i < variant.NumFields(); i++ {
+		tr.object(path, offset, opField, i, variant.Field(i))
+	}
 }
 
 // object descends the type graph edge (op, index), records object
@@ -795,6 +813,11 @@ func Object(pkg *types.Package, p Path) (types.Object, error) {
 	// then a type->object operation.
 	// The cycle then repeats.
 	var t types.Type
+
+	// payload is non-nil (and t, obj are nil) between an opPayload step and
+	// the opField step that must follow it. See [traversal.payload] for why
+	// the payload of an enum variant is not represented as a types.Struct.
+	var payload *types.EnumVariant
 	for suffix != "" {
 		code := suffix[0]
 		suffix = suffix[1:]
@@ -821,6 +844,18 @@ func Object(pkg *types.Package, p Path) (types.Object, error) {
 			if suffix == "" {
 				return nil, fmt.Errorf("invalid path: ends with %q, want [AFMO]", code)
 			}
+		}
+
+		if payload != nil {
+			// The only operation on an enum variant payload is field selection.
+			if code != opField {
+				return nil, fmt.Errorf("cannot apply %q to payload of enum variant %s (want field)", code, payload.Name())
+			}
+			if n := payload.NumFields(); index >= n {
+				return nil, fmt.Errorf("field index %d out of range [0-%d)", index, n)
+			}
+			obj, t, payload = payload.Field(index), nil, nil
+			continue
 		}
 
 		if code == opType {
@@ -940,7 +975,7 @@ func Object(pkg *types.Package, p Path) (types.Object, error) {
 			if code == opVariant {
 				obj, t = variant.Object(), nil
 			} else {
-				t = enumPayloadStruct(variant)
+				payload, t = variant, nil
 			}
 
 		case opField:
@@ -1033,12 +1068,4 @@ func enumObjectPath(pkg *types.Package, obj types.Object) (Path, bool) {
 		}
 	}
 	return "", false
-}
-
-func enumPayloadStruct(variant *types.EnumVariant) *types.Struct {
-	fields := make([]*types.Var, variant.NumFields())
-	for i := range fields {
-		fields[i] = variant.Field(i)
-	}
-	return types.NewStruct(fields, nil)
 }

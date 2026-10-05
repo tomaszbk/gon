@@ -158,3 +158,5 @@ var IsRegularMemory = isRegularMemory
 func MapGroupOf(x, y Type) Type {
 	return groupOf(x, y)
 }
+
+var SplitEnumMetadata = splitEnumMetadata

@@ -7,7 +7,10 @@
 
 package types
 
-import . "internal/types/errors"
+import (
+	. "internal/types/errors"
+	"slices"
+)
 
 // bindStringEnumParse gives each concrete enum descriptor its own static
 // parser. It is a function, rather than a method expression with a receiver.
@@ -26,9 +29,51 @@ func bindStringEnumParse(e *Enum, owner Type) {
 	e.parse = NewFunc(pos, pkg, "Parse", sig)
 }
 
+// declaredUnderlying returns the underlying type of the just declared type
+// named, or nil if it cannot be determined yet. It never forces an incomplete
+// declaration: package-level types may refer to each other in a cycle that is
+// valid because it passes through a type literal, as in
+//
+//	type A B
+//	type B *A
+//
+// When B is declared first, the declaration of A completes while B's
+// right-hand side is still unset, and Named.Underlying must not be called
+// for A. A string enum has no such dependency (its payloads are strings), so
+// a chain that ends in an incomplete declaration never denotes one.
+func declaredUnderlying(named *Named) Type {
+	var t Type = named
+	var path []*Named // chains are short; a local type may still refer to itself
+	for {
+		switch x := t.(type) {
+		case *Alias:
+			if t = unalias(x); t == nil {
+				return nil // incomplete alias
+			}
+		case *Named:
+			if x.stateHas(hasUnder) {
+				return x.underlying
+			}
+			if slices.Contains(path, x) {
+				return nil // cycle that is diagnosed elsewhere
+			}
+			path = append(path, x)
+			x.unpack()
+			if t = x.rhs(); t == nil {
+				return nil // declaration in progress
+			}
+		default:
+			return t
+		}
+	}
+}
+
 // addStringEnumMethods installs ordinary, exported methods without introducing
 // dependencies on encoding packages or on the spelling of predeclared names.
 func (check *Checker) addStringEnumMethods(named *Named) {
+	if s, _ := declaredUnderlying(named).(*Struct); s == nil || s.enum == nil || !s.enum.IsString() {
+		return
+	}
 	e := EnumOf(named)
 	if e == nil || !e.IsString() {
 		return

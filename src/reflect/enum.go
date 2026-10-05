@@ -2,8 +2,8 @@ package reflect
 
 import (
 	"internal/abi"
+	"internal/stringslite"
 	"strconv"
-	"strings"
 	"unicode"
 	"unicode/utf8"
 	"unsafe"
@@ -65,11 +65,28 @@ func EnumVariants(t Type) []EnumVariant {
 	return variants
 }
 
+// splitEnumMetadata splits s around ":" into at most four parts, the last
+// holding the unsplit remainder. It has the semantics of strings.SplitN(s, ":", 4),
+// which package reflect cannot import.
+func splitEnumMetadata(s string) []string {
+	var buf [4]string
+	parts := buf[:0]
+	for len(parts) < 3 {
+		before, after, found := stringslite.Cut(s, ":")
+		if !found {
+			break
+		}
+		parts = append(parts, before)
+		s = after
+	}
+	return append(parts, s)
+}
+
 // enumVariantMetadata decodes private compiler metadata. Ordinary struct fields
 // never interpret these tags. The format is not a stable public representation.
 func enumVariantMetadata(field abi.StructField) (EnumVariant, uint) {
 	metadata := field.Name.Tag()
-	parts := strings.SplitN(metadata, ":", 4)
+	parts := splitEnumMetadata(metadata)
 	if len(parts) < 3 || parts[1] != "0" && parts[1] != "1" {
 		panic("reflect: invalid enum metadata")
 	}

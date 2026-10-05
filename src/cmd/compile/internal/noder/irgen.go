@@ -262,6 +262,8 @@ func (f *cycleFinder) visit(typ0 types2.Type) bool {
 			return false // named types cannot be part of an anonymous cycle
 		case *types2.Pointer:
 			typ0 = typ.Elem()
+		case *types2.Optional:
+			typ0 = typ.Elem()
 		case *types2.Array:
 			typ0 = typ.Elem()
 		case *types2.Chan:
