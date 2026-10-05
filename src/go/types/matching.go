@@ -23,6 +23,9 @@ type matchCoverage struct {
 	label      string
 	fields     []*matchCoverage
 	fieldTypes []Type
+	// typ is the enum type of a variant pattern whose subject is an
+	// interface. Patterns for different enum types never share a key.
+	typ Type
 }
 
 type matchBinding struct {
@@ -78,63 +81,10 @@ func (check *Checker) matchPattern(p *ast.MatchPattern, t Type, top bool, bindin
 			check.errorf(sel.X, InvalidMatch, "pattern alternative must belong to %s", t)
 			return &matchCoverage{wild: true}
 		}
-		e := check.sourceEnum(t)
-		v := e.Lookup(sel.Sel.Name, check.pkg)
-		if v == nil {
-			check.errorf(sel.Sel, InvalidMatch, "unknown or inaccessible alternative %s of %s", sel.Sel.Name, t)
-			return &matchCoverage{wild: true}
-		}
-		check.recordUse(sel.Sel, v.Object())
-		check.recordTypeAndValue(p.Value, value, t, nil)
-		c := &matchCoverage{key: fmt.Sprintf("variant:%d", v.Tag()), label: TypeString(t, nil) + "." + v.Name()}
-		for i := 0; i < v.NumFields(); i++ {
-			c.fields = append(c.fields, &matchCoverage{wild: true})
-			c.fieldTypes = append(c.fieldTypes, v.Field(i).Type())
-		}
-		if v.IsRecord() {
-			if !p.Lbrace.IsValid() || p.Lparen.IsValid() {
-				check.error(p, InvalidMatch, "record alternative requires a record pattern")
-				return c
-			}
-			seen := make(map[int]bool)
-			for _, f := range p.Fields {
-				index := -1
-				for i := 0; i < v.NumFields(); i++ {
-					field := v.Field(i)
-					if field.Name() == f.Name.Name && (field.Exported() || field.Pkg() == check.pkg) {
-						index = i
-						break
-					}
-				}
-				if index < 0 {
-					check.errorf(f.Name, InvalidMatch, "unknown or inaccessible pattern field %s", f.Name.Name)
-					continue
-				}
-				if seen[index] {
-					check.errorf(f.Name, InvalidMatch, "duplicate pattern field %s", f.Name.Name)
-					continue
-				}
-				seen[index] = true
-				check.recordUse(f.Name, v.Field(index))
-				c.fields[index] = check.matchPattern(f.Pattern, c.fieldTypes[index], false, bindings)
-			}
-			if len(seen) != v.NumFields() && !p.Rest.IsValid() {
-				check.error(p, InvalidMatch, "record pattern must list every field or explicitly ignore the rest with ...")
-			}
-		} else if v.NumFields() == 0 {
-			if p.Lparen.IsValid() || p.Lbrace.IsValid() {
-				check.error(p, InvalidMatch, "unit alternative does not have a payload pattern")
-			}
-		} else {
-			if !p.Lparen.IsValid() || p.Lbrace.IsValid() || len(p.Args) != v.NumFields() {
-				check.errorf(p, InvalidMatch, "positional pattern requires %d payload patterns", v.NumFields())
-				return c
-			}
-			for i, a := range p.Args {
-				c.fields[i] = check.matchPattern(a, c.fieldTypes[i], false, bindings)
-			}
-		}
-		return c
+		return check.matchVariant(p, sel, t, bindings)
+	}
+	if sel, ok := p.Value.(*ast.SelectorExpr); ok && isNonTypeParamInterface(t) && !check.matchPackageQualifier(sel.X) {
+		return check.matchInterfaceVariant(p, sel, t, bindings)
 	}
 	if p.Lparen.IsValid() || p.Lbrace.IsValid() {
 		check.error(p, InvalidMatch, "payload pattern requires a qualified enum alternative")
@@ -186,6 +136,112 @@ func (check *Checker) matchPattern(p *ast.MatchPattern, t Type, top bool, bindin
 	return &matchCoverage{key: fmt.Sprintf("literal:%d:%s", x.val.Kind(), label), label: label}
 }
 
+// matchVariant checks a qualified variant pattern against the enum type t. The
+// qualifier has already been resolved to t.
+func (check *Checker) matchVariant(p *ast.MatchPattern, sel *ast.SelectorExpr, t Type, bindings *[]matchBinding) *matchCoverage {
+	e := check.sourceEnum(t)
+	v := e.Lookup(sel.Sel.Name, check.pkg)
+	if v == nil {
+		check.errorf(sel.Sel, InvalidMatch, "unknown or inaccessible alternative %s of %s", sel.Sel.Name, t)
+		return &matchCoverage{wild: true}
+	}
+	check.recordUse(sel.Sel, v.Object())
+	check.recordTypeAndValue(p.Value, value, t, nil)
+	c := &matchCoverage{key: fmt.Sprintf("variant:%d", v.Tag()), label: TypeString(t, nil) + "." + v.Name()}
+	for i := 0; i < v.NumFields(); i++ {
+		c.fields = append(c.fields, &matchCoverage{wild: true})
+		c.fieldTypes = append(c.fieldTypes, v.Field(i).Type())
+	}
+	if v.IsRecord() {
+		if !p.Lbrace.IsValid() || p.Lparen.IsValid() {
+			check.error(p, InvalidMatch, "record alternative requires a record pattern")
+			return c
+		}
+		seen := make(map[int]bool)
+		for _, f := range p.Fields {
+			index := -1
+			for i := 0; i < v.NumFields(); i++ {
+				field := v.Field(i)
+				if field.Name() == f.Name.Name && (field.Exported() || field.Pkg() == check.pkg) {
+					index = i
+					break
+				}
+			}
+			if index < 0 {
+				check.errorf(f.Name, InvalidMatch, "unknown or inaccessible pattern field %s", f.Name.Name)
+				continue
+			}
+			if seen[index] {
+				check.errorf(f.Name, InvalidMatch, "duplicate pattern field %s", f.Name.Name)
+				continue
+			}
+			seen[index] = true
+			check.recordUse(f.Name, v.Field(index))
+			c.fields[index] = check.matchPattern(f.Pattern, c.fieldTypes[index], false, bindings)
+		}
+		if len(seen) != v.NumFields() && !p.Rest.IsValid() {
+			check.error(p, InvalidMatch, "record pattern must list every field or explicitly ignore the rest with ...")
+		}
+	} else if v.NumFields() == 0 {
+		if p.Lparen.IsValid() || p.Lbrace.IsValid() {
+			check.error(p, InvalidMatch, "unit alternative does not have a payload pattern")
+		}
+	} else {
+		if !p.Lparen.IsValid() || p.Lbrace.IsValid() || len(p.Args) != v.NumFields() {
+			check.errorf(p, InvalidMatch, "positional pattern requires %d payload patterns", v.NumFields())
+			return c
+		}
+		for i, a := range p.Args {
+			c.fields[i] = check.matchPattern(a, c.fieldTypes[i], false, bindings)
+		}
+	}
+	return c
+}
+
+// matchPackageQualifier reports whether x names an imported package, which
+// makes a qualified pattern an ordinary constant value pattern.
+func (check *Checker) matchPackageQualifier(x ast.Expr) bool {
+	n, ok := ast.Unparen(x).(*ast.Ident)
+	if !ok {
+		return false
+	}
+	_, isPackage := check.lookup(n.Name).(*PkgName)
+	return isPackage
+}
+
+// matchNever stands for an invalid interface variant pattern. It matches nothing
+// and shares no key with another arm, so it cannot make later arms unreachable
+// or satisfy exhaustiveness; the pattern error is the only diagnostic.
+func matchNever(p *ast.MatchPattern) *matchCoverage {
+	return &matchCoverage{key: fmt.Sprintf("invalid:%p", p), label: "_"}
+}
+
+// matchInterfaceVariant checks a qualified enum variant pattern whose subject
+// has interface type t. The variant's enum type must implement t, so its
+// dynamic type test can succeed. Such a pattern never covers an interface.
+func (check *Checker) matchInterfaceVariant(p *ast.MatchPattern, sel *ast.SelectorExpr, t Type, bindings *[]matchBinding) *matchCoverage {
+	var q operand
+	check.exprOrType(&q, sel.X, false)
+	if !q.isValid() {
+		return matchNever(p)
+	}
+	if q.mode() != typexpr || check.sourceEnum(q.typ()) == nil {
+		check.errorf(sel.X, InvalidMatch, "pattern alternative on interface %s must be qualified by an enum type", t)
+		return matchNever(p)
+	}
+	enum := q.typ()
+	var cause string
+	if !check.implements(enum, t, false, &cause) {
+		check.errorf(sel.X, InvalidMatch, "pattern alternative can never match interface %s: %s", t, cause)
+		return matchNever(p)
+	}
+	c := check.matchVariant(p, sel, enum, bindings)
+	if !c.wild {
+		c.typ = enum
+	}
+	return c
+}
+
 // matchConstructors enumerates a finite, closed domain. Other Go types retain
 // open domains and require a wildcard to establish exhaustiveness.
 func matchConstructors(t Type) []*matchCoverage {
@@ -213,6 +269,15 @@ func matchConstructors(t Type) []*matchCoverage {
 	return nil
 }
 
+// matchSameType distinguishes variant patterns of different enum types that
+// share a tag when their subject is an interface.
+func matchSameType(p, c *matchCoverage) bool {
+	if p.typ == nil || c.typ == nil {
+		return p.typ == nil && c.typ == nil
+	}
+	return Identical(p.typ, c.typ)
+}
+
 func matchSpecialize(rows [][]*matchCoverage, c *matchCoverage) [][]*matchCoverage {
 	var result [][]*matchCoverage
 	for _, row := range rows {
@@ -222,7 +287,7 @@ func matchSpecialize(rows [][]*matchCoverage, c *matchCoverage) [][]*matchCovera
 			for range c.fieldTypes {
 				head = append(head, &matchCoverage{wild: true})
 			}
-		} else if p.key == c.key {
+		} else if p.key == c.key && matchSameType(p, c) {
 			head = p.fields
 		} else {
 			continue
@@ -356,7 +421,11 @@ func (check *Checker) matchExpr(T *target, x *operand, e *ast.MatchExpr, ctxt st
 	if tag.isValid() {
 		budget := 10000
 		if w := matchUseful(rows, []*matchCoverage{{wild: true}}, []Type{tag.typ()}, &budget); w != nil {
-			check.errorf(e, InvalidMatch, "non-exhaustive match: missing %s (add an irrefutable arm to cover the remainder)", w[0])
+			if isNonTypeParamInterface(tag.typ()) {
+				check.errorf(e, InvalidMatch, "non-exhaustive match: missing %s (add a default or case _ arm to cover the remainder; enum alternatives never cover the interface type %s)", w[0], tag.typ())
+			} else {
+				check.errorf(e, InvalidMatch, "non-exhaustive match: missing %s (add an irrefutable arm to cover the remainder)", w[0])
+			}
 		}
 	}
 	if statement {

@@ -460,6 +460,9 @@ func (f *Finder) exprUnwrapped(e ast.Expr) types.Type {
 		}
 	case *ast.ErrorExpr:
 		f.errorExpr(e)
+	case *ast.MatchExpr:
+		// A single-value match: its patterns, guards and arms may all relate types.
+		f.matchExpr(e)
 
 	case *ast.CondExpr:
 		// Each branch is converted to the type of the conditional

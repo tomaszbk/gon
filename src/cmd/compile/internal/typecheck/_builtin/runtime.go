@@ -20,6 +20,10 @@ func panicmakeslicecap()
 func throwinit()
 func panicwrap()
 
+// matchErrorAs implements the errors.As search for Gon enum patterns whose
+// subject has type error. The result points at the matching enum value or is nil.
+func matchErrorAs(err interface{}, typ *byte, ptrTyp *byte) unsafe.Pointer
+
 func gopanic(interface{})
 func gorecover() interface{}
 func goschedguarded()

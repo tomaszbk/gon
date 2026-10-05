@@ -57,7 +57,7 @@ def checks(feature):
         common.append(test('sql', '.', ['database/sql', 'database/sql/driver']))
         if os.environ.get('GON_SQL_POSTGRES') == '1':
             common.append(('stringenums-postgres', '.', [sys.executable, 'misc/gon/test_stringenums_postgres.py']))
-    features = ['errorhandling', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'stringenums', 'stringenums_sql', 'matching', 'optionresult', 'optionsyntax'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature in ('option', 'result') else (['enums', 'stringenums', 'stringenums_sql'] if feature == 'enums' else [feature]))
+    features = ['errorhandling', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'stringenums', 'stringenums_sql', 'matching', 'matchinterface', 'optionresult', 'optionsyntax'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature in ('option', 'result') else (['enums', 'stringenums', 'stringenums_sql'] if feature == 'enums' else (['matching', 'matchinterface'] if feature == 'matching' else [feature])))
     if feature in ('option', 'tooling'):
         # Native optionals at the JSON, SQL and reflection boundaries. The v1
         # JSON implementation is checked separately: the v2 based one is the default.
@@ -90,6 +90,7 @@ def checks(feature):
             ('lsp', '.', [sys.executable, 'misc/gon/test.py']),
             ('namedarguments-lsp', '.', [sys.executable, 'misc/gon/test_namedarguments.py']),
             ('alternatives-lsp', '.', [sys.executable, 'misc/gon/test_alternatives.py']),
+            ('interfacematch-lsp', '.', [sys.executable, 'misc/gon/test_interfacematch.py']),
             ('stringenums-lsp', '.', [sys.executable, 'misc/gon/test_stringenums.py']),
             ('simplification-lsp', '.', [sys.executable, 'misc/gon/test_simplification.py']),
             test('export-data', 'tools/x-tools', ['./internal/gcimporter'], '^TestGon(Alternatives|StringEnums)'),
@@ -152,6 +153,9 @@ def checks(feature):
             extra.append(test('optional-migration', 'tools/gonpls', ['./internal/cmd'], '^TestGon(NativeOptionalMigration|OptionalMigrationPlan)$'))
         if feature in ('option', 'result'):
             extra.append(('simplification-lsp', '.', [sys.executable, 'misc/gon/test_simplification.py']))
+        if feature == 'matching':
+            extra.append(('matchinterface-vet', '.', [str(GON), 'vet', 'test/matchinterface.dir/common.go', 'test/matchinterface.dir/modern.go']))
+            extra.append(('interfacematch-lsp', '.', [sys.executable, 'misc/gon/test_interfacematch.py']))
         if feature == 'enums':
             extra.append(('stringenums-lsp', '.', [sys.executable, 'misc/gon/test_stringenums.py']))
             extra.append(('representation', '.', [str(GON), 'test', '-json', 'test/enums.dir/representation_test.go',

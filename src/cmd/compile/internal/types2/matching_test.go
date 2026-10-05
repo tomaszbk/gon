@@ -159,3 +159,107 @@ func f(e E, b bool, p *int) int {
 		t.Fatalf("pattern counts: contextual=%d bindings=%d, want 6 and 1", contextual, bindings)
 	}
 }
+
+const matchInterfacePrefix = `package p
+type Reader interface{ Read([]byte) (int, error) }
+type E enum { default A; B(int); C { N int; Msg string } }
+func (E) Error() string { return "" }
+func (E) Read([]byte) (int, error) { return 0, nil }
+type F enum { default X; Y(error) }
+func (F) Error() string { return "" }
+type N enum { default A }
+type P enum { default A }
+func (*P) Error() string { return "" }
+type S struct{ X int }
+var err error
+var r Reader
+var a any
+var o int?
+`
+
+func TestMatchInterfaceSubject(t *testing.T) {
+	src := matchInterfacePrefix + `
+type alias = error
+type Wrap enum { default Z; W(error) }
+var aliased alias
+var wrapped Wrap
+var _ = switch err {
+case E.A => 1
+case E.B(n) if n > 0 => n
+case E.B(_) => 2
+case E.C{N: n, ...} => n
+case F.Y(inner) => len(inner.Error())
+case F.X => 3
+default => 0
+}
+var _ = switch r { case E.A => "a"; case E.C{Msg: m, N: _} => m; default => "d" }
+var _ = switch a { case E.B(n) => n; case F.Y(_) => 0; default => 0 }
+var _ = switch aliased { case E.A => 1; default => 0 }
+var _ = switch wrapped { case Wrap.W(E.B(n)) => n; case Wrap.W(_) => 0; default => 1 }
+func g(err error, want error) string {
+	switch err {
+	case E.A => { return "a" }
+	case _ if err == want => { return "w" }
+	default => { return "d" }
+	}
+}
+`
+	f := mustParse(src)
+	info := &Info{Types: make(map[syntax.Expr]TypeAndValue), Defs: make(map[*syntax.Name]Object), Uses: make(map[*syntax.Name]Object)}
+	if _, err := new(Config).Check("p", []*syntax.File{f}, info); err != nil {
+		t.Fatal(err)
+	}
+	var patterns int
+	syntax.Inspect(f, func(n syntax.Node) bool {
+		p, ok := n.(*syntax.MatchPattern)
+		if !ok {
+			return true
+		}
+		sel, ok := p.Value.(*syntax.SelectorExpr)
+		if !ok {
+			return true
+		}
+		patterns++
+		if _, ok := info.Uses[sel.Sel].(*Var); !ok && info.Uses[sel.Sel] == nil {
+			t.Errorf("%v: variant %s has no use", sel.Pos(), sel.Sel.Value)
+		}
+		typ := info.Types[p.Value].Type
+		if typ == nil || EnumOf(typ) == nil || typ.String() != info.Types[sel.X].Type.String() {
+			t.Errorf("%v: pattern %s has type %v, want its enum qualifier", sel.Pos(), sel.Sel.Value, typ)
+		}
+		return true
+	})
+	if patterns != 15 {
+		t.Fatalf("variant patterns %d, want 15", patterns)
+	}
+}
+
+func TestMatchInterfaceSubjectInvalid(t *testing.T) {
+	for _, test := range []struct{ src, want string }{
+		{`var _ = switch err { case E.A => 1; case E.B(_) => 2; case E.C{...} => 3 }`, "non-exhaustive match: missing _"},
+		{`var _ = switch err { case E.A => 1 }`, "enum alternatives never cover the interface type error"},
+		{`var _ = switch a { case E.A => 1 }`, "interface type any"},
+		{`var _ = switch err { case N.A => 1; default => 0 }`, "N does not implement error"},
+		{`var _ = switch err { case P.A => 1; default => 0 }`, "pointer receiver"},
+		{`var _ = switch r { case F.X => 1; default => 0 }`, "F does not implement Reader"},
+		{`var _ = switch err { case S.X => 1; default => 0 }`, "qualified by an enum type"},
+		{`var _ = switch err { case Result[int, error].Ok(v) => v; default => 0 }`, "can never match interface error"},
+		{`var _ = switch err { case value? => 1; default => 0 }`, "presence pattern requires an optional value"},
+		{`var _ = switch err { case v => 1; default => 0 }`, "top-level pattern requires a qualified alternative"},
+		{`var _ = switch err { case E.A => 1; case E.A => 2; default => 0 }`, "unreachable match arm"},
+		{`var _ = switch err { case E.B(1) => 1; case E.B(n) => n; case E.B(_) => 2; default => 0 }`, "unreachable match arm"},
+		{`var _ = switch err { default => 0; case E.A => 1 }`, "unreachable match arm"},
+		{`var _ = switch err { case E.Z => 1; default => 0 }`, "unknown or inaccessible alternative Z"},
+		{`var _ = switch err { case E.B => 1; default => 0 }`, "positional pattern requires 1 payload patterns"},
+		{`var _ = switch err { case E.C{N: n} => n; default => 0 }`, "every field"},
+		{`var _ = switch err { case E.B(x) => x; default => x }`, "undefined: x"},
+		{`func h[T any](v T) int { return switch v { case E.A => 1; default => 0 } }`, "value pattern"},
+		{`var _ = switch o { case E.A => 1; default => 0 }`, "value pattern must be a literal or qualified constant"},
+	} {
+		f := mustParse(matchInterfacePrefix + test.src)
+		_, err := new(Config).Check("p", []*syntax.File{f}, nil)
+		if err == nil || !strings.Contains(err.Error(), test.want) {
+			t.Errorf("%s: error %v; want %q", test.src, err, test.want)
+		}
+	}
+}

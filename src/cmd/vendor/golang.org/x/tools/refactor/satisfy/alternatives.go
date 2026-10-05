@@ -53,6 +53,11 @@ func (f *Finder) matchPattern(p *ast.MatchPattern, subject types.Type) {
 	}
 	if sel, ok := p.Value.(*ast.SelectorExpr); ok {
 		if e := types.EnumOf(f.info.TypeOf(sel.X)); e != nil {
+			if types.IsInterface(subject) && !isTypeParam(subject) {
+				// A variant pattern on an interface subject is a type test of the
+				// subject for the variant's enum type, like a type assertion.
+				f.typeAssert(subject, f.info.TypeOf(sel.X))
+			}
 			for i := range e.NumVariants() {
 				v := e.Variant(i)
 				if v.Name() != sel.Sel.Name {
@@ -73,4 +78,9 @@ func (f *Finder) matchPattern(p *ast.MatchPattern, subject types.Type) {
 		}
 	}
 	f.compare(subject, f.expr(p.Value))
+}
+
+func isTypeParam(t types.Type) bool {
+	_, ok := types.Unalias(t).(*types.TypeParam)
+	return ok
 }
