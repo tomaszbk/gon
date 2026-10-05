@@ -47,6 +47,11 @@ func canonicalValues() {
     _ = (int?)(nil)
     _ = Result[int, string].Ok(6)
     _ = Result[int, string].Err("failure")
+    var missing int?
+    var present int? = -1
+    var typedNil (*int)? = (*int)(nil)
+    var values ([]int)? = ([]int)(nil)
+    if missing != nil || nil == present || typedNil == nil || nil == values { panic("optional presence") }
 }
 func patternNames(b bool, p *int) int {
     const localValue = 99

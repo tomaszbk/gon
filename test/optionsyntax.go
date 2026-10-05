@@ -112,6 +112,12 @@ func main() {
 		}
 	}
 	invalid := []string{
+		`func f(v int?) bool { nil := 0; return v == nil }`,
+		`func f(v (*int)?) bool { return v == (*int)(nil) }`,
+		`func f(v ([]int)?) bool { return v == ([]int)(nil) }`,
+		`func f(v int?) bool { return v < nil }`,
+		`func f(v int?) bool { return nil >= v }`,
+		`func f(a,b ([]int)?) bool { return a == b }`,
 		`func f(){r:=.Ok(1);_ = r}`,
 		`func f(){r:=.Some(1);_ = r}`,
 		`func f() any {return .None}`,

@@ -75,7 +75,45 @@ func patternNames(b bool, p *int) int {
 	}
 	return chosen + pointer + flags + bound + ordinary + item
 }
+
+type Presence[T any] = T?
+
+func absent[T any](v Presence[T]) bool { return v == nil }
+func present[T any](v T?) bool         { return nil != v }
+func nilComparisons() {
+	var missing int?
+	var zero int? = 0
+	var pointer (*User)? = (*User)(nil)
+	var slice ([]int)? = ([]int)(nil)
+	var mapping (map[int]int)? = (map[int]int)(nil)
+	var callback (func())? = (func())(nil)
+	var iface any? = (any)(nil)
+	var nested (int?)? = (int?)(nil)
+	check(missing == nil && nil == missing && !(missing != nil))
+	check(zero != nil && pointer != nil && slice != nil && mapping != nil && callback != nil && iface != nil)
+	iface = any([]int{1})
+	check(iface != nil)
+	{
+		nil := zero
+		check(zero == nil && missing != nil)
+	}
+	check(nested != nil && (nested ?? (int?)(1)) == nil)
+	slice = nil
+	check(absent(slice) && present(zero) && absent(missing))
+	trace = ""
+	produce := func(label string, exists bool) int? {
+		trace += label
+		if exists {
+			return 0
+		}
+		return nil
+	}
+	check(produce("A", false) == nil && nil != produce("B", true) && trace == "AB")
+	check(!(produce("C", true) == nil && produce("X", false) == nil) && trace == "ABC")
+	trace = ""
+}
 func main() {
+	nilComparisons()
 	check(patternNames(true, nil) == 206)
 	one := 1
 	check(patternNames(false, &one) == 196)

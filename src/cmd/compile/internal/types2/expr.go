@@ -871,6 +871,16 @@ func (check *Checker) binary(x *operand, e syntax.Expr, lhs, rhs syntax.Expr, op
 		return
 	}
 
+	// Comparing an optional with untyped nil tests presence, independently
+	// of the payload's comparability. Keep nil untyped: lifting it to the
+	// optional would turn this into an ordinary payload comparison.
+	if (op == syntax.Eql || op == syntax.Neq) &&
+		(IsOptional(x.typ()) && y.isNil() || x.isNil() && IsOptional(y.typ())) {
+		x.mode_ = value
+		x.typ_ = Typ[UntypedBool]
+		return
+	}
+
 	check.matchTypes(x, &y)
 	if !x.isValid() {
 		return

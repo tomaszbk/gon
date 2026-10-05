@@ -22,6 +22,21 @@ func enumAlternative(typ types.Type, name string) *types.EnumVariant {
 func canonicalPayload(fn *Function, value Value, variant *types.EnumVariant, source ast.Node) Value {
 	return enumField(fn, enumField(fn, value, variant.StorageIndex(), source), 0, source)
 }
+func (b *builder) optionNilCompare(fn *Function, e *ast.BinaryExpr) (Value, bool) {
+	if e.Op != token.EQL && e.Op != token.NEQ {
+		return nil, false
+	}
+	optional, other := e.X, e.Y
+	if !types.IsOptional(fn.typeOf(optional)) {
+		optional, other = other, optional
+	}
+	if !types.IsOptional(fn.typeOf(optional)) || fn.typeOf(other) != types.Typ[types.UntypedNil] {
+		return nil, false
+	}
+	value := b.expr(fn, optional)
+	tag := enumField(fn, value, 0, e)
+	return emitCompare(fn, e.Op, tag, emitConv(fn, intConst(0, e), tag.Type(), e), e), true
+}
 func (b *builder) optionExpr(fn *Function, e *ast.OptionalExpr) Value {
 	value := b.expr(fn, e.X)
 	none := fn.newBasicBlock("option.none")

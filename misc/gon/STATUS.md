@@ -41,6 +41,15 @@ Use `sql.Null[Role]`, `*Role` or `Role?` for SQL NULL; explicit Scanner/Valuer
 overrides retain precedence. No enum registration or driver changes are needed
 through database/sql. Native pgx (outside `database/sql`) still needs codecs.
 
+Generated `UnmarshalText` allocates no memory for known variants; only the
+unknown-text fallback copies its input into a retained payload. SQL JSON
+columns decode into native optional composite payloads and `ScanStruct`
+composite fields without per-domain Scanners. JSON null is optional absence,
+and errors preserve the destination. Explicit Scanners and existing scalar,
+cursor and decimal conversions retain precedence. Raw PostgreSQL arrays need a
+codec or a JSON query projection. Ordinary Go `Rows.Scan` conversions remain
+unchanged. See the paired `test/sqljson.go` regression.
+
 Interoperability extensions requested and accepted on 2026-10-05 (user decision,
 part of Gon 2.27), merged on master `96ab86645a`:
 
@@ -84,8 +93,10 @@ Fixed after the feature merges (branch `gon/fixes`, `2b0ee32fbc`):
   valid cycles such as `type A B; type B *A` (`TestStringEnumDeclarationCycles`).
 - The copylock `gonfeatures` expectation sits on the reported `return` line.
 
-Open: comparing an optional with untyped nil (`x == nil`, `x != nil`) is not
-valid; use matching, `??` or `?`.
+Optional comparisons with untyped nil (`x == nil`, `x != nil`, in either
+operand order) test absence/presence without comparing the payload. Noncomparable
+payloads work; a present typed nil remains present. Typed or shadowed nil values
+retain ordinary type rules.
 
 Known tooling gaps: the `unreachable` analyzer does not inspect `or` handler
 bodies; inline variable on an `or`-handler initializer yields an oddly

@@ -173,12 +173,25 @@ func TestGonOptionalScanNested(t *testing.T) {
 }
 
 func TestGonOptionalScanRawBytes(t *testing.T) {
-	var raw RawBytes?
-	if err := convertAssign(&raw, []byte("x")); err == nil {
-		t.Error("RawBytes payload accepted")
+	for _, dest := range []any{new(RawBytes?), new((*RawBytes)?), new((**RawBytes)?)} {
+		for _, src := range []any{[]byte("x"), "x", nil} {
+			if err := convertAssign(dest, src); err == nil {
+				t.Errorf("%T payload accepted %T", dest, src)
+			}
+			if !gonSQLOptAbsent(dest) {
+				t.Errorf("%T changed after unsupported %T", dest, src)
+			}
+		}
 	}
-	if err := convertAssign(&raw, nil); err == nil {
-		t.Error("RawBytes payload accepted for NULL")
+	// Ordinary *RawBytes destinations still borrow the driver's byte buffer.
+	data := []byte("bytes")
+	var raw RawBytes
+	if err := convertAssign(&raw, data); err != nil {
+		t.Fatal(err)
+	}
+	data[0] = 'B'
+	if string(raw) != "Bytes" {
+		t.Fatalf("ordinary RawBytes no longer borrows its source: %q", raw)
 	}
 }
 

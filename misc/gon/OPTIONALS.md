@@ -92,7 +92,11 @@ payload; it panics for a non-optional, unaddressable, read-only or
 non-assignable operand. Absent extraction and inappropriate enum/struct-field
 operations panic. `reflect.Kind` remains Struct; public field APIs hide storage.
 Ordinary formatting prints absence as `nil` and presence as its payload.
-Equality, map keys and comparability follow payload types and active presence.
+Equality between optional values, map keys and comparability follow payload
+types and active presence. Comparing with untyped nil is a presence test:
+`x == nil` means absent and `x != nil` means present (either operand order).
+It works even for slices, maps and other noncomparable payloads; a present
+typed nil is not absence. A shadowed nil identifier keeps its declared type.
 
 Storage retains a discriminator and typed payload fields for GC and write
 barriers. Its size is measured in the current benchmark report. There is no
@@ -131,7 +135,17 @@ an error leaves the destination unchanged. A Scanner payload is never called for
 NULL. Nested optionals and `RawBytes` payloads are rejected; `sql.Null[T]` and
 pointers are unchanged. Unlike a legacy `*T`, which allocates before a failed
 scan, a `T?` stays unchanged. `ScanStruct` fields and a scalar `T` of `Collect`
-use the same path.
+use the same path. Composite payloads (structs, maps, arrays and slices other
+than byte slices) that cannot receive the column through ordinary conversion
+also decode JSON string/byte columns into a fresh value. JSON null is absence;
+custom JSON methods are honored, and errors preserve the optional. Scanners
+retain precedence; strings/bytes keep literal text such as `null`.
+
+`ScanStruct` and struct rows collected by `Collect`/`CollectOne` also decode
+JSON columns into ordinary composite fields, so queries can use JSON aggregates
+for collections without per-domain Scanners. Ordinary `Rows.Scan` into Go
+composites keeps its existing rules. PostgreSQL array text is not a JSON format;
+use `jsonb_agg`/`to_jsonb` in the query or a driver-specific adapter.
 
 Not covered: `encoding/xml`, `gob` and other encoders, and pgx's native API
 outside `database/sql`, which need their own codecs.

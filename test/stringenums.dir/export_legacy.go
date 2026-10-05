@@ -7,13 +7,30 @@ type Role struct {
 
 type Alias = Role
 
-type Generic[T any] struct{ text string }
+type Generic[T any] struct {
+	kind int
+	text string
+}
 
-func ParseGeneric[T any](text string) Generic[T]      { return Generic[T]{text} }
-func (value Generic[T]) String() string               { return value.text }
+func ParseGeneric[T any](text string) Generic[T] {
+	if text == "ready" {
+		return Generic[T]{kind: 1}
+	}
+	return Generic[T]{text: text}
+}
+func (value Generic[T]) String() string {
+	if value.kind == 1 {
+		return "ready"
+	}
+	return value.text
+}
 func (value Generic[T]) MarshalText() ([]byte, error) { return []byte(value.String()), nil }
 func (value *Generic[T]) UnmarshalText(data []byte) error {
-	*value = ParseGeneric[T](string(data))
+	if string(data) == "ready" {
+		*value = Generic[T]{kind: 1}
+	} else {
+		*value = Generic[T]{text: string(data)}
+	}
 	return nil
 }
 
@@ -44,7 +61,13 @@ func (role Role) String() string {
 
 func (role Role) MarshalText() ([]byte, error) { return []byte(role.String()), nil }
 func (role *Role) UnmarshalText(data []byte) error {
-	*role = ParseRole(string(data))
+	if string(data) == "teacher" {
+		*role = Role{kind: 1}
+	} else if string(data) == "student" {
+		*role = Role{kind: 2}
+	} else {
+		*role = Role{text: string(data)}
+	}
 	return nil
 }
 

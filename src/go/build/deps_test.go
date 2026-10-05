@@ -600,7 +600,7 @@ var depsRules = `
 	< database/sql/internal
 	< database/sql/driver;
 
-	database/sql/driver, math/rand/v2 < database/sql;
+	database/sql/driver, math/rand/v2, encoding/json < database/sql;
 
 	# TLS, Prince of Dependencies.
 

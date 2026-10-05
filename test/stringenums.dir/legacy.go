@@ -42,7 +42,11 @@ func (value Generic[T]) String() string {
 }
 func (value Generic[T]) MarshalText() ([]byte, error) { return []byte(value.String()), nil }
 func (value *Generic[T]) UnmarshalText(data []byte) error {
-	*value = parseGeneric[T](string(data))
+	if string(data) == "ready" {
+		*value = Generic[T]{kind: 1}
+	} else {
+		*value = Generic[T]{text: string(data)}
+	}
 	return nil
 }
 
@@ -132,7 +136,13 @@ func (role Role) String() string {
 
 func (role Role) MarshalText() ([]byte, error) { return []byte(role.String()), nil }
 func (role *Role) UnmarshalText(data []byte) error {
-	*role = parseRole(string(data))
+	if string(data) == "teacher" {
+		*role = teacher()
+	} else if string(data) == "student" {
+		*role = student()
+	} else {
+		*role = unknown(string(data))
+	}
 	return nil
 }
 

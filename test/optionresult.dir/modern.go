@@ -8,6 +8,52 @@ type Holder struct {
 	Pointer *User
 }
 type IntResult = Result[int, error]
+type Presence[T any] = T?
+
+func isAbsent[T any](value Presence[T]) bool { return value == nil }
+func isPresent[T any](value T?) bool         { return nil != value }
+func presenceFlag(value bool) bool           { return value }
+
+func optionalNilComparisons() {
+	var absent int?
+	var zero int? = 0
+	var sentinel int? = -1
+	var empty string? = ""
+	var falsy bool? = false
+	check("nil absence", absent == nil && nil == absent && !(absent != nil), true, "")
+	check("nil zero payloads", zero != nil && sentinel != nil && empty != nil && falsy != nil, true, "")
+	check("nil named comparison", presenceFlag(value: zero != nil), true, "")
+	{
+		nil := sentinel
+		check("nil shadowed optional", zero == nil || sentinel != nil, false, "")
+	}
+	var slice ([]int)? = ([]int)(nil)
+	var mapping (map[string]int)? = (map[string]int)(nil)
+	var function (func())? = (func())(nil)
+	var pointer (*int)? = (*int)(nil)
+	var iface any? = (any)(nil)
+	check("nil present payloads", slice != nil && mapping != nil && function != nil && pointer != nil && iface != nil, true, "")
+	iface = any([]int{1})
+	check("nil dynamic noncomparable payload", iface != nil, true, "")
+	slice = nil
+	check("nil noncomparable absence", nil == slice && !isPresent(slice), true, "")
+	var nested (int?)? = (int?)(nil)
+	check("nil nested presence", nested != nil && (nested ?? (int?)(1)) == nil, true, "")
+	nested = nil
+	check("nil generic aliases", isAbsent(nested) && isPresent(zero) && isAbsent(slice), true, "")
+	produce := func(label string, present bool) int? {
+		effects += label
+		if present {
+			return 0
+		}
+		return nil
+	}
+	check("nil evaluation", produce("A", false) == nil && nil != produce("B", true), true, "AB")
+	check("nil short circuit", produce("C", true) == nil && produce("X", false) == nil, false, "C")
+	check("nil short circuit or", produce("D", true) != nil || produce("X", false) == nil, true, "D")
+	items := []int?{nil, 0}
+	check("nil indexed evaluation", items[mark("I", 1)] != nil, true, "I")
+}
 
 func maybe(present bool) IntOption {
 	effects += "M"
@@ -192,6 +238,7 @@ func resultOptimizationCases() {
 }
 
 func main() {
+	optionalNilComparisons()
 	var zero IntOption
 	emit("zero Option", zero ?? fallback())
 	zero ??= mark("A", 2)

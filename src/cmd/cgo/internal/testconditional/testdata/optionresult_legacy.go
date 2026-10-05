@@ -28,8 +28,30 @@ func divide(divisor C.int) (int, error) {
 	return int(value), nil
 }
 func main() {
+	var missing struct {
+		value   C.int
+		present bool
+	}
+	zero := struct {
+		value   C.int
+		present bool
+	}{0, true}
+	pointer := struct {
+		value   *C.int
+		present bool
+	}{nil, true}
+	values := struct {
+		value   []C.int
+		present bool
+	}{nil, true}
+	if missing.present || !zero.present || !pointer.present || !values.present {
+		panic("optional presence")
+	}
 	for _, present := range []bool{true, false} {
-		value, _ := add(present)
+		value, exists := add(present)
+		if exists != present {
+			panic("Cgo optional presence")
+		}
 		fmt.Println(value)
 	}
 	for _, divisor := range []C.int{3, 0} {

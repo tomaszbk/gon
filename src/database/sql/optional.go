@@ -5,6 +5,7 @@
 package sql
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 )
@@ -67,7 +68,11 @@ func scanOptional(dest reflect.Value, src any, rows *Rows) error {
 	if reflect.IsOptional(elem) {
 		return fmt.Errorf("converting to nested optional %s is unsupported", dest.Type())
 	}
-	if elem == reflect.TypeFor[RawBytes]() {
+	rawElem := elem
+	for rawElem.Kind() == reflect.Pointer {
+		rawElem = rawElem.Elem()
+	}
+	if rawElem == reflect.TypeFor[RawBytes]() {
 		// Rows.Scan must hold the connection while RawBytes is in use, which
 		// it can only tell for a direct *RawBytes destination.
 		return fmt.Errorf("converting to %s is unsupported; scan into *RawBytes", dest.Type())
@@ -78,6 +83,19 @@ func scanOptional(dest reflect.Value, src any, rows *Rows) error {
 	}
 	payload := reflect.New(elem)
 	if err := convertAssignRows(payload.Interface(), src, rows); err != nil {
+		// Native optionals opt into JSON for composite payloads that cannot
+		// otherwise receive a scalar SQL value. Decode the optional itself:
+		// JSON null is absence, and decoding errors keep dest unchanged.
+		if jsonColumnType(elem) {
+			if data, ok := columnJSON(src); ok {
+				value := reflect.New(dest.Type())
+				if err := json.Unmarshal(data, value.Interface()); err != nil {
+					return err
+				}
+				dest.Set(value.Elem())
+				return nil
+			}
+		}
 		return err
 	}
 	reflect.OptionalValueSetPayload(dest, payload.Elem())

@@ -93,6 +93,9 @@ immediate payload; no flattening. `(int?)(7)` is an explicit conversion.
 `[]int?` means optional elements; `([]int)?` means optional slice. Use aliases
 like `type Maybe[T any] = T?`; no predeclared Option/Some/None API. Postfix `?`
 returns absence early from the nearest function, which must return one optional.
+`x == nil`/`x != nil` test absence/presence in either operand order, even for
+noncomparable payloads; present typed nil remains present. Shadowed nil keeps
+its ordinary type.
 
 `??` defaults lazily on absence/Go nil, never zero/false/empty. `??=` evaluates
 the location once and assigns only on absence/nil. `?.` guards presence or
@@ -105,7 +108,10 @@ extraction first: `p := optionalPointer ?? nil`, then `p?.Name`. Parenthesize
 
 `encoding/json` and `database/sql` need no adapters: absence is `null`/NULL,
 presence is the payload; `null`/NULL decodes/scans to absence and a failed
-decode/scan leaves the optional unchanged. Nested optionals, optional map keys
+decode/scan leaves the optional unchanged. SQL composite optional payloads
+accept JSON string/byte columns, with JSON null as absence; explicit Scanners
+keep precedence and string/byte payloads keep their raw SQL representation.
+Nested optionals, optional map keys
 and RawBytes payloads are rejected. xml/gob and native pgx need codecs.
 
 ## Enums, Result and matching
@@ -164,7 +170,8 @@ For textual APIs, opt in with `type Role enum string { default Unknown(string);
 Teacher = "teacher"; Student = "student" }`. Unit spellings are unique constant
 strings. `Role.Parse(text)` preserves unknown text in the default payload; zero
 is Unknown(""). `String`, `MarshalText` and pointer `UnmarshalText` are automatic,
-so standard JSON needs no methods per enum. JSON null preserves an existing
+so standard JSON needs no methods per enum. Known `UnmarshalText` variants
+need no allocation; unknown text is copied so it outlives the input bytes. JSON null preserves an existing
 value. Alias/generic/imported enums retain the protocol; `Parse` and the generated
 method names cannot be redeclared. String enums remain enum values, so Go string
 conversion/JSON tag rules do not implicitly apply. In Gon's `database/sql`, pass

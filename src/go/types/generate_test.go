@@ -196,7 +196,7 @@ var filemap = map[string]action{
 	"map.go":       nil,
 	"optioncontext_test.go": func(f *ast.File) {
 		renameImportPath(f, `"cmd/compile/internal/types2"->"go/types"`, `"cmd/compile/internal/syntax"->"go/ast"`)
-		renameSelectorExprs(f, "syntax.Name->ast.Ident")
+		renameSelectorExprs(f, "syntax.Name->ast.Ident", "syntax.Operation->ast.BinaryExpr", "ident.Value->ident.Name")
 		renameIdents(f, "types2->types", "syntax->ast")
 		fixFSet(f)
 	},

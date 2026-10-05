@@ -2272,6 +2272,8 @@ func (r *reader) expr() (res ir.Node) {
 
 	case exprOption:
 		return r.optionExpr()
+	case exprOptionNilCompare:
+		return r.optionNilCompare()
 	case exprResultError:
 		return r.resultErrorExpr()
 	case exprOptionCoalesce:

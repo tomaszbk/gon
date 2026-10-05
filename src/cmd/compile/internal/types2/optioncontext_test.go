@@ -134,3 +134,62 @@ func TestOptionContextInvalid(t *testing.T) {
 		})
 	}
 }
+
+func TestOptionContextNilComparison(t *testing.T) {
+	const source = `package p
+type Maybe[T any] = T?
+type Flag bool
+func absent[T any](v T?) bool { return v == nil }
+func present[T any](v Maybe[T]) bool { return nil != v }
+var zero int?
+var values ([]int)? = []int{1}
+var fn (func())? = (func())(nil)
+var pointer (*int)? = (*int)(nil)
+var inner (int?)? = (int?)(nil)
+var a Flag = zero == nil
+var b = nil == values
+var c = fn != (nil)
+var d = (nil) != pointer
+var e = inner == nil
+func equalOptionals(a,b int?) bool { return a == b }
+`
+	f := mustParse(source)
+	info := &Info{Types: make(map[syntax.Expr]TypeAndValue), OptionalConversions: make(map[syntax.Expr]Type)}
+	if _, err := new(Config).Check("p", []*syntax.File{f}, info); err != nil {
+		t.Fatal(err)
+	}
+	comparisons, nils := 0, 0
+	for expr, tv := range info.Types {
+		if op, ok := expr.(*syntax.Operation); ok && op.Y != nil {
+			comparisons++
+			if !Identical(tv.Type, Typ[UntypedBool]) && !Identical(tv.Type, Universe.Lookup("bool").Type()) && tv.Type.String() != "p.Flag" {
+				t.Fatalf("comparison type %v", tv.Type)
+			}
+			for _, operand := range []syntax.Expr{op.X, op.Y} {
+				operand = syntax.Unparen(operand)
+				if ident, ok := operand.(*syntax.Name); ok && ident.Value == "nil" {
+					nils++
+					if info.Types[operand].Type != Typ[UntypedNil] || info.OptionalConversions[operand] != nil {
+						t.Fatal("comparison lifted nil into an optional")
+					}
+				}
+			}
+		}
+	}
+	if comparisons != 8 || nils < 7 {
+		t.Fatalf("missing typed comparison evidence: comparisons=%d untyped nil=%d", comparisons, nils)
+	}
+	for _, source := range []string{
+		`func f(v int?) bool { nil := 0; return v == nil }`,
+		`func f(v (*int)?) bool { return v == (*int)(nil) }`,
+		`func f(v ([]int)?) bool { return v == ([]int)(nil) }`,
+		`func f(v int?) bool { return v < nil }`,
+		`func f(v int?) bool { return nil >= v }`,
+		`func f(a,b ([]int)?) bool { return a == b }`,
+	} {
+		f := mustParse("package p;" + source)
+		if _, err := new(Config).Check("p", []*syntax.File{f}, nil); err == nil {
+			t.Fatalf("accepted invalid optional comparison: %s", source)
+		}
+	}
+}

@@ -50,6 +50,8 @@ untyped `nil` for absence. A typed nil pointer remains present. The postfix
 binds tightly: `*T?` is a pointer to an optional, `(*T)?` is an optional pointer,
 `([]T)?` is an optional slice, and `(T?)?` contains two distinct optional layers.
 Aliases preserve this protocol; separately defined types do not adopt it.
+`selected == nil` and `selected != nil` test absence/presence, including for
+noncomparable payloads; a present typed nil remains present.
 
 ```go
 func parsePort(text string) (port Result[int?, error]) {
@@ -138,7 +140,9 @@ The compiler supplies `String() string`, `MarshalText() ([]byte, error)` and
 `(*Role).UnmarshalText([]byte) error`. These are ordinary methods for interfaces,
 method expressions, aliases, generics and imported packages. Their names and
 `Parse` cannot be redeclared on a string enum. Text marshaling copies the bytes;
-unmarshaling copies the text and replaces the whole value. Standard JSON uses
+unmarshaling recognized variants allocates no memory, while unknown text is
+copied into its retained payload. Both paths replace the whole value and clear
+inactive payload storage. Standard JSON uses
 these text interfaces for values and map keys, preserving unknown strings.
 JSON `null` leaves an existing value unchanged; non-string input fails without
 changing it. Ordinary JSON options, escaping and UTF-8 replacement still apply.
@@ -292,6 +296,16 @@ func students(db *sql.DB, course int) ([]Student, error) {
 API: `(*Rows).ScanStruct(dest any) error`, `(*Row).ScanStruct(dest any) error`,
 `Collect[T any](*Rows) ([]T, error)`, `CollectOne[T any](*Rows) (T, error)` and
 `ErrTooManyRows`.
+
+Composite fields (structs, maps, arrays and non-byte slices) accept JSON string
+or byte columns when ordinary SQL conversion is unsupported. This lets queries
+return `jsonb_agg`/`to_jsonb` collections straight into `[]T` fields. Native
+optional composite destinations also decode JSON through `Scan`: SQL NULL and
+JSON null both mean absence. Each JSON conversion starts from a fresh value and
+an error leaves that destination unchanged. Explicit Scanners and native scalar
+conversions (including time, enum, cursor and decimal conversions) retain
+precedence. Plain Go `Scan` destinations keep their existing rules; raw
+PostgreSQL array text still needs a codec.
 
 - `Rows.ScanStruct` needs a non-nil pointer to a struct and has the same
   preconditions and errors as `Rows.Scan`. `Row.ScanStruct` is like `Row.Scan`

@@ -5,6 +5,61 @@ Current source target: **Gon 2.27**. Unmodified baseline:
 Apple M4. The fork's go1.28-devel version records source provenance. This file
 records current evidence in place; no full release pass on every platform is claimed.
 
+## Presence comparisons, string-enum allocations and SQL JSON (2026-10-05)
+
+The current compiler bootstrapped with
+`cd src && GOROOT_BOOTSTRAP=/opt/homebrew/opt/go/libexec ./make.bash`, using
+unmodified Go 1.27.1. `python3 misc/gon/build.py` rebuilt the public tools, and
+`python3 misc/gon/vendor.py` followed by `--check` passed (no generated drift).
+
+All checks below passed on darwin/arm64:
+
+```sh
+./gon/bin/gon test go/types cmd/compile/internal/types2 -run 'OptionContext|NativeOptional|TestGenerate' -count=1
+GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test cmd/internal/testdir -run '^Test/(optionresult|optionsyntax)\.go$' -count=1
+GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test cmd/internal/testdir -run '^Test/(stringenums|sqljson)\.go$' -count=1
+GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test cmd/internal/testdir -run '^Test/(optionalsql|sqlstruct)\.go$' -count=1
+./gon/bin/gon test database/sql -run 'Test(GonOptional|GonJSON|.*ScanStruct|.*Collect|Cursor|Decimal)' -count=1
+GOEXPERIMENT=nojsonv2 ./gon/bin/gon test database/sql -run 'Test(GonOptional|GonJSON|.*ScanStruct|.*Collect|Cursor|Decimal)' -count=1
+./gon/bin/gon test go/build -run '^TestDependencies$' -count=1
+GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test cmd/cgo/internal/testconditional -run '^TestPairedCgoOptionResult$' -count=1
+GON_BASELINE_GO=/opt/homebrew/bin/go python3 misc/gon/test_alternatives.py
+```
+
+The testdir checks ran as focused subsets, not one full testdir invocation.
+Paired programs execute legacy with Go 1.27.1 and Gon, and modern with Gon;
+the optional comparison pair also runs with `-l` and `-N -l`, and string enums
+and SQL JSON run without inlining. The Cgo pair includes instrumented coverage.
+Optional presence covers noncomparable/typed-nil/nested payloads, aliases and
+generics, shadowing, named boolean arguments, single evaluation, short circuit
+and invalid comparisons. String enums assert zero allocations for known
+`UnmarshalText` variants and copying for unknown text, including exported and
+generic methods. SQL JSON covers arrays, UUIDs, maps, custom JSON decoding,
+NULL versus JSON null, error transactionality, stale reference replacement,
+Scanner/decimal precedence, cursors, RawBytes pointer rejection and ordinary Go
+Scan compatibility, with both driver.Values and direct column scanning.
+
+Maintained-module checks passed: `tools/x-tools` SSA `TestGonAlternatives`
+(interpreter execution), CFG/satisfy `TestGon`, Staticcheck IR
+`TestGonAlternatives`, and gonpls registry `TestGonAnalyzers`.
+
+The selected tooling run passed all six checks (`stringenums-vet`,
+`sqljson-vet`, `stringenums-execution`, `optionalsql-execution`,
+`sqljson-execution`, `sqlstruct-execution`), with exit 2 because it was a
+partial selection. [Current partial summary](../../pkg/gon-validation/tooling/summary.json).
+No complete profile or release gate was rerun.
+
+The three common pairs (`optionresult`, `stringenums`, `sqljson`) also passed
+9 js/wasm executions via Node 26.6.0 (baseline, Gon legacy and modern, with
+identical output), and 18 linux/amd64 and linux/riscv64 cross-compilations.
+Those Linux binaries were not executed. [Platform commands and results](../../pkg/gon-validation/presence-json-platforms/summary.json).
+
+The updated `llm_teacher` branch `gon` passed its backend unit suite, vet
+(ordinary and integration tags), semantic check (8 packages, 164 analyzers,
+zero diagnostics), and the full PostgreSQL 17 integration suite with `-race`
+and a disposable RAM database. This includes the new REST
+`units-with-exercises` coverage and direct JSON collections/optional assessments.
+
 ## Complete focused gates
 
 ```sh
@@ -15,7 +70,7 @@ GON_BASELINE_GO=/opt/homebrew/bin/go python3 misc/gon/validate.py tooling
 | Profile | Result | Sum of check durations | Evidence |
 | --- | --- | ---: | --- |
 | enums | 32/32 PASS, exit 0, no pending items | 98.123s | [summary](../../pkg/gon-validation/enums/summary.json) |
-| tooling | 41/41 PASS, exit 0, no pending items | 147.654s | [summary](../../pkg/gon-validation/tooling/summary.json) |
+| tooling | 41/41 PASS, exit 0, no pending items | 147.654s | Historical full run; current partial summary above |
 
 These counts predate the 2026-10-05 merge recorded [below](#features-merged-on-2026-10-05):
 the `tooling`, `errorhandling`, `matching` and `option` profiles have gained

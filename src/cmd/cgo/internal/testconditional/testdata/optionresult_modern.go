@@ -31,8 +31,19 @@ func label(value Result[int, error]) string {
 	})
 }
 func main() {
+	var missing C.int?
+	var zero C.int? = 0
+	var pointer (*C.int)? = (*C.int)(nil)
+	var values ([]C.int)? = ([]C.int)(nil)
+	if missing != nil || nil == zero || pointer == nil || nil == values {
+		panic("optional presence")
+	}
 	for _, present := range []bool{true, false} {
-		fmt.Println(add(present) ?? 0)
+		value := add(present)
+		if (value != nil) != present {
+			panic("Cgo optional presence")
+		}
+		fmt.Println(value ?? 0)
 	}
 	for _, divisor := range []C.int{3, 0} {
 		fmt.Println(label(divide(divisor)))

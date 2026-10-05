@@ -78,7 +78,8 @@ const (
 	exprOptionGuard
 	exprMatch
 	exprStringEnumParse
-	exprNilValue // a previously evaluated value in a nil-safety expression
+	exprNilValue         // a previously evaluated value in a nil-safety expression
+	exprOptionNilCompare // test only an optional's presence tag
 )
 
 type codeAssign int

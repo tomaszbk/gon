@@ -26,6 +26,12 @@ var ErrTooManyRows = errors.New("sql: more than one row in result")
 // called, and every column value goes through the same conversion as Scan, so
 // [Scanner] fields, [Null] fields, pointers, native string enums, [time.Time],
 // [*uuid.UUID] and other destination types behave exactly as they do there.
+// Composite fields (structs, maps, arrays and slices other than byte slices)
+// also accept JSON string or []byte columns when the ordinary conversion is
+// unsupported. JSON decoding uses a fresh value, so an error leaves the field
+// unchanged. Explicit Scanners keep precedence. JSON null is absence for a
+// native optional composite field; ordinary Scan into Go composites retains
+// its existing conversion rules.
 //
 // dest must be a non-nil pointer to a struct. Columns are matched to fields by
 // name, using the column names reported by [Rows.Columns]:
@@ -407,7 +413,11 @@ type structPlan struct {
 
 func (p *structPlan) fill(root reflect.Value) []any {
 	for i, f := range p.fields {
-		p.dests[i] = f.addr(root)
+		dest := f.addr(root)
+		if jsonColumnType(f.typ) {
+			dest = jsonColumnScanner{dest}
+		}
+		p.dests[i] = dest
 	}
 	return p.dests
 }

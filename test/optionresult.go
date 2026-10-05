@@ -40,7 +40,7 @@ func main() {
 	run := func(command string, args ...string) []byte { return runAt("", command, args...) }
 	common, legacy, modern := filepath.Join(dir, "common.go"), filepath.Join(dir, "legacy.go"), filepath.Join(dir, "modern.go")
 	want := run(tool, "run", common, legacy)
-	for _, got := range [][]byte{run(baseline, "run", common, legacy), run(tool, "run", common, modern), run(tool, "run", "-gcflags=-l", common, modern)} {
+	for _, got := range [][]byte{run(baseline, "run", common, legacy), run(tool, "run", common, modern), run(tool, "run", "-gcflags=-l", common, modern), run(tool, "run", "-gcflags=-N -l", common, modern)} {
 		if !bytes.Equal(want, got) {
 			panic(fmt.Sprintf("Option/Result differs\nwant %s\ngot %s", want, got))
 		}

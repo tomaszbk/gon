@@ -2149,6 +2149,9 @@ func (w *writer) expr(expr syntax.Expr) {
 		w.rtype(iface)
 
 	case *syntax.Operation:
+		if w.optionNilCompare(expr) {
+			break
+		}
 		if expr.Op == syntax.Coalesce {
 			w.coalesceExpr(expr)
 			break

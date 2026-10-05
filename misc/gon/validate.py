@@ -61,14 +61,15 @@ def checks(feature):
     if feature in ('option', 'tooling'):
         # Native optionals at the JSON, SQL and reflection boundaries. The v1
         # JSON implementation is checked separately: the v2 based one is the default.
-        features += ['optionaljson', 'optionalsql']
+        features += ['optionaljson', 'optionalsql', 'sqljson']
         common += [
             test('optional-json', '.', ['encoding/json', 'encoding/json/v2'], 'GonOptional'),
             ('optional-json-v1', '.', ['env', 'GOEXPERIMENT=nojsonv2', str(GON), 'test', '-json', 'encoding/json', '-run', 'GonOptional', '-count=1']),
-            test('optional-sql', '.', ['database/sql', 'database/sql/driver'], 'GonOptional'),
+            test('optional-sql', '.', ['database/sql', 'database/sql/driver'], 'GonOptional|GonJSON'),
             test('optional-reflect', '.', ['reflect'], '^TestOptional'),
             ('optionaljson-vet', '.', [str(GON), 'vet', 'test/optionaljson.dir/common.go', 'test/optionaljson.dir/modern.go']),
             ('optionalsql-vet', '.', [str(GON), 'vet', 'test/optionalsql.dir/common.go', 'test/optionalsql.dir/modern.go']),
+            ('sqljson-vet', '.', [str(GON), 'vet', 'test/sqljson.dir/common.go', 'test/sqljson.dir/modern.go']),
         ]
         if os.environ.get('GON_SQL_POSTGRES') == '1':
             common.append(('optionals-postgres', '.', [sys.executable, 'misc/gon/test_optionals_postgres.py']))

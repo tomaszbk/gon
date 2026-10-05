@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"testing"
 )
 
 var (
@@ -92,6 +93,7 @@ func main() {
 	check(strings.Contains(string(mustJSON(unknown("teacher"))), "teacher"), "fallback encoding")
 	checkGeneric()
 	checkCalls()
+	checkTextDecoding()
 	for _, input := range []string{"", "ready", "future"} {
 		check(localText(input) == input, "local string enum methods")
 	}
@@ -102,6 +104,68 @@ func main() {
 		check((localHost[string]{}).text(input) == input, "local string enum in generic string method")
 	}
 	fmt.Println("string enums: PASS")
+}
+
+func checkTextDecoding() {
+	for _, known := range []struct {
+		text  string
+		value Role
+	}{{"teacher", teacher()}, {"student", student()}} {
+		input := []byte(known.text)
+		for _, decode := range []func(*Role, []byte) error{
+			func(value *Role, data []byte) error { return value.UnmarshalText(data) },
+			decodeText,
+		} {
+			var value Role
+			allocs := testing.AllocsPerRun(100, func() {
+				value = unknown("previous payload")
+				if err := decode(&value, input); err != nil {
+					panic(err)
+				}
+			})
+			check(allocs == 0, "known UnmarshalText has no allocations")
+			check(value == known.value, "known UnmarshalText clears inactive fallback payload")
+		}
+		var value Role
+		var decoder encoding.TextUnmarshaler = &value
+		allocs := testing.AllocsPerRun(100, func() {
+			value = unknown("previous payload")
+			if err := decoder.UnmarshalText(input); err != nil {
+				panic(err)
+			}
+		})
+		check(allocs == 0 && value == known.value, "known interface UnmarshalText has no allocations and clears payload")
+	}
+	var generic GenericAlias
+	input := []byte("ready")
+	allocs := testing.AllocsPerRun(100, func() {
+		generic = genericParser()("previous payload")
+		if err := generic.UnmarshalText(input); err != nil {
+			panic(err)
+		}
+	})
+	check(allocs == 0 && generic == genericParser()("ready"), "known generic alias UnmarshalText has no allocations and clears payload")
+
+	unknownText := strings.Repeat("future/", 16)
+	data := []byte(unknownText)
+	value := teacher()
+	check(value.UnmarshalText(data) == nil && value == unknown(unknownText), "unknown UnmarshalText replaces known variant")
+	clear(data)
+	check(value.String() == unknownText, "unknown UnmarshalText owns retained bytes")
+	check(value.UnmarshalText(nil) == nil && value == unknown(""), "nil text decodes as empty fallback")
+	check(value.UnmarshalText([]byte{}) == nil && value == unknown(""), "empty text decodes as empty fallback")
+	for _, data := range [][]byte{nil, []byte("teacher"), []byte(unknownText)} {
+		check(panics(func() {
+			var value *Role
+			value.UnmarshalText(data)
+		}), "nil UnmarshalText receiver panics")
+	}
+}
+
+func panics(action func()) (panicked bool) {
+	defer func() { panicked = recover() != nil }()
+	action()
+	return
 }
 
 func checkCalls() {

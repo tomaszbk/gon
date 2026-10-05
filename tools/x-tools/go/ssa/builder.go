@@ -870,6 +870,9 @@ func (b *builder) expr0(fn *Function, e ast.Expr, tv types.TypeAndValue) Value {
 			return emitArith(fn, e.Op, b.expr(fn, e.X), b.expr(fn, e.Y), fn.typ(tv.Type), e.OpPos)
 
 		case token.EQL, token.NEQ, token.GTR, token.LSS, token.LEQ, token.GEQ:
+			if cmp, ok := b.optionNilCompare(fn, e); ok {
+				return emitConv(fn, cmp, types.Default(fn.typ(tv.Type)))
+			}
 			cmp := emitCompare(fn, e.Op, b.expr(fn, e.X), b.expr(fn, e.Y), e.OpPos)
 			// The type of x==y may be UntypedBool.
 			return emitConv(fn, cmp, types.Default(fn.typ(tv.Type)))

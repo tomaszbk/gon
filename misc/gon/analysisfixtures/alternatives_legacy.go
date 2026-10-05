@@ -97,7 +97,45 @@ func patternNames(b bool, p *int) int {
 	}
 	return chosen + pointer + flags + bound + ordinary + item
 }
+
+type Presence[T any] struct {
+	value   T
+	present bool
+}
+
+func absent[T any](v Presence[T]) bool  { return !v.present }
+func present[T any](v Presence[T]) bool { return v.present }
+func nilComparisons() {
+	var missing Presence[int]
+	zero := Presence[int]{0, true}
+	pointer := Presence[*User]{nil, true}
+	slice := Presence[[]int]{nil, true}
+	mapping := Presence[map[int]int]{nil, true}
+	callback := Presence[func()]{nil, true}
+	iface := Presence[any]{nil, true}
+	nested := Presence[Presence[int]]{Presence[int]{}, true}
+	check(!missing.present && !missing.present && !missing.present)
+	check(zero.present && pointer.present && slice.present && mapping.present && callback.present && iface.present)
+	iface = Presence[any]{[]int{1}, true}
+	check(iface.present)
+	{
+		nil := zero
+		check(zero == nil && missing != nil)
+	}
+	check(nested.present && !nested.value.present)
+	slice = Presence[[]int]{}
+	check(absent(slice) && present(zero) && absent(missing))
+	trace = ""
+	produce := func(label string, exists bool) Presence[int] {
+		trace += label
+		return Presence[int]{0, exists}
+	}
+	check(!produce("A", false).present && produce("B", true).present && trace == "AB")
+	check(!(!produce("C", true).present && !produce("X", false).present) && trace == "ABC")
+	trace = ""
+}
 func main() {
+	nilComparisons()
 	check(patternNames(true, nil) == 206)
 	one := 1
 	check(patternNames(false, &one) == 196)

@@ -78,7 +78,9 @@
       "native optional lifting is single-valued and one layer; source transformations decline changes that lose the target context",
       "native optional serialization covers encoding/json (v1 and v2) and database/sql; encoding/xml, gob, other encoders and native pgx outside database/sql need explicit adapters or codecs",
       "optional JSON and SQL reject nested optionals, optional map keys (JSON) and RawBytes payloads (SQL); a present payload that encodes as JSON null is an error",
-      "the real PostgreSQL optional integration (misc/gon/test_optionals_postgres.py, GON_SQL_POSTGRES=1) has been written but not executed"
+      "the real PostgreSQL optional integration (misc/gon/test_optionals_postgres.py, GON_SQL_POSTGRES=1) has been written but not executed",
+      "optional equality with untyped nil tests presence without requiring comparable payloads; typed/shadowed nil operands retain ordinary type rules",
+      "SQL JSON fallback covers composite optional payloads and ScanStruct composite fields; explicit Scanners retain precedence, raw strings/bytes retain scalar conversions, PostgreSQL array text needs a codec or a JSON query projection"
     ]
   },
   "result": {

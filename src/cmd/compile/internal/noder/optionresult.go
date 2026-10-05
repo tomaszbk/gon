@@ -77,6 +77,34 @@ func enumTagTest(pos src.XPos, value ir.Node, tag int, op ir.Op) ir.Node {
 	return typecheck.DefaultLit(typecheck.Expr(ir.NewBinaryExpr(pos, op, actual, constant)), types.Types[types.TBOOL])
 }
 
+func (w *writer) optionNilCompare(e *syntax.Operation) bool {
+	if e.Y == nil || e.Op != syntax.Eql && e.Op != syntax.Neq {
+		return false
+	}
+	optional, other := e.X, e.Y
+	if !types2.IsOptional(w.p.typeOf(optional)) {
+		optional, other = other, optional
+	}
+	if !types2.IsOptional(w.p.typeOf(optional)) || w.p.typeOf(other) != types2.Typ[types2.UntypedNil] {
+		return false
+	}
+	w.Code(exprOptionNilCompare)
+	w.pos(e)
+	w.op(binOps[e.Op])
+	w.expr(optional)
+	return true
+}
+
+func (r *reader) optionNilCompare() ir.Node {
+	pos := r.pos()
+	op := r.op()
+	// The nil operand has no effects. Evaluate the optional once and inspect
+	// its discriminator, never comparing or extracting the payload.
+	var body ir.Nodes
+	value := r.tempCopy(pos, r.expr(), &body)
+	return nilInlineValue(pos, body, enumTagTest(pos, value, 0, op))
+}
+
 func (w *writer) optionExpr(e *syntax.OptionalExpr) {
 	variant := types2.EnumStorageOf(w.p.typeOf(e.X)).Lookup("$present", nil)
 	w.Code(exprOption)

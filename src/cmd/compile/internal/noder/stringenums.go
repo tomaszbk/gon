@@ -119,7 +119,11 @@ func (r *reader) stringEnumParse() ir.Node {
 
 // stringEnumParseBody returns or assigns a complete enum value. Whole-value
 // assignment clears inactive payloads and uses ordinary Go write barriers.
+// A byte-slice input is converted separately at each use: comparisons can use
+// the existing non-copying string conversion, while the fallback copies the
+// bytes into its retained string payload.
 func stringEnumParseBody(pos src.XPos, typ *types.Type, text ir.Node, fallback int, variants []stringEnumVariant, destination ir.Node) ir.Nodes {
+	asString := func() ir.Node { return typecheck.Conv(text, types.Types[types.TSTRING]) }
 	finish := func(value ir.Node) ir.Nodes {
 		if destination == nil {
 			return ir.Nodes{ir.NewReturnStmt(pos, []ir.Node{value})}
@@ -128,11 +132,11 @@ func stringEnumParseBody(pos src.XPos, typ *types.Type, text ir.Node, fallback i
 	}
 	var body ir.Nodes
 	for _, v := range variants {
-		condition := ir.NewBinaryExpr(pos, ir.OEQ, text, ir.NewString(pos, v.text))
+		condition := ir.NewBinaryExpr(pos, ir.OEQ, asString(), ir.NewString(pos, v.text))
 		value := enumValue(pos, typ, v.tag, v.storage, nil, nil)
 		body.Append(ir.NewIfStmt(pos, condition, finish(value), nil))
 	}
-	body.Append(finish(enumValue(pos, typ, 0, fallback, []int{0}, []ir.Node{text}))...)
+	body.Append(finish(enumValue(pos, typ, 0, fallback, []int{0}, []ir.Node{asString()}))...)
 	return body
 }
 
@@ -143,10 +147,8 @@ func (r *reader) stringEnumMethodBody() ir.Node {
 	recv := sig.Recv().Nname.(*ir.Name)
 	if method == "UnmarshalText" {
 		typ := recv.Type().Elem()
-		text := typecheck.TempAt(pos, r.curfn, types.Types[types.TSTRING])
 		input := sig.Param(sig.NumParams() - 1).Nname.(*ir.Name)
-		body := ir.Nodes{ir.NewAssignStmt(pos, text, typecheck.Conv(input, types.Types[types.TSTRING]))}
-		body.Append(stringEnumParseBody(pos, typ, text, fallback, variants, typecheck.Expr(ir.NewStarExpr(pos, recv)))...)
+		body := stringEnumParseBody(pos, typ, input, fallback, variants, typecheck.Expr(ir.NewStarExpr(pos, recv)))
 		return ir.NewBlockStmt(pos, body)
 	}
 	finish := func(text ir.Node) ir.Nodes {
