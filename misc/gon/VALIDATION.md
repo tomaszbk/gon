@@ -164,6 +164,20 @@ for `internal/goarch`; the fresh-cache retry resolved it. The temporary cache
 was removed, then `build.py` rebuilt the public tools and `vendor.py --check`
 passed. This is a repository bootstrap, not an isolated source-only snapshot.
 
+`make.bash` could also fail the command-staleness check intermittently (every
+command stale on `internal/goarch`), for example on the 2026-10-05 Linux CI
+runs. The cause was a nondeterministic object file, not the cache: package
+`cmd/compile/internal/noder` has a noalg `[3]ir.Node` (the backing array of the
+slice literal passed to `matchErrorAs`) and a regular one, which have identical
+strings and share one type descriptor symbol, and `reflectdata.typesStrCmp`
+left their order to the concurrent backend. The compiler built by toolchain2
+then differed from the one built by toolchain3. `typesStrCmp` now writes the
+type with algorithms first; `TestTypesStrCmpNoalg` covers it. On linux/arm64
+(Debian, Go 1.27.1 bootstrap) the unfixed tree compiled `noder` to two different
+objects in roughly half of identical runs, and the fixed tree gave one object in
+24 of 24 runs with `-c=4`, `GOMAXPROCS=1` and `-c=1`, and three parallel
+`make.bash` runs passed with the same compiler content ID.
+
 The optional/Result benchmark record also includes an isolated source-only
 snapshot bootstrapped from unmodified Go 1.27.1:
 
