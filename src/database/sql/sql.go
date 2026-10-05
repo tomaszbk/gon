@@ -2968,6 +2968,11 @@ type Rows struct {
 	// not to be called concurrently.
 	lastcols []driver.Value
 
+	// scanPlan caches the column-to-field mapping of ScanStruct for the
+	// current result set. Like lastcols, it is not used concurrently and
+	// NextResultSet discards it.
+	scanPlan *structPlan
+
 	// numCols is the number of columns, and is initialized by the first Next call.
 	numCols int
 
@@ -3132,6 +3137,7 @@ func (rs *Rows) NextResultSet() bool {
 
 	rs.nextCalled = false
 	rs.lastcols = nil
+	rs.scanPlan = nil
 	nextResultSet, ok := rs.rowsi.(driver.RowsNextResultSet)
 	if !ok {
 		doClose = true

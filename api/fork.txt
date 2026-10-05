@@ -149,6 +149,11 @@ pkg reflect, type EnumVariant struct, Fields []EnumField
 pkg reflect, type EnumVariant struct, Name string
 pkg reflect, type EnumVariant struct, Record bool
 pkg reflect, method (EnumVariant) StringValue() (string, bool)
+pkg database/sql, func Collect[$0 interface{}](*Rows) ([]$0, error)
+pkg database/sql, func CollectOne[$0 interface{}](*Rows) ($0, error)
+pkg database/sql, method (*Row) ScanStruct(interface{}) error
+pkg database/sql, method (*Rows) ScanStruct(interface{}) error
+pkg database/sql, var ErrTooManyRows error
 pkg go/ast, method (*ContextualVariantExpr) End() token.Pos
 pkg go/ast, method (*ContextualVariantExpr) Pos() token.Pos
 pkg go/ast, type ContextualVariantExpr struct

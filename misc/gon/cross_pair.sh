@@ -88,3 +88,5 @@ pair namedarguments "$fixtures/namedarguments_legacy.go" "$fixtures/namedargumen
 dir="$root/test/optionsyntax.dir"
 pair optional-syntax "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"
 pair optional-boundaries "$dir/boundaries_legacy.go" "$dir/boundaries_modern.go"
+dir="$root/test/sqlstruct.dir"
+pair sql-struct "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"

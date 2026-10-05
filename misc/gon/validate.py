@@ -61,6 +61,8 @@ def checks(feature):
     for name in features:
         pairs.append(test(name+'-execution', '.', ['cmd/internal/testdir'], 'Test/'+name+r'.go$'))
     if feature == 'tooling':
+        pairs.append(test('sqlstruct-execution', '.', ['cmd/internal/testdir'], r'Test/sqlstruct\.go$'))
+    if feature == 'tooling':
         return common + pairs + [
             test('ssa', 'tools/x-tools', ['./go/ssa'], '^TestGon'),
             test('staticcheck-ir', 'tools/staticcheck', ['./go/ir'], '^TestGon'),
