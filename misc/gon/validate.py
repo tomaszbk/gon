@@ -57,7 +57,7 @@ def checks(feature):
         common.append(test('sql', '.', ['database/sql', 'database/sql/driver']))
         if os.environ.get('GON_SQL_POSTGRES') == '1':
             common.append(('stringenums-postgres', '.', [sys.executable, 'misc/gon/test_stringenums_postgres.py']))
-    features = ['errorhandling', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'stringenums', 'stringenums_sql', 'matching', 'matchinterface', 'optionresult', 'optionsyntax'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature in ('option', 'result') else (['enums', 'stringenums', 'stringenums_sql'] if feature == 'enums' else (['matching', 'matchinterface'] if feature == 'matching' else [feature])))
+    features = ['errorhandling', 'errorbridge', 'errortest', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'stringenums', 'stringenums_sql', 'matching', 'matchinterface', 'optionresult', 'optionsyntax'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature in ('option', 'result') else (['enums', 'stringenums', 'stringenums_sql'] if feature == 'enums' else (['matching', 'matchinterface'] if feature == 'matching' else (['errorhandling', 'errorbridge', 'errortest'] if feature == 'errorhandling' else [feature]))))
     if feature in ('option', 'tooling'):
         # Native optionals at the JSON, SQL and reflection boundaries. The v1
         # JSON implementation is checked separately: the v2 based one is the default.

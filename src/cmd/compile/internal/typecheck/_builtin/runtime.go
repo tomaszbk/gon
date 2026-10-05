@@ -19,6 +19,7 @@ func panicmakeslicelen()
 func panicmakeslicecap()
 func throwinit()
 func panicwrap()
+func nilResultErr() error
 
 // matchErrorAs implements the errors.As search for Gon enum patterns whose
 // subject has type error. The result points at the matching enum value or is nil.

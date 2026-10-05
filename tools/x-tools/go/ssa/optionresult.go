@@ -50,11 +50,13 @@ func (b *builder) resultExpr(fn *Function, e *ast.ErrorExpr) []Value {
 		}
 		b.stmt(fn, e.Body)
 		emitJump(fn, done)
-	} else {
+	} else if propagationOf(fn.source.Signature) == propagateResult {
 		result := fn.typ(fn.source.Signature.Results().At(0).Type())
 		err := enumAlternative(result, "Err")
 		resultValue := enumValue(fn, result, err, []Value{emitConv(fn, problem, err.Field(0).Type())}, e.OpPos)
 		b.returnValues(fn, &ast.ReturnStmt{Return: e.OpPos}, []Value{resultValue})
+	} else {
+		b.propagateFailure(fn, e, problem, true)
 	}
 	fn.currentBlock = done
 	return []Value{canonicalPayload(fn, value, enumAlternative(value.Type(), "Ok"), e.OpPos)}

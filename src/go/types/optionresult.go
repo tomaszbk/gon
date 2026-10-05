@@ -75,17 +75,32 @@ func (check *Checker) resultErrorExpr(x *operand, e *ast.ErrorExpr) exprKind {
 	success, problem := canonicalPayload(x.typ(), "Ok"), canonicalPayload(x.typ(), "Err")
 	if e.Body == nil {
 		sig := check.sig
-		valid := func() bool {
-			return sig != nil && sig.Results().Len() == 1 && IsCanonicalResult(sig.Results().At(0).Type()) && AssignableTo(problem, canonicalPayload(sig.Results().At(0).Type(), "Err"))
+		// Failure leaves the function through a Result, through a final
+		// error that accepts the payload, or, in a test function, through Fatal.
+		invalid := func() string {
+			switch check.propagationTarget(sig, e) {
+			case propagateToTest:
+				return ""
+			case propagateToResult:
+				if AssignableTo(problem, enclosingResultError(sig)) {
+					return ""
+				}
+			case propagateToError:
+				if AssignableTo(problem, universeError) {
+					return ""
+				}
+				return "Result propagation into a final result of type error requires an error type assignable to error"
+			}
+			return "Result propagation requires exactly one enclosing Result with an assignable error type, a final result of type error, or, in a _test.go file, a first named parameter of type *testing.T, *testing.B, *testing.F or testing.TB"
 		}
 		if check.inferLambdaSig != nil && check.inferLambdaSig == sig {
 			check.later(func() {
-				if !valid() {
-					check.error(e, InvalidErrorHandling, "Result propagation requires exactly one enclosing Result with an assignable error type")
+				if msg := invalid(); msg != "" {
+					check.error(e, InvalidErrorHandling, msg)
 				}
 			}).describef(e, "lambda Result propagation")
-		} else if !valid() {
-			return failure("Result propagation requires exactly one enclosing Result with an assignable error type")
+		} else if msg := invalid(); msg != "" {
+			return failure(msg)
 		}
 	} else {
 		if e.Err == nil {

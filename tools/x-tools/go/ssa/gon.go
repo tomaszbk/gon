@@ -45,12 +45,7 @@ func (b *builder) errorExpr(fn *Function, e *ast.ErrorExpr) []Value {
 		b.stmt(fn, e.Body)
 		emitJump(fn, done)
 	} else {
-		results := make([]Value, fn.source.Signature.Results().Len())
-		for i := range results {
-			results[i] = zeroConst(fn.typ(fn.source.Signature.Results().At(i).Type()))
-		}
-		results[len(results)-1] = err
-		b.returnValues(fn, &ast.ReturnStmt{Return: e.OpPos}, results)
+		b.propagateFailure(fn, e, err, false)
 	}
 	fn.currentBlock = done
 	return values[:len(values)-1]

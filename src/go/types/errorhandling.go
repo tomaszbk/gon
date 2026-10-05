@@ -48,19 +48,30 @@ func (check *Checker) errorExpr(x *operand, e *ast.ErrorExpr) exprKind {
 	}
 	success := results[:len(results)-1]
 	if e.Body == nil {
-
 		sig := check.sig
-		valid := func() bool { n := sig.results.Len(); return n > 0 && Identical(sig.results.At(n-1).typ, errorType) }
+		// Failure leaves the function through its final error, through a
+		// Result that accepts error, or, in a test function, through Fatal.
+		problem := func() string {
+			switch check.propagationTarget(sig, e) {
+			case propagateToError, propagateToTest:
+				return ""
+			case propagateToResult:
+				if AssignableTo(errorType, enclosingResultError(sig)) {
+					return ""
+				}
+				return "error propagation into a Result requires error to be assignable to its error type"
+			}
+			return "error propagation requires an enclosing function with a final result of type error, exactly one Result, or, in a _test.go file, a first named parameter of type *testing.T, *testing.B, *testing.F or testing.TB"
+		}
 		if check.inferLambdaSig == sig {
 			check.later(func() {
-				if !valid() {
-					check.error(e, InvalidErrorHandling, "error propagation requires an enclosing function with a final result of type error")
+				if msg := problem(); msg != "" {
+					check.error(e, InvalidErrorHandling, msg)
 				}
 			}).describef(e, "lambda error propagation")
-		} else if !valid() {
-			return fail("error propagation requires an enclosing function with a final result of type error")
+		} else if msg := problem(); msg != "" {
+			return fail(msg)
 		}
-
 	} else {
 		if e.Err == nil {
 			return fail("error handler requires an explicit error binding")

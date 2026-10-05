@@ -1,8 +1,6 @@
 package noder
 
 import (
-	"fmt"
-
 	"cmd/compile/internal/ir"
 	"cmd/compile/internal/syntax"
 	"cmd/compile/internal/typecheck"
@@ -36,54 +34,7 @@ func prepareErrorPropagation(pkg *types2.Package, info *types2.Info, files []*sy
 					prepareOptionPropagation(pkg, info, &serial, n, sig)
 				}
 			case *syntax.ErrorExpr:
-				if types2.IsCanonicalResult(n.X.GetTypeInfo().Type) {
-					prepareResultPropagation(pkg, info, &serial, n, sig)
-					break
-				}
-				if n.Body != nil {
-					break
-				}
-				pos := n.Pos()
-				newVar := func(typ types2.Type) (*syntax.Name, *syntax.Name) {
-					serial++
-					name := fmt.Sprintf("#error%d", serial)
-					obj := types2.NewVar(pos, pkg, name, typ)
-					def, use := syntax.NewName(pos, name), syntax.NewName(pos, name)
-					info.Defs[def], info.Uses[use] = obj, obj
-					tv := syntax.TypeAndValue{Type: typ}
-					tv.SetIsValue()
-					tv.SetAddressable()
-					tv.SetAssignable()
-					def.SetTypeInfo(tv)
-					use.SetTypeInfo(tv)
-					return def, use
-				}
-				errDef, errUse := newVar(types2.Universe.Lookup("error").Type())
-				n.Err = errDef
-				block := &syntax.BlockStmt{Rbrace: pos}
-				block.SetPos(pos)
-				var results []syntax.Expr
-				for i := 0; i < sig.Results().Len()-1; i++ {
-					def, use := newVar(sig.Results().At(i).Type())
-					decl := &syntax.VarDecl{NameList: []*syntax.Name{def}}
-					decl.SetPos(pos)
-					stmt := &syntax.DeclStmt{DeclList: []syntax.Decl{decl}}
-					stmt.SetPos(pos)
-					block.List = append(block.List, stmt)
-					results = append(results, use)
-				}
-				results = append(results, errUse)
-				var result syntax.Expr = errUse
-				if len(results) > 1 {
-					list := &syntax.ListExpr{ElemList: results}
-					list.SetPos(pos)
-					result = list
-				}
-				ret := &syntax.ReturnStmt{Results: result}
-				ret.SetPos(pos)
-				block.List = append(block.List, ret)
-				n.Body = block
-				n.SynthesizedHandler = true
+				prepareBangPropagation(pkg, info, &serial, n, sig)
 			}
 			return true
 		})

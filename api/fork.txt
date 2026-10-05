@@ -179,3 +179,5 @@ pkg reflect, func OptionalElement(Type) Type
 pkg reflect, func OptionalValuePresent(Value) bool
 pkg reflect, func OptionalValuePayload(Value) Value
 pkg reflect, func OptionalValueSetPayload(Value, Value)
+pkg errors, var ErrNilResult error
+pkg go/types, func TestFatalParam(*Signature) *Var
