@@ -163,6 +163,8 @@ func (i *typeInterner) mktype(t ast.Expr) string {
 			return "types.ByteType"
 		case "rune":
 			return "types.RuneType"
+		case "error":
+			return "types.ErrorType"
 		}
 		return fmt.Sprintf("types.Types[types.T%s]", strings.ToUpper(t.Name))
 	case *ast.SelectorExpr:

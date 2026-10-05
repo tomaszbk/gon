@@ -57,7 +57,7 @@ def checks(feature):
         common.append(test('sql', '.', ['database/sql', 'database/sql/driver']))
         if os.environ.get('GON_SQL_POSTGRES') == '1':
             common.append(('stringenums-postgres', '.', [sys.executable, 'misc/gon/test_stringenums_postgres.py']))
-    features = ['errorhandling', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'stringenums', 'stringenums_sql', 'matching', 'optionresult', 'optionsyntax'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature in ('option', 'result') else (['enums', 'stringenums', 'stringenums_sql'] if feature == 'enums' else [feature]))
+    features = ['errorhandling', 'errorbridge', 'errortest', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'stringenums', 'stringenums_sql', 'matching', 'optionresult', 'optionsyntax'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature in ('option', 'result') else (['enums', 'stringenums', 'stringenums_sql'] if feature == 'enums' else (['errorhandling', 'errorbridge', 'errortest'] if feature == 'errorhandling' else [feature])))
     for name in features:
         pairs.append(test(name+'-execution', '.', ['cmd/internal/testdir'], 'Test/'+name+r'.go$'))
     if feature == 'tooling':

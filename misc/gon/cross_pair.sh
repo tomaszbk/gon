@@ -73,7 +73,7 @@ pair() {
 	done
 }
 
-for feature in errorhandling conditional lambda nullsafety; do
+for feature in errorhandling errorbridge conditional lambda nullsafety; do
 	dir="$root/test/$feature.dir"
 	pair "$feature" "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"
 done

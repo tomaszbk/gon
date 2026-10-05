@@ -349,3 +349,17 @@ func panicwrap() {
 	meth := name[i+2:]
 	panic(plainError("value method " + pkg + "." + typ + "." + meth + " called using nil *" + typ + " pointer"))
 }
+
+// nilResultError is the error that Gon's Result propagation substitutes when
+// the Err payload of a failed Result converts to a nil error. A failed Result
+// is always a failure, so postfix ! never returns a nil error for it. Package
+// errors exports the same value as ErrNilResult.
+type nilResultError struct{}
+
+func (*nilResultError) Error() string { return "failed Result carries a nil error" }
+
+var nilResult error = new(nilResultError)
+
+// nilResultErr is called by compiler-generated code for Result propagation
+// into a function whose last result is error.
+func nilResultErr() error { return nilResult }

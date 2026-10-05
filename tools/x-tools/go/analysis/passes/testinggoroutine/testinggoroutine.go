@@ -10,6 +10,7 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"strings"
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
@@ -85,6 +86,8 @@ func run(pass *analysis.Pass) (any, error) {
 		return true
 	})
 
+	fatals := implicitFatals(pass, inspect)
+
 	// Check for t.Forbidden() calls within each region r that is a
 	// callee in some go r() or a t.Run("name", r).
 	//
@@ -97,11 +100,21 @@ func run(pass *analysis.Pass) (any, error) {
 				return false // will be visited by another region.
 			}
 
-			call, ok := n.(*ast.CallExpr)
-			if !ok {
-				return true
+			var (
+				call ast.Node = n // the t.Forbidden() call, or the ! that makes one
+				x    *types.Var
+				sel  *types.Selection
+				fn   *types.Func
+			)
+			switch n := n.(type) {
+			case *ast.CallExpr:
+				x, sel, fn = forbiddenMethod(pass.TypesInfo, n)
+			case *ast.ErrorExpr:
+				// Postfix ! in a test function calls Fatal on its first parameter.
+				if param := fatals[n]; param != nil {
+					x, sel, fn = implicitFatal(pass, param)
+				}
 			}
-			x, sel, fn := forbiddenMethod(pass.TypesInfo, call)
 			if x == nil {
 				return true
 			}
@@ -129,6 +142,55 @@ func run(pass *analysis.Pass) (any, error) {
 	}
 
 	return nil, nil
+}
+
+// implicitFatals maps each postfix ! in a test function of a _test.go file,
+// which reports its failure by calling Fatal on the first parameter, to that
+// parameter. The nearest enclosing function must be a test function.
+func implicitFatals(pass *analysis.Pass, inspect *inspector.Inspector) map[*ast.ErrorExpr]*types.Var {
+	var fatals map[*ast.ErrorExpr]*types.Var
+	inspect.WithStack([]ast.Node{(*ast.ErrorExpr)(nil)}, func(n ast.Node, push bool, stack []ast.Node) bool {
+		e := n.(*ast.ErrorExpr)
+		if !push || e.Body != nil || !strings.HasSuffix(pass.Fset.PositionFor(e.Pos(), false).Filename, "_test.go") {
+			return true
+		}
+		var sig *types.Signature
+	nearest:
+		for i := len(stack) - 2; i >= 0; i-- {
+			switch f := stack[i].(type) {
+			case *ast.FuncDecl:
+				sig, _ = pass.TypesInfo.ObjectOf(f.Name).Type().(*types.Signature)
+				break nearest
+			case *ast.FuncLit:
+				sig, _ = pass.TypesInfo.TypeOf(f).(*types.Signature)
+				break nearest
+			case *ast.LambdaExpr:
+				sig, _ = pass.TypesInfo.TypeOf(f).(*types.Signature)
+				break nearest
+			}
+		}
+		if param := types.TestFatalParam(sig); param != nil {
+			if fatals == nil {
+				fatals = make(map[*ast.ErrorExpr]*types.Var)
+			}
+			fatals[e] = param
+		}
+		return true
+	})
+	return fatals
+}
+
+// implicitFatal describes the call param.Fatal that postfix ! makes.
+func implicitFatal(pass *analysis.Pass, param *types.Var) (*types.Var, *types.Selection, *types.Func) {
+	selection, ok := types.LookupSelection(param.Type(), true, pass.Pkg, "Fatal")
+	if !ok || selection.Kind() != types.MethodVal {
+		return nil, nil, nil
+	}
+	fn, _ := selection.Obj().(*types.Func)
+	if fn == nil || !isMethodNamed(fn, "testing", "Fatal") {
+		return nil, nil, nil
+	}
+	return param, &selection, fn
 }
 
 func hasBenchmarkOrTestParams(fnDecl *ast.FuncDecl) bool {

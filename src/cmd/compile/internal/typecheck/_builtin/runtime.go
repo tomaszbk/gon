@@ -19,6 +19,7 @@ func panicmakeslicelen()
 func panicmakeslicecap()
 func throwinit()
 func panicwrap()
+func nilResultErr() error
 
 func gopanic(interface{})
 func gorecover() interface{}

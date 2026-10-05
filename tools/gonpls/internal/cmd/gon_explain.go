@@ -59,10 +59,17 @@ var gonErrorHandlingCases = []gonCase{
 		"The called function's last result must have exactly type error (an alias is accepted). " +
 			"Named interfaces, concrete error types, type parameters and non-final errors do not qualify.",
 		"Keep the explicit form: v, err := f(); if err != nil { ... }."},
-	{"error propagation requires an enclosing function with a final result of type error",
-		"Postfix ! returns from the nearest enclosing function literal or declaration, whose last result must have type error.",
-		"Handle the error locally with 'or err { ... }'. Adding an error result changes the function's " +
-			"contract; review its callers before choosing that design alternative."},
+	{"error propagation requires an enclosing function with a final result of type error, exactly one Result, or, in a _test.go file, a first named parameter of type *testing.T, *testing.B, *testing.F or testing.TB",
+		"Postfix ! on a Go error tuple returns from the nearest enclosing function literal, lambda or declaration. That function must return error last, " +
+			"return exactly one Result, or be a test function: in a _test.go file, a function that does not qualify otherwise and whose first parameter is named " +
+			"(not blank) with type *testing.T, *testing.B, *testing.F or testing.TB reports the failure with Fatal, at the line of the !, and then returns zero values. " +
+			"Method receivers are not parameters.",
+		"Handle the error locally with 'or err { ... }', or make the function a test function: name its first parameter and use the standard testing type. " +
+			"Adding an error or Result result changes the function's contract; review its callers before choosing that design alternative."},
+	{"error propagation into a Result requires error to be assignable to its error type",
+		"Inside a function returning exactly one Result[T, E], ! on a Go error tuple fails as Result[T, E].Err(err), converting the error to E. " +
+			"The error type must therefore be assignable to E, for example error, any or an interface that error implements.",
+		"Return Result[T, error], or handle the error with 'or err { return .Err(convert(err)) }'."},
 	{"error handler requires an explicit error binding",
 		"An or handler must name the error it receives.",
 		"Write 'call() or err { ... }'; the binding may be left unused."},
@@ -134,7 +141,15 @@ func (r *gonRequest) explain(ctx context.Context) (gonResult, error) {
 			}
 			if c.name == "InvalidErrorHandling" {
 				ex.Cases = append(append([]gonCase(nil), gonErrorHandlingCases...),
-					gonCase{"Result propagation requires exactly one enclosing Result with an assignable error type", "Result ! propagates Err by its variant, including Err(nil), to the nearest function returning Result.", "Return exactly Result[U,F] with the source error assignable to F, or handle it explicitly with or problem { ... }."},
+					gonCase{"Result propagation requires exactly one enclosing Result with an assignable error type, a final result of type error, or, in a _test.go file, a first named parameter of type *testing.T, *testing.B, *testing.F or testing.TB",
+						"Result ! propagates Err by its variant, including Err(nil), to the nearest function returning exactly one Result with an assignable error type, " +
+							"to a function whose last result is error when the payload is assignable to error, or, in a test function (see the previous case), to Fatal.",
+						"Return exactly Result[U,F] with the source error assignable to F, return error last, name a first *testing.T, *testing.B, *testing.F or testing.TB parameter in a _test.go file, or handle it explicitly with or problem { ... }."},
+					gonCase{"Result propagation into a final result of type error requires an error type assignable to error",
+						"Inside a function returning error last, ! on a Result returns the payload as the error, with zero values for the other results. " +
+							"A nil payload is still a failure: it is returned as errors.ErrNilResult, never as a nil error. " +
+							"The payload type must be assignable to error; a typed nil pointer payload stays a non-nil error, as in Go.",
+						"Use a Result whose error type is error or implements it, or handle the payload with 'or problem { return ..., convert(problem) }'."},
 					gonCase{"Result error handler must terminate", "Result has one success payload even when its type is struct{}.", "End every handler path with return, panic, or another terminating statement."})
 				if doc := filepath.Join(root, "design", "error-handling", "README.md"); gonExists(doc) {
 					ex.References = append(ex.References, doc)
