@@ -1236,6 +1236,19 @@ func typesStrCmp(a, b typeAndStr) int {
 		}
 		return +1
 	}
+	// A noalg type, such as the array that backs a slice literal, has the same
+	// strings as the regular type of the same shape, and a package can need a
+	// descriptor for both. The two share one symbol, and which of them is
+	// written first decides where the equality closure and the other symbols
+	// written along with the descriptor land in the object file. The backend
+	// registers them in no particular order, so order them here: the type
+	// with algorithms comes first.
+	if an, bn := types.TypeHasNoAlg(a.t), types.TypeHasNoAlg(b.t); an != bn {
+		if an {
+			return +1
+		}
+		return -1
+	}
 	return 0
 }
 
