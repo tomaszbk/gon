@@ -35,12 +35,21 @@ data := os.ReadFile(path) or err {
 ```
 
 The call must return exactly `error` last (aliases allowed). `!` requires the
-nearest function to return `error` last; failure returns the original error and
-zeros for other results, including named results, before defers. Keep explicit
-handling for useful partial results. Propagation never uses panic/recover.
-`or` binds its error locally and must terminate when the call has success
-results; error-only handlers may fall through. No labels/goto/labeled jumps
-in handlers; no direct `go f()!` or `defer f()!`.
+nearest function to return `error` last, or one bridge below; failure returns
+the original error and zeros for other results, including named results, before
+defers. Keep explicit handling for useful partial results. Propagation never
+uses panic/recover. `or` binds its error locally and must terminate when the
+call has success results; error-only handlers may fall through. No
+labels/goto/labeled jumps in handlers; no direct `go f()!` or `defer f()!`.
+
+Bridges (only `!`; other tuple/Result conversions stay explicit): in a function
+returning one `Result[T,E]`, `!` on a call ending in `error` (assignable to E)
+fails as `.Err(err)`; in one returning `error` last, `!` on `Result[V,E]` (E
+assignable to error) returns the payload, and `Err(nil)` becomes
+`errors.ErrNilResult`. In `_test.go`, if the nearest function has neither and
+its first parameter is a named `*testing.T/B/F` or `testing.TB`, `!` calls
+`<param>.Fatal(err)` at that line and returns zeros (tests, subtests, fuzz,
+benchmarks, helpers, lambdas). `or` is unchanged.
 
 ## Conditional expressions and lambdas
 
@@ -94,6 +103,11 @@ interface containing typed nil is non-nil. Mixed optional/nil guards require
 extraction first: `p := optionalPointer ?? nil`, then `p?.Name`. Parenthesize
 `??` with other binary operators. No safe assignment targets or direct go/defer.
 
+`encoding/json` and `database/sql` need no adapters: absence is `null`/NULL,
+presence is the payload; `null`/NULL decodes/scans to absence and a failed
+decode/scan leaves the optional unchanged. Nested optionals, optional map keys
+and RawBytes payloads are rejected. xml/gob and native pgx need codecs.
+
 ## Enums, Result and matching
 
 ```go
@@ -131,7 +145,7 @@ for omissions. Export spelling and payload comparability follow Go.
 `.Ok`/`.Err` need a fully known target; otherwise qualify, e.g.
 `Result[int,error].Ok(7)`. Result `!` extracts Ok or propagates Err to exactly
 one Result return with an assignable error payload. `or problem` binds the
-payload and must terminate. Go error tuples need explicit Result adapters.
+payload and must terminate. Go tuples convert to/from Result only via `!` above.
 
 Matches are exhaustive: `=> expression` yields a value; `=> { ... }` is a
 statement arm. Evaluate the subject once, try arms in order. Qualify variants;
@@ -141,6 +155,11 @@ payload identifiers bind new arm-local variables. Record omissions need `...`.
 Compare outer values with guards (`case Payment.Rejected(r) if r == wanted`);
 guards do not prove coverage. `default`/`case _` covers the rest. No unqualified
 variants, mixed `:`/`=>` or fallthrough; ordinary Go switches keep `:`.
+An interface subject (not a type parameter) accepts qualified variants of an enum
+implementing it: `case dbError.NotFound(name) =>`. On `error` each arm re-searches
+the tree with `errors.AsType[E]` semantics and tries the next arm if the first E
+found fails its payload/guard; other interfaces use exact `.(E)`. nil matches no
+enum arm; enum arms never cover an interface, so `default`/`case _` is required.
 For textual APIs, opt in with `type Role enum string { default Unknown(string);
 Teacher = "teacher"; Student = "student" }`. Unit spellings are unique constant
 strings. `Role.Parse(text)` preserves unknown text in the default payload; zero
@@ -151,12 +170,12 @@ method names cannot be redeclared. String enums remain enum values, so Go string
 conversion/JSON tag rules do not implicitly apply. In Gon's `database/sql`, pass
 the enum directly to Exec/Query and scan into its pointer: arguments become
 strings and string/[]byte results are parsed automatically. SQL NULL requires
-`sql.Null[Role]` or `*Role`; a plain Role rejects it without mutation, and
+`sql.Null[Role]`, `*Role` or `Role?`; a plain Role rejects it without mutation, and
 Unknown("") is present empty text. Explicit Scanner/Valuer methods retain
 precedence. No enum registration or driver changes are needed through database/sql,
-including pgx/stdlib. Native pgx uses a separate API and still needs an adapter
-or codec. No SQL methods are generated on the enum. Native optional SQL mapping,
-other enum/optional serialization and C boundaries need explicit adapters.
+including pgx/stdlib. Native pgx uses a separate API and still needs a codec.
+No SQL methods are generated on the enum. Other enum serialization and C
+boundaries need explicit adapters.
 
 ## Named arguments
 
@@ -175,7 +194,26 @@ interface methods. Evaluate function/receiver first, then arguments once in
 written order. Positionals only precede names; named values are single-valued.
 Named variadics take a slice expanded last or omission. Unnamed/`_` parameters
 have no labels. No defaults or overloading; function-type identity is unchanged.
-Parameter rename updates call labels.
+Untyped comparisons, `!`, `&&` and `||` convert to the parameter type: no
+`bool(...)`. Parameter rename updates call labels.
+
+## database/sql structs
+
+```go
+rows := db.Query("SELECT id, created_at, name FROM students")!
+students := sql.Collect[Student](rows)! // []Student; always closes rows
+```
+
+Also `sql.CollectOne[T]` (`sql.ErrNoRows`, `sql.ErrTooManyRows`) and
+`Rows.ScanStruct`/`Row.ScanStruct`. A column maps to an exported field by exact
+`sql:"name"` tag (case-sensitive; tagged fields match only their tag), else by
+field name lowercased without `_` (`created_at` to `CreatedAt`, `id` to `ID`);
+`sql:"-"` skips; tag options after a comma are errors. Embedded structs flatten
+(encoding/json depth rules); `time.Time`, Scanners, enums and optionals are
+leaves. Strict: unmapped, ambiguous or duplicate columns error before any write;
+unmatched fields keep their value. A non-struct `T` takes one column through
+normal Scan conversion. `RawBytes` is rejected. `Collect` returns a nil slice on
+error, a non-nil empty one for no rows.
 
 ## Semantic commands
 

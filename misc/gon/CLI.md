@@ -43,7 +43,9 @@ and still includes the upstream Go modernizers. Its flags and exit status follow
 `gon help fix`, independently of the semantic-command schema below.
 
 The recognized patterns include call results followed by a fresh error check
-(`!` for equivalent zero-value error returns, otherwise `or err { ... }`),
+(`!` for equivalent zero-value error returns, for `return .Err(err)` in a
+function returning one Result, and for an exact `<first param>.Fatal(err)` in a
+qualifying test function; otherwise `or err { ... }`),
 simple return/assignment branches (conditional expressions), nil defaults and
 guards (`??=`, `??`, `?.`, `?(`), and function literals with known contextual
 signatures (lambdas).
@@ -148,7 +150,9 @@ when relevant: `enum-type`, `match-expression`, `error-propagation`,
 `error-handler`, `result-propagation`, `result-handler`, `conditional-expression`,
 `lambda`, `option-propagation`, `option-type` for `T?`, `contextual-constructor`
 for leading-dot construction, `nil-guard`, `option-guard`, `safe-navigation`,
-`nil-coalescing`, or `option-coalescing`.
+`nil-coalescing`, or `option-coalescing`. It does not name the sub-kinds of
+`!` (test `Fatal`, tuple to Result, Result to error), and `gon query refs
+Result` reports references to the predeclared type as unsupported.
 
 **`check`** returns `patterns`, `packages`, `verified` (`parse`,
 `type-check`, `analysis`), `analyzers` (names), `notVerified` (for example

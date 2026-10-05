@@ -73,10 +73,11 @@ layer; nested values never flatten or recursively lift.
 
 Leading-dot `.Ok(value)` and `.Err(problem)` require a fully known canonical
 Result target from a return, declaration, assignment or parameter. Qualified
-`Result[T, E].Ok/Err` constructors and patterns remain available. There is no
-implicit conversion into Result or between Result and Go error tuples. The
-`port` in `(port Result[int?, error])` is a real Go named result visible to
-defers, not a descriptive label inside a generic argument.
+`Result[T, E].Ok/Err` constructors and patterns remain available. Apart from the
+postfix `!` bridge [described below](#error-propagation-across-tests-tuples-and-result),
+there is no implicit conversion into Result or between Result and Go error
+tuples. The `port` in `(port Result[int?, error])` is a real Go named result
+visible to defers, not a descriptive label inside a generic argument.
 
 Enums require qualified variants and an explicit default variant. Record
 construction uses field names and Go zeros for omitted fields; partial record
@@ -87,8 +88,9 @@ Use guards to compare outer variables or local constants.
 An optional's zero value is absent; Result zero is Ok(zero T). `?` propagates
 absence to a function returning one optional. `!` propagates Result failure;
 `or problem { ... }` handles it locally. Present nil payloads and Err(nil) retain
-their meaning. Optional and legacy nil navigation require an explicit payload
-boundary between chains.
+their meaning (propagating `Err(nil)` to an `error` result yields
+`errors.ErrNilResult`). Optional and legacy nil navigation require an explicit
+payload boundary between chains.
 
 For source that used the retired Gon constructors, `gon refactor optionals
 ./...` previews a semantic migration; `--json` writes a hash-checked plan for
@@ -101,6 +103,8 @@ first, then every argument once in written order before passing values in
 parameter order. Arguments are associated before generic inference. Positional
 prefixes may precede named arguments; an unnamed signature is positional-only.
 Named variadics use a final compatible `name: slice...` or omit the parameter.
+Untyped comparisons, `!`, `&&` and `||` results are converted to the parameter
+type, so `require(valid: len(title) >= 2, ...)` needs no `bool(...)`.
 There are no defaults, optional parameters or function overloading.
 
 String enums declare their text once and retain closed, exhaustive alternatives:
@@ -146,11 +150,11 @@ checking, including drivers that bypass the default parameter converter. Text
 and byte-slice results use the enum's parser; other source types and SQL `NULL`
 fail without changing the enum. Unknown text is preserved. Aliases, generics,
 prepared statements, transactions and named SQL parameters use the same path.
-Use standard `sql.Null[Role]` or `*Role` for nullable columns; native `Role?`
-does not acquire a SQL mapping. The zero `Unknown("")` is present empty text,
-distinct from SQL `NULL`. Explicit `sql.Scanner` and `driver.Valuer` methods
-retain precedence. Drivers with direct column scanning receive an internal
-Scanner adapter automatically.
+Use `sql.Null[Role]`, `*Role` or a native `Role?` for nullable columns (see
+[OPTIONALS.md](OPTIONALS.md#json-and-sql)). The zero `Unknown("")` is present
+empty text, distinct from SQL `NULL`. Explicit `sql.Scanner` and `driver.Valuer`
+methods retain precedence. Drivers with direct column scanning receive an
+internal Scanner adapter automatically.
 
 This support is shared by drivers used through `database/sql`, including pgx's
 stdlib adapter; no enum registration or driver changes are needed. pgx's native
@@ -161,17 +165,174 @@ Representation uses a discriminant and separate typed storage for GC safety.
 `reflect.IsEnum`, `reflect.EnumVariants`, `reflect.EnumValueVariant` and
 `reflect.EnumValuePayload` expose checked active metadata/payload copies without
 changing the existing reflect.Type interface. C calls use explicit adapters.
-Ordinary enums and optionals require explicitly written serialization adapters
-with an application-defined format. The opt-in `enum string` text protocol above
-also enables standard JSON automatically. Neither exposes a stable storage ABI.
-No zero overhead is promised.
+Ordinary enums require explicitly written serialization adapters with an
+application-defined format, as do optionals outside `encoding/json` and
+`database/sql`. The opt-in `enum string` text protocol above also enables
+standard JSON automatically; native optionals map to JSON `null`/payload and SQL
+NULL/payload natively. Neither exposes a stable storage ABI. No zero overhead is
+promised.
 The source inliner and extraction decline unsupported lazy/contextual changes,
 including contextual constructors and native optional conversions whose target
 would change after extraction. These forms are not automatically rewritten by
 `gon fix`.
 
-Executable legacy/modern pairs live in `test/{enums,stringenums,stringenums_sql,matching,namedarguments,
-optionresult,optionsyntax}.go` and their `.dir` folders. Run the deduplicated focused gate:
+## Error propagation across tests, tuples and Result
+
+Postfix `!` also works where the nearest function has no `error` result. These
+are opt-in uses of existing syntax; existing code is unaffected.
+
+```go
+func TestLoad(t *testing.T) {
+    config := loadConfig("testdata/app.json")! // on failure: t.Fatal(err) at this line
+    if config.Name != "app" {
+        t.Fatalf("name = %q", config.Name)
+    }
+}
+
+func parse(text string) Result[Config, error] {
+    config := decode(text)! // decode returns (Config, error); failure is .Err(err)
+    return .Ok(config)
+}
+
+func load(text string) (Config, error) {
+    config := parse(text)! // a failed Result returns its payload as the error
+    return config, nil
+}
+```
+
+- **Test functions.** In a `_test.go` file, when the nearest enclosing function
+  (declaration, literal or lambda) neither returns `error` last nor exactly one
+  Result, and its first parameter is named (not `_`) with type `*testing.T`,
+  `*testing.B`, `*testing.F` or `testing.TB` (aliases allowed; a variadic first
+  parameter or a receiver does not count), a failing `!` calls
+  `<param>.Fatal(err)` at the line of the `!`, without `Helper`, and returns
+  zero values. A Result operand reports its payload. This covers tests,
+  subtests, fuzz callbacks, benchmarks, helpers and lambdas; `or` and `?` are
+  unchanged. `go/types.TestFatalParam` exposes the rule to tools.
+- **Tuple to Result.** In a function whose only result is `Result[T, E]`, `!` on
+  a Go call ending in exactly `error` is valid when `error` is assignable to
+  `E`; failure returns `Result[T, E].Err(err)`. An `or err { return .Err(err) }`
+  handler is unchanged.
+- **Result to error.** In a function returning `error` last, `!` on a
+  `Result[V, E]` with `E` assignable to `error` returns zero values and the
+  payload as the error; named results are reset before defers. `Err(nil)`
+  (a nil interface after conversion) becomes `errors.ErrNilResult`, which
+  `errors.Is` recognizes, so a failed Result never becomes a nil error. A typed
+  nil pointer payload stays a non-nil error, as in Go.
+
+The gonerrors analyzer suggests `!` for `return .Err(err)` handlers in Result
+functions and for exact `<first param>.Fatal(err)` handlers in qualifying tests,
+and `testinggoroutine` treats a test `!` as an implicit `Fatal`. `gon explain
+InvalidErrorHandling` lists every diagnostic case.
+
+## Matching interface and error subjects
+
+```go
+type dbError enum {
+    default Unknown
+    NotFound(string)
+    Conflict { Table string; Key int }
+}
+
+func (e dbError) Error() string { return "database error" }
+
+func httpStatus(err error) int {
+    return switch err {
+    case dbError.NotFound(_) => 404
+    case dbError.Conflict{Table: table, ...} if table == "users" => 409
+    case dbError.Unknown => 500
+    default => 500
+    }
+}
+```
+
+A `=>` match on a non-type-parameter interface subject may use qualified enum
+variant patterns (unit, positional, record, `...`, nested, with guards;
+package-qualified, aliased or generic instances) of an enum whose value type
+implements the interface. Otherwise the compiler reports `pattern alternative
+can never match interface I: E does not implement I`; an implementation only
+through pointer receivers does not count. Patterns also work inside
+interface-typed payloads, and value patterns such as `case pkg.Const =>` keep
+working.
+
+- For a subject whose type is identical to the predeclared `error`, the subject
+  is evaluated once and each arm searches the error tree afresh, in source order,
+  with exactly `errors.AsType[E]` semantics: dynamic type, `As(any) bool`,
+  `Unwrap() error` and `Unwrap() []error`, depth first. The first `E` found is
+  matched against the variant, payload and guard; on failure the next arm is
+  tried.
+- For any other interface, an arm is a plain `subject.(E)` assertion (exact `E`).
+- A nil subject matches no enum arm. Enum arms never cover an interface, so
+  `default` or `case _` is required. Statement arms still need braces.
+
+Lowering uses a runtime helper (`matchErrorAs`), so the user's package needs no
+`errors` import and the standard library gains no import cycle. One local
+measurement found about 12 ns and no allocation per arm on a wrapped error,
+against about 82 ns and one allocation for `errors.As`.
+
+## SQL struct scanning
+
+`database/sql` maps a result row to a struct, so the query, the struct and the
+`Scan` destination list no longer repeat every column.
+
+```go
+type Student struct {
+    ID          int
+    CreatedAt   time.Time // column created_at
+    Email       string?   // NULL is absent
+    DisplayName string `sql:"name"`
+}
+
+func students(db *sql.DB, course int) ([]Student, error) {
+    rows := db.Query("SELECT id, created_at, email, name FROM students WHERE course_id = $1", course)!
+    return sql.Collect[Student](rows)
+}
+```
+
+API: `(*Rows).ScanStruct(dest any) error`, `(*Row).ScanStruct(dest any) error`,
+`Collect[T any](*Rows) ([]T, error)`, `CollectOne[T any](*Rows) (T, error)` and
+`ErrTooManyRows`.
+
+- `Rows.ScanStruct` needs a non-nil pointer to a struct and has the same
+  preconditions and errors as `Rows.Scan`. `Row.ScanStruct` is like `Row.Scan`
+  (deferred error, `ErrNoRows`, closes the rows) and rejects `RawBytes` fields.
+- `Collect` scans the remaining rows of the current result set, always closes
+  `rows`, and returns `rows.Err()` (a nil slice on error, a non-nil empty slice
+  for no rows). A struct `T` (or `*Struct`, allocated per element) uses the
+  mapping; any other `T` receives exactly one column through the normal `Scan`
+  conversion. That includes `time.Time`, native string enums, native optionals
+  and structs whose `T` or `*T` implements `sql.Scanner`. `RawBytes` as `T` or
+  as a field is rejected.
+- `CollectOne` returns `ErrNoRows` or `ErrTooManyRows` (`sql: more than one row
+  in result`); iteration errors win, the zero `T` is returned on error, and the
+  rows are always closed.
+- Mapping: an exact `sql:"name"` tag (case-sensitive; a tagged field matches only
+  by its tag) wins. An untagged exported field matches a column whose name equals
+  the field name after lowercasing and removing `_` (`created_at` to
+  `CreatedAt`, `llm_context` to `LLMContext`, `id` to `ID`). `sql:"-"` excludes
+  a field; comma options are an error (reserved). An exact tag beats a name
+  match at any depth. Embedded structs flatten with `encoding/json` depth
+  precedence, and a same-depth tie is an error only if that column is present.
+  Embedded tagged structs, `time.Time`, Scanners, enums and optionals are leaves.
+  Embedded pointers are allocated when a column maps into them; unexported
+  fields are ignored; fields without a column keep their value.
+- The mapping is strict: an unmapped, ambiguous or duplicated column, or two
+  columns mapping to one field, is an error naming the column and type
+  (prefix `sql: <operation>:`), raised before any field is written.
+- The per-type field index is cached in a `sync.Map`, and each `Rows` caches its
+  plan, invalidated by `NextResultSet` or a different destination type. The
+  overhead measured over the fake driver on an Apple M4 is about 60 ns per row
+  against a hand-written `Scan`; `Collect` allocates less than the manual loop.
+
+## Executable pairs and validation
+
+Executable legacy/modern pairs live in `test/{enums,stringenums,stringenums_sql,matching,matchinterface,
+namedarguments,errorbridge,errortest,optionresult,optionsyntax,optionaljson,optionalsql,sqlstruct}.go` and
+their `.dir` folders. The `modern` profile runs the enum, matching (including
+`matchinterface`), optional (including `optionaljson` and `optionalsql`), Result
+and named-argument pairs; the `errorhandling` profile adds `errorbridge` and
+`errortest`; the `tooling` profile also runs `sqlstruct`. Run the deduplicated
+focused gate:
 
 ```sh
 GON_BASELINE_GO=/absolute/path/to/unmodified/go python3 misc/gon/validate.py modern
@@ -451,6 +612,19 @@ conditional expressions, lambdas and nil-safety expressions, preserving
 evaluation order and target conversions.
 The existing cgo restriction on propagation/handlers within arguments requiring
 pointer-check rewriting also applies inside conditional expressions.
+
+`gon vet`'s `httpresponse` and `sqlrowserr` analyzers look through postfix `!`
+and `or` handlers: `resp := client.Do(req)!` before `defer resp.Body.Close()` is
+clean, and `rows := db.Query(...)!` is analyzed like the tuple form, while
+genuine Go misuse is still reported. gonpls indexes and queries methods that
+return the predeclared `Result` (method sets, test code lens, inline variable on
+contextual `.Ok/.Err` names and named-argument labels); implement-interface is
+declined for an alias of `Result` with a clear error. Known gaps: the
+`unreachable` analyzer does not inspect `or` handler bodies, inline variable on
+an `or`-handler initializer yields an oddly formatted edit, `gon query refs
+Result` reports builtin references as unsupported, `gon query type` does not
+name the `!` sub-kinds, and the new `!` forms have no dedicated editor action
+beyond the gonerrors suggestions.
 
 The SSA and Staticcheck IR builders lower Gon error expressions to ordinary
 branches and returns, including named result resets, `defer`, typed-nil errors,

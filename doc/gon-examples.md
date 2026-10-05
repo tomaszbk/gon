@@ -260,8 +260,10 @@ func paymentStatus(amount int) string {
 error payload. The example chooses a string domain error; `E` can also be
 `error` or another type. `Err(nil)` remains an error variant. Its 2.27 zero is
 `Ok(zero T)`. `!` propagates to a compatible Result return, while `or` handles
-it locally. Go tuple returns remain separate and require explicit adapters;
-Gon does not silently convert them or lose their partial data.
+it locally. Go tuple returns remain separate: only postfix `!` bridges them (a
+failing call ending in `error` becomes `.Err(err)` in a Result function, and a
+failed Result returns its payload as the error from an `error`-returning
+function); Gon does not silently convert them or lose their partial data.
 
 ## Lambdas: keep the closure, shorten the callback
 

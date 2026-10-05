@@ -60,7 +60,9 @@ func loadConfig(path string) (Config, error) {
 ```
 
 `!` returns early on failure; `or err { ... }` lets you handle the error yourself.
-Both work with existing Go error-returning APIs.
+Both work with existing Go error-returning APIs. `!` also works in test functions,
+where it calls `t.Fatal(err)` at that line, and between Go error tuples and
+`Result` in either direction.
 
 ### Short callbacks, optional access and readable calls
 
@@ -169,9 +171,21 @@ constant spelling and keeps unknown text in a default string payload. Gon
 supplies `Role.Parse`, `String` and text methods, so JSON needs no per-enum
 mapping. Gon's `database/sql` also accepts the enum directly as a query argument
 and as a scan destination: `db.Exec(query, role)` and
-`db.QueryRow(query).Scan(&role)`. Use `sql.Null[Role]` or `*Role` for SQL `NULL`.
-This is shared support for drivers using `database/sql`; pgx's native API is a
-separate boundary. See the [string-enum contract](misc/gon/README.md).
+`db.QueryRow(query).Scan(&role)`. Use `sql.Null[Role]`, `*Role` or a native
+`Role?` for SQL `NULL`. This is shared support for drivers using `database/sql`;
+pgx's native API is a separate boundary. See the
+[string-enum contract](misc/gon/README.md).
+
+`database/sql` also maps rows to structs: `sql.Collect[Student](rows)`,
+`sql.CollectOne[Student](rows)` and `ScanStruct` match columns to fields by an
+exact `sql:"name"` tag or by field name, strictly, with no per-column `Scan`
+argument lists. See [SQL struct scanning](misc/gon/README.md#sql-struct-scanning).
+
+A match on an interface or `error` subject can use enum variants too. On `error`,
+each arm searches the wrapped-error tree like `errors.AsType`, so
+`case dbError.NotFound(name) =>` finds the variant behind any `%w` wrapping;
+`default` is required. See
+[matching interface and error subjects](misc/gon/README.md#matching-interface-and-error-subjects).
 
 ### A missing value is different from a failed operation
 
@@ -247,6 +261,8 @@ results alongside errors.
 `T?` is the native optional type. Match presence with `case value?` and absence
 with `case nil`. A typed nil can be present; nested optionals retain their
 individual layers. The language has no predeclared `Option`, `Some` or `None`.
+Optionals map natively to JSON `null` and SQL `NULL` in `encoding/json` and
+`database/sql`, with no per-field adapters. See [native optionals](misc/gon/OPTIONALS.md#json-and-sql).
 
 [More examples and boundary cases →](doc/gon-examples.md) ·
 [Contextual construction and optional types →](doc/gon-examples.md#contextual-construction-and-optional-types)

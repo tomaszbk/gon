@@ -16,9 +16,11 @@ and gonpls are integrated. Maintained modules are `tools/x-tools`,
 Optional values now use the native type `T?`, nil absence, immediate payload
 lifting and presence patterns `P?`. Typed nil remains present; nested layers
 never flatten. No predeclared Option/Some/None API remains. Result retains
-`.Ok/.Err`, qualified constructors/patterns and explicit Go tuple adapters.
-The [optional contract](OPTIONALS.md) explains reflection and the reviewable
-`gon refactor optionals` migration. Ordinary user names retain Go semantics.
+`.Ok/.Err` and qualified constructors/patterns. Postfix `!` bridges Go error
+tuples and Result in both directions; other conversions stay explicit.
+The [optional contract](OPTIONALS.md) explains reflection, JSON/`database/sql`
+and the reviewable `gon refactor optionals` migration. Ordinary user names
+retain Go semantics.
 
 [VALIDATION.md](VALIDATION.md) records the latest commands, complete focused
 profile results, bootstrap, editor and target evidence. Executed targets and
@@ -35,15 +37,60 @@ frontends/checkers, imports, reflection metadata, SSA/IR, cgo/coverage and edito
 services retain the protocol. See [the contract](README.md) and the executable
 `test/stringenums.go` pair. Gon's `database/sql` maps string enums directly to
 text parameters and parses text/byte results, including direct-column scanners.
-Use `sql.Null[Role]` or `*Role` for SQL NULL; explicit Scanner/Valuer overrides
-retain precedence. No enum registration or driver changes are needed through
-database/sql.
-Native pgx and native optional SQL mapping remain separate adapter boundaries.
+Use `sql.Null[Role]`, `*Role` or `Role?` for SQL NULL; explicit Scanner/Valuer
+overrides retain precedence. No enum registration or driver changes are needed
+through database/sql. Native pgx (outside `database/sql`) still needs codecs.
+
+Interoperability extensions requested and accepted on 2026-10-05 (user decision,
+part of Gon 2.27), merged on master `96ab86645a`:
+
+- **Optional JSON and `database/sql`.** `encoding/json` (v1 and the default
+  v2-backed implementation) encodes absence as `null` and presence as the
+  payload; `null` decodes to absence, and a failed decode leaves the optional
+  unchanged. `database/sql` binds an optional argument as NULL or its payload and
+  scans NULL into absence, otherwise through the ordinary conversion of the
+  payload (string enums, uuid, Scanners). `reflect.OptionalValueSetPayload` is
+  the new checked reflection setter. `encoding/xml`, `gob` and native pgx are not
+  covered. See [OPTIONALS.md](OPTIONALS.md#json-and-sql).
+- **`database/sql` struct scanning.** `Rows.ScanStruct`, `Row.ScanStruct`,
+  `Collect[T]`, `CollectOne[T]` and `ErrTooManyRows` map columns to exported
+  fields strictly (exact `sql:"name"` tag, else name with case and underscores
+  ignored). See [README.md](README.md#sql-struct-scanning).
+- **`!` in test functions and across tuples/Result.** In `_test.go` files `!`
+  reports with `Fatal`; a Go error tuple fails as `Result.Err` in a Result
+  function; a failed Result fails as its payload in an error-returning function,
+  with `Err(nil)` becoming `errors.ErrNilResult`. See [README.md](README.md#error-propagation-across-tests-tuples-and-result).
+- **Enum patterns on interface and error subjects.** `=>` matches accept
+  qualified enum variant patterns on interface subjects; on `error` each arm
+  searches the error tree with `errors.AsType` semantics. See
+  [README.md](README.md#matching-interface-and-error-subjects).
+- **Fixes.** Untyped comparisons passed as named arguments no longer crash the
+  compiler; vet `httpresponse` and `sqlrowserr` understand `!`/`or` handlers;
+  gonpls no longer crashes on methods returning the predeclared `Result`.
+
+Open items on master `96ab86645a`, not fixed by the merged work:
+
+- `case *int?:` in a type switch crashes the compiler in `noder.typeExprEndPos`.
+- gonpls `objectpath.enumPayloadStruct` panics with "multiple fields with the
+  same name" for a generic enum with a method plus an enum with a multi-payload
+  positional variant.
+- `go/build` `TestDependencies` reports "reflect imports [strings]"
+  (`src/reflect/enum.go`).
+- The full `types2`/`go/types` `TestCheck` panics at `testdata/check/cycles0.go`
+  through `addStringEnumMethods`.
+- The `copylock` `TestGonFeatures` line expectation does not match.
+
+Known tooling gaps: the `unreachable` analyzer does not inspect `or` handler
+bodies; inline variable on an `or`-handler initializer yields an oddly
+formatted edit; `gon query refs Result` reports builtin references as
+unsupported; `gon query type` does not name the new `!` sub-kinds; test, tuple
+and Result `!` have only gonerrors suggestions, no dedicated editor action.
 
 Representation uses a discriminator and separate typed storage for GC safety.
 Unit and zero-sized shapes have measured overhead. There is no stable storage
-ABI. Ordinary enums/optionals and C boundaries need explicit adapters; string
-enums supply the standard text interfaces. First-class positional constructors,
+ABI. Ordinary enums and C boundaries need explicit adapters, as do serializers
+other than `encoding/json` and `database/sql` for optionals; string enums supply
+the standard text interfaces. First-class positional constructors,
 string parsers and generated string enum methods disable compiler inlining.
 Source inlining/extraction conservatively decline unsupported named, lazy and
 contextual moves. The [current benchmark](benchmarks/README.md) publishes all

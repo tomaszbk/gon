@@ -2,11 +2,21 @@
   "tooling": {
     "pending": [],
     "limitations": [
-      "syntax modernization: only proven-safe error checks, simple value choices, nil guards/defaults and contextually typed function literals are suggested; arbitrary equivalent control flow is not recognized"
+      "syntax modernization: only proven-safe error checks, simple value choices, nil guards/defaults and contextually typed function literals are suggested; arbitrary equivalent control flow is not recognized",
+      "the unreachable analyzer does not inspect or-handler bodies",
+      "inline variable on an or-handler initializer produces an oddly formatted edit",
+      "gon query refs reports references to the predeclared Result as unsupported; gon query type does not name the sub-kinds of ! (test Fatal, tuple to Result, Result to error)",
+      "no dedicated editor code action for test, tuple-to-Result or Result-to-error !; only the gonerrors suggestions and fixes exist",
+      "database/sql ScanStruct/Collect/CollectOne: mapping is strict (unmapped, ambiguous or duplicate columns are errors), tag comma options are reserved errors, RawBytes fields and element types are rejected; native pgx outside database/sql is not covered"
     ]
   },
   "errorhandling": {
-    "pending": []
+    "pending": [],
+    "limitations": [
+      "! in test functions applies only in _test.go files when the nearest function neither returns error last nor exactly one Result and its first parameter is a named *testing.T, *testing.B, *testing.F or testing.TB; variadic first parameters and receivers do not qualify",
+      "tuple and Result bridging exists only at postfix !: a call ending in exactly error into a function returning one Result whose error type accepts error, and a Result whose error type is assignable to error into a function returning error last; no other implicit conversion",
+      "the errortest executable pair is not registered in cross_pair.sh, so wasm and Linux cross builds do not cover it"
+    ]
   },
   "conditional": {
     "pending": [],
@@ -45,7 +55,7 @@
       "initial representation uses a discriminant and separate typed variant storage; no stable layout ABI is promised",
       "checked reflection uses package functions; reflect.Type and Value method sets remain unchanged",
       "unit-only and zero-size payloads have measured size overhead",
-      "ordinary enums require explicit serialization adapters; opt-in string enums supply standard text interfaces, JSON and general database/sql conversions; SQL NULL uses sql.Null[T] or pointers; native pgx and native optional SQL mapping require explicit adapters; no stable storage ABI is provided",
+      "ordinary enums require explicit serialization adapters; opt-in string enums supply standard text interfaces, JSON and general database/sql conversions; SQL NULL uses sql.Null[T], pointers or a native optional; native pgx outside database/sql requires a codec; no stable storage ABI is provided",
       "synthesized first-class positional constructors, string parsers and generated string enum methods currently disable compiler inlining"
     ]
   },
@@ -53,7 +63,9 @@
     "pending": [],
     "limitations": [
       "source inlining and extraction across match arms are conservatively declined",
-      "variant patterns require qualification; bare payload identifiers bind new variables except contextual true, false and nil; use guards for local constants"
+      "variant patterns require qualification; bare payload identifiers bind new variables except contextual true, false and nil; use guards for local constants",
+      "enum patterns on interface subjects never prove exhaustiveness (default or case _ is required), do not apply to type-parameter subjects, require the enum value type to implement the interface, and a nil subject matches no enum arm",
+      "on interfaces other than error an enum arm is an exact subject.(E) assertion; only predeclared error searches the Unwrap/As tree with errors.AsType semantics"
     ]
   },
   "option": {
@@ -63,13 +75,16 @@
       "Optional and legacy nil guards cannot be mixed within one chain; use an explicit payload boundary and preserve nested optionals without automatic flattening",
       "cgo pointer-check rewritten call arguments decline propagation across hidden function boundaries",
       "source inlining and extraction across propagation or lazy operators are conservatively declined",
-      "native optional lifting is single-valued and one layer; source transformations decline changes that lose the target context"
+      "native optional lifting is single-valued and one layer; source transformations decline changes that lose the target context",
+      "native optional serialization covers encoding/json (v1 and v2) and database/sql; encoding/xml, gob, other encoders and native pgx outside database/sql need explicit adapters or codecs",
+      "optional JSON and SQL reject nested optionals, optional map keys (JSON) and RawBytes payloads (SQL); a present payload that encodes as JSON null is an error",
+      "the real PostgreSQL optional integration (misc/gon/test_optionals_postgres.py, GON_SQL_POSTGRES=1) has been written but not executed"
     ]
   },
   "result": {
     "pending": [],
     "limitations": [
-      "Go tuple/Result interoperability requires explicit adapters; Err(nil) remains an error variant",
+      "Go tuple/Result interoperability is limited to postfix !: error-last tuple calls into one-Result functions and Results into error-returning functions; partial results, other signatures and every other conversion need explicit code; Err(nil) remains an error variant and becomes errors.ErrNilResult when propagated to error",
       "cgo pointer-check rewritten call arguments decline propagation across hidden function boundaries",
       "source inlining and extraction across propagation or handlers are conservatively declined",
       "contextual Result constructors need a fully known canonical target; source transformations decline changes that lose this context"

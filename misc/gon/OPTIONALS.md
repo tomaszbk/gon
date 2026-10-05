@@ -66,8 +66,16 @@ Go nil checking: a present nil payload is not absence.
 `Result[T, E]`, `.Ok/.Err`, qualified Result constructors and patterns remain.
 `Result[int?, error]` can succeed with absence (`.Ok(nil)`) or a present integer
 (`.Ok(7)`). Contextual Result constructors need a fully known expected type.
-Result has no implicit bridge to legacy Go tuples, which may carry useful
-partial results alongside errors. Existing Go signatures keep their semantics.
+Result has no implicit conversion to or from legacy Go tuples, which may carry
+useful partial results alongside errors. Existing Go signatures keep their
+semantics. Postfix `!` is the one bridge: it fails a Go call ending in exactly
+`error` as `Result[T, E].Err(err)` in a function whose only result is a Result
+accepting `error`, and fails a `Result[V, E]` with `E` assignable to `error` as
+its payload in a function whose last result is `error`. A nil `Err` payload becomes `errors.ErrNilResult`,
+because a failed Result never turns into a nil error. In `_test.go` files with a
+named first `*testing.T`, `*testing.B`, `*testing.F` or `testing.TB` parameter,
+`!` reports the error or Result payload with `Fatal`. See
+[README.md](README.md#error-propagation-across-tests-tuples-and-result).
 
 ## Introspection and representation
 
@@ -76,17 +84,57 @@ identify native optional types. `EnumOf` returns nil for them. Analysis and
 lowering use private storage metadata without public Some/None variants.
 
 Checked reflection uses `reflect.IsOptional`, `OptionalElement`,
-`OptionalValuePresent` and `OptionalValuePayload`. Payload extraction returns a
-non-addressable copy, preserving original access restrictions and ordinary
-reference aliasing. Absent extraction and inappropriate enum/struct-field
+`OptionalValuePresent`, `OptionalValuePayload` and `OptionalValueSetPayload`.
+Payload extraction returns a non-addressable copy, preserving original access
+restrictions and ordinary reference aliasing. `OptionalValueSetPayload(v,
+payload)` makes a settable optional present with a copy of an assignable
+payload; it panics for a non-optional, unaddressable, read-only or
+non-assignable operand. Absent extraction and inappropriate enum/struct-field
 operations panic. `reflect.Kind` remains Struct; public field APIs hide storage.
 Ordinary formatting prints absence as `nil` and presence as its payload.
 Equality, map keys and comparability follow payload types and active presence.
 
 Storage retains a discriminator and typed payload fields for GC and write
 barriers. Its size is measured in the current benchmark report. There is no
-stable storage ABI or automatic encoding. Serialization and C boundaries need
-explicit application-defined adapters.
+stable storage ABI. Only `encoding/json` and `database/sql` encode optionals
+automatically (next section); other serializers, native pgx and C boundaries
+need explicit application-defined adapters.
+
+## JSON and SQL
+
+Absence is JSON `null` or SQL NULL; presence is the payload's own encoding. The
+optional storage is never exposed: both packages use the checked reflect API.
+
+`encoding/json` (the default v2-backed implementation and the `nojsonv2` v1
+implementation) marshals absence as `null` at the top level, in fields, elements
+and map values. A present value encodes as its payload, keeping a present zero,
+and honors the payload's `Marshaler`/`TextMarshaler`, including pointer
+receivers. `omitempty` and `omitzero` omit only absence; the native
+`encoding/json/v2` API instead applies v2's definition of an empty JSON value to
+`omitempty`, which also omits a present empty string. `,string` applies to the
+payload. Unmarshaling `null` makes the optional absent and never calls a payload
+`Unmarshaler`. Any other input decodes into a temporary, starting from the
+existing payload when present, and stores presence only on success: an error
+leaves the optional unchanged, and a missing field is untouched. Rejected:
+nested optionals, optional map keys, and a present payload whose encoding is
+`null` (`UnsupportedValueError`; the native v2 API encodes a nil slice or map as
+`[]` or `{}` and does not hit this case).
+
+`database/sql` binds an optional argument (or a pointer to one, including
+`sql.Named`) before any `NamedValueChecker` or `ColumnConverter` runs: absent or
+a nil pointer is NULL; present is converted as the payload would be (string
+enums, `driver.Valuer`, default conversion). `driver.DefaultParameterConverter`
+does the same; a nested optional is an error. Scanning into a `*T?` stores
+absence for NULL; otherwise it converts into a fresh `T` with the ordinary rules
+(string enums, uuid, a Scanner payload) and stores presence only on success, so
+an error leaves the destination unchanged. A Scanner payload is never called for
+NULL. Nested optionals and `RawBytes` payloads are rejected; `sql.Null[T]` and
+pointers are unchanged. Unlike a legacy `*T`, which allocates before a failed
+scan, a `T?` stays unchanged. `ScanStruct` fields and a scalar `T` of `Collect`
+use the same path.
+
+Not covered: `encoding/xml`, `gob` and other encoders, and pgx's native API
+outside `database/sql`, which need their own codecs.
 
 ## Reviewable migration
 

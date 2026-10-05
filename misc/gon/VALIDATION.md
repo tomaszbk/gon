@@ -17,6 +17,10 @@ GON_BASELINE_GO=/opt/homebrew/bin/go python3 misc/gon/validate.py tooling
 | enums | 32/32 PASS, exit 0, no pending items | 98.123s | [summary](../../pkg/gon-validation/enums/summary.json) |
 | tooling | 41/41 PASS, exit 0, no pending items | 147.654s | [summary](../../pkg/gon-validation/tooling/summary.json) |
 
+These counts predate the 2026-10-05 merge recorded [below](#features-merged-on-2026-10-05):
+the `tooling`, `errorhandling`, `matching` and `option` profiles have gained
+checks since, and neither complete gate was rerun afterwards.
+
 The enums gate includes the opt-in string-enum extension and ordinary enum
 compatibility. String-enum pairs execute the Go 1.27.1 baseline, Gon legacy and
 Gon modern with/without inlining and the JSON-v2 experiment. Assertions cover
@@ -91,8 +95,54 @@ Client execution was darwin/arm64. The isolated Docker container used temporary
 storage and was removed successfully. [Commands, versions and results](../../pkg/gon-validation/sql-postgres/summary.json)
 retain the evidence. Setting `GON_SQL_POSTGRES=1` adds this integration to either
 complete gate; the profile counts above are the default gates and record the
-live integration separately. pgx's native API and native `Role?` SQL mapping
-remain separate adapter boundaries.
+live integration separately. pgx's native API remains a separate adapter
+boundary. This PostgreSQL run covers string enums only; the optional
+integration below was not executed.
+
+## Features merged on 2026-10-05
+
+Master `96ab86645a` merges six branches: `database/sql` struct scanning, the
+named-argument untyped-value fix, vet/gonpls tooling fixes, native optional
+JSON and `database/sql`, enum patterns on interface and error subjects, and `!`
+in tests and across Go tuples and Result. Every check below executed on
+**darwin/arm64** (Apple M4); the one additional js/wasm execution, of the
+`matchinterface` pair, is in the platform table. They are focused test
+selections and partial `validate.py` runs, with the executable pairs executing
+their legacy program on the unmodified baseline (`GON_BASELINE_GO`) and the
+modern program with Gon, also without inlining. No full profile pass is
+claimed: the `tooling`, `errorhandling`, `matching`, `option` and `modern`
+profiles were not run in full after the merge, and the complete-gate counts
+above predate it.
+
+| Feature (commit) | Checks executed, all passing |
+| --- | --- |
+| `database/sql` struct scanning (`cb5b4dad4e`) | `database/sql` unit tests over the fakedb, basic, default and scancols drivers; `test/sqlstruct.go` pair; `cmd/api` check |
+| Named-argument untyped values (`3aa69b804f`) | `TestNamedArgumentsRecordedTypes` in `types2` and `go/types`; `test/namedarguments.go` pair, extended with three invalid untyped cases |
+| Vet and gonpls fixes (`8ca2c0bcc2`) | analyzer `TestGon` in `httpresponse` and `sqlrowserr`; `TestPredeclaredResult` (fingerprint), `TestPredeclaredResultMethods` (methodsets), `TestGonResult*` (LSP integration), marker `inline-var-gon`, cmd `TestGonResultMethods`; `validate.py tooling --only vet-error-handlers --only predeclared-result-index --only predeclared-result-lsp --only inline-variable-gon` (partial selection) |
+| Native optional JSON and SQL (`f602bf641e`) | unit tests in `encoding/json` (default and `GOEXPERIMENT=nojsonv2`), `encoding/json/v2`, `database/sql`, `database/sql/driver` and `reflect`; `test/optionaljson.go` and `test/optionalsql.go` pairs; `validate.py option` partial selection: `optional-json`, `optional-json-v1`, `optional-sql`, `optional-reflect`, the two `vet` checks and the pair executions |
+| Enum patterns on interface and error subjects (`2d8c28ed91`) | `TestMatchInterfaceSubject` and `TestMatchInterfaceSubjectInvalid` in both checkers; `test/matchinterface.go` pair; SSA and Staticcheck IR tests; `test_interfacematch.py` LSP test; `validate.py matching` partial selection including `matchinterface-execution`, `matchinterface-vet` and `interfacematch-lsp` |
+| `!` in tests and across tuples and Result (`99c7b28518`) | `internal/types/testdata/check/errorbridge.go`; `TestErrorHandlingBoundaries` (56 cases) in both checkers; `test/errorbridge.go` and `test/errortest.go` pairs; `errors.TestErrNilResult`; SSA and Staticcheck IR tests; `validate.py errorhandling` partial selection (vendor, the `errorhandling`, `errorbridge` and `errortest` executions, types, syntax, ssa, staticcheck-ir, vet, cgo, cover, structural-tools, analyzers, compiler-ssa, compiler-inline, staticcheck-safety, refactor-safety) and `validate.py tooling` partial selection (tooling-api, syntax-fixes, fix-execution, cli, lsp) |
+
+Integration on the merged tree (`96ab86645a`):
+
+```sh
+python3 misc/gon/vendor.py --check
+go test -run 'TestGenerate|ErrorHandling|ErrorExpr|NamedArguments|OptionResult|MatchInterface' cmd/compile/internal/types2 go/types
+go test -run 'ScanStruct|Collect|GonOptional|TestErrNilResult|^TestOptional' database/sql database/sql/driver encoding/json encoding/json/v2 errors reflect
+go test cmd/internal/testdir -run 'Test/(sqlstruct|optionaljson|optionalsql|matchinterface|errorbridge|errortest|namedarguments|errorhandling|optionresult|matching|stringenums_sql)\.go$'
+```
+
+All four passed. A scratch module that combined `Collect` into `T?` fields,
+tuple-to-Result and Result-to-error `!`, test `!`, an error-subject match and a
+named comparison also passed `gon vet`, `gon test` and `gon check`.
+
+Not executed: `misc/gon/test_optionals_postgres.py` (`GON_SQL_POSTGRES=1`) was
+written but has not been run, so optional JSON and SQL have no live PostgreSQL
+or driver evidence beyond `database/sql`'s own fake drivers. The new pairs
+`sqlstruct`, `optionaljson`, `optionalsql` and `errorbridge` are registered in
+`cross_pair.sh`, but their wasm and Linux runs are not part of this record;
+`errortest` and `matchinterface` are not registered there. Benchmarks and
+bootstrap were not rerun for these features.
 
 ## Bootstrap
 
@@ -141,10 +191,12 @@ GON_BASELINE_GO=/opt/homebrew/bin/go misc/gon/cross_pair.sh js wasm
 
 | Platform | Current evidence | Scope |
 | --- | --- | --- |
-| darwin/arm64 | Executed | Focused gates, baseline, bootstrap, benchmark, real LSP and editor |
+| darwin/arm64 | Executed | Focused gates, baseline, bootstrap, benchmark, real LSP and editor; focused checks of the 2026-10-05 features |
 | js/wasm | Executed through Node 26.6.0 | Eleven portable pairs, including string enums, SQL, analysis fixtures and local generic cases; 11 baseline and 33 Gon legacy/modern/non-inlined executions match |
 | linux/amd64 | Cross-compiled | String-enum common/analysis and SQL pairs: baseline legacy, Gon legacy, Gon modern; existing optional/Result evidence retained below |
 | linux/riscv64 | Cross-compiled | Same three variants and all three string-enum pairs |
+| js/wasm (2026-10-05) | Executed through node | `matchinterface` pair only |
+| linux/amd64, linux/riscv64, wasip1/wasm (2026-10-05) | Cross-compiled only | `matchinterface` pair only; not executed |
 
 [Current wasm results](../../pkg/gon-validation/stringenums-cross/wasm.json)
 passed in 5.829s; [12 string-enum cross-build commands/results](../../pkg/gon-validation/stringenums-cross/builds.json)
@@ -205,12 +257,22 @@ VALIDATION.md for the exact commands and platform limits.
   occupy 16 versus a legacy struct's 2 on this host. There is no stable ABI or
   automatic serialization/C mapping for ordinary enums or optional values;
   explicit adapters are required. Opt-in string enums supply text interfaces
-  and standard JSON/`database/sql` conversions. SQL NULL uses `sql.Null[T]` or
-  pointers. Native pgx and native optional SQL mapping need explicit adapters.
+  and standard JSON/`database/sql` conversions. SQL NULL uses `sql.Null[T]`,
+  pointers or a native optional (the live PostgreSQL check for optionals is
+  written but not executed). Native pgx outside `database/sql` needs a codec; `encoding/xml`,
+  `gob` and C boundaries need explicit adapters.
 - Native optional lifting is single-valued and one layer. Typed nil is present;
   nested layers and mixed optional/Go-nil guards require explicit boundaries.
-- Result constructors need known targets. Go tuple boundaries need explicit
-  adapters because useful partial results may coexist with errors.
+- Result constructors need known targets. Go tuples and Result convert only at
+  postfix `!`, because useful partial results may coexist with errors; every
+  other tuple boundary needs explicit code. Enum patterns on an interface never
+  prove exhaustiveness.
+- Open items on master `96ab86645a` (see [STATUS.md](STATUS.md)): `case *int?:`
+  in a type switch crashes the compiler; a gonpls `objectpath` panic for a
+  generic enum with a method plus a multi-payload positional variant; the
+  `go/build` `TestDependencies` "reflect imports [strings]" failure; the full
+  `TestCheck` panic at `testdata/check/cycles0.go`; and the `copylock`
+  `TestGonFeatures` line mismatch.
 
 ## Upstream integration
 
