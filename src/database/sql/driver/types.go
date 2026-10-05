@@ -206,8 +206,9 @@ func IsScanValue(v any) bool {
 // pointer, defaultConverter.ConvertValue returns a nil [Value].
 // If the argument is a non-nil pointer, it is dereferenced and
 // defaultConverter.ConvertValue is called recursively. Gon string enums use
-// their declared text spelling, unless they implement Valuer. Other types
-// are an error.
+// their declared text spelling, unless they implement Valuer. A Gon native
+// optional is a nil [Value] when absent and otherwise converts as its payload;
+// nested optionals are an error. Other types are an error.
 var DefaultParameterConverter defaultConverter
 
 type defaultConverter struct{}
@@ -267,6 +268,18 @@ func (defaultConverter) ConvertValue(v any) (Value, error) {
 		if text, ok := v.(fmt.Stringer); ok {
 			return text.String(), nil
 		}
+	}
+	// A Gon native optional is NULL when absent and otherwise converts as
+	// its payload would. Nested optionals have no unambiguous value.
+	if reflect.IsOptional(rv.Type()) {
+		if !reflect.OptionalValuePresent(rv) {
+			return nil, nil
+		}
+		payload := reflect.OptionalValuePayload(rv)
+		if reflect.IsOptional(payload.Type()) {
+			return nil, fmt.Errorf("unsupported type %T, a nested optional", v)
+		}
+		return defaultConverter{}.ConvertValue(payload.Interface())
 	}
 	switch rv.Kind() {
 	case reflect.Pointer:

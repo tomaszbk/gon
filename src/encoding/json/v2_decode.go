@@ -31,6 +31,14 @@ import (
 // the value pointed at by the pointer. If the pointer is nil, Unmarshal
 // allocates a new value for it to point to.
 //
+// In Gon, to unmarshal JSON into a native optional T?, Unmarshal makes
+// the optional absent for the JSON literal null. Otherwise it unmarshals the
+// JSON as for a T, into the existing payload if the optional is present and
+// into a zero T if it is absent, and stores the result as the present
+// payload. If the value is not appropriate for T the optional is left
+// unchanged. A missing struct field also leaves it unchanged, and nested
+// optionals such as (int?)? cannot be unmarshaled.
+//
 // The JSON input is decoded according the following rules:
 //
 //   - If the value type implements [jsonv2.UnmarshalerFrom],

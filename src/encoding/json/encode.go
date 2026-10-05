@@ -185,6 +185,19 @@ import (
 // Interface values encode as the value contained in the interface.
 // A nil interface value encodes as the null JSON value.
 //
+// In Gon, a native optional value T? encodes an absent value as the null
+// JSON value and a present value exactly as its payload would encode as a T,
+// including a present zero payload such as 0, "", false or {}. The payload is
+// encoded as if reached through a pointer, so Marshaler and
+// [encoding.TextMarshaler] methods with pointer receivers are honored. A
+// present payload that itself encodes as null, such as a nil pointer, slice,
+// map or interface, is rejected with an [UnsupportedValueError] because null
+// would read back as absence. Nested optionals such as (int?)? are rejected
+// with an [UnsupportedTypeError], as are optional map keys. The "omitempty" and
+// "omitzero" options omit an absent optional field and keep a present one,
+// even when its payload is zero, like a non-nil pointer to a zero value. The
+// "string" option applies to the payload.
+//
 // Channel, complex, and function values cannot be encoded in JSON.
 // Attempting to encode such a value causes Marshal to return
 // an [UnsupportedTypeError].
@@ -349,6 +362,10 @@ func isEmptyValue(v reflect.Value) bool {
 		reflect.Float32, reflect.Float64,
 		reflect.Interface, reflect.Pointer:
 		return v.IsZero()
+	case reflect.Struct:
+		// A native optional is empty only when absent. Like a non-nil pointer
+		// to a zero value, a present zero payload is kept.
+		return reflect.IsOptional(v.Type()) && !reflect.OptionalValuePresent(v)
 	}
 	return false
 }
@@ -442,6 +459,9 @@ func newTypeEncoder(t reflect.Type, allowAddr bool) encoderFunc {
 	case reflect.Interface:
 		return interfaceEncoder
 	case reflect.Struct:
+		if reflect.IsOptional(t) {
+			return newOptionalEncoder(t)
+		}
 		return newStructEncoder(t)
 	case reflect.Map:
 		return newMapEncoder(t)
@@ -1144,9 +1164,14 @@ func typeFields(t reflect.Type) structFields {
 				}
 
 				// Only strings, floats, integers, and booleans can be quoted.
+				// A native optional is quoted according to its payload.
 				quoted := false
 				if opts.Contains("string") {
-					switch ft.Kind() {
+					qt := ft
+					if reflect.IsOptional(qt) {
+						qt = reflect.OptionalElement(qt)
+					}
+					switch qt.Kind() {
 					case reflect.Bool,
 						reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 						reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,

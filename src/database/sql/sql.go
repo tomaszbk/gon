@@ -3383,6 +3383,14 @@ func rowsColumnInfoSetupConnLocked(rowsi driver.Rows) []*ColumnType {
 // including NULL, return an error without changing the enum. Use Null[T] or
 // a pointer to represent SQL NULL. An explicit Scanner takes precedence.
 //
+// In Gon, a native optional destination *T? stores SQL NULL as absence. Any
+// other source is converted into a temporary T with the rules above, including
+// string enums and a payload that implements [Scanner], and then stored as
+// present. A conversion error leaves the optional unchanged, and nested
+// optionals and [RawBytes] payloads are an error. Likewise an optional argument passed to Exec, Query
+// and their variants is NULL when absent and otherwise converted as if its
+// payload had been passed.
+//
 // For scanning into *bool, the source may be true, false, 1, 0, or
 // string inputs parseable by [strconv.ParseBool].
 //
@@ -3439,7 +3447,7 @@ func (rs *Rows) scanLocked(dest ...any) error {
 
 		for i, d := range dest {
 			scanCtx := driver.ScanContext(internal.NewScanContext(rs))
-			if stringEnumDestination(d) {
+			if stringEnumDestination(d) || optionalDestination(d) {
 				d = stringEnumScanner{dest: d, rows: rs}
 			}
 			if err := rscan.ScanColumn(scanCtx, i, d); err != nil {

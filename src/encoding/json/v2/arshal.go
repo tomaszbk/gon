@@ -144,6 +144,12 @@ var export = jsontext.Internal.Export(&internal.AllowInternalUse)
 //   - A Go interface is encoded as a JSON null if nil, otherwise it is
 //     the recursively JSON-encoded representation of the underlying value.
 //
+//   - A Gon native optional T? is encoded as a JSON null if absent, otherwise
+//     it is the recursively JSON-encoded representation of its payload as a T.
+//     A present payload that is itself encoded as a JSON null (for example
+//     a nil pointer) fails with a [SemanticError], since null would be decoded
+//     as absence. Nested optionals and optional map keys also fail.
+//
 //   - A Go [time.Time] is encoded as a JSON string containing the timestamp
 //     formatted in RFC 3339 with nanosecond precision.
 //
@@ -350,6 +356,12 @@ func marshalEncode(out *jsontext.Encoder, in any, mo *jsonopts.Struct) (err erro
 //     If the input is a JSON null, then this stores a nil pointer.
 //     Otherwise, it allocates a new underlying value if the pointer is nil,
 //     and recursively JSON decodes into the underlying value.
+//
+//   - A Gon native optional T? is decoded based on the JSON kind. If the input
+//     is a JSON null, then this makes the optional absent. Otherwise it is
+//     decoded as a T, starting from the existing payload if the optional is
+//     present, and stored as the present payload only if decoding succeeded.
+//     Nested optionals and optional map keys cannot be decoded.
 //
 //   - A Go interface is decoded based on the JSON kind and underlying Go type.
 //     If the input is a JSON null, then this stores a nil interface value.

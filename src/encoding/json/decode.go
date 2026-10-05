@@ -31,6 +31,15 @@ import (
 // the value pointed at by the pointer. If the pointer is nil, Unmarshal
 // allocates a new value for it to point to.
 //
+// In Gon, to unmarshal JSON into a native optional T?, Unmarshal makes
+// the optional absent for the JSON literal null. Otherwise it unmarshals the
+// JSON as for a T, into the existing payload if the optional is present and
+// into a zero T if it is absent, and stores the result as the present
+// payload. Unmarshaler and [encoding.TextUnmarshaler] methods of T are
+// honored, but not called for null. If the value is not appropriate for T the
+// optional is left unchanged. A missing struct field also leaves it unchanged,
+// and nested optionals such as (int?)? cannot be unmarshaled.
+//
 // To unmarshal JSON into a value implementing [Unmarshaler],
 // Unmarshal calls that value's [Unmarshaler.UnmarshalJSON] method, including
 // when the input is a JSON null.
@@ -521,6 +530,9 @@ func (d *decodeState) array(v reflect.Value) error {
 		return nil
 	}
 	v = pv
+	if isOptionalValue(v) {
+		return d.optionalStore(v, false, "array", d.array, d.skip)
+	}
 
 	// Check type of target.
 	switch v.Kind() {
@@ -618,6 +630,9 @@ func (d *decodeState) object(v reflect.Value) error {
 		return nil
 	}
 	v = pv
+	if isOptionalValue(v) {
+		return d.optionalStore(v, false, "object", d.object, d.skip)
+	}
 	t := v.Type()
 
 	// Decoding into nil interface? Switch to non-reflect code.
@@ -895,6 +910,24 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 	}
 
 	v = pv
+	if isOptionalValue(v) {
+		if isNull && fromQuoted && string(item) != "null" {
+			d.saveError(fmt.Errorf("json: invalid use of ,string struct tag, trying to unmarshal %q into %v", item, v.Type()))
+			return nil
+		}
+		kind := "number"
+		switch item[0] {
+		case 'n':
+			kind = "null"
+		case 't', 'f':
+			kind = "bool"
+		case '"':
+			kind = "string"
+		}
+		return d.optionalStore(v, isNull, kind, func(payload reflect.Value) error {
+			return d.literalStore(item, payload, fromQuoted)
+		}, func() {})
+	}
 
 	switch c := item[0]; c {
 	case 'n': // null

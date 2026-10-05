@@ -166,6 +166,19 @@ import (
 // Interface values encode as the value contained in the interface.
 // A nil interface value encodes as the null JSON value.
 //
+// In Gon, a native optional value T? encodes an absent value as the null
+// JSON value and a present value exactly as its payload would encode as a T,
+// including a present zero payload such as 0, "", false or {}. The payload is
+// encoded as if reached through a pointer, so Marshaler and
+// [encoding.TextMarshaler] methods with pointer receivers are honored. A
+// present payload that itself encodes as null, such as a nil pointer, slice,
+// map or interface, is rejected with an [UnsupportedValueError] because null
+// would read back as absence. Nested optionals such as (int?)? are rejected
+// with an [UnsupportedTypeError], as are optional map keys. The "omitempty" and
+// "omitzero" options omit an absent optional field and keep a present one,
+// even when its payload is zero, like a non-nil pointer to a zero value. The
+// "string" option applies to the payload.
+//
 // Channel, complex, and function values cannot be encoded in JSON.
 // Attempting to encode such a value causes Marshal to return
 // an [UnsupportedTypeError].
