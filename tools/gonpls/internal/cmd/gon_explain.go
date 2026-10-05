@@ -127,6 +127,8 @@ func (r *gonRequest) explain(ctx context.Context) (gonResult, error) {
 					{"record pattern must list every field or explicitly ignore the rest with ...", "Record variants use named fields and explicit rest patterns.", "List the remaining accessible fields or add ... to ignore the remainder."},
 					{"unreachable match arm", "An earlier unguarded pattern already covers every value in this arm.", "Remove the arm or make its earlier covering pattern more specific."},
 					{"match guard must be boolean", "A guard is an ordinary boolean expression in the pattern bindings' scope.", "Write a boolean test; its result controls whether this arm is selected."},
+					{"pattern alternative can never match interface", "On an interface subject a variant pattern is a type test, so its enum type must implement the interface (with value receivers).", "Use an enum type whose value type implements the interface, or match a different subject."},
+					{"enum alternatives never cover the interface type", "Variant patterns on an interface subject never prove exhaustiveness; for the predeclared error they search the error tree like errors.As.", "Add a default or case _ arm for every other value, including nil."},
 				}
 				if doc := filepath.Join(root, "design", "alternatives", "README.md"); gonExists(doc) {
 					ex.References = append(ex.References, doc)

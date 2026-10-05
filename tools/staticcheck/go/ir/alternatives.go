@@ -2,6 +2,7 @@ package ir
 
 import (
 	"go/ast"
+	"go/constant"
 	"go/token"
 	"go/types"
 )
@@ -129,7 +130,11 @@ func (b *builder) matchPattern(fn *Function, p *ast.MatchPattern, value Value, n
 			return
 		}
 	}
-	if _, variant := enumSelector(fn, p.Value); variant != nil {
+	if typ, variant := enumSelector(fn, p.Value); variant != nil {
+		if types.IsInterface(value.Type()) {
+			// The pattern tests the dynamic type of an interface subject.
+			value = b.interfaceVariant(fn, typ, value, p, next)
+		}
 		tag := enumField(fn, value, 0, p)
 		body := fn.newBasicBlock("match.variant")
 		emitIf(fn, emitCompare(fn, token.EQL, tag, emitConv(fn, intConst(int64(variant.Tag()), p), tag.Type(), p), p), body, next, p)
@@ -196,4 +201,180 @@ func (b *builder) match(fn *Function, e *ast.MatchExpr, statement bool, label *l
 		return nil
 	}
 	return emitLoad(fn, result, e)
+}
+
+var (
+	tError = types.Universe.Lookup("error").Type()
+	// Interfaces of the error-tree search performed by errors.As.
+	asInterface      = searchInterface("As", []types.Type{tEface}, []types.Type{tBool})
+	unwrapInterface  = searchInterface("Unwrap", nil, []types.Type{tError})
+	unwrapsInterface = searchInterface("Unwrap", nil, []types.Type{types.NewSlice(tError)})
+)
+
+func searchInterface(name string, params, results []types.Type) *types.Interface {
+	tuple := func(ts []types.Type) *types.Tuple {
+		vars := make([]*types.Var, len(ts))
+		for i, t := range ts {
+			vars[i] = types.NewVar(token.NoPos, nil, "", t)
+		}
+		return types.NewTuple(vars...)
+	}
+	sig := types.NewSignatureType(nil, nil, nil, tuple(params), tuple(results), false)
+	return types.NewInterfaceType([]*types.Func{types.NewFunc(token.NoPos, nil, name, sig)}, nil).Complete()
+}
+
+// interfaceVariant lowers the head of a variant pattern whose subject has
+// interface type. It branches to next unless the subject holds the pattern's
+// enum type, and otherwise returns the enum value. A nil interface holds none.
+// For the predeclared error the test is the errors.As search of the error tree;
+// any other interface uses a plain type assertion.
+func (b *builder) interfaceVariant(fn *Function, enum types.Type, subject Value, source ast.Node, next *BasicBlock) Value {
+	var value, ok Value
+	if types.Identical(subject.Type(), tError) {
+		call := &Call{Call: CallCommon{Value: b.errorSearch(fn, enum, source), Args: []Value{subject}}}
+		call.Call.source = source
+		call.setType(types.NewTuple(newVar("value", enum), varOk))
+		tuple := fn.emit(call, source)
+		value, ok = emitExtract(fn, tuple, 0, source), emitExtract(fn, tuple, 1, source)
+	} else {
+		tuple := emitTypeTest(fn, subject, enum, source)
+		value, ok = emitExtract(fn, tuple, 0, source), emitExtract(fn, tuple, 1, source)
+	}
+	body := fn.newBasicBlock("match.interface")
+	emitIf(fn, ok, body, next, source)
+	fn.currentBlock = body
+	return value
+}
+
+// invoke emits an interface method call of the single-method search interface
+// iface on x and returns its result.
+func invoke(fn *Function, x Value, iface *types.Interface, args []Value, source ast.Node) Value {
+	method := iface.Method(0)
+	call := &Call{Call: CallCommon{Value: x, Method: method, Args: args}}
+	call.Call.source = source
+	call.setType(method.Type().(*types.Signature).Results().At(0).Type())
+	return fn.emit(call, source)
+}
+
+// errorSearch returns a synthetic function func(error) (E, bool) that finds the
+// first value of enum type E in an error tree exactly as errors.AsType[E]
+// does: err itself, then the errors reached through Unwrap() error and
+// Unwrap() []error, depth first, matching a dynamic type E or an As(any) bool
+// method that sets its *E argument. Nil errors end a chain and are skipped in
+// a multi-error list.
+func (b *builder) errorSearch(fn *Function, enum types.Type, source ast.Node) *Function {
+	prog := fn.Prog
+	params := types.NewTuple(types.NewVar(token.NoPos, nil, "err", tError))
+	results := types.NewTuple(types.NewVar(token.NoPos, nil, "", enum), types.NewVar(token.NoPos, nil, "", tBool))
+	f := prog.NewFunction("errors.AsType["+types.TypeString(enum, nil)+"]", types.NewSignatureType(nil, nil, nil, params, results, false), "error tree search")
+	f.Pkg = syntheticPackage(fn)
+	f.startBody()
+	err := f.addParamVar(params.At(0), source)
+	current := emitLocal(f, tError, source, "err")
+	emitStore(f, current, err, source)
+	target := emitNew(f, enum, source, "target") // handed to As methods
+	ret := func(v, ok Value) {
+		f.emit(&Return{Results: []Value{v, ok}}, source)
+		f.currentBlock = nil
+	}
+	isTrue := NewConst(constant.MakeBool(true), tBool, source)
+	isFalse := NewConst(constant.MakeBool(false), tBool, source)
+	fail := f.newBasicBlock("search.fail")
+	loop := f.newBasicBlock("search.loop")
+	emitJump(f, loop, source)
+	f.currentBlock = loop
+	e := emitLoad(f, current, source)
+	present := f.newBasicBlock("search.present")
+	emitIf(f, emitCompare(f, token.NEQ, e, nilConst(tError, source), source), present, fail, source)
+	f.currentBlock = present
+
+	// A dynamic type of E matches.
+	test := emitTypeTest(f, e, enum, source)
+	hit, other := f.newBasicBlock("search.hit"), f.newBasicBlock("search.other")
+	emitIf(f, emitExtract(f, test, 1, source), hit, other, source)
+	f.currentBlock = hit
+	ret(emitExtract(f, test, 0, source), isTrue)
+
+	// An As method may report a match by setting target.
+	f.currentBlock = other
+	unwrap := f.newBasicBlock("search.unwrap")
+	as := emitTypeTest(f, e, asInterface, source)
+	callAs := f.newBasicBlock("search.as")
+	emitIf(f, emitExtract(f, as, 1, source), callAs, unwrap, source)
+	f.currentBlock = callAs
+	reported := invoke(f, emitExtract(f, as, 0, source), asInterface, []Value{emitConv(f, target, tEface, source)}, source)
+	found := f.newBasicBlock("search.as.found")
+	emitIf(f, reported, found, unwrap, source)
+	f.currentBlock = found
+	ret(emitLoad(f, target, source), isTrue)
+
+	// Unwrap() error continues with the single wrapped error.
+	f.currentBlock = unwrap
+	single := emitTypeTest(f, e, unwrapInterface, source)
+	step, multiple := f.newBasicBlock("search.step"), f.newBasicBlock("search.multiple")
+	emitIf(f, emitExtract(f, single, 1, source), step, multiple, source)
+	f.currentBlock = step
+	emitStore(f, current, invoke(f, emitExtract(f, single, 0, source), unwrapInterface, nil, source), source)
+	emitJump(f, loop, source)
+
+	// Unwrap() []error searches every non-nil element in order.
+	f.currentBlock = multiple
+	list := emitTypeTest(f, e, unwrapsInterface, source)
+	children := f.newBasicBlock("search.children")
+	emitIf(f, emitExtract(f, list, 1, source), children, fail, source)
+	f.currentBlock = children
+	elements := invoke(f, emitExtract(f, list, 0, source), unwrapsInterface, nil, source)
+	var length Call
+	length.Call.Value = makeLen(elements.Type())
+	length.Call.Args = []Value{elements}
+	length.Call.source = source
+	length.setType(tInt)
+	n := f.emit(&length, source)
+	index := emitLocal(f, tInt, source, "index")
+	emitStore(f, index, intConst(0, source), source)
+	next, body, advance := f.newBasicBlock("search.next"), f.newBasicBlock("search.child"), f.newBasicBlock("search.advance")
+	emitJump(f, next, source)
+	f.currentBlock = next
+	i := emitLoad(f, index, source)
+	emitIf(f, emitCompare(f, token.LSS, i, n, source), body, fail, source)
+	f.currentBlock = body
+	address := &IndexAddr{X: elements, Index: i}
+	address.setType(types.NewPointer(tError))
+	child := emitLoad(f, f.emit(address, source), source)
+	descend := f.newBasicBlock("search.descend")
+	emitIf(f, emitCompare(f, token.NEQ, child, nilConst(tError, source), source), descend, advance, source)
+	f.currentBlock = descend
+	recurse := &Call{Call: CallCommon{Value: f, Args: []Value{child}}}
+	recurse.Call.source = source
+	recurse.setType(results)
+	result := f.emit(recurse, source)
+	descended := f.newBasicBlock("search.descended")
+	emitIf(f, emitExtract(f, result, 1, source), descended, advance, source)
+	f.currentBlock = descended
+	ret(emitExtract(f, result, 0, source), isTrue)
+	f.currentBlock = advance
+	emitStore(f, index, emitArith(f, token.ADD, emitLoad(f, index, source), intConst(1, source), tInt, source), source)
+	emitJump(f, next, source)
+
+	f.currentBlock = fail
+	ret(zeroConst(enum, source), isFalse)
+	f.finishBody()
+	if prog.mode&SanityCheckFunctions != 0 {
+		mustSanityCheck(f, nil)
+	}
+	return f
+}
+
+// syntheticPackage returns the package that owns fn, including when fn is an
+// instance of a generic function or a function nested in one.
+func syntheticPackage(fn *Function) *Package {
+	for f := fn; f != nil; f = f.parent {
+		if f.Pkg != nil {
+			return f.Pkg
+		}
+		if origin := f.topLevelOrigin; origin != nil && origin.Pkg != nil {
+			return origin.Pkg
+		}
+	}
+	return nil
 }

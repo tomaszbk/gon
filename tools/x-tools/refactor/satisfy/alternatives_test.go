@@ -26,6 +26,10 @@ func implicit() I? { return P(4) }
 func implicitCond(c bool) I? { return if c { P(4) } else { P(5) } }
 func implicitMatch(c bool) I? { return switch c { case true => P(6); case false => nil } }
 func result() Result[I,error] { return .Ok(P(5)) }
+type Q interface { N() }
+type F enum { default Zero; One(int) }
+func (F) N() {}
+func interfaceSubject(q Q) int { return switch q { case F.One(n) => n; default => 0 } }
 `
 	fs := token.NewFileSet()
 	f, err := parser.ParseFile(fs, "p.go", source, parser.SkipObjectResolution)
@@ -42,5 +46,10 @@ func result() Result[I,error] { return .Ok(P(5)) }
 	want := satisfy.Constraint{LHS: p.Scope().Lookup("I").Type(), RHS: p.Scope().Lookup("P").Type()}
 	if !finder.Result[want] {
 		t.Fatalf("missing payload/match/coalesce/propagation constraint %v in %v", want, finder.Result)
+	}
+	// A variant pattern on an interface subject is a conditional type test.
+	test := satisfy.Constraint{LHS: p.Scope().Lookup("Q").Type(), RHS: p.Scope().Lookup("F").Type()}
+	if !finder.Result[test] {
+		t.Fatalf("missing interface-subject variant pattern constraint %v in %v", test, finder.Result)
 	}
 }

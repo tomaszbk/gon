@@ -18,6 +18,11 @@ const (
 	matchBinding
 	matchValue
 	matchVariant
+	// matchInterface wraps a variant pattern whose subject is an interface. It
+	// is followed by a flag for the error-tree search, the runtime type
+	// information that search or a dynamic type assertion needs, and the
+	// ordinary variant pattern for the enum type that was found.
+	matchInterface
 )
 
 func (w *writer) matchExpr(e *syntax.MatchExpr, statement bool) {
@@ -103,36 +108,69 @@ func (w *writer) matchPattern(p *syntax.MatchPattern, t types2.Type) {
 		}
 	}
 	if sel, ok := p.Value.(*syntax.SelectorExpr); ok && types2.EnumOf(t) != nil {
-		v := types2.EnumOf(t).Lookup(sel.Sel.Value, w.p.curpkg)
-		assert(v != nil)
-		w.Len(matchVariant)
-		w.Len(v.Tag())
-		w.Len(v.StorageIndex())
-		if v.IsRecord() {
-			w.Len(len(p.Fields))
-			for _, f := range p.Fields {
-				index := -1
-				for i := 0; i < v.NumFields(); i++ {
-					if v.Field(i).Name() == f.Name.Value {
-						index = i
-						break
-					}
-				}
-				assert(index >= 0)
-				w.Len(index)
-				w.matchPattern(f.Pattern, v.Field(index).Type())
-			}
-		} else {
-			w.Len(len(p.Args))
-			for i, a := range p.Args {
-				w.Len(i)
-				w.matchPattern(a, v.Field(i).Type())
-			}
-		}
+		w.matchVariant(p, sel, t)
 		return
+	}
+	if sel, ok := p.Value.(*syntax.SelectorExpr); ok {
+		if tv, ok := w.p.maybeTypeAndValue(sel.X); ok && tv.IsType() && types2.EnumOf(tv.Type) != nil {
+			w.matchInterface(p, sel, t, tv.Type)
+			return
+		}
 	}
 	w.Len(matchValue)
 	w.implicitConvExpr(t, p.Value)
+}
+
+func (w *writer) matchVariant(p *syntax.MatchPattern, sel *syntax.SelectorExpr, t types2.Type) {
+	v := types2.EnumOf(t).Lookup(sel.Sel.Value, w.p.curpkg)
+	assert(v != nil)
+	w.Len(matchVariant)
+	w.Len(v.Tag())
+	w.Len(v.StorageIndex())
+	if v.IsRecord() {
+		w.Len(len(p.Fields))
+		for _, f := range p.Fields {
+			index := -1
+			for i := 0; i < v.NumFields(); i++ {
+				if v.Field(i).Name() == f.Name.Value {
+					index = i
+					break
+				}
+			}
+			assert(index >= 0)
+			w.Len(index)
+			w.matchPattern(f.Pattern, v.Field(index).Type())
+		}
+	} else {
+		w.Len(len(p.Args))
+		for i, a := range p.Args {
+			w.Len(i)
+			w.matchPattern(a, v.Field(i).Type())
+		}
+	}
+}
+
+// matchInterface writes a variant pattern of enum type enum whose subject has
+// interface type iface. The enum type implements the interface, so a dynamic
+// type test can succeed. For the predeclared error the test is the search of
+// the error tree that errors.As performs, found by a runtime helper that needs
+// no import of package errors.
+func (w *writer) matchInterface(p *syntax.MatchPattern, sel *syntax.SelectorExpr, iface, enum types2.Type) {
+	w.Len(matchInterface)
+	w.pos(p)
+	if w.Bool(isErrorType(iface)) {
+		w.rtype(enum)
+		w.rtype(types2.NewPointer(enum))
+	} else {
+		w.exprType(iface, sel.X)
+		w.rtype(iface)
+	}
+	w.matchVariant(p, sel, enum)
+}
+
+// isErrorType reports whether t is identical to the predeclared error type.
+func isErrorType(t types2.Type) bool {
+	return types2.Identical(t, types2.Universe.Lookup("error").Type())
 }
 
 // matchPattern builds a lazy condition and the bindings to initialise after
@@ -155,6 +193,8 @@ func (r *reader) matchPattern(pos src.XPos, input ir.Node, declarations *ir.Node
 		return ir.NewBool(pos, true), ir.Nodes{typecheck.Stmt(ir.NewAssignStmt(pos, bound, input))}
 	case matchValue:
 		return typecheck.DefaultLit(typecheck.Expr(ir.NewBinaryExpr(pos, ir.OEQ, input, r.expr())), types.Types[types.TBOOL]), nil
+	case matchInterface:
+		return r.matchInterface(input, declarations)
 	case matchVariant:
 		tag, storage := r.Len(), r.Len()
 		condition := enumTagTest(pos, input, tag, ir.OEQ)
@@ -168,6 +208,71 @@ func (r *reader) matchPattern(pos src.XPos, input ir.Node, declarations *ir.Node
 		return condition, bindings
 	}
 	panic("invalid match pattern encoding")
+}
+
+// matchInterface lowers a variant pattern on an interface input. It evaluates,
+// once and only when this pattern is tried, a dynamic type test that saves the
+// enum value, and then the ordinary variant pattern against that saved value.
+// A nil interface holds no enum value and fails the test. The saved value is
+// private to the pattern; payload bindings copy from it.
+//
+// For the predeclared error the test is the runtime's search of the error
+// tree, with the semantics of errors.AsType, instead of a plain type assertion.
+//
+// The saved value is declared and zeroed where every path reaches it. When a
+// binding reads it after the test, that is the arm's declaration list, as for
+// bound variables, because a nested pattern's test runs only on some paths.
+// Otherwise nothing outside the test reads it and it stays local to the test.
+func (r *reader) matchInterface(input ir.Node, declarations *ir.Nodes) (ir.Node, ir.Nodes) {
+	pos := r.pos()
+	matched := r.temp(pos, types.Types[types.TBOOL])
+	body := ir.Nodes{
+		typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, matched)),
+		typecheck.Stmt(ir.NewAssignStmt(pos, matched, ir.NewBool(pos, false))),
+	}
+	var head ir.Nodes // computes the value and its presence
+	var value *ir.Name
+	var present ir.Node // reports whether value holds an enum, once head ran
+	if r.Bool() {
+		typ, rtype := r.rtype0(pos)
+		_, ptrRType := r.rtype0(pos)
+		pointer := r.temp(pos, types.Types[types.TUNSAFEPTR])
+		head.Append(typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, pointer)))
+		call := typecheck.Call(pos, typecheck.LookupRuntime("matchErrorAs"), []ir.Node{input, rtype, ptrRType}, false)
+		head.Append(typecheck.Stmt(ir.NewAssignStmt(pos, pointer, call)))
+		value = r.temp(pos, typ)
+		present = nilTest(pos, pointer, ir.ONE)
+		// The helper reports a pointer to an immutable enum value.
+		copied := typecheck.Expr(ir.NewStarExpr(pos, typecheck.Expr(ir.NewConvExpr(pos, ir.OCONVNOP, types.NewPtr(typ), pointer))))
+		head.Append(typecheck.Stmt(ir.NewIfStmt(pos, nilTest(pos, pointer, ir.ONE), []ir.Node{typecheck.Stmt(ir.NewAssignStmt(pos, value, copied))}, nil)))
+	} else {
+		target := r.exprType()
+		srcRType := r.rtype(pos)
+		var assert ir.Node
+		if dt, ok := target.(*ir.DynamicType); ok && dt.Op() == ir.ODYNAMICTYPE {
+			x := ir.NewDynamicTypeAssertExpr(pos, ir.ODYNAMICDOTTYPE, input, dt.RType)
+			x.SrcRType = srcRType
+			x.ITab = dt.ITab
+			assert = typed(dt.Type(), x)
+		} else {
+			assert = typecheck.Expr(ir.NewTypeAssertExpr(pos, input, target.Type()))
+		}
+		value = r.temp(pos, assert.Type())
+		ok := r.temp(pos, types.Types[types.TBOOL])
+		head.Append(typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, ok)))
+		head.Append(typecheck.Stmt(ir.NewAssignListStmt(pos, ir.OAS2, []ir.Node{value, ok}, []ir.Node{assert})))
+		present = ok
+	}
+	child, bindings := r.matchPattern(pos, value, declarations)
+	declare := ir.Nodes{typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, value)), typecheck.Stmt(ir.NewAssignStmt(pos, value, ir.NewZero(pos, value.Type())))}
+	if len(bindings) > 0 {
+		declarations.Append(declare...)
+	} else {
+		body.Append(declare...)
+	}
+	body.Append(head...)
+	body.Append(typecheck.Stmt(ir.NewIfStmt(pos, present, []ir.Node{typecheck.Stmt(ir.NewAssignStmt(pos, matched, child))}, nil)))
+	return nilInline(pos, body, matched), bindings
 }
 
 func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
