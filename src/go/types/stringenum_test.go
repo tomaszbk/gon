@@ -87,6 +87,38 @@ func TestStringEnumInvalidDeclarations(t *testing.T) {
 	}
 }
 
+// Declarations that refer to each other through a type literal are valid, and
+// the declaration of one of them can complete while the right-hand side of
+// another is still unset. String enum method synthesis must not force the
+// underlying type of such an incomplete declaration.
+func TestStringEnumDeclarationCycles(t *testing.T) {
+	for _, src := range []string{
+		`package p; type T6 T7; type T7 *T8; type T8 T6`,
+		`package p; type T8 T6; type T7 *T8; type T6 T7`,
+		`package p; type A B; type B []A; var _ A`,
+		`package p; type B enum { default N; Next(*A) }; type A B; var _ = A.N`,
+		`package p; type A B; type B enum { default N; Next(*A) }; var _ = B.Next(nil)`,
+		`package p; type A = B; type B *A`,
+		`package p; type G[T any] H[T]; type H[T any] *G[T]`,
+		`package p; type Role enum string { default Unknown(string); A = "a" }; type D Role; type E D; var _ = E.Parse("a")`,
+	} {
+		if _, err := typecheck(src, nil, nil); err != nil {
+			t.Errorf("%s: %v", src, err)
+		}
+	}
+	// Invalid cycles are diagnosed, not crashed on or looped over.
+	for _, src := range []string{
+		`package p; type T1 T1`,
+		`package p; type T3 T4; type T4 T5; type T5 T3`,
+		`package p; func f() { type T T }`,
+		`package p; func f() { type A = A }`,
+	} {
+		if _, err := typecheck(src, nil, nil); err == nil {
+			t.Errorf("%s: invalid cycle accepted", src)
+		}
+	}
+}
+
 func TestStringEnumContextualMarker(t *testing.T) {
 	mustTypecheck(`package p; type Text = string; func f() { type string int; type Role enum string { default Unknown(Text); A = "a" }; var role Role; _ = role; var ordinary string; _ = ordinary }`, nil, nil)
 }

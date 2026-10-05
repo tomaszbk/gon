@@ -28,6 +28,11 @@ func typeExprEndPos(expr0 syntax.Expr) syntax.Pos {
 			assert(expr.Y == nil)
 			expr0 = expr.X
 
+		case *syntax.OptionalExpr:
+			// Optional type T?. Like the other type constructors, it
+			// leaves the position of the type it is applied to.
+			expr0 = expr.X
+
 		case *syntax.ArrayType:
 			expr0 = expr.Elem
 		case *syntax.ChanType:

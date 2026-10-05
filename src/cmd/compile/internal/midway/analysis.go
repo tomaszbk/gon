@@ -219,6 +219,8 @@ func (a *Analyzer) checkTypeRecursive(t types2.Type) bool {
 		return false
 	case *types2.Pointer:
 		return memo(a.checkTypeRecursive(t.Elem()))
+	case *types2.Optional:
+		return memo(a.checkTypeRecursive(t.Elem()))
 	case *types2.Slice:
 		return memo(a.checkTypeRecursive(t.Elem()))
 	case *types2.Array:
