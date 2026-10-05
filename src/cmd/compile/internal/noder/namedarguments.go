@@ -2,6 +2,7 @@ package noder
 
 import (
 	"cmd/compile/internal/syntax"
+	"cmd/compile/internal/types"
 	"cmd/compile/internal/types2"
 )
 
@@ -22,4 +23,23 @@ func namedCallOrder(call *syntax.CallExpr, sig *types2.Signature) []int {
 		}
 	}
 	return order
+}
+
+// namedArgumentType returns the type that the i'th argument of a call to a
+// function of the given signature is converted to, or nil if it is not known.
+// Arguments of a call without a trailing ... are matched to the element type
+// of a variadic parameter.
+func namedArgumentType(signature *types.Type, i int, dots bool) *types.Type {
+	if signature == nil || signature.Kind() != types.TFUNC {
+		return nil
+	}
+	params := signature.Params()
+	if i >= len(params) {
+		return nil
+	}
+	typ := params[i].Type
+	if params[i].IsDDD() && !dots {
+		typ = typ.Elem()
+	}
+	return typ
 }

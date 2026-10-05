@@ -90,6 +90,7 @@ func main(){ var i lib.Applier = lib.Number(3); fmt.Println(lib.Pair(second:2,fi
 		`f(a: 1, a: 2)`, `f(a: 1)`, `f(other: 1, b: 2)`, `f(a: 1, 2)`,
 		`f(1, a: 2)`, `v(values: 1)`, `len(value: "x")`, `int(value: 1)`,
 		`var x func(int,int) = f; x(a: 1,b: 2)`, `f(a: pair(), b: 2)`,
+		`f(a: 1 < 2, b: 2)`, `f(b: nil, a: 1)`, `f(b: 1<<100, a: 1)`,
 	}
 	tmp, err := os.MkdirTemp("", "gon-named-invalid-")
 	if err != nil {

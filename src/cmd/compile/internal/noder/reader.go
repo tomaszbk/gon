@@ -2564,14 +2564,23 @@ func (r *reader) expr() (res ir.Node) {
 			} else {
 				fun = r.tempCopy(pos, fun, &init)
 			}
-			for i, arg := range args {
-				args[i] = r.tempCopy(pos, arg, &init)
-			}
+			// Each written argument is associated with a parameter position.
+			// Implicit method/dictionary arguments keep their positions.
 			count := r.Len()
-			reordered := make(ir.Nodes, len(args))
-			copy(reordered, args[:prefix])
+			position := make([]int, len(args))
+			for i := 0; i < prefix; i++ {
+				position[i] = i
+			}
 			for i := 0; i < count; i++ {
-				reordered[prefix+r.Len()] = args[prefix+i]
+				position[prefix+i] = prefix + r.Len()
+			}
+			// An argument can still have an untyped type at this point (for
+			// example, the untyped boolean result of a comparison). Convert it
+			// to its parameter type before storing it, as the call itself would.
+			signature := fun.Type()
+			reordered := make(ir.Nodes, len(args))
+			for i, arg := range args {
+				reordered[position[i]] = r.tempCopyAs(pos, arg, namedArgumentType(signature, position[i], dots), &init)
 			}
 			args = reordered
 		}
@@ -3271,6 +3280,14 @@ func (r *reader) temp(pos src.XPos, typ *types.Type) *ir.Name {
 // tempCopy declares and returns a new autotemp initialized to the
 // value of expr.
 func (r *reader) tempCopy(pos src.XPos, expr ir.Node, init *ir.Nodes) *ir.Name {
+	return r.tempCopyAs(pos, expr, nil, init)
+}
+
+// tempCopyAs is like tempCopy, but an expression of untyped type is first
+// converted to typ, or to its default type if typ is nil. Typed expressions
+// are copied unchanged.
+func (r *reader) tempCopyAs(pos src.XPos, expr ir.Node, typ *types.Type, init *ir.Nodes) *ir.Name {
+	expr = typecheck.DefaultLit(expr, typ)
 	tmp := r.temp(pos, expr.Type())
 
 	init.Append(typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, tmp)))
