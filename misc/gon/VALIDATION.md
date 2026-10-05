@@ -267,12 +267,14 @@ VALIDATION.md for the exact commands and platform limits.
   postfix `!`, because useful partial results may coexist with errors; every
   other tuple boundary needs explicit code. Enum patterns on an interface never
   prove exhaustiveness.
-- Open items on master `96ab86645a` (see [STATUS.md](STATUS.md)): `case *int?:`
-  in a type switch crashes the compiler; a gonpls `objectpath` panic for a
-  generic enum with a method plus a multi-payload positional variant; the
-  `go/build` `TestDependencies` "reflect imports [strings]" failure; the full
-  `TestCheck` panic at `testdata/check/cycles0.go`; and the `copylock`
-  `TestGonFeatures` line mismatch.
+- The open items found during that merge are fixed in `2b0ee32fbc`. Checked on
+  darwin/arm64: `go test go/build -run TestDependencies`; `go test reflect -run
+  '^TestOptional|TestSplitEnumMetadata'`; `go test cmd/compile/internal/types2
+  go/types -run 'TestStringEnum|^TestCheck$'` (full TestCheck in both checkers);
+  `go test go/types -run Generate`; `go test ./go/types/objectpath` and
+  `./go/analysis/passes/copylock` in tools/x-tools; `vendor.py --check`;
+  `cmd/internal/testdir -run 'Test/(optionsyntax|optionresult|enums|stringenums|stringenums_sql|matching|matchinterface)\.go$'`
+  with Go 1.27.1 as baseline.
 
 ## Upstream integration
 

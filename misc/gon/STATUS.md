@@ -68,17 +68,24 @@ part of Gon 2.27), merged on master `96ab86645a`:
   compiler; vet `httpresponse` and `sqlrowserr` understand `!`/`or` handlers;
   gonpls no longer crashes on methods returning the predeclared `Result`.
 
-Open items on master `96ab86645a`, not fixed by the merged work:
+Fixed after the feature merges (branch `gon/fixes`, `2b0ee32fbc`):
 
-- `case *int?:` in a type switch crashes the compiler in `noder.typeExprEndPos`.
-- gonpls `objectpath.enumPayloadStruct` panics with "multiple fields with the
-  same name" for a generic enum with a method plus an enum with a multi-payload
-  positional variant.
-- `go/build` `TestDependencies` reports "reflect imports [strings]"
-  (`src/reflect/enum.go`).
-- The full `types2`/`go/types` `TestCheck` panics at `testdata/check/cycles0.go`
-  through `addStringEnumMethods`.
-- The `copylock` `TestGonFeatures` line expectation does not match.
+- Optional types (`T?`, `*T?`, `[]T?`, `(T?)?`, ...) compile in type-switch
+  cases, assertions, literals, conversions, instantiation and anonymous-interface
+  cycle detection; covered by `test/optionsyntax.dir/typeforms_*.go` and
+  per-form compile checks in `test/optionsyntax.go`.
+- objectpath encodes enum variant payload fields directly, so variants with two
+  or more positional payloads no longer panic `gon check`
+  (`TestEnumPathsPositionalPayloads`).
+- `reflect` no longer imports `strings` (enum metadata is split with
+  `internal/stringslite`), restoring `go/build` `TestDependencies`.
+- String-enum method synthesis no longer forces `Named.Underlying` of
+  in-progress declarations, fixing the `TestCheck/cycles0.go` panic and a crash on
+  valid cycles such as `type A B; type B *A` (`TestStringEnumDeclarationCycles`).
+- The copylock `gonfeatures` expectation sits on the reported `return` line.
+
+Open: comparing an optional with untyped nil (`x == nil`, `x != nil`) is not
+valid; use matching, `??` or `?`.
 
 Known tooling gaps: the `unreachable` analyzer does not inspect `or` handler
 bodies; inline variable on an `or`-handler initializer yields an oddly
