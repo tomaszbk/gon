@@ -156,9 +156,3 @@ func optionBoundary(ok bool) int {
 	}
 	return 4
 }
-func resultBoundary(ok bool) string {
-	if !ok {
-		return "failure"
-	}
-	return fmt.Sprint(8)
-}

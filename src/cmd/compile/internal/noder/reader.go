@@ -157,6 +157,11 @@ type reader struct {
 	retlabel *types.Sym
 
 	nilSafety *nilSafetyContext
+
+	// Pattern bindings in a short-circuit condition need declarations that
+	// dominate every path through the enclosing if. Their payload assignments
+	// remain at the successful pattern test.
+	patternTestDeclarations *ir.Nodes
 }
 
 // A readerDict represents an instantiated "compile-time dictionary,"
@@ -534,8 +539,6 @@ func (r *reader) doTyp() *types.Type {
 		return r.enumType(false)
 	case pkgbits.TypeStringEnum:
 		return r.enumType(true)
-	case pkgbits.TypeCanonicalEnum:
-		return r.canonicalEnumType()
 	case pkgbits.TypeStruct:
 		return r.structType()
 	case pkgbits.TypeInterface:
@@ -2010,7 +2013,10 @@ func (r *reader) ifStmt() ir.Node {
 	r.openScope()
 	pos := r.pos()
 	init := r.stmts()
+	previousDeclarations := r.patternTestDeclarations
+	r.patternTestDeclarations = &init
 	cond := r.expr()
+	r.patternTestDeclarations = previousDeclarations
 	staticCond := r.Int()
 	var then, els []ir.Node
 	if staticCond >= 0 {
@@ -2274,8 +2280,6 @@ func (r *reader) expr() (res ir.Node) {
 		return r.optionExpr()
 	case exprOptionNilCompare:
 		return r.optionNilCompare()
-	case exprResultError:
-		return r.resultErrorExpr()
 	case exprOptionCoalesce:
 		return r.optionCoalesce()
 	case exprOptionSafeNav:
@@ -2285,6 +2289,8 @@ func (r *reader) expr() (res ir.Node) {
 	case exprError:
 		return r.errorExpr()
 
+	case exprPatternTest:
+		return r.patternTestExpr()
 	case exprMatch:
 		return r.matchExpr(false, nil)
 

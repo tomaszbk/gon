@@ -22,5 +22,5 @@ func Test(t *testing.T) {
 }
 
 func TestGon(t *testing.T) {
-	analysistest.Run(t, analysistest.TestData(), testinggoroutine.Analyzer, "gon")
+	analysistest.Run(t, analysistest.TestData(), testinggoroutine.Analyzer, "gonfixture")
 }

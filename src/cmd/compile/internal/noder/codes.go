@@ -72,7 +72,7 @@ const (
 	exprCoalesce
 	exprNamedCall // named call; arguments evaluated in written order
 	exprOption
-	exprResultError
+	_ // reserved: retired Result propagation encoding
 	exprOptionCoalesce
 	exprOptionSafeNav
 	exprOptionGuard
@@ -80,6 +80,7 @@ const (
 	exprStringEnumParse
 	exprNilValue         // a previously evaluated value in a nil-safety expression
 	exprOptionNilCompare // test only an optional's presence tag
+	exprPatternTest      // single-subject structural pattern test
 )
 
 type codeAssign int

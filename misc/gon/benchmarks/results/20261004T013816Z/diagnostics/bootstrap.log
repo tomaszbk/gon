@@ -1,9 +1,0 @@
-Building Go cmd/dist using /opt/homebrew/Cellar/go/1.27.1/libexec. (go1.27.1 darwin/arm64)
-Building Go toolchain1 and bootstrap cmd/go (go_bootstrap) using /opt/homebrew/Cellar/go/1.27.1/libexec.
-Building Go toolchain2 using go_bootstrap and Go toolchain1.
-Building Go toolchain3 and commands using go_bootstrap and Go toolchain2.
-Checking command staleness for darwin/arm64.
----
-Installed Go for darwin/arm64 in /private/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-9tzgzkqy/gon
-Installed commands in /private/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-9tzgzkqy/gon/bin
-*** You need to add /private/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-9tzgzkqy/gon/bin to your PATH.

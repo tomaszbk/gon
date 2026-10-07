@@ -32,8 +32,6 @@ func main() {
 	var none int?
 	assert(none == (int?)(nil) && none != (int?)((int)(0)), "Some zero is present")
 	assert(((*int)?)((*int)(nil)) != ((*int)?)(nil), "Some nil is present")
-	var result Result[int, error]
-	assert(result == Result[int, error].Ok(0) && result != Result[int, error].Err(nil), "Result zero and Err nil")
 	n := 42
 	pointer := Payment.Pointer(&n)
 	copied := pointer

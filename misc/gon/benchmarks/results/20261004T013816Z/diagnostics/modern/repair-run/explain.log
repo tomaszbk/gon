@@ -1,6 +1,0 @@
-{"ImportPath":"go/types","Action":"build-output","Output":"# go/types\n"}
-{"ImportPath":"go/types","Action":"build-output","Output":"../../src/go/types/enumcheck.go:124:18: undefined: InvalidOp\n"}
-{"ImportPath":"go/types","Action":"build-fail"}
-{"Time":"2026-10-03T12:07:02.107355-03:00","Action":"start","Package":"golang.org/x/tools/gopls/internal/cmd"}
-{"Time":"2026-10-03T12:07:02.107472-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/cmd","Output":"FAIL\tgolang.org/x/tools/gopls/internal/cmd [build failed]\n","OutputType":"frame"}
-{"Time":"2026-10-03T12:07:02.107484-03:00","Action":"fail","Package":"golang.org/x/tools/gopls/internal/cmd","Elapsed":0,"FailedBuild":"go/types"}

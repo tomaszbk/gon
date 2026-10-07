@@ -1483,12 +1483,10 @@ const (
 	// error handler uses an invalid operand, enclosing function, or handler.
 	//
 	// Postfix ! on a call whose last result is error needs an enclosing
-	// function that returns error last, or exactly one Result whose error type
-	// accepts error. On a Result it needs a function that returns exactly one
-	// Result with an assignable error type, or error last when the payload is
-	// assignable to error. In a _test.go file, a function that returns neither
-	// and whose first parameter is a named *testing.T, *testing.B, *testing.F
-	// or testing.TB reports the failure with Fatal.
+	// function that returns error last. In a _test.go file, a function that
+	// does not return error last and whose first parameter is a named
+	// *testing.T, *testing.B, *testing.F or testing.TB reports the failure
+	// with Fatal.
 	//
 	// Example:
 	//  func f() int { return 1 }
@@ -1511,4 +1509,6 @@ const (
 	InvalidNilSafety
 	// InvalidMatch occurs for invalid patterns, guards, or non-exhaustive matches.
 	InvalidMatch
+	// InvalidInterpolation occurs for a missing fmt import or an invalid format.
+	InvalidInterpolation
 )

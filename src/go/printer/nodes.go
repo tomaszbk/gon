@@ -583,6 +583,7 @@ func (p *printer) fieldList(fields *ast.FieldList, isStruct, isIncomplete bool) 
 				}
 				p.setComment(f.Comment)
 			}
+			p.interpolationSemi()
 		}
 		if isIncomplete {
 			if len(list) > 0 {
@@ -624,6 +625,7 @@ func (p *printer) fieldList(fields *ast.FieldList, isStruct, isIncomplete bool) 
 				prev = nil
 			}
 			p.setComment(f.Comment)
+			p.interpolationSemi()
 		}
 		if isIncomplete {
 			if len(list) > 0 {
@@ -827,6 +829,39 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 	p.setPos(expr.Pos())
 
 	switch x := expr.(type) {
+	case *ast.InterpolatedStringExpr:
+		text := func(pos token.Pos, value string) {
+			p.setPos(pos)
+			previous := p.inInterpolationText
+			p.inInterpolationText = true
+			p.print(value)
+			p.inInterpolationText = previous
+		}
+		text(x.Dollar, "$"+string(x.Quote))
+		for _, part := range x.Parts {
+			if part.Expr == nil {
+				text(part.Start, part.Text)
+			} else {
+				text(part.Start, "${")
+				previousExpr, previousCompact := p.inInterpolationExpr, p.compactInterpolation
+				p.inInterpolationExpr = true
+				p.compactInterpolation = previousCompact || x.Quote == '"'
+				p.expr(part.Expr)
+				if part.Format != "" {
+					// Format text extends from the colon to the closing brace.
+					// Anchor it after any trailing expression comments so that
+					// comments cannot become part of the format string.
+					pos := token.NoPos
+					if part.EndPos.IsValid() {
+						pos = part.EndPos - token.Pos(len(part.Format)) - 2
+					}
+					text(pos, ":"+part.Format)
+				}
+				text(part.EndPos-1, "}")
+				p.inInterpolationExpr, p.compactInterpolation = previousExpr, previousCompact
+			}
+		}
+		text(x.Rquote, string(x.Quote))
 	case *ast.BadExpr:
 		p.print("BadExpr")
 
@@ -891,18 +926,18 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		p.signature(x.Type)
 		p.funcBody(p.distanceFrom(x.Type.Pos(), startCol), blank, x.Body)
 
-	case *ast.ContextualVariantExpr:
-		p.setPos(x.Dot)
-		p.print(token.PERIOD)
-		p.expr(x.Name)
-		if x.Lparen.IsValid() {
-			p.setPos(x.Lparen)
+	case *ast.PatternTestExpr:
+		prec := token.EQL.Precedence()
+		if prec < prec1 {
 			p.print(token.LPAREN)
-			p.exprList(x.Lparen, x.Args, depth, commaTerm, x.Rparen, false)
-			p.setPos(x.Rparen)
+		}
+		p.expr1(x.X, prec, depth)
+		p.setPos(x.Is)
+		p.print(blank, "is", blank)
+		p.matchPattern(x.Pattern)
+		if prec < prec1 {
 			p.print(token.RPAREN)
 		}
-
 	case *ast.OptionalExpr:
 		p.expr1(x.X, token.HighestPrec, depth)
 		p.setPos(x.Question)
@@ -1039,15 +1074,29 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		p.print(token.RBRACK)
 
 	case *ast.ErrorExpr:
+		parens := x.Context != nil && prec1 > token.LowestPrec
+		if parens {
+			p.print(token.LPAREN)
+		}
 		p.expr1(x.X, token.HighestPrec, depth)
 		p.setPos(x.OpPos)
-		if x.Body == nil {
+		if x.Context != nil {
+			p.print(blank, "or", blank)
+			p.expr(x.Err)
+			p.print(blank)
+			p.setPos(x.Arrow)
+			p.print(token.FATARROW, blank)
+			p.expr(x.Context)
+		} else if x.Body == nil {
 			p.print(token.NOT)
 		} else {
 			p.print(blank, "or", blank)
 			p.expr(x.Err)
 			p.print(blank)
 			p.block(x.Body, 1)
+		}
+		if parens {
+			p.print(token.RPAREN)
 		}
 
 	case *ast.CondExpr:
@@ -1336,6 +1385,14 @@ func (p *printer) expr(x ast.Expr) {
 // ----------------------------------------------------------------------------
 // Statements
 
+// Interpolation disables automatic semicolon insertion, including inside
+// nested blocks and type declarations. Keep their list separators explicit.
+func (p *printer) interpolationSemi() {
+	if p.inInterpolationExpr {
+		p.print(token.SEMICOLON)
+	}
+}
+
 // Print the statement list indented, but without a newline after the last statement.
 // Extra line breaks between statements in the source are respected but at most one
 // empty line is printed between statements.
@@ -1357,6 +1414,7 @@ func (p *printer) stmtList(list []ast.Stmt, nindent int, nextIsRBrace bool) {
 			}
 			p.recordLine(&line)
 			p.stmt(s, nextIsRBrace && i == len(list)-1)
+			p.interpolationSemi()
 			// labeled statements put labels on a separate line, but here
 			// we only care about the start line of the actual statement
 			// without label - correct line for each label
@@ -2007,6 +2065,7 @@ func (p *printer) genDecl(d *ast.GenDecl) {
 					}
 					p.recordLine(&line)
 					p.valueSpec(s.(*ast.ValueSpec), keepType[i])
+					p.interpolationSemi()
 				}
 			} else {
 				var line int
@@ -2016,6 +2075,7 @@ func (p *printer) genDecl(d *ast.GenDecl) {
 					}
 					p.recordLine(&line)
 					p.spec(s, n, false)
+					p.interpolationSemi()
 				}
 			}
 			p.print(unindent, formfeed)

@@ -89,9 +89,8 @@ func main() {
 	require(describePayment(zero) == "pending", "enum zero")
 	require(describePayment(newPaid("receipt-42")) == "paid: receipt-42", "record payload")
 	require(describePayment(newRejected("declined")) == "rejected: declined", "positional payload")
-	require(paymentStatus(42) == "paid: receipt-42", "Result success")
-	require(paymentStatus(-1) == "failed: negative amount", "Result failure")
-	require(resultNilPreserved(), "Err(nil) remains failure")
+	require(paymentStatus(42) == "paid: receipt-42", "tuple success")
+	require(paymentStatus(-1) == "failed: negative amount", "tuple failure")
 
 	users := []User{{Name: "Zoe"}, {Name: "Ada"}, {Name: "Ben"}}
 	sortUsers(users)
@@ -116,5 +115,9 @@ func main() {
 		require(portLabel(scenario.input) == scenario.want, "optional port: "+scenario.input)
 	}
 
-	fmt.Println("PASS: errors, nil, Option, enums, matching, Result, lambdas, conditionals, named arguments")
+	require(userSummary(nil) == "empty: 0 users", "empty seq")
+	require(userSummary([]User{{Name: "Ada"}, {Name: "Ben"}}) == "Ada: 2 users", "pattern binding and interpolation")
+	require(userSummary([]User{{}}) == "empty: 1 users", "pattern guard")
+	require(!settled(zero) && !settled(newRejected("declined")) && settled(newPaid("x")), "pattern alternatives")
+	fmt.Println("PASS: errors, nil, optionals, enums, matching, lambdas, conditionals, named arguments")
 }

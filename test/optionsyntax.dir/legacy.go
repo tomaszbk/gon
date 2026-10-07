@@ -2,17 +2,11 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 )
 
 type Maybe[T any] struct {
 	Present bool
 	Value   T
-}
-type Parsed struct {
-	Failed  bool
-	Number  Maybe[int]
-	Problem error
 }
 type Container struct{ Value Maybe[int] }
 
@@ -24,31 +18,11 @@ func optional(present bool) (number Maybe[int]) {
 	}
 	return some(mark("V", 5))
 }
-func parsePort(text string) (port Parsed) {
-	defer func() { effects += "P" + parsedLabel(port) }()
-	if text == "" {
-		return Parsed{}
-	}
-	value, problem := strconv.Atoi(text)
-	if problem != nil {
-		return Parsed{Failed: true, Problem: problem}
-	}
-	return Parsed{Number: some(value)}
-}
 func optionalLabel(value Maybe[int]) string {
 	if !value.Present {
 		return "None"
 	}
 	return fmt.Sprint("Some:", value.Value)
-}
-func parsedLabel(value Parsed) string {
-	if value.Failed {
-		return fmt.Sprint("error:", value.Problem != nil)
-	}
-	if !value.Number.Present {
-		return "empty"
-	}
-	return fmt.Sprint("port:", value.Number.Value)
 }
 func inferred[T any](anchor T, value Maybe[T]) Maybe[T] { _ = anchor; return value }
 func shadowed() Maybe[int]                              { nil := 6; return some(nil) }
@@ -70,9 +44,6 @@ func scenario() {
 	emit("grouped nested", nestedGroup.Present && !nestedGroup.Value.Present)
 	emit("absent", optionalLabel(optional(false)))
 	emit("present", optionalLabel(optional(true)))
-	for _, text := range []string{"", "8080", "bad"} {
-		emit("parse", parsedLabel(parsePort(text)))
-	}
 	number := some(mark("A", 0))
 	emit("zero present", optionalLabel(number))
 	number = Maybe[int]{}
@@ -110,8 +81,6 @@ func scenario() {
 	emit("generic named", optionalLabel(inferred(1, some(13))))
 	callback := func(value int) Maybe[int] { return some(value) }
 	emit("lambda", optionalLabel(callback(14)))
-	resultCallback := func(value int) int { return value }
-	emit("result lambda", resultCallback(15))
 	conditional := Maybe[int]{}
 	if false {
 		conditional = some(mark("X", 99))
@@ -125,8 +94,6 @@ func scenario() {
 	emit("match", optionalLabel(matched))
 	emit("nil shadow", optionalLabel(shadowed()))
 	emit("Option shadow", optionalLabel(shadowedOption()))
-	failure := Parsed{Failed: true}
-	emit("Err nil", failure.Failed && failure.Problem == nil)
 	old := some(17)
 	emit("old syntax", optionalLabel(old))
 }

@@ -1,0 +1,15 @@
+This checks that interpolation offers its explicit fmt import quick fix.
+
+-- go.mod --
+module example.com/interpolation
+go 1.27
+
+-- p.go --
+package p
+
+var _ = $"number=${1}" //@quickfix("$", re`string interpolation requires an explicit import of "fmt"`, addfmt)
+
+-- @addfmt/p.go --
+@@ -2 +2,2 @@
++
++import "fmt"

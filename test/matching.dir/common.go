@@ -50,8 +50,6 @@ func main() {
 	expect("contextual-patterns-false-present", patternNames(false, &value), 196)
 	expect("option-present", optionBoundary(true), 4)
 	expect("option-absent", optionBoundary(false), 0)
-	expect("result-ok", resultBoundary(true), "8")
-	expect("result-error", resultBoundary(false), "failure")
 	n, err := iterate(false)
 	expect("iterate-success", n, 24)
 	expect("iterate-success-error", err == nil, true)

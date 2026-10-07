@@ -11,10 +11,6 @@ import (
 // from the upstream AST used to bootstrap cgo.
 func (f *File) walkGonExpr(x any, context astContext, visit func(*File, any, astContext)) bool {
 	switch n := x.(type) {
-	case *ast.ContextualVariantExpr:
-		for i := range n.Args {
-			f.walk(&n.Args[i], ctxExpr, visit)
-		}
 	case *ast.EnumType:
 		for _, variant := range n.Variants {
 			if variant.Payload != nil {
@@ -24,11 +20,14 @@ func (f *File) walkGonExpr(x any, context astContext, visit func(*File, any, ast
 				f.walk(&variant.Value, ctxExpr, visit)
 			}
 		}
+	case *ast.PatternTestExpr:
+		f.walk(&n.X, ctxExpr, visit)
+		f.walkMatchPattern(n.Pattern, visit)
 	case *ast.MatchExpr:
 		f.walk(&n.Tag, ctxExpr, visit)
 		for _, arm := range n.Arms {
-			if arm.Pattern != nil {
-				f.walkMatchPattern(arm.Pattern, visit)
+			for _, pattern := range arm.Patterns {
+				f.walkMatchPattern(pattern, visit)
 			}
 			if arm.Guard != nil {
 				f.walk(&arm.Guard, ctxExpr, visit)
@@ -42,6 +41,8 @@ func (f *File) walkGonExpr(x any, context astContext, visit func(*File, any, ast
 		}
 	case *ast.MatchStmt:
 		f.walk(n.Match, ctxStmt, visit)
+	case *ast.InterpolatedStringExpr:
+		for _,part:=range n.Parts {if part.Expr!=nil {f.walk(&part.Expr,ctxExpr,visit)}}
 	case *ast.OptionalExpr:
 		f.walk(&n.X, context, visit)
 	case *ast.LambdaExpr:
@@ -81,7 +82,7 @@ func (f *File) walkMatchPattern(pattern *ast.MatchPattern, visit func(*File, any
 
 func needsGonTargetType(x ast.Expr) bool {
 	switch x := ast.Unparen(x).(type) {
-	case *ast.LambdaExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.ContextualVariantExpr:
+	case *ast.LambdaExpr, *ast.SafeNavExpr, *ast.MatchExpr:
 		return true
 	case *ast.BinaryExpr:
 		return x.Op == token.COALESCE

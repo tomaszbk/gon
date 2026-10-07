@@ -1,0 +1,192 @@
+//  Copyright (c) 2023 Uber Technologies, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package annotation
+
+import (
+	"fmt"
+	"go/token"
+
+	"go.uber.org/nilaway/guard"
+	"go.uber.org/nilaway/util/analysishelper"
+)
+
+// A FullTrigger is a completed assertion. It contains both a ProduceTrigger Producer and a
+// ConsumeTrigger Consumer, representing a path along which a nil value can be produced and
+// consumed respectively. A FullTrigger represents a constraint that the inference engine uses to
+// find potential nil flow errors.
+type FullTrigger struct {
+	Producer *ProduceTrigger
+	Consumer *ConsumeTrigger
+	// Controller is the site that controls if this trigger will be activated or not.
+	// If the controller site is assigned to nilable, then this full trigger is activated;
+	// otherwise the full trigger is deactivated in the inference engine.
+	// If this field is nil, it means the trigger is not a controlled trigger and the trigger will
+	// be activated all the time.
+	Controller *CallSiteParamAnnotationKey
+}
+
+// Controlled returns true if this full trigger is controlled by a controller site; otherwise
+// returns false.
+func (t *FullTrigger) Controlled() bool {
+	return t.Controller != nil
+}
+
+// Pos returns the position for logging the error specified by the ConsumeTrigger
+func (t *FullTrigger) Pos() token.Pos {
+	return t.Consumer.Pos()
+}
+
+func (t *FullTrigger) truncatedConsumerPos(pass *analysishelper.EnhancedPass) token.Position {
+	return pass.PosToLocation(t.Consumer.Pos())
+}
+
+func (t *FullTrigger) truncatedProducerPos(pass *analysishelper.EnhancedPass) token.Position {
+	// Our struct init analysis only tracks fields for depth 1 and relies on escape analysis for
+	// escaped fields (t.Producer.Expr here). Since there are functions that return nil producers
+	// (although they were never assigned to [FullTrigger.Producer]), NilAway concluded that
+	// [ProduceTrigger.Expr] must be nilable. Therefore, we add a redundant check here to guard
+	// against such cases and make NilAway happy.
+	// TODO: remove this redundant check .
+	if t.Producer.Expr == nil {
+		panic(fmt.Sprintf("nil Expr for producer %q", t.Producer))
+	}
+	return pass.PosToLocation(t.Producer.Expr.Pos())
+}
+
+// equals returns true if the two passed FullTriggers are equal, and false otherwise.
+func (t *FullTrigger) equals(other FullTrigger) bool {
+	// Consumer Expr identity and GuardMatched are the cheap, selective discriminators; the
+	// annotation comparisons only run for the (rare) pairs that agree on them.
+	return t.Consumer.Expr == other.Consumer.Expr &&
+		t.Consumer.GuardMatched == other.Consumer.GuardMatched &&
+		t.Producer.Annotation.equals(other.Producer.Annotation) &&
+		t.Consumer.Annotation.equals(other.Consumer.Annotation)
+}
+
+// equalsModuloGuardMatched returns true if the two passed FullTriggers (modulo the GuardMatched field) are equal, and false otherwise.
+func (t *FullTrigger) equalsModuloGuardMatched(other FullTrigger) bool {
+	return t.Consumer.Expr == other.Consumer.Expr &&
+		t.Producer.Annotation.equals(other.Producer.Annotation) &&
+		t.Consumer.Annotation.equals(other.Consumer.Annotation)
+}
+
+// A LocatedRepr wraps another fmt.Stringer with a `token.Position` - for formatting with that position
+type LocatedRepr struct {
+	Contained fmt.Stringer
+	Location  token.Position
+}
+
+func (l LocatedRepr) String() string {
+	return fmt.Sprintf("%s at \"%s\"", l.Contained.String(), l.Location.String())
+}
+
+// Reprs returns compact representations for clauses describing the production and consumption
+// indicated by this FullTrigger, of the forms: "assigned into a field a bar.go:10" or
+// "returned from the function foo at baz.go:25"
+//
+// If the Producer's expression is an artificial one created by NilAway instead of pulled as an authentic
+// AST node from the source, we elide its location as it will be counter-informative.
+// Unfortunately - many if not most Produce Triggers expression are artificial. More specifically
+// any producers that are matched with consumers that reached entry to a function get matched
+// with artifical expression generated from the position of that consumer in the assertion tree,
+// and producers that arise from non-trackable expressions correspond to those real non-trackable
+// expressions.
+func (t *FullTrigger) Reprs(pass *analysishelper.EnhancedPass) (fmt.Stringer, fmt.Stringer) {
+	producerRepr := t.Producer.Annotation.Repr()
+	if pass.ExprIsAuthentic(t.Producer.Expr) {
+		producerRepr = LocatedRepr{
+			Contained: producerRepr,
+			Location:  t.truncatedProducerPos(pass),
+		}
+	}
+	consumerRepr := LocatedRepr{
+		Contained: t.Consumer.Annotation.Repr(),
+		Location:  t.truncatedConsumerPos(pass),
+	}
+	return producerRepr, consumerRepr
+}
+
+// FullTriggerSlicesEq returns true if the two passed slices of FullTriggers contain the same elements. It determines if
+// assertion trees have stabilized during the primary fixpoint loop in `BackpropAcrossFunc`
+// (precondition: no duplications)
+// The equality of two FullTriggers is determined by four parameters:
+// 1) Producer Annotation - this is the first half of the assertion on annotations represented by the trigger
+// 2) Consumer Annotation - this is the second half of the assertion on annotations represented
+// 3) Consumer Expression - this distinguishes triggers that represent the same assertion but should
+// be reported on different lines. If we switch to a purely inference-based approach, this is not
+// necessary - it serves only to report errors on every line that the error repeatedly occurs.
+// 4) Consumer GuardMatched - this is essential because after stabilization, calls to
+// RootAssertionNode.ProcessEntry can use checkGuardOnFullTrigger to rewrite the producer based on
+// its value. So if you accept that the producer is needed for equality, you accept that
+// Consumer.GuardMatched is needed for equality.
+func FullTriggerSlicesEq(left, right []FullTrigger) bool {
+	if len(left) != len(right) {
+		return false
+	}
+
+	// Track matched right-side positions in a slice to prevent duplicate left values from sharing
+	// one right-side match without allocating a map.
+	matched := make([]bool, len(right))
+	matchedCount := 0
+outer:
+	for _, l := range left {
+		for j, r := range right {
+			if !matched[j] && l.equals(r) {
+				matched[j] = true
+				matchedCount++
+				continue outer
+			}
+		}
+	}
+	return matchedCount == len(left)
+}
+
+// MergeFullTriggers creates a union of the passed left and right triggers eliminating duplicates
+// Merging is based on three parameters (out of the four discussed above):
+// 1) Producer Annotation
+// 2) Consumer Annotation
+// 3) Consumer Expression
+// The three parameters are chosen based on the fact that we merge two full triggers that disagree only on
+// Consumer.GuardMatched into a single trigger with Consume.GuardMatched = false. In all other cases - such as
+// checking fixed point in propagation, the function FullTriggersEq
+// that does observe GuardMatched should be used instead of this function.
+// This function modifies the `left` slice, by appending the non-duplicate right triggers into it.
+func MergeFullTriggers(left []FullTrigger, right ...FullTrigger) []FullTrigger {
+	// `left` is dedup-maintained by construction, so we compare each right trigger only against the
+	// original `left` prefix (origLen) and stop at the first match.
+	origLen := len(left)
+	for _, r := range right {
+		matched := false
+		for i := range origLen {
+			if !left[i].equalsModuloGuardMatched(r) {
+				continue
+			}
+			// Equal modulo GuardMatched, so drop the right trigger. On a GuardMatched mismatch we
+			// clear the left trigger's guard (guards are currently unused in FullTriggers; if that
+			// changes, use the intersection of the prior guard sets instead).
+			if left[i].Consumer.GuardMatched && !r.Consumer.GuardMatched {
+				left[i].Consumer.Guards = guard.NoGuards()
+				left[i].Consumer.GuardMatched = false
+			}
+			matched = true
+			break
+		}
+		if !matched {
+			left = append(left, r)
+		}
+	}
+
+	return left
+}

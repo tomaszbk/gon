@@ -601,7 +601,7 @@ func TestScanErrors(t *testing.T) {
 		{"foo\U0001d7d8_½" /* foo𝟘_½ */, "invalid character U+00BD '½' in identifier", 0, 8 /* byte offset */},
 
 		{"x + #y", "invalid character U+0023 '#'", 0, 4},
-		{"foo$bar = 0", "invalid character U+0024 '$'", 0, 3},
+		{"foo$bar = 0", "$ must immediately precede a string literal", 0, 3},
 		{"0123456789", "invalid digit '8' in octal literal", 0, 8},
 		{"0123456789. /* foobar", "comment not terminated", 0, 12},   // valid float constant
 		{"0123456789e0 /*\nfoobar", "comment not terminated", 0, 13}, // valid float constant

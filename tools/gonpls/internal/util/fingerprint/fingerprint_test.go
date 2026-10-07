@@ -269,11 +269,10 @@ func (C) F[T any](T) {}
 	}
 }
 
-// TestPredeclaredResult checks types that mention Gon's predeclared Result,
-// a generic named type with no package, as methods of interfaces and
+// TestUserDefinedResult checks types that mention a user-defined generic Result, as methods of interfaces and
 // concrete types. Their encodings must match across packages, distinguish
 // instantiations, and not be confused with a user-defined Result.
-func TestPredeclaredResult(t *testing.T) {
+func TestUserDefinedResult(t *testing.T) {
 	const src = `
 -- go.mod --
 module example.com
@@ -284,6 +283,7 @@ go 1.27
 package a
 
 type Course struct{}
+type Result[T, E any] struct{}
 
 type Alias = Result[Course, error]
 
@@ -320,10 +320,9 @@ type Shadow interface{ Load(int) Result[int, error] }
 		return m.Type()
 	}
 
-	// The encoding of the predeclared Result is the bare name Result,
-	// whereas a package-level Result is qualified.
+	// User-defined Result names stay qualified by their packages.
 	loader, _ := fingerprint.Encode(method(a, "Loader"))
-	if want := `(func (tuple int) (tuple (inst Result (qual "example.com/a" Course) error)))`; loader != want {
+	if want := `(func (tuple int) (tuple (inst (qual "example.com/a" Result) (qual "example.com/a" Course) error)))`; loader != want {
 		t.Errorf("Encode(Loader.Load) = %s, want %s", loader, want)
 	}
 	shadow, _ := fingerprint.Encode(method(b, "Shadow"))
@@ -344,7 +343,7 @@ type Shadow interface{ Load(int) Result[int, error] }
 		{a, a, "Loader", "OptionalLoader", false},
 		{a, a, "Loader", "Pointer", false},
 		{a, a, "Sum", "Mem", false},
-		{a, b, "Sum", "Shadow", false}, // predeclared Result vs user-defined Result
+		{a, b, "Sum", "Shadow", false}, // distinct user-defined Result types
 	} {
 		xfp, _ := fingerprint.Encode(method(test.x, test.xn))
 		yfp, _ := fingerprint.Encode(method(test.y, test.yn))

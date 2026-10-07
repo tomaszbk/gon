@@ -67,7 +67,8 @@ func TestGonOptionalMarshal(t *testing.T) {
 		{"nil slice payload", gonOptSome([]int(nil)), `[]`},
 		{"nil map payload", gonOptSome(map[string]int(nil)), `{}`},
 	} {
-		got, err := Marshal(test.value)
+		// Exact byte comparisons require a stable map member order.
+		got, err := Marshal(test.value, Deterministic(true))
 		if err != nil || string(got) != test.want {
 			t.Errorf("%s: Marshal = %s, %v; want %s", test.name, got, err, test.want)
 		}

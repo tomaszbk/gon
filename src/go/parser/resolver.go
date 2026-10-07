@@ -322,9 +322,6 @@ func (r *resolver) Visit(node ast.Node) ast.Visitor {
 		r.walkFuncType(n.Type)
 		r.walkBody(n.Body)
 
-	case *ast.ContextualVariantExpr:
-		r.walkExprs(n.Args)
-
 	case *ast.EnumType:
 		for _, v := range n.Variants {
 			if v.Payload != nil {
@@ -344,6 +341,8 @@ func (r *resolver) Visit(node ast.Node) ast.Visitor {
 			ast.Walk(r, a)
 		}
 
+	case *ast.PatternTestExpr:
+		r.walkPatternTest(n, false)
 	case *ast.MatchArm:
 		r.openScope(n.Pos())
 		defer r.closeScope()
@@ -351,6 +350,10 @@ func (r *resolver) Visit(node ast.Node) ast.Visitor {
 		var pattern func(*ast.MatchPattern, bool)
 		pattern = func(p *ast.MatchPattern, top bool) {
 			if p == nil {
+				return
+			}
+			if p.Inner != nil {
+				pattern(p.Inner, top && !p.Question.IsValid())
 				return
 			}
 			if id, ok := p.Value.(*ast.Ident); ok && !p.Lparen.IsValid() && !p.Lbrace.IsValid() {
@@ -367,10 +370,19 @@ func (r *resolver) Visit(node ast.Node) ast.Visitor {
 				pattern(f.Pattern, false)
 			}
 		}
-		pattern(n.Pattern, true)
+		for _, p := range n.Patterns {
+			pattern(p, true)
+		}
 		// Resolve every qualified head before introducing any payload binding.
 		for _, p := range bindings {
-			r.declare(p, nil, r.topScope, ast.Var, p.Value.(*ast.Ident))
+			id := p.Value.(*ast.Ident)
+			if obj := r.topScope.Lookup(id.Name); obj != nil {
+				// Alternatives share the arm's binding identities. The checker validates
+				// that every alternative declares the same names with identical types.
+				id.Obj = obj
+			} else {
+				r.declare(p, nil, r.topScope, ast.Var, id)
+			}
 		}
 		if n.Guard != nil {
 			ast.Walk(r, n.Guard)
@@ -396,11 +408,15 @@ func (r *resolver) Visit(node ast.Node) ast.Visitor {
 
 	case *ast.ErrorExpr:
 		ast.Walk(r, n.X)
-		if n.Body != nil {
-			r.openScope(n.Body.Pos())
+		if n.Body != nil || n.Context != nil {
+			r.openScope(n.Err.End())
 			defer r.closeScope()
 			r.declare(n, nil, r.topScope, ast.Var, n.Err)
-			r.walkStmts(n.Body.List)
+			if n.Context != nil {
+				ast.Walk(r, n.Context)
+			} else {
+				r.walkStmts(n.Body.List)
+			}
 		}
 
 	case *ast.CallExpr:
@@ -479,8 +495,15 @@ func (r *resolver) Visit(node ast.Node) ast.Visitor {
 		if n.Init != nil {
 			ast.Walk(r, n.Init)
 		}
-		ast.Walk(r, n.Cond)
+		patternScope := conditionHasPatternTest(n.Cond)
+		if patternScope {
+			r.openScope(n.Cond.Pos())
+		}
+		r.walkPatternCondition(n.Cond)
 		ast.Walk(r, n.Body)
+		if patternScope {
+			r.closeScope()
+		}
 		if n.Else != nil {
 			ast.Walk(r, n.Else)
 		}
@@ -753,4 +776,63 @@ func (r *resolver) walkBody(body *ast.BlockStmt) {
 	r.openLabelScope()
 	defer r.closeLabelScope()
 	r.walkStmts(body.List)
+}
+
+// Pattern bindings occupy the condition's true branch scope, shared by later
+// operands in its top-level && chain and the then block, excluding else.
+func conditionHasPatternTest(expression ast.Expr) bool {
+	switch expression := ast.Unparen(expression).(type) {
+	case *ast.PatternTestExpr:
+		return true
+	case *ast.BinaryExpr:
+		return expression.Op == token.LAND && (conditionHasPatternTest(expression.X) || conditionHasPatternTest(expression.Y))
+	}
+	return false
+}
+
+func (r *resolver) walkPatternCondition(expression ast.Expr) {
+	switch expression := ast.Unparen(expression).(type) {
+	case *ast.PatternTestExpr:
+		r.walkPatternTest(expression, true)
+	case *ast.BinaryExpr:
+		if expression.Op == token.LAND {
+			r.walkPatternCondition(expression.X)
+			r.walkPatternCondition(expression.Y)
+		} else {
+			ast.Walk(r, expression)
+		}
+	default:
+		ast.Walk(r, expression)
+	}
+}
+
+func (r *resolver) walkPatternTest(test *ast.PatternTestExpr, bind bool) {
+	ast.Walk(r, test.X)
+	var bindings []*ast.MatchPattern
+	var pattern func(*ast.MatchPattern, bool)
+	pattern = func(p *ast.MatchPattern, top bool) {
+		if p.Inner != nil {
+			pattern(p.Inner, top && !p.Question.IsValid())
+			return
+		}
+		if id, ok := p.Value.(*ast.Ident); ok && !p.Lparen.IsValid() && !p.Lbrace.IsValid() {
+			if id.Name != "_" && id.Name != "true" && id.Name != "false" && id.Name != "nil" {
+				if !top && bind {
+					bindings = append(bindings, p)
+				}
+			}
+		} else if p.Value != nil {
+			ast.Walk(r, p.Value)
+		}
+		for _, arg := range p.Args {
+			pattern(arg, false)
+		}
+		for _, field := range p.Fields {
+			pattern(field.Pattern, false)
+		}
+	}
+	pattern(test.Pattern, true)
+	for _, binding := range bindings {
+		r.declare(binding, nil, r.topScope, ast.Var, binding.Value.(*ast.Ident))
+	}
 }

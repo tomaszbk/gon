@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Run portable legacy/modern pairs for all nine Gon features on GOOS/GOARCH.
+# Run portable legacy/modern pairs for Gon features on GOOS/GOARCH.
 # The unmodified baseline executes each legacy program on the same target;
 # the public Gon launcher executes legacy, modern and non-inlined modern.
-# Other architectures run through binfmt (for example QEMU); wasm uses each
-# toolchain's own lib/wasm exec wrapper. No target toolchain is required.
+# Other architectures use go_GOOS_GOARCH_exec wrappers or binfmt (for example
+# QEMU); wasm uses each toolchain's lib/wasm wrapper. No target toolchain is required.
 #
 # usage: GON_BASELINE_GO=/absolute/path/to/go misc/gon/cross_pair.sh GOOS GOARCH
 set -euo pipefail
@@ -73,12 +73,12 @@ pair() {
 	done
 }
 
-for feature in errorhandling errorbridge conditional lambda nullsafety; do
+for feature in errorhandling conditional lambda nullsafety; do
 	dir="$root/test/$feature.dir"
 	pair "$feature" "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"
 done
 fixtures="$root/misc/gon/analysisfixtures"
-pair "enums/matching/Option/Result" "$fixtures/alternatives_legacy.go" "$fixtures/alternatives_modern.go"
+pair "enums/matching/optional" "$fixtures/alternatives_legacy.go" "$fixtures/alternatives_modern.go"
 dir="$root/test/stringenums.dir"
 pair string-enums "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"
 pair string-enum-analysis "$fixtures/stringenums_legacy.go" "$fixtures/stringenums_modern.go"
@@ -94,3 +94,22 @@ dir="$root/test/optionaljson.dir"
 pair optional-json "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"
 dir="$root/test/optionalsql.dir"
 pair optional-sql "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"
+
+dir="$root/test/matchinterface.dir"
+pair interface-matching "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"
+
+for feature in matchalternatives patterntest errorcontext interpolation seq; do
+    dir="$root/test/$feature.dir"
+    if [ -f "$dir/common.go" ]; then
+        pair "$feature" "$dir/legacy.go" "$dir/modern.go" "$dir/common.go"
+    else
+        pair "$feature" "$dir/legacy.go" "$dir/modern.go"
+    fi
+done
+GON_PAIR_GOOS=$goos GON_PAIR_GOARCH=$goarch "$gon" run "$root/test/errortest.go"
+echo "ok: test-fatal legacy/modern on $goos/$goarch"
+fixtures="$root/tools/nilaway/testdata/src/gon.test"
+pair nilanalysis-safe "$fixtures/gonlegacy/main.go" "$fixtures/gonsafe/main.go"
+pair nilanalysis-unsafe "$fixtures/gonunsafelegacy/main.go" "$fixtures/gonunsafe/main.go"
+GON_PAIR_GOOS=$goos GON_PAIR_GOARCH=$goarch "$gon" run "$root/test/nilanalysis.go"
+echo "ok: nilanalysis payloads and test-fatal legacy/modern on $goos/$goarch"

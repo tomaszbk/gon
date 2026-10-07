@@ -132,3 +132,37 @@ func outer() error {
 		}
 	}
 }
+
+func TestErrorContextTypes(t *testing.T) {
+	const prelude = `package p
+func one() (int, error) { return 1, nil }
+func many() (int, string, error) { return 1, "", nil }
+func only() error { return nil }
+func wrap(err error) error { return err }
+func consume(int, int) {}
+type E struct{}
+func (E) Error() string { return "" }
+`
+	for _, source := range []string{
+		`func f() (int, error) { n := one() or err => wrap(err); return n, nil }`,
+		`func f() (int, string, error) { n, s := many() or err => wrap(err); return n, s, nil }`,
+		`func f() error { only() or _ => nil; one() or err => E{}; return nil }`,
+		`type Alias = error; func f() Alias { only() or err => err; return nil }`,
+		`func f() error { err := 3; consume(one() or err => wrap(err), err); return nil }`,
+		`func f() error { _ = one() or err => func() error { return err }(); return nil }`,
+		`func f() error { consume(one() or err => wrap(err), one() or other => wrap(other)); return nil }`,
+		`func f() error { one() or err => func() error { only() or nested => wrap(nested); return err }(); return nil }`,
+	} {
+		if _, err := typecheck(prelude+source, nil, nil); err != nil { t.Errorf("%s: %v", source, err) }
+	}
+	for _, tc := range []struct{ source, want string }{
+		{`func f() { one() or err => err }`, "enclosing function"},
+		{`func f() error { one() or err => 1; return nil }`, "error context"},
+		{`func f() error { one() or err => many(); return nil }`, "multiple-value"},
+		{`func f() error { one() or err => err; _ = err; return nil }`, "undefined: err"},
+		{`func f() error { n := one() or err => wrap(n); return nil }`, "undefined: n"},
+		{`func f() error { _ = func() int { return one() or err => err }; return nil }`, "enclosing function"},
+	} {
+		if _, err := typecheck(prelude+tc.source, nil, nil); err == nil || !strings.Contains(err.Error(), tc.want) { t.Errorf("%s: got %v, want %s", tc.source, err, tc.want) }
+	}
+}

@@ -9,7 +9,6 @@ import (
 	"cmd/internal/src"
 	"go/constant"
 	"strconv"
-	"strings"
 )
 
 func (w *writer) enumType(desc *types2.Enum) {
@@ -91,40 +90,6 @@ func (r *reader) enumType(stringEnum bool) *types.Type {
 	return typ
 }
 
-func (r *reader) canonicalEnumType() *types.Type {
-	name := r.String()
-	args := make([]*types.Type, r.Len())
-	parts := make([]string, len(args))
-	for i := range args {
-		args[i] = r.typ()
-		parts[i] = args[i].LinkString()
-	}
-	sym := types.BuiltinPkg.Lookup(name + "[" + strings.Join(parts, ",") + "]")
-	if sym.Def != nil {
-		return sym.Def.(*ir.Name).Type()
-	}
-	decl := ir.NewDeclNameAt(src.NoXPos, ir.OTYPE, sym)
-	typ := types.NewNamed(decl)
-	typ.SetIsFullyInstantiated(true)
-	for _, arg := range args {
-		if arg.HasShape() {
-			typ.SetHasShape(true)
-		}
-	}
-	typ.SetUnderlying(canonicalEnumBacking(name, args))
-	decl.SetType(typ)
-	decl.SetTypecheck(1)
-	sym.Def = decl
-	return typ
-}
-
-func canonicalEnumBacking(name string, args []*types.Type) *types.Type {
-	if name != "Result" {
-		panic("unknown canonical enum")
-	}
-	return alternativeBacking(args[0], args[1], "Ok", "Err", false)
-}
-
 func optionalBacking(elem *types.Type) *types.Type {
 	return alternativeBacking(nil, elem, "$absent", "$present", true)
 }
@@ -180,16 +145,6 @@ func (w *writer) enumHead(expr syntax.Expr) (types2.Type, *types2.EnumVariant) {
 
 func (w *writer) tryEnumExpr(expr syntax.Expr) bool {
 	switch expr := expr.(type) {
-	case *syntax.ContextualVariantExpr:
-		typ := w.p.typeOf(expr)
-		variant := types2.EnumOf(typ).Lookup(expr.Name.Value, w.p.curpkg)
-		w.enumConstruct(expr.Pos(), typ, variant, expr.ArgList, nil)
-		return true
-	case *syntax.EnumConstructExpr:
-		typ := w.p.typeOf(expr)
-		v := types2.EnumOf(typ).Variant(expr.Variant)
-		w.enumConstruct(expr.Pos(), typ, v, expr.ArgList, nil)
-		return true
 	case *syntax.SelectorExpr:
 		typ, v := w.enumHead(expr)
 		if v == nil {

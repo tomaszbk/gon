@@ -1,0 +1,27 @@
+goos: darwin
+goarch: arm64
+pkg: example.com/gonbench
+cpu: Apple M4
+BenchmarkErrorPropagationSuccessBatch 	 4750951	        71.19 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkErrorPropagationFailureBatch 	 6725430	        53.20 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkErrorHandlerMixedBatch       	  361531	      1073 ns/op	        64.00 items/op	    1024 B/op	      32 allocs/op
+BenchmarkConditionalMixedBatch        	12783296	        28.02 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkLambdaCapturedBatch          	15968889	        22.68 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkSafeFieldPresentBatch        	14168764	        25.33 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkSafeFieldAbsentBatch         	14191526	        25.78 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkSafeCallMixedBatch           	 3733365	        96.48 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkCoalesceAssignMixedBatch     	 7635658	        47.07 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkPipelineSuccessBatch         	  942088	       379.2 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkPipelineFailureBatch         	   68510	      5110 ns/op	        64.00 items/op	    6400 B/op	     160 allocs/op
+BenchmarkPipelineMixedBatch           	  131991	      2727 ns/op	        64.00 items/op	    3200 B/op	      80 allocs/op
+BenchmarkEnumConstructionBatch        	 6675256	        54.09 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkEnumCopyBatch                	 7063440	        50.95 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkMatchingExhaustiveBatch      	 2868318	       125.7 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkMatchingGuardedBatch         	 2786881	       129.3 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkOptionPresentBatch           	 9565732	        37.42 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkOptionAbsentBatch            	 8818197	        40.90 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkOptionAssignmentMixedBatch   	 7099010	        49.46 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkNamedReorderedBatch          	 3061392	       117.6 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkNamedVariadicBatch           	 3044601	       118.3 ns/op	        64.00 items/op	       0 B/op	       0 allocs/op
+BenchmarkInterpolationBatch           	   97250	      3583 ns/op	     512 B/op	      64 allocs/op
+PASS

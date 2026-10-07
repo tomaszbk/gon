@@ -48,9 +48,6 @@ const (
 // field name rendered in camelCase. Unlike most Go doc comments,
 // these fields should be documented using GitHub markdown.
 type Options struct {
-	// MigrateOptionals is internal to the source migration command.
-	MigrateOptionals bool
-
 	ClientOptions
 	ServerOptions
 	UserOptions
@@ -502,6 +499,10 @@ type DiagnosticOptions struct {
 	// ...
 	// ```
 	Analyses map[string]bool
+
+	// Nilaway enables interprocedural analysis of nil values. It is disabled
+	// by default and reports possible nil dereferences as warnings.
+	Nilaway bool
 
 	// Staticcheck configures the default set of analyses staticcheck.io.
 	// These analyses are documented on
@@ -1330,6 +1331,9 @@ func (o *Options) setOne(name string, value any) (applied []CounterPath, _ error
 			return counts, &SoftError{msg: strings.Join(errs, "\n")}
 		}
 		return counts, nil
+
+	case "nilaway":
+		return setBool(&o.Nilaway, value)
 
 	case "staticcheck":
 		o.StaticcheckProvided = true

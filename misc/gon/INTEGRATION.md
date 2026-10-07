@@ -85,7 +85,7 @@ not proof that every possible analyzer path has been exercised.
 
 ## Maintained dependencies
 
-Edit `tools/x-tools`, `tools/staticcheck` and `tools/gonpls` directly. Their
+Edit `tools/x-tools`, `tools/staticcheck` `tools/gonpls` and `tools/nilaway` directly. Their
 `UPSTREAM.json` files identify imported baselines. Retain upstream module paths,
 licenses and tests. Both cmd and gonpls select the same x/tools module via local
 replacements. Standard-library export readers use that maintained module too.
@@ -111,11 +111,12 @@ changes; Git history records the maintained sources.
 
 [STATUS.md](STATUS.md) describes the current implementation;
 [VALIDATION.md](VALIDATION.md) records commands, results and platform scope.
-All nine native cores and maintained tooling are implemented. Native optional
-values use `T?`, direct payloads, nil absence and presence patterns `P?`.
-No public Option/Some/None API remains. Result retains qualified and contextual
-Ok/Err constructors. See [OPTIONALS.md](OPTIONALS.md) for the current contract
-and assisted semantic migration.
+The eight original features and accepted 2.27 additions share the native
+compiler and maintained tooling. Native optional values use `T?`, direct
+payloads, nil absence and presence patterns `P?`. Error handling uses Go tuples
+ending in error, including test Fatal and one-line contextual handlers.
+See [OPTIONALS.md](OPTIONALS.md) for the presence contract and
+[README.md](README.md#additions-for-227) for the added syntax and NilAway.
 
 Keep compiler/frontends, metadata readers, analyzer registries and editor
 services in the same validation scope. Conservative source-inliner/extraction
@@ -123,3 +124,32 @@ limits and private typed storage are recorded in features.json. A focused gate
 pass does not establish a release pass on every supported platform. Record
 executed and cross-compiled targets separately. Update current documentation
 in place; do not add handovers or superseded status narratives.
+
+## Added 2.27 feature evidence
+
+The accepted rules are in the local, ignored design documents. Published
+contracts are in README.md and OPTIONALS.md. Each profile below is automated in
+validate.py and requires the unmodified Go baseline for its executable pair.
+The common tooling profile covers API inventory, ast.Children/Walk, inspector
+masks/edges/mutable slots, analyzer registry, effects and conservative source
+transformations, export readers, public distribution and vendor consistency.
+
+| Checklist area | Multiple patterns / is | One-line error context | Interpolation |
+| --- | --- | --- | --- |
+| Compiler/public syntax and formatting | MatchAlternatives / PatternTest tests in syntax and parser; public AST/API; contextual is compatibility and refill tests | ErrorContext syntax/parser/printer tests and public ErrorExpr Context/Arrow | Interpolation syntax/parser tests, nested scanner modes, invalid/newline cases, raw text/comment preservation and idempotent gofmt; public tokens/AST/API |
+| Both checkers and types.Info | MatchAlternatives / PatternTest + TestGenerate; shared Defs/Uses and if scope | ErrorContext checker tests, local error binding, error and test targets | Interpolation checker tests, explicit same-file fmt use, typed nonconstant result and Info.Interpolations lowering |
+| Native flow, export and inlining | test/matchalternatives.go and patterntest.go: baseline/legacy/modern/-l/-N, subject once, shared bindings, guards, export/import, invalid scopes | test/errorcontext.go: baseline/legacy/modern/-l, context laziness/order, named result zeros/defer, nil context, Fatal source lines, exports and invalid targets | test/interpolation.go: baseline/legacy/modern/-l/-N, ordered operands, nested calls, propagation/defer, formats and invalid programs |
+| CFG/SSA/IR and structural tooling | TestGonMatchAlternatives / TestGonPatternTest plus common structural gate | TestGonErrorContext and unreachable/modernizer diagnostics | TestGonInterpolation, metadata consumers, printf and import tests; implicit fmt call semantics |
+| cgo and coverage | TestPairedCgoMatching executes baseline and modern C scenarios, including coverage | TestPairedCgoErrorContext and TestErrorContextCoverage | TestPairedCgoInterpolation executes baseline/modern C calls and coverage |
+| Editor/CLI and incomplete source | Pattern-test binding completion in later && and then, exclusion from else, hover/rename; multi-pattern shared binding rename; type queries | Error context/Fatal query kinds, Explain, gonerrors conversion, correctly formatted inline-variable handler marker | Embedded expression hover/rename/tokens, multiline raw tokens, fmt-import quickfix, Explain and query kind |
+| Runtime measurement | Matching/optional workloads exercise alternatives and is; paired correctness | Wrapping handler workload uses one-line context | InterpolationBatch plus matching legacy fmt.Sprintf workload |
+
+| Checklist area | gon/seq | NilAway |
+| --- | --- | --- |
+| Syntax/compiler/checkers/lowering | No new nodes or compiler syntax; generic standard package using native optional types | No new language syntax or mandatory diagnostics; uses maintained typed Gon SSA lowering |
+| Public API/dependencies | 18 functions in api/fork.txt; go/build TestDependencies; gon doc/vet; no chainable type | tools/nilaway/go.mod local x-tools replacement, UPSTREAM.json, Apache-2.0 LICENSE and NOTICE |
+| Executable contract | test/seq.go baseline/legacy/modern/-l; empty/nil inputs, named containers, ordering, optional zero/nil, invalid call types; package unit tests | test/nilanalysis.go safe/unsafe counterparts, actual recovered nil failures and paired testing Fatal scenarios |
+| Semantic tooling and effects | Ordinary generic functions use existing call metadata, callbacks and optional results | Original upstream corpus plus TestGonNilAway, TestGonMemory and deep provenance fixtures; warning precision and visible internal errors |
+| cgo/coverage | No new rewriting or instrumentation construct; ordinary generic calls and existing optional boundary gate apply | Analyzer runs on typed source, not compiled runtime instrumentation; ordinary project cgo/coverage remain in tooling gate |
+| Editor/CLI | Generic completion, hover and named callbacks use existing services | Default-off/explicit setting tests, gon check --nilaway CLI test, registry corpus including all Gon constructs |
+| Distribution/closure | seq profile; full final tooling/modern gates and registered target pairs | nilanalysis profile runs whole maintained module, registry/CLI and runtime pair; gonpls distribution selects local maintained module |

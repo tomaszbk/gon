@@ -116,10 +116,6 @@ type ImporterFrom interface {
 // A Config specifies the configuration for type checking.
 // The zero value for Config is a ready-to-use default configuration.
 type Config struct {
-	// MigrateOptionals permits retired Option constructors for migration analysis only.
-	// It does not change Universe and must not be enabled for ordinary checking.
-	MigrateOptionals bool
-
 	// Context is the context used for resolving global identifiers. If nil, the
 	// type checker will initialize this field with a newly created context.
 	Context *Context
@@ -200,6 +196,10 @@ func srcimporter_setUsesCgo(conf *Config) {
 // If the package has type errors, the collected information may
 // be incomplete.
 type Info struct {
+	// Interpolations maps interpolated strings to their typed fmt.Sprintf calls.
+	// The synthetic call shares the original operand expressions.
+	Interpolations map[*ast.InterpolatedStringExpr]*ast.CallExpr
+
 	// Types maps expressions to their types, and for constant
 	// expressions, also their values. Invalid expressions are
 	// omitted.

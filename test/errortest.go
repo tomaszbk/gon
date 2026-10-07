@@ -5,7 +5,7 @@
 // Postfix ! in test functions: when the nearest function is not eligible for
 // ordinary propagation and its first parameter is a named *testing.T,
 // *testing.B, *testing.F or testing.TB in a _test.go file, a failure calls
-// Fatal with the original error (or Result payload) at the line of the !.
+// Fatal with the original error at the line of the !.
 //
 // The legacy tests spell the same scenarios with if err != nil { t.Fatal(err) }
 // and run on the baseline toolchain too. GON_BASELINE_GO must name that
@@ -86,6 +86,21 @@ func main() {
 				}
 			}
 			cmd.Env = append(cmd.Env, "GOENV=off", "GOTOOLCHAIN=local", "GOWORK=off")
+			// The harness runs on the host while these test binaries execute on
+			// the requested target, through binfmt or the wasm wrapper.
+			if goos := os.Getenv("GON_PAIR_GOOS"); goos != "" {
+				wrapperRoot := runtime.GOROOT()
+				if v.tool == baseline {
+					env := exec.Command(v.tool, "env", "GOROOT")
+					env.Env = append([]string{}, cmd.Env...)
+					root, err := env.Output()
+					if err != nil {
+						panic(err)
+					}
+					wrapperRoot = strings.TrimSpace(string(root))
+				}
+				cmd.Env = append(cmd.Env, "GOOS="+goos, "GOARCH="+os.Getenv("GON_PAIR_GOARCH"), "CGO_ENABLED=0", "PATH="+filepath.Join(wrapperRoot, "lib", "wasm")+string(os.PathListSeparator)+os.Getenv("PATH"))
+			}
 			out, err := cmd.CombinedOutput()
 			if err == nil {
 				panic(fmt.Sprintf("%s: go %v passed, but its tests fail on purpose:\n%s", v.name, args, out))
@@ -162,7 +177,7 @@ func checkContents(invocation int, got []byte) {
 	var wantMarkers []string
 	if invocation == 0 {
 		wantMarkers = []string{"value", "cleanup", "deferred", "only", "multiple", "multiline", "helper", "named",
-			"subtest", "parent", "lambda", "method", "resulterror", "resultnil", "resulttext", "coded", "tb", "fuzz"}
+			"subtest", "parent", "lambda", "method", "tb", "fuzz"}
 	} else {
 		wantMarkers = []string{"benchmark", "tb"}
 	}

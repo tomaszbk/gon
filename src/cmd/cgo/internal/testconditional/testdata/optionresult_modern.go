@@ -19,16 +19,17 @@ func add(present bool) (number int?) {
 	buffer.n = 10
 	return int(C.add(&buffer, delta))
 }
-func divide(divisor C.int) Result[int, error] {
+func divide(divisor C.int) (int, error) {
 	value := C.divide(9, divisor) or problem {
-		return .Err(problem)
+		return 0, problem
 	}
-	return .Ok(int(value))
+	return int(value), nil
 }
-func label(value Result[int, error]) string {
-	return fmt.Sprint(value or problem {
+func label(divisor C.int) string {
+	value := divide(divisor) or problem {
 		return fmt.Sprint("error:", problem != nil)
-	})
+	}
+	return fmt.Sprint(value)
 }
 func main() {
 	var missing C.int?
@@ -46,7 +47,7 @@ func main() {
 		fmt.Println(value ?? 0)
 	}
 	for _, divisor := range []C.int{3, 0} {
-		fmt.Println(label(divide(divisor)))
+		fmt.Println(label(divisor))
 	}
 	fmt.Println("PASS")
 }

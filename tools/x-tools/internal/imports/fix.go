@@ -184,6 +184,12 @@ func collectReferences(f *ast.File) References {
 		return visitor
 	}
 	ast.Walk(visitor, f)
+	if name, required := interpolationFmtImport(f); required && name != "." && name != "_" {
+		if refs[name] == nil {
+			refs[name] = make(map[string]bool)
+		}
+		refs[name]["Sprintf"] = true
+	}
 	return refs
 }
 
@@ -361,7 +367,7 @@ func (p *pass) load(ctx context.Context) ([]*ImportFix, bool) {
 
 	// Find missing references.
 	for left, rights := range p.allRefs {
-		if globals[left] {
+		if name, needed := interpolationFmtImport(p.f); globals[left] && (!needed || name != left) {
 			continue
 		}
 		_, ok := p.existingImports[left]
@@ -2025,4 +2031,30 @@ func symbolNameSet(symbols []stdlib.Symbol) map[string]bool {
 		}
 	}
 	return names
+}
+
+// interpolationFmtImport reports the lexical import name for the explicit fmt
+// dependency, or its usual name when the file needs an import quick fix.
+func interpolationFmtImport(f *ast.File) (string, bool) {
+	needed := false
+	ast.Inspect(f, func(n ast.Node) bool {
+		if _, ok := n.(*ast.InterpolatedStringExpr); ok {
+			needed = true
+			return false
+		}
+		return !needed
+	})
+	if !needed {
+		return "", false
+	}
+	for _, spec := range f.Imports {
+		path, err := strconv.Unquote(spec.Path.Value)
+		if err == nil && path == "fmt" {
+			if spec.Name != nil {
+				return spec.Name.Name, true
+			}
+			return "fmt", true
+		}
+	}
+	return "fmt", true
 }

@@ -165,7 +165,7 @@ func (check *Checker) infer(pos syntax.Pos, tparams []*TypeParam, targs []Type, 
 	}
 
 	for i, arg := range args {
-		if check.deferredOptionContexts[arg.expr] || IsOptional(params.At(i).typ) && !IsOptional(arg.typ()) {
+		if IsOptional(params.At(i).typ) && !IsOptional(arg.typ()) {
 			continue
 		}
 		if e, ok := arg.expr.(*syntax.LambdaExpr); ok && check.lambdaTypes[e] == nil {

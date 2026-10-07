@@ -1,355 +1,191 @@
 # Current Gon validation
 
-Current source target: **Gon 2.27**. Unmodified baseline:
-`/opt/homebrew/bin/go`, **Go 1.27.1**. Native execution is **darwin/arm64**,
-Apple M4. The fork's go1.28-devel version records source provenance. This file
-records current evidence in place; no full release pass on every platform is claimed.
+Target: **Gon 2.27**, compatible with Go 1.27+ on the supported architectures,
+subject to the accepted newline-after-prefix-`!` exception. The unmodified
+baseline is `/opt/homebrew/bin/go`, **Go 1.27.1**. Native host execution is
+**darwin/arm64**, Apple M4. The fork's Go 1.28 development version identifies
+source provenance; it is not the released compatibility baseline.
 
-## Presence comparisons, string-enum allocations and SQL JSON (2026-10-05)
+This record replaces obsolete evidence for retired language constructs.
+All sixteen complete validation profiles passed on darwin/arm64 after the
+source review, with no pending integration items. Bootstrap, paired correctness,
+benchmarks and the product/editor checks below passed. Additional platform and
+Docker testing is deferred by the user until the following day.
 
-The current compiler bootstrapped with
-`cd src && GOROOT_BOOTSTRAP=/opt/homebrew/opt/go/libexec ./make.bash`, using
-unmodified Go 1.27.1. `python3 misc/gon/build.py` rebuilt the public tools, and
-`python3 misc/gon/vendor.py` followed by `--check` passed (no generated drift).
+## Scope and regression evidence
 
-All checks below passed on darwin/arm64:
+The eight original features and accepted additions share both parsers/checkers,
+public AST/formatting, export data, native compiler lowering, maintained tooling
+and executable compatibility pairs. Error handling uses ordinary Go tuples
+ending in error. The predeclared Result, contextual constructors, tuple bridges,
+ErrNilResult and optional migration command are removed. User-declared homonyms
+and ordinary Go error/nullable semantics remain valid.
 
-```sh
-./gon/bin/gon test go/types cmd/compile/internal/types2 -run 'OptionContext|NativeOptional|TestGenerate' -count=1
-GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test cmd/internal/testdir -run '^Test/(optionresult|optionsyntax)\.go$' -count=1
-GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test cmd/internal/testdir -run '^Test/(stringenums|sqljson)\.go$' -count=1
-GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test cmd/internal/testdir -run '^Test/(optionalsql|sqlstruct)\.go$' -count=1
-./gon/bin/gon test database/sql -run 'Test(GonOptional|GonJSON|.*ScanStruct|.*Collect|Cursor|Decimal)' -count=1
-GOEXPERIMENT=nojsonv2 ./gon/bin/gon test database/sql -run 'Test(GonOptional|GonJSON|.*ScanStruct|.*Collect|Cursor|Decimal)' -count=1
-./gon/bin/gon test go/build -run '^TestDependencies$' -count=1
-GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test cmd/cgo/internal/testconditional -run '^TestPairedCgoOptionResult$' -count=1
-GON_BASELINE_GO=/opt/homebrew/bin/go python3 misc/gon/test_alternatives.py
-```
+Paired harnesses execute the legacy program with unmodified Go 1.27.1 and Gon,
+and the equivalent modern program with Gon. They assert output, effects,
+success/failure/absence and relevant boundaries; selected harnesses repeat with
+`-l` and `-N -l`. Compile rejection and cross-package/export cases are included.
+The focused checks are distinct from the final complete profile gates.
 
-The testdir checks ran as focused subsets, not one full testdir invocation.
-Paired programs execute legacy with Go 1.27.1 and Gon, and modern with Gon;
-the optional comparison pair also runs with `-l` and `-N -l`, and string enums
-and SQL JSON run without inlining. The Cgo pair includes instrumented coverage.
-Optional presence covers noncomparable/typed-nil/nested payloads, aliases and
-generics, shadowing, named boolean arguments, single evaluation, short circuit
-and invalid comparisons. String enums assert zero allocations for known
-`UnmarshalText` variants and copying for unknown text, including exported and
-generic methods. SQL JSON covers arrays, UUIDs, maps, custom JSON decoding,
-NULL versus JSON null, error transactionality, stale reference replacement,
-Scanner/decimal precedence, cursors, RawBytes pointer rejection and ordinary Go
-Scan compatibility, with both driver.Values and direct column scanning.
+Focused checks passed for multi-pattern arms, pattern tests with bindings,
+one-line error context, interpolation and the 18 functions in `gon/seq`.
+The interpolation review adds raw-text preservation, nested match/function/
+handler expressions, format/comment handling and physical-file import checks.
+The native pattern-test lowering places condition bindings in the enclosing
+if initialization; regressions cover multi-name bindings and optional record
+patterns. cgo/coverage pairs cover matching, native optionals, error context
+and interpolation. Structural tools, SSA interpretation, Staticcheck IR,
+analyzer diagnostics, semantic CLI, LSP and conservative refactor behavior
+have focused regressions.
 
-Maintained-module checks passed: `tools/x-tools` SSA `TestGonAlternatives`
-(interpreter execution), CFG/satisfy `TestGon`, Staticcheck IR
-`TestGonAlternatives`, and gonpls registry `TestGonAnalyzers`.
+## Maintained NilAway
 
-The selected tooling run passed all six checks (`stringenums-vet`,
-`sqljson-vet`, `stringenums-execution`, `optionalsql-execution`,
-`sqljson-execution`, `sqlstruct-execution`), with exit 2 because it was a
-partial selection. [Current partial summary](../../pkg/gon-validation/tooling/summary.json).
-No complete profile or release gate was rerun.
+`tools/nilaway` preserves Uber's Apache-2.0 license, NOTICE, upstream corpus and
+module path. [Provenance](../../tools/nilaway/UPSTREAM.json) records upstream
+revision `acb8859b9031bb9496be97e027df5573f9fb5340`.
+Ordinary Go uses its upstream analysis; Gon packages feed typed maintained SSA
+into NilAway's inference triggers. Named calls use the associated parameters.
+Gon safe/unsafe fixtures and executable pairs cover the language constructs,
+alias/closure writes, container and deep-field flow, generic optional payloads,
+interfaces, receiver flow and Fatal in tests. NilAway stays opt-in through
+`gon check --nilaway` and `"gon.serverSettings": { "nilaway": true }`; internal errors
+are visible and never treated as successful nil analysis.
 
-The three common pairs (`optionresult`, `stringenums`, `sqljson`) also passed
-9 js/wasm executions via Node 26.6.0 (baseline, Gon legacy and modern, with
-identical output), and 18 linux/amd64 and linux/riscv64 cross-compilations.
-Those Linux binaries were not executed. [Platform commands and results](../../pkg/gon-validation/presence-json-platforms/summary.json).
-
-The updated `llm_teacher` branch `gon` passed its backend unit suite, vet
-(ordinary and integration tags), semantic check (8 packages, 164 analyzers,
-zero diagnostics), and the full PostgreSQL 17 integration suite with `-race`
-and a disposable RAM database. This includes the new REST
-`units-with-exercises` coverage and direct JSON collections/optional assessments.
-
-## Complete focused gates
+## PostgreSQL
 
 ```sh
-GON_BASELINE_GO=/opt/homebrew/bin/go python3 misc/gon/validate.py enums
-GON_BASELINE_GO=/opt/homebrew/bin/go python3 misc/gon/validate.py tooling
+GON_BASELINE_GO=/opt/homebrew/bin/go GON_SQL_POSTGRES=1 \
+  python3 misc/gon/test_optionals_postgres.py
 ```
 
-| Profile | Result | Sum of check durations | Evidence |
-| --- | --- | ---: | --- |
-| enums | 32/32 PASS, exit 0, no pending items | 98.123s | [summary](../../pkg/gon-validation/enums/summary.json) |
-| tooling | 41/41 PASS, exit 0, no pending items | 147.654s | Historical full run; current partial summary above |
-
-These counts predate the 2026-10-05 merge recorded [below](#features-merged-on-2026-10-05):
-the `tooling`, `errorhandling`, `matching` and `option` profiles have gained
-checks since, and neither complete gate was rerun afterwards.
-
-The enums gate includes the opt-in string-enum extension and ordinary enum
-compatibility. String-enum pairs execute the Go 1.27.1 baseline, Gon legacy and
-Gon modern with/without inlining and the JSON-v2 experiment. Assertions cover
-known/unknown/empty text, zero, null, invalid JSON, escaping/UTF-8, independent
-bytes, aliases, generic/local types, derived and imported types, interface and
-method calls, written evaluation order, defer and goroutines. Native/SSA/IR
-checks include local enums with their own type parameters inside generic
-functions/methods. SSA interpretation and IR sanity checks also cover constraints
-using the enclosing type parameter. Compile
-rejections and real LSP tests cover malformed/incomplete declarations without
-panic. Source and indexed/unified exports retain labels and generated methods.
-
-The benchmark record separately retains the 47-check
-[modern core gate](benchmarks/results/20261004T013816Z/diagnostics/modern/summary.json),
-which predates the string-enum extension. Modern deduplicates enums, matching,
-optional values, Result and named arguments.
-Tooling executes the focused legacy/modern harnesses for all nine additions,
-public AST, analyzer registry, export readers, CFG/SSA, Staticcheck IR, semantic
-CLI, real LSP, modernization, README fixtures and benchmark correctness. Optional
-checks include native identity, one-layer explicit/implicit conversions, typed
-nil, nested presence patterns, shadowing, invalid contexts and metadata roundtrips.
-Generic completion, implementation unification and method fingerprints retain
-native optional identity and correctly discover/infer payload type parameters.
-
-The migration test uses real CLI package loading, a default preview, a multi-file
-revision-checked plan, atomic stale rejection, user-defined homonyms, nested
-patterns, constructor function values, execution and idempotence. Normal
-checking rejects retired constructors and migration does not modify Universe.
-
-Compiler SSA executes 367 tests with no skips. The existing upstream
-`internal/typesinternal/TestErrorCodes` skip remains; Gon error-code inventory
-coverage executes. Per-check logs retain actual tests/skips. Compiler optimizations
-cover tag loads at memory merges, integer Phis and unused rematerializations.
-Focused tests check widths, aliases, overlap, unknown writes and live operands.
-
-Legacy programs execute with Gon and Go 1.27.1; modern programs execute with Gon,
-including non-inlined cases. Assertions cover success, failure, absence, typed
-nil, nested layers, copied pointers, lazy defaults, evaluation order, named results
-and defers. Relevant cgo/coverage pairs also execute. These are focused checks,
-not whole-distribution test runs.
-
-## SQL integration
-
-The general `database/sql` boundary converts native string-enum arguments into
-strings and parses string/byte results. There are no enum-specific SQL methods
-or driver changes. The complete `database/sql` and `database/sql/driver` suites
-passed **444 tests with no skips**, including existing Go behavior and the new
-opt-in coverage. Both complete gates include these suites and
-`test/stringenums_sql.go`: Go 1.27.1 legacy, Gon legacy, Gon modern and modern
-with compiler inlining disabled produce identical observable results.
-
-The deterministic pair exercises four driver paths: the old driver API,
-`NamedValueChecker` returning `ErrSkip`, an accept-any checker bypassing default
-conversion, and Go 1.27 `RowsColumnScanner`. Assertions cover known/unknown/empty
-text, aliases, generics, detached byte buffers, nullable pointers and
-`sql.Null[Role]`, named parameters, prepared statements and transactions.
-Explicit `Scanner`/`Valuer` methods retain precedence. Plain enums and ordinary
-Go text marshalers retain their existing SQL behavior. Nontext sources and NULL
-fail without changing a direct enum destination; indirect pointer allocation
-retains existing `database/sql` behavior.
-
-```sh
-GON_SQL_POSTGRES=1 GON_BASELINE_GO=/opt/homebrew/bin/go \
-  python3 misc/gon/test_stringenums_postgres.py
-```
-
-This optional integration passed against **PostgreSQL 17.11**, using
-**pgx stdlib v5.7.6** and **lib/pq v1.10.9**. Each driver executed the baseline,
-Gon legacy, Gon modern and modern without inlining: **eight driver executions**
-passed, including SQL NULL, prepared statements, transactions and multiple rows.
-Client execution was darwin/arm64. The isolated Docker container used temporary
-storage and was removed successfully. [Commands, versions and results](../../pkg/gon-validation/sql-postgres/summary.json)
-retain the evidence. Setting `GON_SQL_POSTGRES=1` adds this integration to either
-complete gate; the profile counts above are the default gates and record the
-live integration separately. pgx's native API remains a separate adapter
-boundary. This PostgreSQL run covers string enums only; the optional
-integration below was not executed.
-
-## Features merged on 2026-10-05
-
-Master `96ab86645a` merges six branches: `database/sql` struct scanning, the
-named-argument untyped-value fix, vet/gonpls tooling fixes, native optional
-JSON and `database/sql`, enum patterns on interface and error subjects, and `!`
-in tests and across Go tuples and Result. Every check below executed on
-**darwin/arm64** (Apple M4); the one additional js/wasm execution, of the
-`matchinterface` pair, is in the platform table. They are focused test
-selections and partial `validate.py` runs, with the executable pairs executing
-their legacy program on the unmodified baseline (`GON_BASELINE_GO`) and the
-modern program with Gon, also without inlining. No full profile pass is
-claimed: the `tooling`, `errorhandling`, `matching`, `option` and `modern`
-profiles were not run in full after the merge, and the complete-gate counts
-above predate it.
-
-| Feature (commit) | Checks executed, all passing |
-| --- | --- |
-| `database/sql` struct scanning (`cb5b4dad4e`) | `database/sql` unit tests over the fakedb, basic, default and scancols drivers; `test/sqlstruct.go` pair; `cmd/api` check |
-| Named-argument untyped values (`3aa69b804f`) | `TestNamedArgumentsRecordedTypes` in `types2` and `go/types`; `test/namedarguments.go` pair, extended with three invalid untyped cases |
-| Vet and gonpls fixes (`8ca2c0bcc2`) | analyzer `TestGon` in `httpresponse` and `sqlrowserr`; `TestPredeclaredResult` (fingerprint), `TestPredeclaredResultMethods` (methodsets), `TestGonResult*` (LSP integration), marker `inline-var-gon`, cmd `TestGonResultMethods`; `validate.py tooling --only vet-error-handlers --only predeclared-result-index --only predeclared-result-lsp --only inline-variable-gon` (partial selection) |
-| Native optional JSON and SQL (`f602bf641e`) | unit tests in `encoding/json` (default and `GOEXPERIMENT=nojsonv2`), `encoding/json/v2`, `database/sql`, `database/sql/driver` and `reflect`; `test/optionaljson.go` and `test/optionalsql.go` pairs; `validate.py option` partial selection: `optional-json`, `optional-json-v1`, `optional-sql`, `optional-reflect`, the two `vet` checks and the pair executions |
-| Enum patterns on interface and error subjects (`2d8c28ed91`) | `TestMatchInterfaceSubject` and `TestMatchInterfaceSubjectInvalid` in both checkers; `test/matchinterface.go` pair; SSA and Staticcheck IR tests; `test_interfacematch.py` LSP test; `validate.py matching` partial selection including `matchinterface-execution`, `matchinterface-vet` and `interfacematch-lsp` |
-| `!` in tests and across tuples and Result (`99c7b28518`) | `internal/types/testdata/check/errorbridge.go`; `TestErrorHandlingBoundaries` (56 cases) in both checkers; `test/errorbridge.go` and `test/errortest.go` pairs; `errors.TestErrNilResult`; SSA and Staticcheck IR tests; `validate.py errorhandling` partial selection (vendor, the `errorhandling`, `errorbridge` and `errortest` executions, types, syntax, ssa, staticcheck-ir, vet, cgo, cover, structural-tools, analyzers, compiler-ssa, compiler-inline, staticcheck-safety, refactor-safety) and `validate.py tooling` partial selection (tooling-api, syntax-fixes, fix-execution, cli, lsp) |
-
-Integration on the merged tree (`96ab86645a`):
-
-```sh
-python3 misc/gon/vendor.py --check
-go test -run 'TestGenerate|ErrorHandling|ErrorExpr|NamedArguments|OptionResult|MatchInterface' cmd/compile/internal/types2 go/types
-go test -run 'ScanStruct|Collect|GonOptional|TestErrNilResult|^TestOptional' database/sql database/sql/driver encoding/json encoding/json/v2 errors reflect
-go test cmd/internal/testdir -run 'Test/(sqlstruct|optionaljson|optionalsql|matchinterface|errorbridge|errortest|namedarguments|errorhandling|optionresult|matching|stringenums_sql)\.go$'
-```
-
-All four passed. A scratch module that combined `Collect` into `T?` fields,
-tuple-to-Result and Result-to-error `!`, test `!`, an error-subject match and a
-named comparison also passed `gon vet`, `gon test` and `gon check`.
-
-Not executed: `misc/gon/test_optionals_postgres.py` (`GON_SQL_POSTGRES=1`) was
-written but has not been run, so optional JSON and SQL have no live PostgreSQL
-or driver evidence beyond `database/sql`'s own fake drivers. The new pairs
-`sqlstruct`, `optionaljson`, `optionalsql` and `errorbridge` are registered in
-`cross_pair.sh`, but their wasm and Linux runs are not part of this record;
-`errortest` and `matchinterface` are not registered there. Benchmarks and
-bootstrap were not rerun for these features.
+PASS against disposable **PostgreSQL 17** with **pgx stdlib** and **lib/pq**.
+The legacy baseline, Gon legacy, Gon modern and non-inlined modern execute for
+both drivers. Optional NULL/presence, JSON composites, transactional decoding,
+strict struct scanning and ordinary Scan conversions are asserted.
+The server uses temporary container storage and is removed after the test.
+[Versions, commands and results](benchmarks/results/20261007T033706Z/validation/postgres.json).
+Native pgx remains an explicit codec boundary.
 
 ## Bootstrap
 
-The current string-enum compiler bootstrapped from unmodified Go 1.27.1 in the
-repository, using a fresh build cache:
+A source-only isolated snapshot bootstrapped from unmodified Go 1.27.1 with a
+fresh build cache. It excludes repository Git metadata, built tools, ignored
+working documents and old benchmark output.
 
 ```sh
-# Inside src; GOCACHE selects a fresh temporary directory:
-env -u GOROOT -u GOTOOLDIR \
-  GOROOT_BOOTSTRAP=/opt/homebrew/Cellar/go/1.27.1/libexec \
-  GOMAXPROCS=1 GOFLAGS=-p=1 GOCACHE=<temporary-directory> ./make.bash
-```
-
-All three toolchains and command-staleness checks passed in **204.100s**.
-[Commands and result](../../pkg/gon-validation/stringenums-final/bootstrap.json)
-and [log](../../pkg/gon-validation/stringenums-final/bootstrap.log) retain the
-evidence. An earlier shared-cache attempt failed the command-staleness check
-for `internal/goarch`; the fresh-cache retry resolved it. The temporary cache
-was removed, then `build.py` rebuilt the public tools and `vendor.py --check`
-passed. This is a repository bootstrap, not an isolated source-only snapshot.
-
-`make.bash` could also fail the command-staleness check intermittently (every
-command stale on `internal/goarch`), for example on the 2026-10-05 Linux CI
-runs. The cause was a nondeterministic object file, not the cache: package
-`cmd/compile/internal/noder` has a noalg `[3]ir.Node` (the backing array of the
-slice literal passed to `matchErrorAs`) and a regular one, which have identical
-strings and share one type descriptor symbol, and `reflectdata.typesStrCmp`
-left their order to the concurrent backend. The compiler built by toolchain2
-then differed from the one built by toolchain3. `typesStrCmp` now writes the
-type with algorithms first; `TestTypesStrCmpNoalg` covers it. On linux/arm64
-(Debian, Go 1.27.1 bootstrap) the unfixed tree compiled `noder` to two different
-objects in roughly half of identical runs, and the fixed tree gave one object in
-24 of 24 runs with `-c=4`, `GOMAXPROCS=1` and `-c=1`, and three parallel
-`make.bash` runs passed with the same compiler content ID.
-
-The optional/Result benchmark record also includes an isolated source-only
-snapshot bootstrapped from unmodified Go 1.27.1:
-
-```sh
-# Inside the isolated snapshot's src directory:
+# In the snapshot's src, with a fresh temporary GOCACHE:
 env -u GOROOT -u GOTOOLDIR \
   GOROOT_BOOTSTRAP=/opt/homebrew/Cellar/go/1.27.1/libexec \
   GOMAXPROCS=2 GOFLAGS=-p=2 ./make.bash
 ```
 
-`make.bash` passed in **74.303s**. The resulting scratch compiler passed the
-optional/Result and optional-syntax/boundary executable harnesses, plus a legacy
-smoke with baseline-identical output. The snapshot contained 20,400 source files,
-used APFS copy-on-write copies and a fresh cache, and excluded prebuilt tools.
-Snapshot/cache were removed. Source-manifest SHA-256:
-`f1d2c4b88b158bf750fce0be24c86a2a2f0109f03826bb8b3ee8693d577b23c1`.
-[Runner, manifest, commands and logs](benchmarks/results/20261004T013816Z/diagnostics/bootstrap.json)
-retain the evidence. Installing tools alone is not bootstrap evidence.
+PASS: all bootstrap stages and command-staleness checks, legacy smoke against
+the baseline, native optional core/boundary harnesses and every new compiler/
+library feature pair. [Snapshot evidence](benchmarks/results/20261007T033706Z/validation/bootstrap.json).
+The deterministic algorithm-bearing type ordering fix remains covered by
+`TestTypesStrCmpNoalg`; a fresh cache is not a substitute for that correction.
 
-## Platforms
+## Final profiles and platforms
 
-```sh
-GON_BASELINE_GO=/opt/homebrew/bin/go misc/gon/cross_pair.sh js wasm
-```
+The complete js/wasm pair script passed with Node 26.6.0 and GOMAXPROCS=1.
+The wasm runtime requires a single P. This run includes legacy baseline, Gon
+legacy, modern, non-inlined modern and Fatal tests; fixture hashes stayed
+unchanged during execution. [Wasm result](benchmarks/results/20261007T033706Z/validation/wasm.json).
+Linux execution that was already active completed before the user deferred
+additional platform/Docker tests to the following day. It passed all target
+pairs on linux/arm64 natively in the Docker Linux VM and linux/amd64 and
+linux/riscv64 through QEMU user-mode. The validation containers were removed.
+[Linux commands and target results](benchmarks/results/20261007T033706Z/validation/linux.json).
+No further platform or Docker test is scheduled. The final macOS profiles all passed.
+Profiles are focused on the compiler/tooling packages and feature harnesses;
+no whole standard-library, cmd, dist or complete test-directory run is used.
 
-| Platform | Current evidence | Scope |
-| --- | --- | --- |
-| darwin/arm64 | Executed | Focused gates, baseline, bootstrap, benchmark, real LSP and editor; focused checks of the 2026-10-05 features |
-| js/wasm | Executed through Node 26.6.0 | Eleven portable pairs, including string enums, SQL, analysis fixtures and local generic cases; 11 baseline and 33 Gon legacy/modern/non-inlined executions match |
-| linux/amd64 | Cross-compiled | String-enum common/analysis and SQL pairs: baseline legacy, Gon legacy, Gon modern; existing optional/Result evidence retained below |
-| linux/riscv64 | Cross-compiled | Same three variants and all three string-enum pairs |
-| js/wasm (2026-10-05) | Executed through node | `matchinterface` pair only |
-| linux/amd64, linux/riscv64, wasip1/wasm (2026-10-05) | Cross-compiled only | `matchinterface` pair only; not executed |
-
-[Current wasm results](../../pkg/gon-validation/stringenums-cross/wasm.json)
-passed in 5.829s; [12 string-enum cross-build commands/results](../../pkg/gon-validation/stringenums-cross/builds.json)
-passed in 2.400s. The additional SQL pair's [four wasm executions](../../pkg/gon-validation/sql-cross/wasm.json)
-passed in 2.905s and its [six Linux cross-builds](../../pkg/gon-validation/sql-cross/builds.json)
-passed in 4.120s. Records include fixture hashes and logs. The benchmark record
-also retains [optional wasm output](benchmarks/results/20261004T013816Z/diagnostics/wasm.log)
-and [optional cross-build evidence](benchmarks/results/20261004T013816Z/diagnostics/cross-builds.json).
-Linux target binaries were not executed locally; cross-compilation
-is not runtime validation. Remote CI configuration is not execution evidence.
-Target-specific cgo/editor behavior is not established on unexecuted targets.
-
-## Performance
+Complete commands used the unmodified baseline:
 
 ```sh
-GON_BASELINE_GO=/opt/homebrew/bin/go python3 misc/gon/benchmark.py \
-  --samples 10 --build-samples 7 --benchtime 300ms
+GON_BASELINE_GO=/opt/homebrew/bin/go GOMAXPROCS=2 \
+  python3 misc/gon/validate.py PROFILE
 ```
 
-The [current report](benchmarks/results/20261004T013816Z/report.md) uses native
-optional fixtures and retains every one of the 24 workloads, including increases.
-All 16 correctness tests pass per variant with identical observable output.
-Each reported operation processes 64 items. Representation and retained-pointer
-observations are separate from runtime timing; they do not promise a stable ABI
-or zero overhead. Raw samples, hashes, source copies and commands are retained.
-Published older experiments are removed. Exact costs and statistical limitations
-are recorded in the report and [benchmark guide](benchmarks/README.md).
+Each PROFILE below ran without `--only`. Check counts include shared gates;
+they are not counts of distinct tests across profiles.
 
-## Documentation and editor
+| Profile | Checks | Result |
+| --- | ---: | --- |
+| tooling | 63 | PASS |
+| errorhandling | 26 | PASS |
+| conditional | 26 | PASS |
+| lambda | 29 | PASS |
+| nullsafety | 29 | PASS |
+| namedarguments | 26 | PASS |
+| enums | 32 | PASS |
+| matching | 30 | PASS |
+| option | 39 | PASS |
+| seq | 4 | PASS |
+| errorcontext | 9 | PASS |
+| matchalternatives | 7 | PASS |
+| patterntest | 7 | PASS |
+| interpolation | 10 | PASS |
+| nilanalysis | 5 | PASS |
+| modern | 100 | PASS |
 
-`misc/gon/test_readme.py` passed in both complete gates: 28 displayed Go blocks
-match 20 unique executed fixtures; legacy executes with Go 1.27.1/Gon and modern
-with Gon. Adoption retains .go, go.mod/go.work, dependencies and ordinary Go
-installations, selecting Gon explicitly for terminal/editor/CI. Installer
-regressions execute as part of both profiles.
+[Commands, results and recorded skips](benchmarks/results/20261007T033706Z/validation/profiles.json).
+Per-profile summaries link retained compressed logs. Upstream manual
+`TestErrorCodes` and the vet fixtures intentionally skipped by upstream are
+recorded in those summaries; executable feature pairs were not skipped.
+The final vendor consistency check passed. Whitespace review found only
+retained upstream NilAway documentation/Makefile whitespace; Gon adaptations
+have no new whitespace errors.
 
-The string-enum vscode-gon update passed `npm run test:syntax`, `npm run compile`
-and `npm run package` on macOS arm64 with VS Code 1.139.1. The actual TextMate
-tokenizer covers ordinary/generic `enum string`, contextual identifiers and
-comment/string isolation. VSIX inspection confirms twelve snippets, including
-`gonstringenum`, and the updated grammar. The full extension-host suite was not
-rerun for this update.
+## Benchmarks
 
-The separate vscode-gon repository's existing full `npm test` record uses
-VS Code 1.139.1 and Delve 1.27.2. It tests native optional patterns, Result-only
-contextual constructors, real client services, equivalent baseline/legacy/modern execution,
-automatic discovery, per-folder overrides, Run/Check Project, debugger and test
-explorer. Actual tokenizer and `npm run package` also passed. See that repository's
-VALIDATION.md for the exact commands and platform limits.
+The current fixtures contain **22 workloads** and **16 correctness tests** per
+variant, covering the eight original features and runtime additions. Correctness
+passes for baseline legacy, Gon legacy and Gon modern with identical output.
+The final default measurement run passed: ten runtime rounds at 300 ms and
+seven build samples, with compiler and fixture hashes unchanged during the run.
+[Complete measured report](benchmarks/results/20261007T033706Z/report.md) and
+[raw data](benchmarks/results/20261007T033706Z/summary.json) retain all 22 workloads,
+including regressions, build costs, allocation counts and representation sizes.
+All 22 workloads have identical heap bytes and allocation counts across the
+three variants. Native unit enums occupy 16 bytes versus 8 for the tagged Go
+fixture; `struct{}?` occupies 16 versus 2. Pointer and integer optionals occupy
+16 bytes in all variants. Main-package rebuild medians are 0.249 seconds for
+Gon legacy and 0.251 for Gon modern. Measurements apply to this host/session,
+with no stable ABI or zero-overhead claim. See [method and workloads](benchmarks/README.md).
+
+## Product migration
+
+`/Users/tzbk/Documents/llm_teacher` uses tuples, multi-pattern arms, `is`,
+one-line error context, raw interpolation, seq.Lookup/Map, a typed generic JSON
+handler and cmp.Or. Pre-existing user changes are preserved.
+Its backend unit suite, vet, standard `gon check` (164 analyzers, zero diagnostics)
+and PostgreSQL integration with `-race` passed. The final NilAway opt-in check
+ran 165 analyzers: zero errors, **16 conservative warnings**, zero internal
+analysis failures. Twelve concern external constructor/framework invariants
+(embed directory entries, MCP tools, Request.URL and injected services); four
+concern HTTP response/body return facts. The source guard, enum payload and
+Fatal flow regressions are fixed. [Standard check](benchmarks/results/20261007T033706Z/validation/llm-teacher-check.json),
+[opt-in check](benchmarks/results/20261007T033706Z/validation/llm-teacher-nilaway.json).
+The backend Docker commit pin advances to the published Gon work branch commit
+as the final migration step; no additional Docker build or execution was
+requested. The prompt has an exact-output equivalence regression.
+
+## Editor
+
+The macOS VS Code 1.140.0 language/configuration host, actual tokenizer,
+TypeScript build, executable pairs and packaged VSIX checks passed. The
+`gon.serverSettings` object forwards `nilaway` and Check Project adds the flag
+only when enabled. Retired snippets are removed and nested quoted/raw
+interpolation is highlighted. [Commands and scope](benchmarks/results/20261007T033706Z/validation/vscode-gon.md).
+The separate debugger/test-explorer suite was not rerun in this language change.
 
 ## Supported limits
 
-- Source inlining/extraction decline unsupported named, lazy, propagation,
-  matching or target-sensitive moves. First-class enum constructors, string-enum
-  parsers and generated string-enum methods disable compiler inlining.
-- Optional storage is GC-safe but private, with discriminator/typed payload fields.
-  Unit enums occupy 16 versus a legacy tag's 8 bytes; optional empty structs
-  occupy 16 versus a legacy struct's 2 on this host. There is no stable ABI or
-  automatic serialization/C mapping for ordinary enums or optional values;
-  explicit adapters are required. Opt-in string enums supply text interfaces
-  and standard JSON/`database/sql` conversions. SQL NULL uses `sql.Null[T]`,
-  pointers or a native optional (the live PostgreSQL check for optionals is
-  written but not executed). Native pgx outside `database/sql` needs a codec; `encoding/xml`,
-  `gob` and C boundaries need explicit adapters.
-- Native optional lifting is single-valued and one layer. Typed nil is present;
-  nested layers and mixed optional/Go-nil guards require explicit boundaries.
-- Result constructors need known targets. Go tuples and Result convert only at
-  postfix `!`, because useful partial results may coexist with errors; every
-  other tuple boundary needs explicit code. Enum patterns on an interface never
-  prove exhaustiveness.
-- The open items found during that merge are fixed in `2b0ee32fbc`. Checked on
-  darwin/arm64: `go test go/build -run TestDependencies`; `go test reflect -run
-  '^TestOptional|TestSplitEnumMetadata'`; `go test cmd/compile/internal/types2
-  go/types -run 'TestStringEnum|^TestCheck$'` (full TestCheck in both checkers);
-  `go test go/types -run Generate`; `go test ./go/types/objectpath` and
-  `./go/analysis/passes/copylock` in tools/x-tools; `vendor.py --check`;
-  `cmd/internal/testdir -run 'Test/(optionsyntax|optionresult|enums|stringenums|stringenums_sql|matching|matchinterface)\.go$'`
-  with Go 1.27.1 as baseline.
-
-## Upstream integration
-
-[UPSTREAM.json](UPSTREAM.json) records integrated Go source revision
-`67c1d421161d3d1ae9f5fd005e84c29fd0d9f896`. A three-way source comparison carried
-Gon adaptations forward; upstream merge ancestry was not imported. Use that
-revision as the previous pristine source for future updates. Module language
-versions and historical upstream provenance do not change the Go 1.27+ support
-floor. Maintain tooling in their source modules and regenerate/check vendor trees.
+Native enum/optional storage has no stable ABI. C boundaries, XML, gob and
+native pgx need explicit adapters. Native optional JSON/SQL rejects nested
+layers, optional JSON keys and RawBytes payloads. Interface matching requires
+a default/wildcard and does not accept type-parameter interface subjects.
+Source inlining/extraction conservatively decline unsupported lazy, named or
+contextual moves. NilAway warnings remain optional. Platforms not explicitly
+listed as executed are not covered by this execution evidence.

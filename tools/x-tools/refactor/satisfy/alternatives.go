@@ -15,7 +15,9 @@ func optionPayload(t types.Type) types.Type {
 func (f *Finder) matchExpr(e *ast.MatchExpr) {
 	subject := f.expr(e.Tag)
 	for _, arm := range e.Arms {
-		f.matchPattern(arm.Pattern, subject)
+		for _, pattern := range arm.Patterns {
+			f.matchPattern(pattern, subject)
+		}
 		if arm.Guard != nil {
 			f.expr(arm.Guard)
 		}
@@ -46,7 +48,11 @@ func (f *Finder) matchPattern(p *ast.MatchPattern, subject types.Type) {
 		if id.Name == "_" {
 			return
 		}
-		if obj, ok := f.info.Defs[id].(*types.Var); ok {
+		obj, _ := f.info.Defs[id].(*types.Var)
+		if obj == nil {
+			obj, _ = f.info.Uses[id].(*types.Var)
+		}
+		if obj != nil {
 			f.assign(obj.Type(), subject)
 			return
 		}

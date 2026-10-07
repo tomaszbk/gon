@@ -83,7 +83,9 @@ const (
 	nMatchPattern
 	nMatchField
 	nOptionalExpr
-	nContextualVariantExpr
+	nPatternTestExpr
+	nInterpolatedStringExpr
+	nInterpolationPart
 )
 
 // typeOf returns a distinct single-bit value that represents the type of n.
@@ -112,8 +114,12 @@ func typeOf(n ast.Node) nodeMask {
 
 	// These cases include all nodes encountered by ast.Inspect.
 	switch n.(type) {
-	case *ast.ContextualVariantExpr:
-		return nodeBit(nContextualVariantExpr)
+	case *ast.InterpolatedStringExpr:
+		return nodeBit(nInterpolatedStringExpr)
+	case *ast.InterpolationPart:
+		return nodeBit(nInterpolationPart)
+	case *ast.PatternTestExpr:
+		return nodeBit(nPatternTestExpr)
 	case *ast.OptionalExpr:
 		return nodeBit(nOptionalExpr)
 

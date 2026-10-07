@@ -1,0 +1,154 @@
+{
+  "snapshot": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon",
+  "temporaryRoot": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi",
+  "command": [
+    "./make.bash"
+  ],
+  "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/src",
+  "baseline": "/opt/homebrew/bin/go",
+  "baselineRoot": "/opt/homebrew/Cellar/go/1.27.1/libexec",
+  "status": "pass",
+  "startedAt": "2026-10-07T02:52:02.374556+00:00",
+  "freshGOCACHE": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gocache",
+  "temporarySnapshotRemoved": true,
+  "checks": [
+    {
+      "name": "optionresult-core-and-boundaries",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/test/optionresult.go"
+      ],
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 7.643,
+      "log": "bootstrap.optionresult-core-and-boundaries.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/bootstrap/bootstrap.optionresult-core-and-boundaries.log"
+    },
+    {
+      "name": "native-optional-patterns-and-boundaries",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/test/optionsyntax.go"
+      ],
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 15.494,
+      "log": "bootstrap.native-optional-patterns-and-boundaries.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/bootstrap/bootstrap.native-optional-patterns-and-boundaries.log"
+    },
+    {
+      "name": "legacy-go-smoke",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/legacy-smoke.go"
+      ],
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.397,
+      "log": "bootstrap.legacy-go-smoke.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/bootstrap/bootstrap.legacy-go-smoke.log"
+    },
+    {
+      "name": "legacy-go-smoke-baseline",
+      "command": [
+        "/opt/homebrew/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/legacy-smoke.go"
+      ],
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.466,
+      "log": "bootstrap.legacy-go-smoke-baseline.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/bootstrap/bootstrap.legacy-go-smoke-baseline.log"
+    },
+    {
+      "name": "matchalternatives",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/test/matchalternatives.go"
+      ],
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 4.36,
+      "log": "bootstrap.matchalternatives.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/bootstrap/bootstrap.matchalternatives.log"
+    },
+    {
+      "name": "patterntest",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/test/patterntest.go"
+      ],
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 3.038,
+      "log": "bootstrap.patterntest.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/bootstrap/bootstrap.patterntest.log"
+    },
+    {
+      "name": "errorcontext",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/test/errorcontext.go"
+      ],
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 7.374,
+      "log": "bootstrap.errorcontext.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/bootstrap/bootstrap.errorcontext.log"
+    },
+    {
+      "name": "interpolation",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/test/interpolation.go"
+      ],
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 2.671,
+      "log": "bootstrap.interpolation.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/bootstrap/bootstrap.interpolation.log"
+    },
+    {
+      "name": "seq",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gon/test/seq.go"
+      ],
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 1.945,
+      "log": "bootstrap.seq.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/bootstrap/bootstrap.seq.log"
+    }
+  ],
+  "snapshotPolicy": "Tracked plus maintained untracked source files; excludes Git metadata, root tool binaries, gon distribution, pkg, local design/handover/AGENTS documents, unrelated untracked top-level examples/media and benchmark outputs. VERSION copied from VERSION.cache. Fresh temporary GOCACHE. APFS clonefile copy-on-write snapshot, no hardlinks.",
+  "baselineVersion": "go version go1.27.1 darwin/arm64",
+  "sourceFileCount": 20940,
+  "sourceFileManifest": "bootstrap.source-files.txt",
+  "sourceSha256Manifest": "bootstrap.sha256-manifest.txt",
+  "sourceManifestSha256": "f2d09226f34c3c339b08497b07ed0c5f3556022e3250fd29164b0c13330505ba",
+  "sourcePathsSha256": "987663514af5c48087443a9020ac919969e31c792d94b941aa1892fa1b0a06b7",
+  "environment": {
+    "GOCACHE": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-performance-bootstrap-8dfo6fzi/gocache",
+    "GOROOT_BOOTSTRAP": "/opt/homebrew/Cellar/go/1.27.1/libexec",
+    "GOFLAGS": "-p=2",
+    "GOMAXPROCS": "2"
+  },
+  "exitCode": 0,
+  "seconds": 150.25,
+  "log": "bootstrap.log.gz",
+  "legacySmokeSource": "bootstrap.legacy-smoke.source.txt",
+  "legacySmokeBaselineCompared": true,
+  "totalSeconds": 221.825,
+  "finishedAt": "2026-10-07T02:55:44.200590+00:00",
+  "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/bootstrap/bootstrap.log"
+}

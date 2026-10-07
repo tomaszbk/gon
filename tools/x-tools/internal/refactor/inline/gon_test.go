@@ -44,7 +44,6 @@ func TestGonCalleeSafety(t *testing.T) {
 func TestGonCallerSafety(t *testing.T) {
 	const refuse = "error: cannot inline call .*Gon control-flow expressions"
 	runTests(t, []testcase{
-		{"contextual constructor", `func f(x int) int { return x }`, `func g() Result[int,string] { return .Ok(f(1)) }`, refuse},
 		{"implicit Option argument", `func f(x int?) int? { return x }`, `func g() int? { return f(1) }`, "error: cannot inline function containing Gon control-flow expressions"},
 		{"lambda argument", `func f(cb func(int) int) int { return cb(1) }`, `func g() int { return f((x) => x + 1) }`, refuse},
 		{"coalesce argument", `func f(x *int) *int { return x }`, `func g(p, q *int) *int { return f(p ?? q) }`, refuse},

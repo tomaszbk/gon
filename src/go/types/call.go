@@ -704,10 +704,6 @@ func (check *Checker) arguments(call *ast.CallExpr, sig *Signature, targs []Type
 	if len(args) > 0 {
 		context := check.sprintf("argument to %s", call.Fun)
 		for i, a := range args {
-			if check.deferredOptionContexts[a.expr] {
-				delete(check.deferredOptionContexts, a.expr)
-				check.expr(newTarget(sigParams.vars[i].typ, context), a, a.expr)
-			}
 			if e, ok := a.expr.(*ast.LambdaExpr); ok {
 				if check.lambdaTypes[e] == nil {
 					check.lambdaExpr(newTarget(sigParams.vars[i].typ, context), a, e)

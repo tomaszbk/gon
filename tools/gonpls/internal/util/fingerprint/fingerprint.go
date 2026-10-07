@@ -107,7 +107,7 @@ func fingerprint(t types.Type) (string, bool) {
 			} else if types.Universe.Lookup(tname.Name()) != tname {
 				panic(tname) // predeclared types are the only named types with no package
 			} else {
-				// error, comparable and Gon's Result. A predeclared
+				// error and comparable. A predeclared
 				// type is encoded as a bare IDENT, which cannot
 				// collide with a package-level type of the same
 				// name: those are always (qual PATH NAME).

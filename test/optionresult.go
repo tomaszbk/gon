@@ -42,7 +42,7 @@ func main() {
 	want := run(tool, "run", common, legacy)
 	for _, got := range [][]byte{run(baseline, "run", common, legacy), run(tool, "run", common, modern), run(tool, "run", "-gcflags=-l", common, modern), run(tool, "run", "-gcflags=-N -l", common, modern)} {
 		if !bytes.Equal(want, got) {
-			panic(fmt.Sprintf("Option/Result differs\nwant %s\ngot %s", want, got))
+			panic(fmt.Sprintf("Optional differs\nwant %s\ngot %s", want, got))
 		}
 	}
 	invalid := []string{
@@ -50,15 +50,10 @@ func main() {
 		`type User struct{Name string};type Node struct{User *User};func f(x Node?)string{return x?.User?.Name ?? "none"}`,
 
 		`func f(x int?) int{return x?}`,
-		`func f(x Result[int,string]) int{return x!}`,
-		`func f(x Result[int,error]) int?{return (int?)((int)(x!))}`,
-		`func f(x int?) Result[int,error]{return Result[int,error].Ok(x?)}`,
-		`func f(x Result[int,string]) int{return x or e{_ = e}}`,
-		`func f(x Result[int,string]) int{return x??0}`,
 		`func f(){var x int?;x??=(int?)((int)(3))}`,
 		`func source()int?{return (int?)(nil)};func f(){source()??=3}`,
-		`func f(){defer func()Option[int]{return Option[int].None}()?}`,
-		`func f(){go func()Option[int]{return Option[int].None}()?}`,
+		`func f(){defer func()int?{return nil}()?}`,
+		`func f(){go func()int?{return nil}()?}`,
 	}
 
 	tmp, err := os.MkdirTemp("", "gon-optionresult-invalid-")
@@ -74,7 +69,7 @@ func main() {
 		}
 		cmd := exec.Command(tool, "build", "-o", filepath.Join(tmp, "bad"), filename)
 		if out, err := cmd.CombinedOutput(); err == nil {
-			panic(fmt.Sprintf("accepted invalid Option/Result %s: %s", call, out))
+			panic(fmt.Sprintf("accepted invalid Optional %s: %s", call, out))
 		}
 	}
 }

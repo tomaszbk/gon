@@ -74,3 +74,21 @@ func TestGenericOrConstraintErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestErrorContext(t *testing.T) {
+	src := `package p; func f() error { n := read() or err => wrap(err); use(n, read() or _ => nil); return nil }`
+	f, err := ParseFile(token.NewFileSet(), "context.go", src, 0)
+	if err != nil { t.Fatal(err) }
+	var exprs []*ast.ErrorExpr
+	ast.Inspect(f, func(n ast.Node) bool {
+		if e, ok := n.(*ast.ErrorExpr); ok { exprs = append(exprs, e) }
+		return true
+	})
+	if len(exprs) != 2 || exprs[0].Context == nil || exprs[0].Body != nil || !exprs[0].Arrow.IsValid() || exprs[0].End() != exprs[0].Context.End() { t.Fatalf("invalid error context: %#v", exprs) }
+	binding := exprs[0].Err.Obj
+	use := exprs[0].Context.(*ast.CallExpr).Args[0].(*ast.Ident)
+	if binding == nil || use.Obj != binding { t.Fatal("context binding not resolved") }
+	for _, src := range []string{`package p; func f() error { read() or => nil }`, `package p; func f() error { read() or err => }`} {
+		if _, err := ParseFile(token.NewFileSet(), "broken.go", src, AllErrors); err == nil { t.Errorf("accepted malformed context: %s", src) }
+	}
+}

@@ -22,14 +22,15 @@ func TypeCheck(src string) (*ast.File, *types.Package, *types.Info, error) {
 	}
 	pkg := types.NewPackage("foo", f.Name.Name)
 	info := &types.Info{
-		Types:      map[ast.Expr]types.TypeAndValue{},
-		Defs:       map[*ast.Ident]types.Object{},
-		Uses:       map[*ast.Ident]types.Object{},
-		Implicits:  map[ast.Node]types.Object{},
-		Selections: map[*ast.SelectorExpr]*types.Selection{},
-		Scopes:     map[ast.Node]*types.Scope{},
-		InitOrder:  []*types.Initializer{},
-		Instances:  map[*ast.Ident]types.Instance{},
+		Interpolations: make(map[*ast.InterpolatedStringExpr]*ast.CallExpr),
+		Types:          map[ast.Expr]types.TypeAndValue{},
+		Defs:           map[*ast.Ident]types.Object{},
+		Uses:           map[*ast.Ident]types.Object{},
+		Implicits:      map[ast.Node]types.Object{},
+		Selections:     map[*ast.SelectorExpr]*types.Selection{},
+		Scopes:         map[ast.Node]*types.Scope{},
+		InitOrder:      []*types.Initializer{},
+		Instances:      map[*ast.Ident]types.Instance{},
 	}
 	tcfg := &types.Config{
 		Importer: importer.Default(),

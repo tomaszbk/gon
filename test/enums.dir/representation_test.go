@@ -10,11 +10,6 @@ type legacyOption[T any] struct {
 	present bool
 	value   T
 }
-type legacyResult[T, E any] struct {
-	failed  bool
-	value   T
-	problem E
-}
 type Unit enum {
 	default Red
 	Blue
@@ -35,22 +30,18 @@ type legacyPayload struct {
 var sink int
 var optionSink int?
 var oldOptionSink legacyOption[int]
-var resultSink Result[int, string]
-var oldResultSink legacyResult[int, string]
 var payloadSink Payload
 var oldPayloadSink legacyPayload
 
 func TestAlternativeRepresentation(t *testing.T) {
-	t.Logf("sizes (bytes): Option[int]=%d tagged=%d; Result[int,string]=%d tagged=%d; Payload=%d tagged=%d; Option[*int]=%d tagged=%d", unsafe.Sizeof(optionSink), unsafe.Sizeof(oldOptionSink), unsafe.Sizeof(resultSink), unsafe.Sizeof(oldResultSink), unsafe.Sizeof(payloadSink), unsafe.Sizeof(oldPayloadSink), unsafe.Sizeof(((*int)?)(nil)), unsafe.Sizeof(legacyOption[*int]{}))
+	t.Logf("sizes (bytes): int?=%d tagged=%d; Payload=%d tagged=%d; (*int)?=%d tagged=%d", unsafe.Sizeof(optionSink), unsafe.Sizeof(oldOptionSink), unsafe.Sizeof(payloadSink), unsafe.Sizeof(oldPayloadSink), unsafe.Sizeof(((*int)?)(nil)), unsafe.Sizeof(legacyOption[*int]{}))
 	t.Logf("unit and zero-size payload (bytes): Unit=%d tagged=%d; Option[struct{}]=%d tagged=%d", unsafe.Sizeof(Unit.Red), unsafe.Sizeof(legacyUnit{}), unsafe.Sizeof((struct{}?)(nil)), unsafe.Sizeof(legacyOption[struct{}]{}))
 	modern := testing.AllocsPerRun(1000, func() {
 		optionSink = (int?)((int)(42))
-		resultSink = Result[int, string].Err("failure")
 		payloadSink = Payload.Integer(42)
 	})
 	legacy := testing.AllocsPerRun(1000, func() {
 		oldOptionSink = legacyOption[int]{true, 42}
-		oldResultSink = legacyResult[int, string]{true, 0, "failure"}
 		oldPayloadSink = legacyPayload{tag: 1, integer: 42}
 	})
 	t.Logf("construct allocations/run: modern=%g tagged=%g", modern, legacy)
@@ -105,18 +96,6 @@ func BenchmarkAlternatives(b *testing.B) {
 			oldOptionSink = legacyOption[int]{true, i}
 		}
 		runtime.KeepAlive(oldOptionSink)
-	})
-	b.Run("ResultModern", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			resultSink = Result[int, string].Ok(i)
-		}
-		runtime.KeepAlive(resultSink)
-	})
-	b.Run("ResultTagged", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			oldResultSink = legacyResult[int, string]{value: i}
-		}
-		runtime.KeepAlive(oldResultSink)
 	})
 	b.Run("EnumModern", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {

@@ -1,5 +1,0 @@
-package main
-import ("fmt"; "strconv")
-type Option[T any] struct { Value T }
-type Result struct { Value int }
-func main() { var pointer *int; var dynamic any = pointer; n, err := strconv.Atoi("42"); if err != nil { panic(err) }; ch := make(chan int,1); go func(){ ch <- n }(); got := <-ch; v:=Option[int]{Value:got}; r:=Result{Value:v.Value}; var enum = r.Value; defer fmt.Println("deferred",enum); fmt.Println("legacy", ! false, dynamic != nil, pointer == nil, enum) }

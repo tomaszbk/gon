@@ -42,6 +42,12 @@ func WriteExpr(buf *bytes.Buffer, x ast.Expr) {
 	case *ast.BasicLit:
 		buf.WriteString(x.Value)
 
+	case *ast.InterpolatedStringExpr:
+		buf.WriteByte('$')
+		buf.WriteByte(x.Quote)
+		buf.WriteString("…")
+		buf.WriteByte(x.Quote)
+
 	case *ast.EnumType:
 		buf.WriteString("enum")
 		if x.String.IsValid() {
@@ -158,7 +164,12 @@ func WriteExpr(buf *bytes.Buffer, x ast.Expr) {
 
 	case *ast.ErrorExpr:
 		WriteExpr(buf, x.X)
-		if x.Body == nil {
+		if x.Context != nil {
+			buf.WriteString(" or ")
+			WriteExpr(buf, x.Err)
+			buf.WriteString(" => ")
+			WriteExpr(buf, x.Context)
+		} else if x.Body == nil {
 			buf.WriteByte('!')
 		} else {
 			buf.WriteString(" or ")
@@ -166,6 +177,19 @@ func WriteExpr(buf *bytes.Buffer, x ast.Expr) {
 			buf.WriteString(" {…}")
 		}
 
+	case *ast.OptionalExpr:
+		WriteExpr(buf, x.X)
+		buf.WriteByte('?')
+
+	case *ast.MatchExpr:
+		buf.WriteString("switch ")
+		WriteExpr(buf, x.Tag)
+		buf.WriteString(" {…}")
+
+	case *ast.PatternTestExpr:
+		WriteExpr(buf, x.X)
+		buf.WriteString(" is ")
+		buf.WriteString("…")
 	case *ast.CondExpr:
 		buf.WriteString("if ")
 		WriteExpr(buf, x.Cond)

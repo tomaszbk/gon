@@ -129,6 +129,10 @@ func StartPos(n Node) Pos {
 func EndPos(n Node) Pos {
 	for m := n; ; {
 		switch n := m.(type) {
+		case *InterpolatedStringExpr:
+			return n.Rquote
+		case *InterpolationPart:
+			return n.End
 		case nil:
 			panic("nil node")
 
@@ -176,11 +180,6 @@ func EndPos(n Node) Pos {
 			}
 			m = n.Type
 
-		case *ContextualVariantExpr:
-			if n.Rparen.IsKnown() {
-				return n.Rparen
-			}
-			m = n.Name
 		case *OptionalExpr:
 			return n.Question
 		case *EnumType:
@@ -226,6 +225,8 @@ func EndPos(n Node) Pos {
 				return n.Pos()
 			}
 		case *MatchField:
+			m = n.Pattern
+		case *PatternTestExpr:
 			m = n.Pattern
 
 		// expressions
@@ -278,6 +279,10 @@ func EndPos(n Node) Pos {
 			}
 			m = n.X
 		case *ErrorExpr:
+			if n.Context != nil {
+				m = n.Context
+				continue
+			}
 			if n.Body != nil {
 				m = n.Body
 				continue

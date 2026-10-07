@@ -1,0 +1,343 @@
+{
+  "startedAt": "2026-10-07T03:24:20.697777+00:00",
+  "baseline": "/opt/homebrew/bin/go",
+  "platform": "darwin/arm64",
+  "profiles": [
+    {
+      "profile": "errorhandling",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "errorhandling"
+      ],
+      "exitCode": 0,
+      "seconds": 99.286,
+      "checks": 26,
+      "testsRun": 6115,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ],
+        "vet": [
+          "cmd/vet/TestVet/stringintconv",
+          "cmd/vet/TestVet/stdversion",
+          "cmd/vet/TestVet/loopclosure"
+        ]
+      },
+      "pending": [],
+      "summary": "errorhandling.json",
+      "log": "logs/errorhandling.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/errorhandling.log"
+    },
+    {
+      "profile": "conditional",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "conditional"
+      ],
+      "exitCode": 0,
+      "seconds": 90.047,
+      "checks": 26,
+      "testsRun": 6061,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      },
+      "pending": [],
+      "summary": "conditional.json",
+      "log": "logs/conditional.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/conditional/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/conditional.log"
+    },
+    {
+      "profile": "lambda",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "lambda"
+      ],
+      "exitCode": 0,
+      "seconds": 95.558,
+      "checks": 29,
+      "testsRun": 6107,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      },
+      "pending": [],
+      "summary": "lambda.json",
+      "log": "logs/lambda.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/lambda/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/lambda.log"
+    },
+    {
+      "profile": "nullsafety",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "nullsafety"
+      ],
+      "exitCode": 0,
+      "seconds": 93.172,
+      "checks": 29,
+      "testsRun": 6107,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      },
+      "pending": [],
+      "summary": "nullsafety.json",
+      "log": "logs/nullsafety.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/nullsafety/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/nullsafety.log"
+    },
+    {
+      "profile": "namedarguments",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "namedarguments"
+      ],
+      "exitCode": 0,
+      "seconds": 71.838,
+      "checks": 26,
+      "testsRun": 6020,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      },
+      "pending": [],
+      "summary": "namedarguments.json",
+      "log": "logs/namedarguments.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/namedarguments/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/namedarguments.log"
+    },
+    {
+      "profile": "enums",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "enums"
+      ],
+      "exitCode": 0,
+      "seconds": 91.49,
+      "checks": 32,
+      "testsRun": 6679,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      },
+      "pending": [],
+      "summary": "enums.json",
+      "log": "logs/enums.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/enums/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/enums.log"
+    },
+    {
+      "profile": "matching",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "matching"
+      ],
+      "exitCode": 0,
+      "seconds": 79.331,
+      "checks": 30,
+      "testsRun": 6038,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      },
+      "pending": [],
+      "summary": "matching.json",
+      "log": "logs/matching.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/matching/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/matching.log"
+    },
+    {
+      "profile": "option",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "option"
+      ],
+      "exitCode": 0,
+      "seconds": 89.32,
+      "checks": 39,
+      "testsRun": 6170,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      },
+      "pending": [],
+      "summary": "option.json",
+      "log": "logs/option.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/option/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/option.log"
+    },
+    {
+      "profile": "seq",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "seq"
+      ],
+      "exitCode": 0,
+      "seconds": 4.613,
+      "checks": 4,
+      "testsRun": 11,
+      "skippedTests": {},
+      "pending": [],
+      "summary": "seq.json",
+      "log": "logs/seq.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/seq/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/seq.log"
+    },
+    {
+      "profile": "errorcontext",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "errorcontext"
+      ],
+      "exitCode": 0,
+      "seconds": 22.864,
+      "checks": 9,
+      "testsRun": 51,
+      "skippedTests": {},
+      "pending": [],
+      "summary": "errorcontext.json",
+      "log": "logs/errorcontext.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorcontext/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/errorcontext.log"
+    },
+    {
+      "profile": "matchalternatives",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "matchalternatives"
+      ],
+      "exitCode": 0,
+      "seconds": 15.278,
+      "checks": 7,
+      "testsRun": 5334,
+      "skippedTests": {},
+      "pending": [],
+      "summary": "matchalternatives.json",
+      "log": "logs/matchalternatives.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/matchalternatives/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/matchalternatives.log"
+    },
+    {
+      "profile": "patterntest",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "patterntest"
+      ],
+      "exitCode": 0,
+      "seconds": 14.403,
+      "checks": 7,
+      "testsRun": 5312,
+      "skippedTests": {},
+      "pending": [],
+      "summary": "patterntest.json",
+      "log": "logs/patterntest.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/patterntest/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/patterntest.log"
+    },
+    {
+      "profile": "interpolation",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "interpolation"
+      ],
+      "exitCode": 0,
+      "seconds": 22.364,
+      "checks": 10,
+      "testsRun": 5346,
+      "skippedTests": {},
+      "pending": [],
+      "summary": "interpolation.json",
+      "log": "logs/interpolation.run.log.gz",
+      "durationBasis": "sum of check durations in final diagnostic-print rerun",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/interpolation/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/interpolation.log"
+    },
+    {
+      "profile": "nilanalysis",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "nilanalysis"
+      ],
+      "exitCode": 0,
+      "seconds": 96.844,
+      "checks": 5,
+      "testsRun": 5516,
+      "skippedTests": {},
+      "pending": [],
+      "summary": "nilanalysis.json",
+      "log": "logs/nilanalysis.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/nilanalysis/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/nilanalysis.log"
+    },
+    {
+      "profile": "modern",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "modern"
+      ],
+      "exitCode": 0,
+      "seconds": 302.03,
+      "checks": 100,
+      "testsRun": 12741,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      },
+      "pending": [],
+      "summary": "modern.json",
+      "log": "logs/modern.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/modern/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/modern.log"
+    },
+    {
+      "profile": "tooling",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "tooling"
+      ],
+      "exitCode": 0,
+      "seconds": 181.291,
+      "checks": 63,
+      "testsRun": 6732,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      },
+      "pending": [],
+      "summary": "tooling.json",
+      "log": "logs/tooling.run.log.gz",
+      "sourceSummary": "/Users/tzbk/Documents/gon/pkg/gon-validation/tooling/summary.json",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/final-profiles/tooling.log"
+    }
+  ],
+  "status": "pass",
+  "finishedAt": "2026-10-07T03:35:16.137986+00:00"
+}

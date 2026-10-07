@@ -1,0 +1,168 @@
+{
+  "status": "pass",
+  "host": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "drivers": {
+    "github.com/jackc/pgx/v5": "v5.7.6",
+    "github.com/lib/pq": "v1.10.9"
+  },
+  "checks": [
+    {
+      "name": "baseline-version",
+      "command": [
+        "/opt/homebrew/bin/go",
+        "version"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.038
+    },
+    {
+      "name": "gon-version",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "version"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.01
+    },
+    {
+      "name": "docker-version",
+      "command": [
+        "docker",
+        "version",
+        "--format",
+        "{{.Server.Version}}"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.256
+    },
+    {
+      "name": "postgres-image",
+      "command": [
+        "docker",
+        "image",
+        "inspect",
+        "postgres:17-alpine",
+        "--format",
+        "{{.Id}}"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.097
+    },
+    {
+      "name": "postgres-start",
+      "command": [
+        "docker",
+        "run",
+        "--detach",
+        "--rm",
+        "--pull",
+        "never",
+        "--name",
+        "gon-optionals-96f5623a22a9",
+        "--publish",
+        "127.0.0.1::5432",
+        "--tmpfs",
+        "/var/lib/postgresql/data:rw",
+        "--env",
+        "POSTGRES_USER=gon_optional_test",
+        "--env",
+        "POSTGRES_PASSWORD=gon_optional_test",
+        "--env",
+        "POSTGRES_DB=gon_optional_test",
+        "postgres:17-alpine"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 1.334
+    },
+    {
+      "name": "postgres-port",
+      "command": [
+        "docker",
+        "inspect",
+        "gon-optionals-96f5623a22a9",
+        "--format",
+        "{{json .NetworkSettings.Ports}}"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.335
+    },
+    {
+      "name": "postgres-version",
+      "command": [
+        "docker",
+        "exec",
+        "gon-optionals-96f5623a22a9",
+        "psql",
+        "-U",
+        "gon_optional_test",
+        "-d",
+        "gon_optional_test",
+        "-Atc",
+        "SHOW server_version"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.175
+    },
+    {
+      "name": "module-tidy",
+      "command": [
+        "/opt/homebrew/bin/go",
+        "mod",
+        "tidy"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 4.304
+    },
+    {
+      "name": "baseline-legacy",
+      "command": [
+        "/opt/homebrew/bin/go",
+        "run",
+        "."
+      ],
+      "exit_code": 0,
+      "duration_seconds": 5.023
+    },
+    {
+      "name": "gon-legacy",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "run",
+        "."
+      ],
+      "exit_code": 0,
+      "duration_seconds": 10.269
+    },
+    {
+      "name": "gon-modern",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "run",
+        "."
+      ],
+      "exit_code": 0,
+      "duration_seconds": 1.08
+    },
+    {
+      "name": "gon-modern-noinline",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "run",
+        "-gcflags=all=-l",
+        "."
+      ],
+      "exit_code": 0,
+      "duration_seconds": 15.242
+    }
+  ],
+  "baseline_version": "go version go1.27.1 darwin/arm64",
+  "gon_version": "go version go1.28-devel_d67f72b731 Mon Oct 5 16:12:50 2026 -0300 darwin/arm64",
+  "docker_version": "29.5.2",
+  "postgres_image": "postgres:17-alpine",
+  "postgres_image_id": "sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
+  "postgres_version": "17.11",
+  "cleanup_exit_code": 0
+}

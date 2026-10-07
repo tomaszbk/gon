@@ -68,6 +68,7 @@ func TestChildren(t *testing.T) {
 		n        ast.Node
 		children []ast.Node
 	}{
+		{&ast.ErrorExpr{X: x, Err: binding, Context: z}, []ast.Node{x, binding, z}},
 		{&ast.LambdaExpr{Params: []*ast.Ident{x, y}, Body: z}, []ast.Node{x, y, z}},
 		{&ast.LambdaExpr{Params: []*ast.Ident{x}, Block: body}, []ast.Node{x, body}},
 		{&ast.NilGuardExpr{X: x}, []ast.Node{x}},
@@ -85,7 +86,7 @@ func TestChildren(t *testing.T) {
 }
 
 func TestChildrenIncomplete(t *testing.T) {
-	for _, src := range []string{"package p; var x = if c { a } else {", "package p; func f() { x := read() or err {"} {
+	for _, src := range []string{"package p; var x = if c { a } else {", "package p; func f() { x := read() or err {", "package p; func f() error { x := read() or err =>"} {
 		f, err := parser.ParseFile(token.NewFileSet(), "broken.go", src, parser.AllErrors)
 		if err == nil {
 			t.Fatal("expected syntax error")

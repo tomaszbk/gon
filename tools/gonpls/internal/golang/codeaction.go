@@ -401,6 +401,11 @@ func fixedByImportFix(fix *imports.ImportFix, diagnostics []protocol.Diagnostic)
 	var results []protocol.Diagnostic
 	for _, diagnostic := range diagnostics {
 		switch {
+		// Interpolation uses fmt by path and may have no lexical fmt selector.
+		case diagnostic.Message == `string interpolation requires an explicit import of "fmt" in this file`:
+			if fix.StmtInfo.ImportPath == "fmt" && fix.FixType == imports.AddImport {
+				results = append(results, diagnostic)
+			}
 		// "undeclared name: X" may be an unresolved import.
 		case strings.HasPrefix(diagnostic.Message, "undeclared name: "):
 			ident := strings.TrimPrefix(diagnostic.Message, "undeclared name: ")

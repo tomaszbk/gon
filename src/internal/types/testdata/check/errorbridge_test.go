@@ -13,13 +13,10 @@ type S struct{}
 type TT = testing.T
 type Named testing.T
 
-func one() (int, error)              { return 1, nil }
-func many() (int, string, error)     { return 1, "", nil }
-func only() error                    { return nil }
-func ptr() (*int, error)             { return nil, nil }
-func res() Result[int, error]        { return .Ok(1) }
-func resString() Result[int, string] { return .Ok(1) }
-func resConcrete() Result[int, E]    { return .Ok(1) }
+func one() (int, error)          { return 1, nil }
+func many() (int, string, error) { return 1, "", nil }
+func only() error                { return nil }
+func ptr() (*int, error)         { return nil, nil }
 
 func TestTuple(t *testing.T) {
 	n := one()!
@@ -70,13 +67,6 @@ func otherResults(t *testing.T) (int, string) {
 	return 1, ""
 }
 
-func TestResult(t *testing.T) {
-	n := res()!
-	m := resString()!
-	c := resConcrete()!
-	_, _, _ = n, m, c
-}
-
 func handlerUnaffected(t *testing.T) {
 	n := one() or err {
 		t.Fatal(err)
@@ -85,32 +75,22 @@ func handlerUnaffected(t *testing.T) {
 	_ = n
 }
 
-// Functions that return error last or exactly one Result keep their rules.
+// Functions that return error last keep their rules.
 func returnsError(t *testing.T) error {
 	only()!
-	_ = res()!
 	return nil
-}
-
-func returnsErrorString(t *testing.T) error {
-	_ = resString /* ERROR "assignable to error" */ ()!
-	return nil
-}
-
-func returnsResult(t *testing.T) Result[int, string] {
-	return .Ok(one /* ERROR "error propagation into a Result requires error to be assignable" */ ()!)
 }
 
 // Not a test function.
-func blank(_ *testing.T) { only /* ERROR "first named parameter" */ ()! }
-func unnamed(*testing.T) { only /* ERROR "first named parameter" */ ()! }
+func blank(_ *testing.T)         { only /* ERROR "first named parameter" */ ()! }
+func unnamed(*testing.T)         { only /* ERROR "first named parameter" */ ()! }
 func second(n int, t *testing.T) { only /* ERROR "first named parameter" */ ()! }
-func otherType(t *S) { only /* ERROR "first named parameter" */ ()! }
-func valueType(t testing.T) { only /* ERROR "first named parameter" */ ()! }
-func testingM(m *testing.M) { only /* ERROR "first named parameter" */ ()! }
-func definedFromT(t *Named) { only /* ERROR "first named parameter" */ ()! }
-func variadic(t ...*testing.T) { only /* ERROR "first named parameter" */ ()! }
-func noParams() { only /* ERROR "first named parameter" */ ()! }
+func otherType(t *S)             { only /* ERROR "first named parameter" */ ()! }
+func valueType(t testing.T)      { only /* ERROR "first named parameter" */ ()! }
+func testingM(m *testing.M)      { only /* ERROR "first named parameter" */ ()! }
+func definedFromT(t *Named)      { only /* ERROR "first named parameter" */ ()! }
+func variadic(t ...*testing.T)   { only /* ERROR "first named parameter" */ ()! }
+func noParams()                  { only /* ERROR "first named parameter" */ ()! }
 
 func nested(t *testing.T) {
 	func() {
@@ -120,8 +100,4 @@ func nested(t *testing.T) {
 		only /* ERROR "first named parameter" */ ()!
 	}
 	g()
-}
-
-func resultOutside() int {
-	return res /* ERROR "enclosing Result" */ ()!
 }

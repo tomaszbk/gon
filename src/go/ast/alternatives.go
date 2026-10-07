@@ -45,15 +45,15 @@ type MatchExpr struct {
 type MatchStmt struct{ Match *MatchExpr }
 
 // A MatchArm has either a Value (expression match) or a Body (statement
-// match). A nil Pattern denotes a default arm. Bindings belong to the arm,
+// match). A nil Patterns slice denotes a default arm. Bindings belong to the arm,
 // including its optional Guard, rather than to the enclosing switch scope.
 type MatchArm struct {
-	Case    token.Pos
-	Pattern *MatchPattern
-	Guard   Expr
-	Arrow   token.Pos
-	Value   Expr
-	Body    *BlockStmt
+	Case     token.Pos
+	Patterns []*MatchPattern
+	Guard    Expr
+	Arrow    token.Pos
+	Value    Expr
+	Body     *BlockStmt
 }
 
 // A MatchPattern is structural syntax, never an executable expression.
@@ -140,8 +140,8 @@ func (x *MatchField) Pos() token.Pos { return x.Name.Pos() }
 func (x *MatchField) End() token.Pos { return x.Pattern.End() }
 
 // An OptionalExpr represents postfix "?". In a type position it abbreviates
-// canonical Option[X]; in a value position it propagates None and yields the
-// Some payload, evaluating its operand once.
+// the native optional type X?; in a value position it propagates absence and
+// yields the present payload, evaluating its operand once.
 type OptionalExpr struct {
 	X        Expr
 	Question token.Pos
@@ -151,21 +151,14 @@ func (x *OptionalExpr) Pos() token.Pos { return x.X.Pos() }
 func (x *OptionalExpr) End() token.Pos { return x.Question + 1 }
 func (*OptionalExpr) exprNode()        {}
 
-// A ContextualVariantExpr constructs a canonical Option or Result variant using
-// the type expected by its surrounding expression. Name is None, Some, Ok, or
-// Err. None has no parentheses; the other variants take one payload expression.
-type ContextualVariantExpr struct {
-	Dot            token.Pos
-	Name           *Ident
-	Lparen, Rparen token.Pos
-	Args           []Expr
+// A PatternTestExpr evaluates X once and reports whether Pattern matches it.
+// Is is the position of the contextual identifier "is".
+type PatternTestExpr struct {
+	X       Expr
+	Is      token.Pos
+	Pattern *MatchPattern
 }
 
-func (x *ContextualVariantExpr) Pos() token.Pos { return x.Dot }
-func (x *ContextualVariantExpr) End() token.Pos {
-	if x.Rparen.IsValid() {
-		return x.Rparen + 1
-	}
-	return x.Name.End()
-}
-func (*ContextualVariantExpr) exprNode() {}
+func (x *PatternTestExpr) Pos() token.Pos { return x.X.Pos() }
+func (x *PatternTestExpr) End() token.Pos { return x.Pattern.End() }
+func (*PatternTestExpr) exprNode()        {}

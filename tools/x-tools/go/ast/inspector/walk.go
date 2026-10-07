@@ -115,9 +115,15 @@ func walk(v *visitor, ek edge.Kind, index int, node ast.Node) {
 			walk(v, edge.CallExpr_Args, i, arg)
 		}
 
-	case *ast.ContextualVariantExpr:
-		walk(v, edge.ContextualVariantExpr_Name, -1, n.Name)
-		walkList(v, edge.ContextualVariantExpr_Args, n.Args)
+	case *ast.InterpolatedStringExpr:
+		walkList(v, edge.InterpolatedStringExpr_Parts, n.Parts)
+	case *ast.InterpolationPart:
+		if n.Expr != nil {
+			walk(v, edge.InterpolationPart_Expr, -1, n.Expr)
+		}
+	case *ast.PatternTestExpr:
+		walk(v, edge.PatternTestExpr_X, -1, n.X)
+		walk(v, edge.PatternTestExpr_Pattern, -1, n.Pattern)
 	case *ast.OptionalExpr:
 		walk(v, edge.OptionalExpr_X, -1, n.X)
 
@@ -153,9 +159,7 @@ func walk(v *visitor, ek edge.Kind, index int, node ast.Node) {
 		}
 
 	case *ast.MatchArm:
-		if n.Pattern != nil {
-			walk(v, edge.MatchArm_Pattern, -1, n.Pattern)
-		}
+		walkList(v, edge.MatchArm_Patterns, n.Patterns)
 		if n.Guard != nil {
 			walk(v, edge.MatchArm_Guard, -1, n.Guard)
 		}
@@ -191,6 +195,9 @@ func walk(v *visitor, ek edge.Kind, index int, node ast.Node) {
 		}
 		if n.Body != nil {
 			walk(v, edge.ErrorExpr_Body, -1, n.Body)
+		}
+		if n.Context != nil {
+			walk(v, edge.ErrorExpr_Context, -1, n.Context)
 		}
 
 	case *ast.CondExpr:

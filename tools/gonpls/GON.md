@@ -24,7 +24,7 @@ cd tools/gonpls
 ../../gon/bin/gon test ./internal/cmd
 ```
 
-The build uses the maintained sibling modules `../x-tools` and `../staticcheck`
+The build uses the maintained sibling modules `../x-tools`, `../staticcheck` and `../nilaway`
 through local replacements. Vet uses that same x/tools source through a generated
 vendor tree. No dependency patches or `pkg/gon-tools` copies are used. Baseline
 provenance lives in each module's `UPSTREAM.json`; adapted source is versioned
@@ -50,19 +50,21 @@ Carried over from the former patch:
   `TestNamespace` enforce it). The upstream `gopls.*` IDs are not accepted, so
   the official Go extension (`gopls.*`) and the Gon extension can be active in
   one VS Code window without registering the same command IDs.
-- Semantic tokens for postfix `!` and `or` handlers.
+- Semantic tokens for postfix `!`, `or` handlers, error context, pattern tests
+  and interpolation. Embedded interpolation expressions support hover,
+  completion and rename; organizing imports retains the explicit fmt import.
+  Multiple patterns share their arm binding, and `is` bindings complete in
+  later `&&` operands and the then body.
 - LSP cancellation codes instead of generic failures for cancelled requests.
 - Standalone loading of compiler test inputs under the toolchain's `test` tree.
 - No upstream telemetry uploads or crash reports.
-- Predeclared named types have no package: `error`, `comparable` and Gon's
-  `Result`. Method-set fingerprints encode them as a bare name (`Result`), never
-  as a `(qual PATH NAME)` of a package-level type, so methods, interface methods
-  and aliases mentioning `Result` are indexed and matched across packages. Code
-  that reaches a `*types.Named` through `Obj().Pkg()` must handle nil, as in the
-  test-function code lens and the implement-interface action; the inline-variable
-  action skips named-argument labels and contextual `.Ok/.Err` names, which are
-  not lexical references. Regression tests: `TestPredeclaredResult*`,
-  `TestGonResult*` and the `inline-var-gon` marker test.
+- Predeclared named types `error` and `comparable` have no package. Their
+  method-set fingerprints use a bare name; package-level named types keep a
+  qualified identity. Enum methods, interface methods, generic instantiations
+  and aliases are indexed and matched across packages. The inline-variable
+  action skips named-argument labels and preserves indentation when inserting
+  multiline error handlers. Regression tests: `TestGenericEnumMethods`,
+  `TestUserDefinedResult` and the `inline-var-gon` marker test.
 
 Added for the tooling commands of the public `gon` launcher:
 
@@ -70,6 +72,9 @@ Added for the tooling commands of the public `gon` launcher:
   `capabilities`, reached as `gonpls gon ...` from `main.go` (see
   [misc/gon/CLI.md](../../misc/gon/CLI.md)). Each command drives a gonpls
   session in its own process through its LSP server and snapshots.
+- NilAway nil analysis is disabled by default. The `nilaway` editor setting
+  and `gon check --nilaway` enable the maintained analyzer as warnings. Internal
+  analysis failures remain visible.
 - `settings.InternalOptions.OnDemandDiagnostics`, which the command engine sets
   so that the server skips background diagnostics; editors are unaffected.
 - No pkg.go.dev links for type-checker codes that upstream x/tools does not

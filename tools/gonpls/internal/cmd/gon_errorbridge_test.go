@@ -5,36 +5,22 @@ import (
 	"testing"
 )
 
-// TestGonErrorBridgeCheck runs the semantic checker on postfix ! across Go
-// error tuples and Result, and in test functions: valid contexts are clean and
+// TestGonTestFunctionPropagationCheck runs the semantic checker on postfix !
+// in test functions: valid contexts are clean and
 // an ordinary file with a testing parameter reports the test-function rule.
-func TestGonErrorBridgeCheck(t *testing.T) {
+func TestGonTestFunctionPropagationCheck(t *testing.T) {
 	t.Parallel()
 	tree := writeTree(t, `
 -- go.mod --
 module example.com/bridge
 
-go 1.26
+go 1.27
 -- bridge/bridge.go --
 package bridge
 
 import "strconv"
 
 func parse(s string) (int, error) { return strconv.Atoi(s) }
-
-func provide(s string) Result[int, error] { return .Ok(1) }
-
-// Go error tuples fail as Result.Err.
-func Tuple(s string) Result[int, error] {
-	n := parse(s)!
-	return .Ok(n + 1)
-}
-
-// A failed Result fails as its error; a nil error is never returned.
-func Unwrap(s string) (int, error) {
-	n := provide(s)!
-	return n + 1, nil
-}
 -- bridge/bridge_test.go --
 package bridge
 
@@ -49,7 +35,7 @@ func TestTuple(t *testing.T) {
 		parse("2")!
 	})
 	t.Run("lambda", (u) => {
-		provide("3")!
+		parse("3")!
 	})
 }
 

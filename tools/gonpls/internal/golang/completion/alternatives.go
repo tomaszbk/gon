@@ -5,28 +5,6 @@ import (
 	"go/types"
 )
 
-// contextualVariants uses the target signature, rather than lexical lookup,
-// for a leading-dot constructor. Pattern variants stay qualified.
-func (c *completer) contextualVariants() bool {
-	for _, node := range c.path {
-		construction, ok := node.(*ast.ContextualVariantExpr)
-		if !ok || c.pos < construction.Dot || c.pos > construction.Name.End() {
-			continue
-		}
-		typ := c.inference.objType
-		if !types.IsCanonicalResult(typ) {
-			return true
-		}
-		c.deepState.enabled = false
-		enum := types.EnumOf(typ)
-		for i := range enum.NumVariants() {
-			c.deepState.enqueue(candidate{obj: enum.Variant(i).Object(), enumVariant: enum.Variant(i), score: highScore})
-		}
-		return true
-	}
-	return false
-}
-
 // matchPatternFields completes record labels using the variant's public
 // payload, excluding fields already present in the pattern. Bindings and
 // guards continue through normal lexical completion in the arm scope.

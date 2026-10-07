@@ -1,0 +1,490 @@
+{
+  "feature": "errorhandling",
+  "partial": false,
+  "pending": [],
+  "results": [
+    {
+      "check": "vendor",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/vendor.py",
+        "--check"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 2.375,
+      "log": "logs/errorhandling/vendor.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/vendor.log"
+    },
+    {
+      "check": "install-tools",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "install",
+        "cmd/vet",
+        "cmd/fix",
+        "cmd/gofmt",
+        "cmd/cover",
+        "cmd/cgo",
+        "cmd/export"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.211,
+      "log": "logs/errorhandling/install-tools.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/install-tools.log"
+    },
+    {
+      "check": "build-tooling",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/build.py"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 1.072,
+      "log": "logs/errorhandling/build-tooling.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/build-tooling.log"
+    },
+    {
+      "check": "installer",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/test_install.py"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.651,
+      "log": "logs/errorhandling/installer.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/installer.log"
+    },
+    {
+      "check": "stringenums-vet",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "vet",
+        "test/stringenums.dir/common.go",
+        "test/stringenums.dir/modern.go"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.299,
+      "log": "logs/errorhandling/stringenums-vet.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/stringenums-vet.log"
+    },
+    {
+      "check": "ast",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "go/ast",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.41,
+      "log": "logs/errorhandling/ast.log.gz",
+      "testsRun": 44,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/ast.log"
+    },
+    {
+      "check": "compiler-inline",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/compile/internal/inline",
+        "-run",
+        "^TestGon",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.611,
+      "log": "logs/errorhandling/compiler-inline.log.gz",
+      "testsRun": 24,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/compiler-inline.log"
+    },
+    {
+      "check": "compiler-ssa",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/compile/internal/ssacompile",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 9.925,
+      "log": "logs/errorhandling/compiler-ssa.log.gz",
+      "testsRun": 367,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/compiler-ssa.log"
+    },
+    {
+      "check": "readme-examples",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/test_readme.py"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 1.402,
+      "log": "logs/errorhandling/readme-examples.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/readme-examples.log"
+    },
+    {
+      "check": "benchmark-correctness",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/benchmark.py",
+        "--correctness-only"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 21.74,
+      "log": "logs/errorhandling/benchmark-correctness.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/benchmark-correctness.log"
+    },
+    {
+      "check": "structural-tools",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./go/ast/inspector",
+        "./go/ast/astutil",
+        "./go/ast/edge",
+        "./go/cfg",
+        "./refactor/satisfy",
+        "./internal/typesinternal",
+        "./go/types/objectpath",
+        "-run",
+        "TestGon|TestCond|TestError|TestInspectAllNodes|TestEnumPaths|TestStringEnum",
+        "-count=1"
+      ],
+      "cwd": "tools/x-tools",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 2.056,
+      "log": "logs/errorhandling/structural-tools.log.gz",
+      "testsRun": 63,
+      "skippedTests": [
+        "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+      ],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/structural-tools.log"
+    },
+    {
+      "check": "analyzers",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/settings",
+        "-run",
+        "^TestGonAnalyzers$",
+        "-count=1"
+      ],
+      "cwd": "tools/gonpls",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 4.925,
+      "log": "logs/errorhandling/analyzers.log.gz",
+      "testsRun": 5293,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/analyzers.log"
+    },
+    {
+      "check": "refactor-safety",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/refactor/inline",
+        "-run",
+        "^(TestGon|TestCalleeEffects|TestBasics|TestPrecedenceParens)",
+        "-count=1"
+      ],
+      "cwd": "tools/x-tools",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 2.421,
+      "log": "logs/errorhandling/refactor-safety.log.gz",
+      "testsRun": 60,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/refactor-safety.log"
+    },
+    {
+      "check": "staticcheck-safety",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./analysis/code",
+        "./go/ast/astutil",
+        "./go/types/typeutil",
+        "-run",
+        "^TestGon",
+        "-count=1"
+      ],
+      "cwd": "tools/staticcheck",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.79,
+      "log": "logs/errorhandling/staticcheck-safety.log.gz",
+      "testsRun": 3,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/staticcheck-safety.log"
+    },
+    {
+      "check": "optional-inference",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/golang",
+        "./internal/golang/completion",
+        "-run",
+        "^TestGonOptional",
+        "-count=1"
+      ],
+      "cwd": "tools/gonpls",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 1.487,
+      "log": "logs/errorhandling/optional-inference.log.gz",
+      "testsRun": 2,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/optional-inference.log"
+    },
+    {
+      "check": "errorhandling-execution",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/internal/testdir",
+        "-run",
+        "Test/errorhandling.go$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 3.701,
+      "log": "logs/errorhandling/errorhandling-execution.log.gz",
+      "testsRun": 3,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/errorhandling-execution.log"
+    },
+    {
+      "check": "errortest-execution",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/internal/testdir",
+        "-run",
+        "Test/errortest.go$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 4.834,
+      "log": "logs/errorhandling/errortest-execution.log.gz",
+      "testsRun": 3,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/errortest-execution.log"
+    },
+    {
+      "check": "cgo",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/cgo/internal/testerrorhandling",
+        "-run",
+        "^Test(PairedCgoErrorHandling|CgoErrorHandlingDiagnostics)$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 5.693,
+      "log": "logs/errorhandling/cgo.log.gz",
+      "testsRun": 22,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/cgo.log"
+    },
+    {
+      "check": "cover",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/cover",
+        "-run",
+        "^Test(ErrorFlowCoverage|ErrorHandlingRanges|LegacyInstrumentationUnchanged)$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 6.28,
+      "log": "logs/errorhandling/cover.log.gz",
+      "testsRun": 47,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/cover.log"
+    },
+    {
+      "check": "lsp",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/test.py"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 7.805,
+      "log": "logs/errorhandling/lsp.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/lsp.log"
+    },
+    {
+      "check": "cli",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/test_cli.py"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 7.552,
+      "log": "logs/errorhandling/cli.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/cli.log"
+    },
+    {
+      "check": "syntax",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/compile/internal/syntax",
+        "go/parser",
+        "go/printer",
+        "go/format",
+        "cmd/gofmt",
+        "-run",
+        "ErrorHandling|ErrorExpr",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 1.814,
+      "log": "logs/errorhandling/syntax.log.gz",
+      "testsRun": 4,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/syntax.log"
+    },
+    {
+      "check": "types",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/compile/internal/types2",
+        "go/types",
+        "-run",
+        "ErrorHandling|ErrorExpr|TestGenerate",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 3.132,
+      "log": "logs/errorhandling/types.log.gz",
+      "testsRun": 62,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/types.log"
+    },
+    {
+      "check": "ssa",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./go/ssa",
+        "-run",
+        "^TestGon",
+        "-count=1"
+      ],
+      "cwd": "tools/x-tools",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 2.755,
+      "log": "logs/errorhandling/ssa.log.gz",
+      "testsRun": 40,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/ssa.log"
+    },
+    {
+      "check": "staticcheck-ir",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./go/ir",
+        "-run",
+        "^TestGon",
+        "-count=1"
+      ],
+      "cwd": "tools/staticcheck",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 1.681,
+      "log": "logs/errorhandling/staticcheck-ir.log.gz",
+      "testsRun": 40,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/staticcheck-ir.log"
+    },
+    {
+      "check": "vet",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/vet",
+        "-run",
+        "^TestVet$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 3.53,
+      "log": "logs/errorhandling/vet.log.gz",
+      "testsRun": 38,
+      "skippedTests": [
+        "cmd/vet/TestVet/stringintconv",
+        "cmd/vet/TestVet/stdversion",
+        "cmd/vet/TestVet/loopclosure"
+      ],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/errorhandling/vet.log"
+    }
+  ]
+}

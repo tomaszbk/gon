@@ -241,6 +241,7 @@ func (prog *program) loadFromSource(spec *PackageSpec) (*Package, error) {
 		Syntax:      make([]*ast.File, len(spec.CompiledGoFiles)),
 		Fset:        prog.fset,
 		TypesInfo: &types.Info{
+			Interpolations:      make(map[*ast.InterpolatedStringExpr]*ast.CallExpr),
 			Types:               make(map[ast.Expr]types.TypeAndValue),
 			OptionalConversions: make(map[ast.Expr]types.Type),
 			Defs:                make(map[*ast.Ident]types.Object),

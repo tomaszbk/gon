@@ -183,24 +183,3 @@ func (r *renamer) checkEnumObject(from types.Object, owner *types.TypeName) {
 		}
 	}
 }
-
-// canonicalEnumConstructor identifies predeclared alternatives, which have no
-// source positions. Their documentation is nested in builtin's enum specs.
-func canonicalEnumConstructor(obj types.Object) (types.Type, *types.EnumVariant) {
-	if obj.Pkg() != nil {
-		return nil, nil
-	}
-	typ := obj.Type()
-	if sig, ok := typ.(*types.Signature); ok && sig.Results().Len() == 1 {
-		typ = sig.Results().At(0).Type()
-	}
-	if !types.IsCanonicalResult(typ) {
-		return nil, nil
-	}
-	enum := types.EnumOf(typ)
-	variant := enum.Lookup(obj.Name(), nil)
-	if variant == nil || !sameEnumObject(obj, variant.Object()) {
-		return nil, nil
-	}
-	return typ, variant
-}

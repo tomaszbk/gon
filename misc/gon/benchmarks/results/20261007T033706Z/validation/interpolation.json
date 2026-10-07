@@ -1,0 +1,214 @@
+{
+  "feature": "interpolation",
+  "partial": false,
+  "pending": [],
+  "results": [
+    {
+      "check": "interpolation-syntax",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/compile/internal/syntax",
+        "go/scanner",
+        "go/token",
+        "go/parser",
+        "go/ast",
+        "go/printer",
+        "go/format",
+        "-run",
+        "Interpolation|TestChildren",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 1.905,
+      "log": "logs/interpolation/interpolation-syntax.log.gz",
+      "testsRun": 22,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/interpolation/interpolation-syntax.log"
+    },
+    {
+      "check": "interpolation-types",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/compile/internal/types2",
+        "go/types",
+        "-run",
+        "Interpolation|TestExprString",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.862,
+      "log": "logs/interpolation/interpolation-types.log.gz",
+      "testsRun": 9,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/interpolation/interpolation-types.log"
+    },
+    {
+      "check": "interpolation-execution",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/internal/testdir",
+        "-run",
+        "Test/interpolation\\.go$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 2.422,
+      "log": "logs/interpolation/interpolation-execution.log.gz",
+      "testsRun": 3,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/interpolation/interpolation-execution.log"
+    },
+    {
+      "check": "interpolation-cgo-cover",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/cgo/internal/testconditional",
+        "-run",
+        "^TestPairedCgoInterpolation$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 5.225,
+      "log": "logs/interpolation/interpolation-cgo-cover.log.gz",
+      "testsRun": 1,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/interpolation/interpolation-cgo-cover.log"
+    },
+    {
+      "check": "interpolation-ssa",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./go/ssa",
+        "-run",
+        "^TestGonInterpolation",
+        "-count=1"
+      ],
+      "cwd": "tools/x-tools",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 1.115,
+      "log": "logs/interpolation/interpolation-ssa.log.gz",
+      "testsRun": 1,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/interpolation/interpolation-ssa.log"
+    },
+    {
+      "check": "interpolation-ir",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./go/ir",
+        "-run",
+        "^TestGonInterpolation",
+        "-count=1"
+      ],
+      "cwd": "tools/staticcheck",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 1.045,
+      "log": "logs/interpolation/interpolation-ir.log.gz",
+      "testsRun": 1,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/interpolation/interpolation-ir.log"
+    },
+    {
+      "check": "interpolation-printf",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./go/analysis/passes/printf",
+        "-run",
+        "^Test",
+        "-count=1"
+      ],
+      "cwd": "tools/x-tools",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 2.005,
+      "log": "logs/interpolation/interpolation-printf.log.gz",
+      "testsRun": 4,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/interpolation/interpolation-printf.log"
+    },
+    {
+      "check": "interpolation-imports",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/imports",
+        "-run",
+        "^TestGonInterpolationImports$",
+        "-count=1"
+      ],
+      "cwd": "tools/x-tools",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.872,
+      "log": "logs/interpolation/interpolation-imports.log.gz",
+      "testsRun": 10,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/interpolation/interpolation-imports.log"
+    },
+    {
+      "check": "analyzers",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/settings",
+        "-run",
+        "^TestGonAnalyzers$",
+        "-count=1"
+      ],
+      "cwd": "tools/gonpls",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 4.787,
+      "log": "logs/interpolation/analyzers.log.gz",
+      "testsRun": 5293,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/interpolation/analyzers.log"
+    },
+    {
+      "check": "interpolation-editor",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/test/marker",
+        "-run",
+        "^Test/quickfix/interpolation",
+        "-count=1"
+      ],
+      "cwd": "tools/gonpls",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 2.126,
+      "log": "logs/interpolation/interpolation-editor.log.gz",
+      "testsRun": 2,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/interpolation/interpolation-editor.log"
+    }
+  ]
+}

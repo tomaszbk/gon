@@ -39,6 +39,7 @@ func (p *printer) enumType(x *ast.EnumType) {
 			p.expr(v.Value)
 		}
 		p.setComment(v.Comment)
+		p.interpolationSemi()
 	}
 	p.print(unindent)
 	p.linebreak(p.lineFor(x.Rbrace), 1, ignore, true)
@@ -58,11 +59,16 @@ func (p *printer) matchExpr(x *ast.MatchExpr) {
 	for _, a := range x.Arms {
 		p.linebreak(p.lineFor(a.Case), 1, ignore, true)
 		p.setPos(a.Case)
-		if a.Pattern == nil {
+		if len(a.Patterns) == 0 {
 			p.print(token.DEFAULT)
 		} else {
 			p.print(token.CASE, blank)
-			p.matchPattern(a.Pattern)
+			for i, pattern := range a.Patterns {
+				if i > 0 {
+					p.print(token.COMMA, blank)
+				}
+				p.matchPattern(pattern)
+			}
 		}
 		if a.Guard != nil {
 			p.print(blank, token.IF, blank)
@@ -83,6 +89,7 @@ func (p *printer) matchExpr(x *ast.MatchExpr) {
 				p.expr(a.Value)
 			}
 		}
+		p.interpolationSemi()
 	}
 	p.linebreak(p.lineFor(x.Rbrace), 1, ignore, true)
 	p.setPos(x.Rbrace)

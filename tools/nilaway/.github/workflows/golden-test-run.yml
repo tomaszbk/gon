@@ -1,0 +1,52 @@
+name: Golden Test
+
+# NilAway output may change due to introduction of new feature or bug fixes. Since NilAway is still
+# at early stage of development, constantly updating / maintaining the golden test output will be
+# a burden. Therefore, we run this as a separate CI job and post the differences as a PR comment
+# for manual reviews.
+#
+# Note that this workflow is triggered on `pull_request` event, where if the PR is created from
+# forked repository, the GITHUB_TOKEN will not have necessary write permission to post the comments.
+# To work around this (and to provide proper isolation), we follow the recommended approach [1] of
+# separating job into two parts: (1) build and upload results as artifacts in untrusted environment
+# (here), and then (2) trigger a follow-up job that downloads the artifacts and posts the comment in
+# trusted environment (see .github/workflows/golden-test-comment.yml).
+#
+# [1]: https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
+on:
+  pull_request:
+
+concurrency:
+  group: golden-test-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  golden-test:
+    name: Run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        name: Check out repository
+
+      - name: Fetch base branch (${{ github.event.pull_request.base.ref }}) locally
+        run: git fetch origin ${{ github.event.pull_request.base.ref }}:${{ github.event.pull_request.base.ref }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: 1.26.x
+          cache: false
+
+      # Our Golden tests run NilAway on the entire standard library, which is very resource-intensive.
+      # GitHub Actions terminates the job if it hits the resource limits (both in CPU and memory).
+      # For CPU limit we set GOMAXPROCS to be one less than the number of available CPUs.
+      # For memory limit we set GOMEMLIMIT to 8G.
+      - name: Golden Test
+        id: golden_test
+        run: |
+          make golden-test GOMAXPROCS=$(( $(nproc) - 1 )) GOMEMLIMIT=8192MiB ARGS="-base-branch ${{ github.event.pull_request.base.ref }} -result-file ${{ runner.temp }}/golden-test-comment.md"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: golden-test-comment.md
+          path: ${{ runner.temp }}/golden-test-comment.md

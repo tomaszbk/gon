@@ -1,0 +1,277 @@
+//  Copyright (c) 2023 Uber Technologies, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Go 1.22 [1] introduces a proper `types.Alias` type for type aliases. The current default is
+// disabling such a feature. However, Go official doc suggests that it will be enabled in future Go
+// releases. Therefore, here we explicitly set this to `1` to enable the feature to test NilAway's
+// ability to handle it.
+// [1]: https://tip.golang.org/doc/go1.22
+//go:debug gotypesalias=1
+
+package nilaway
+
+import (
+	"fmt"
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"go.uber.org/goleak"
+	"go.uber.org/nilaway/config"
+	"go.uber.org/nilaway/nilawaytest"
+	"golang.org/x/tools/go/analysis/analysistest"
+)
+
+func TestNilAway(t *testing.T) {
+	t.Parallel()
+
+	testdata := analysistest.TestData()
+
+	// For descriptions of the purpose of each of the following tests, consult their source files
+	// located in testdata/src/<package>.
+
+	tests := []struct {
+		name     string
+		patterns []string
+	}{
+		{name: "Inference", patterns: []string{"go.uber.org/inference"}},
+		{name: "Contracts", patterns: []string{"go.uber.org/contracts/..."}},
+		{name: "TrustedFunc", patterns: []string{"go.uber.org/trustedfunc"}},
+		{name: "ErrorReturn", patterns: []string{"go.uber.org/errorreturn", "go.uber.org/errorreturn/typeswitch", "go.uber.org/errorreturn/typeswitch/shadownil"}},
+		{name: "Maps", patterns: []string{"go.uber.org/maps"}},
+		{name: "Slices", patterns: []string{"go.uber.org/slices"}},
+		{name: "Arrays", patterns: []string{"go.uber.org/arrays"}},
+		{name: "Channels", patterns: []string{"go.uber.org/channels"}},
+		{name: "GoQuirks", patterns: []string{"go.uber.org/goquirks"}},
+		{name: "GlobalVars", patterns: []string{"go.uber.org/globalvars"}},
+		{name: "DeepNil", patterns: []string{"go.uber.org/deepnil"}},
+		{name: "NilableTypes", patterns: []string{"go.uber.org/nilabletypes"}},
+		{name: "HelloWorld", patterns: []string{"go.uber.org/helloworld"}},
+		{name: "MultiFilePackage", patterns: []string{"go.uber.org/multifilepackage", "go.uber.org/multifilepackage/firstpackage", "go.uber.org/multifilepackage/secondpackage"}},
+		{name: "MultipleAssignment", patterns: []string{"go.uber.org/multipleassignment"}},
+		{name: "AnnotationParse", patterns: []string{"go.uber.org/annotationparse"}},
+		{name: "NilCheck", patterns: []string{"go.uber.org/nilcheck"}},
+		{name: "SimpleFlow", patterns: []string{"go.uber.org/simpleflow"}},
+		{name: "LoopFlow", patterns: []string{"go.uber.org/loopflow"}},
+		{name: "MethodImplementation", patterns: []string{"go.uber.org/methodimplementation/..."}},
+		{name: "TransitiveFacts", patterns: []string{"go.uber.org/transitivefacts/..."}},
+		{name: "NamedReturn", patterns: []string{"go.uber.org/namedreturn"}},
+		{name: "IgnoreGenerated", patterns: []string{"go.uber.org/ignoregenerated"}},
+		{name: "IgnorePackage", patterns: []string{"ignoredpkg1", "ignoredpkg2"}},
+		{name: "Receivers", patterns: []string{"go.uber.org/receivers"}},
+		{name: "Generics", patterns: []string{"go.uber.org/generics"}},
+		{name: "FunctionContracts", patterns: []string{"go.uber.org/functioncontracts"}},
+		{name: "Constants", patterns: []string{"go.uber.org/consts"}},
+		{name: "LoopRange", patterns: []string{"go.uber.org/looprange"}},
+		{name: "AbnormalFlow", patterns: []string{"go.uber.org/abnormalflow"}},
+		{name: "NoLint", patterns: []string{"go.uber.org/nolint/..."}},
+		{name: "Templ", patterns: []string{"go.uber.org/templ"}},
+		{name: "CtrlflowIntrinsic", patterns: []string{"go.uber.org/zap"}},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			t.Logf("Running test for packages %s", tt.patterns)
+
+			analysistest.Run(t, testdata, Analyzer, tt.patterns...)
+		})
+	}
+}
+
+func TestFacts(t *testing.T) {
+	t.Parallel()
+	testdata := analysistest.TestData()
+
+	results := analysistest.Run(t, testdata, Analyzer, "go.uber.org/...")
+	factStats := nilawaytest.RequireFactCodecs(t, results)
+
+	t.Logf("Total fact bytes: %.2f KB", float32(factStats.TotalBytes)/1024)
+	require.Positive(t, factStats.TotalBytes, "expected NilAway tests to export some facts")
+	require.Less(t, factStats.TotalBytes, 750*1024,
+		"The gob encoded NilAway facts for all test code is too large (%.2f KB). "+
+			"We expect the total to be less than 750 KB. This heavily affects the artifact sizes of the facts NilAway "+
+			"produces, so the cap should only be increased with justification and thorough testing.", float32(factStats.TotalBytes)/1024)
+}
+
+func TestStructInit(t *testing.T) { //nolint:paralleltest
+	// We specifically do not set this test to be parallel since we need to enable the
+	// experimental support for struct initialization to test this feature.
+	err := config.Analyzer.Flags.Set(config.ExperimentalStructInitEnableFlag, "true")
+	require.NoError(t, err)
+	defer func() {
+		err := config.Analyzer.Flags.Set(config.ExperimentalStructInitEnableFlag, "false")
+		require.NoError(t, err)
+	}()
+
+	testdata := analysistest.TestData()
+	analysistest.Run(t, testdata, Analyzer, "structinit/funcreturnfields", "structinit/local", "structinit/global", "structinit/paramfield", "structinit/paramsideeffect", "structinit/defaultfield")
+}
+
+func TestStructInitV2(t *testing.T) { //nolint:paralleltest
+	err := config.Analyzer.Flags.Set(config.ExperimentalStructInitV2EnableFlag, "true")
+	require.NoError(t, err)
+	defer func() {
+		err := config.Analyzer.Flags.Set(config.ExperimentalStructInitV2EnableFlag, "false")
+		require.NoError(t, err)
+	}()
+
+	testdata := analysistest.TestData()
+	analysistest.Run(t, testdata, Analyzer,
+		"structinitv2/local",
+		"structinitv2/returnerr",
+		"structinitv2/limitations",
+		"structinitv2/defaultfield",
+		"structinitv2/deep",
+		"structinitv2/crosspkg/app",
+		"structinitv2/returncrosspkg/app",
+		"structinitv2/crosspkgside/app",
+		"structinitv2/paramfield",
+		"structinitv2/paramsideeffect",
+		"structinitv2/returnlocal",
+		"structinitv2/returnzerovalue/app",
+		"structinitv2/returnshape/app",
+	)
+}
+
+func TestAnonymousFunction(t *testing.T) { //nolint:paralleltest
+	// We specifically do not set this test to be parallel since we need to enable the
+	// experimental support for anonymous function to test this feature.
+	err := config.Analyzer.Flags.Set(config.ExperimentalAnonymousFunctionFlag, "true")
+	require.NoError(t, err)
+	defer func() {
+		err := config.Analyzer.Flags.Set(config.ExperimentalAnonymousFunctionFlag, "false")
+		require.NoError(t, err)
+	}()
+
+	testdata := analysistest.TestData()
+	analysistest.Run(t, testdata, Analyzer, "anonymousfunction")
+}
+
+func TestPrettyPrint(t *testing.T) { //nolint:paralleltest
+	// We specifically do not set this test to be parallel such that this test is run separately
+	// from the parallel tests. This makes it possible to set the pretty-print flag to true for
+	// testing and false for the other tests.
+	err := config.Analyzer.Flags.Set(config.PrettyPrintFlag, "true")
+	require.NoError(t, err)
+	defer func() {
+		err := config.Analyzer.Flags.Set(config.PrettyPrintFlag, "false")
+		require.NoError(t, err)
+	}()
+
+	testdata := analysistest.TestData()
+	analysistest.Run(t, testdata, Analyzer, "prettyprint")
+}
+
+func TestGroupErrorMessages(t *testing.T) { //nolint:paralleltest
+	// We specifically do not set this test to be parallel such that this test is run separately
+	// from the parallel tests. This makes it possible to test the group error messages flag independently
+	// without affecting the other tests.
+	testdata := analysistest.TestData()
+
+	defaultValue := config.Analyzer.Flags.Lookup(config.GroupErrorMessagesFlag).Value.String()
+
+	err := config.Analyzer.Flags.Set(config.GroupErrorMessagesFlag, "true")
+	require.NoError(t, err)
+	analysistest.Run(t, testdata, Analyzer, "grouping/enabled")
+	analysistest.Run(t, testdata, Analyzer, "grouping/errormessage")
+
+	err = config.Analyzer.Flags.Set(config.GroupErrorMessagesFlag, "false")
+	require.NoError(t, err)
+	analysistest.Run(t, testdata, Analyzer, "grouping/disabled")
+
+	// Reset the flag to its default value.
+	defer func() {
+		err := config.Analyzer.Flags.Set(config.GroupErrorMessagesFlag, defaultValue)
+		require.NoError(t, err)
+	}()
+}
+
+func TestExcludeTestFiles(t *testing.T) { //nolint:paralleltest
+	// We specifically do not set this test to be parallel such that this test is run separately
+	// from the parallel tests. This makes it possible to test the exclude-test-files flag independently
+	// without affecting the other tests.
+	testdata := analysistest.TestData()
+
+	// Restrict analysis to the test package only, since the _test.go file pulls in the testing
+	// infrastructure and its transitive dependencies, which would otherwise produce unrelated
+	// diagnostics from stdlib.
+	err := config.Analyzer.Flags.Set(config.IncludePkgsFlag, "excludetestfiles")
+	require.NoError(t, err)
+
+	// First, verify that diagnostics ARE produced for test files when flag is disabled.
+	err = config.Analyzer.Flags.Set(config.ExcludeTestFilesFlag, "false")
+	require.NoError(t, err)
+	analysistest.Run(t, testdata, Analyzer, "excludetestfilesbaseline")
+
+	// Then verify diagnostics are filtered when flag is enabled.
+	err = config.Analyzer.Flags.Set(config.ExcludeTestFilesFlag, "true")
+	require.NoError(t, err)
+	analysistest.Run(t, testdata, Analyzer, "excludetestfiles")
+
+	// Reset flags to their default values.
+	defer func() {
+		err := config.Analyzer.Flags.Set(config.ExcludeTestFilesFlag, "false")
+		require.NoError(t, err)
+		err = config.Analyzer.Flags.Set(config.IncludePkgsFlag, "")
+		require.NoError(t, err)
+	}()
+}
+
+func TestPrintFullFilePath(t *testing.T) { //nolint:paralleltest
+	// We specifically do not set this test to be parallel such that this test is run separately
+	// from the parallel tests. This makes it possible to set the print-full-file-path flag to true for
+	// testing and false for the other tests.
+	err := config.Analyzer.Flags.Set(config.PrintFullFilePathFlag, "true")
+	require.NoError(t, err)
+	defer func() {
+		err := config.Analyzer.Flags.Set(config.PrintFullFilePathFlag, "false")
+		require.NoError(t, err)
+	}()
+
+	testdata := analysistest.TestData()
+	analysistest.Run(t, testdata, Analyzer, "printfullfilepath")
+}
+
+func TestAnalyzerNames(t *testing.T) {
+	t.Parallel()
+
+	analyzers := nilawaytest.AllAnalyzers(t, Analyzer)
+	require.Greater(t, len(analyzers), 1, "expected to find more than 1 analyzer")
+
+	for _, a := range analyzers {
+		require.True(t, strings.HasPrefix(a.Name, "nilaway"), "expected analyzer name %q to start with 'nilaway'", a.Name)
+	}
+}
+
+func TestMain(m *testing.M) {
+	flags := map[string]string{
+		// Pretty print should be turned off for easier error message matching in test files.
+		config.PrettyPrintFlag: "false",
+		// Error message grouping should be turned off for easier matching in test files.
+		config.GroupErrorMessagesFlag:    "false",
+		config.ExcludeFileDocStringsFlag: "@generated,Code generated by",
+		config.ExcludePkgsFlag:           "ignoredpkg1,ignoredpkg2",
+	}
+	for f, v := range flags {
+		if err := config.Analyzer.Flags.Set(f, v); err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to set config flag %s with %s: %s", f, v, err)
+			os.Exit(1)
+		}
+	}
+
+	goleak.VerifyTestMain(m)
+}

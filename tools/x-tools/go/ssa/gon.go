@@ -22,9 +22,6 @@ func (b *builder) exprList(fn *Function, e ast.Expr) []Value {
 }
 
 func (b *builder) errorExpr(fn *Function, e *ast.ErrorExpr) []Value {
-	if types.IsCanonicalResult(fn.typeOf(e.X)) {
-		return b.resultExpr(fn, e)
-	}
 	var values []Value
 	if _, ok := fn.typeOf(e.X).(*types.Tuple); ok {
 		values = b.exprList(fn, e.X)
@@ -36,16 +33,21 @@ func (b *builder) errorExpr(fn *Function, e *ast.ErrorExpr) []Value {
 	done := fn.newBasicBlock("error.done")
 	emitIf(fn, emitCompare(fn, token.NEQ, err, zeroConst(err.Type()), e.OpPos), failed, done)
 	fn.currentBlock = failed
-	if e.Body != nil {
+	if e.Body != nil || e.Context != nil {
 		if !isBlankIdent(e.Err) {
 			addr := emitLocalVar(fn, identVar(fn, e.Err))
 			emitStore(fn, addr, err, e.OpPos)
 			emitDebugRef(fn, e.Err, addr, true)
 		}
+	}
+	if e.Context != nil {
+		failure := emitConv(fn, b.expr(fn, e.Context), types.Universe.Lookup("error").Type())
+		b.propagateFailure(fn, e, failure)
+	} else if e.Body != nil {
 		b.stmt(fn, e.Body)
 		emitJump(fn, done)
 	} else {
-		b.propagateFailure(fn, e, err, false)
+		b.propagateFailure(fn, e, err)
 	}
 	fn.currentBlock = done
 	return values[:len(values)-1]

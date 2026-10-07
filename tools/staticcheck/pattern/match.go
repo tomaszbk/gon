@@ -383,6 +383,15 @@ func matchNodeAST(m *Matcher, a Node, b any) (any, bool) {
 
 // Match two AST nodes
 func matchAST(m *Matcher, a, b ast.Node) (any, bool) {
+	// Gon expressions may branch, bind names, return, or call formatters.
+	// Structural identity alone does not prove that evaluating them twice is
+	// equivalent, so repeated pattern bindings conservatively decline them.
+	switch a.(type) {
+	case *ast.ErrorExpr, *ast.CondExpr, *ast.LambdaExpr, *ast.NilGuardExpr,
+		*ast.SafeNavExpr, *ast.MatchExpr, *ast.PatternTestExpr,
+		*ast.InterpolatedStringExpr, *ast.OptionalExpr:
+		return nil, false
+	}
 	ra := reflect.ValueOf(a)
 	rb := reflect.ValueOf(b)
 

@@ -608,7 +608,7 @@ func (st *state) inlineCall() (*inlineCallResult, error) {
 	context := ast.Node(caller.Call)
 	for _, n := range caller.path {
 		switch n.(type) {
-		case *ast.CondExpr, *ast.ErrorExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.MatchStmt, *ast.OptionalExpr, *ast.ContextualVariantExpr:
+		case *ast.CondExpr, *ast.ErrorExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.MatchStmt, *ast.OptionalExpr, *ast.InterpolatedStringExpr, *ast.PatternTestExpr:
 			return nil, fmt.Errorf("cannot inline call within Gon control-flow expressions")
 		case ast.Stmt, *ast.ValueSpec:
 			if context == caller.Call {
@@ -633,7 +633,7 @@ func (st *state) inlineCall() (*inlineCallResult, error) {
 			if n.Tok == token.COALESCE_ASSIGN {
 				return nil, fmt.Errorf("cannot inline call containing Gon control-flow expressions")
 			}
-		case *ast.CondExpr, *ast.ErrorExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.MatchStmt, *ast.OptionalExpr, *ast.ContextualVariantExpr:
+		case *ast.CondExpr, *ast.ErrorExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.MatchStmt, *ast.OptionalExpr, *ast.InterpolatedStringExpr, *ast.PatternTestExpr:
 			return nil, fmt.Errorf("cannot inline call containing Gon control-flow expressions")
 		}
 	}

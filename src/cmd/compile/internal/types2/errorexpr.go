@@ -22,14 +22,11 @@ func (check *Checker) errorExpr(x *operand, e *syntax.ErrorExpr) exprKind {
 		return statement
 	}
 
-	if IsCanonicalResult(x.typ()) {
-		return check.resultErrorExpr(x, e)
-	}
 	if kind == conversion {
 		return fail("error handling requires a function or method call")
 	}
 	if _, ok := syntax.Unparen(e.X).(*syntax.CallExpr); !ok {
-		return fail("error handling requires a function or method call or canonical Result")
+		return fail("error handling requires a function or method call")
 	}
 	if check.sig == nil {
 		return fail("error handling is only permitted inside a function")
@@ -48,19 +45,15 @@ func (check *Checker) errorExpr(x *operand, e *syntax.ErrorExpr) exprKind {
 	success := results[:len(results)-1]
 	if e.Body == nil {
 		sig := check.sig
-		// Failure leaves the function through its final error, through a
-		// Result that accepts error, or, in a test function, through Fatal.
+		// Failure leaves the function through its final error or, in a test
+		// function, through Fatal.
 		problem := func() string {
 			switch check.propagationTarget(sig, e) {
 			case propagateToError, propagateToTest:
 				return ""
-			case propagateToResult:
-				if AssignableTo(errorType, enclosingResultError(sig)) {
-					return ""
-				}
-				return "error propagation into a Result requires error to be assignable to its error type"
+
 			}
-			return "error propagation requires an enclosing function with a final result of type error, exactly one Result, or, in a _test.go file, a first named parameter of type *testing.T, *testing.B, *testing.F or testing.TB"
+			return "error propagation requires an enclosing function with a final result of type error or, in a _test.go file, a first named parameter of type *testing.T, *testing.B, *testing.F or testing.TB"
 		}
 		if check.inferLambdaSig == sig {
 			check.later(func() {
@@ -71,7 +64,20 @@ func (check *Checker) errorExpr(x *operand, e *syntax.ErrorExpr) exprKind {
 		} else if msg := problem(); msg != "" {
 			return fail(msg)
 		}
-	} else {
+	}
+	if e.Context != nil {
+		if e.Err == nil {
+			return fail("error context requires an explicit error binding")
+		}
+		check.openScope(e, "error context")
+		defer check.closeScope()
+		obj := newVar(LocalVar, e.Err.Pos(), check.pkg, e.Err.Value, errorType)
+		check.declare(check.scope, e.Err, obj, e.Context.Pos())
+		check.usedVars[obj] = true
+		var context operand
+		check.expr(nil, &context, e.Context)
+		check.assignment(&context, errorType, "error context")
+	} else if e.Body != nil {
 		if e.Err == nil {
 			return fail("error handler requires an explicit error binding")
 		}

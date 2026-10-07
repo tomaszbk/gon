@@ -130,10 +130,22 @@ const (
 	COALESCE        // ??
 	COALESCE_ASSIGN // ??=
 	QUESTION        // ?
+	INTERPOLATION_START
+	INTERPOLATION_TEXT
+	INTERPOLATION_OPEN
+	INTERPOLATION_CLOSE
+	INTERPOLATION_FORMAT
+	INTERPOLATION_END
 	additional_end
 )
 
 var tokens = [...]string{
+	INTERPOLATION_START: "interpolated string",
+	INTERPOLATION_TEXT: "string text",
+	INTERPOLATION_OPEN: "${",
+	INTERPOLATION_CLOSE: "interpolation }",
+	INTERPOLATION_FORMAT: "format",
+	INTERPOLATION_END: "string end",
 	ILLEGAL: "ILLEGAL",
 
 	EOF:     "EOF",

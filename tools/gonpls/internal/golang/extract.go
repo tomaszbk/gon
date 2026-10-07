@@ -513,7 +513,7 @@ func canExtractVariable(info *types.Info, curFile inspector.Cursor, start, end t
 			switch cur.ParentEdgeKind() {
 			case edge.LambdaExpr_Body:
 				return nil, fmt.Errorf("cannot extract from a lambda expression body")
-			case edge.MatchArm_Value, edge.MatchArm_Guard, edge.MatchArm_Pattern:
+			case edge.MatchArm_Value, edge.MatchArm_Guard, edge.MatchArm_Patterns:
 				return nil, fmt.Errorf("cannot extract from a match arm expression")
 			case edge.CondExpr_Then, edge.CondExpr_Else:
 				// Branch braces hold expressions, not statements. Hoisting
@@ -2082,7 +2082,7 @@ func unsupportedGonExtraction(n ast.Node) bool {
 			return false
 		}
 		switch n := n.(type) {
-		case *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.OptionalExpr, *ast.MatchExpr, *ast.MatchStmt, *ast.ContextualVariantExpr:
+		case *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.OptionalExpr, *ast.MatchExpr, *ast.MatchStmt:
 			found = true
 		case *ast.BinaryExpr:
 			found = n.Op == token.COALESCE

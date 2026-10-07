@@ -618,6 +618,7 @@ func checkCalls(pass *analysis.Pass, res *Result) {
 	nodeFilter := []ast.Node{
 		(*ast.File)(nil),
 		(*ast.CallExpr)(nil),
+		(*ast.InterpolatedStringExpr)(nil),
 	}
 
 	var fileVersion string // for selectively suppressing checks; "" if unknown.
@@ -626,6 +627,10 @@ func checkCalls(pass *analysis.Pass, res *Result) {
 		case *ast.File:
 			fileVersion = versions.Lang(versions.FileVersion(pass.TypesInfo, n))
 
+		case *ast.InterpolatedStringExpr:
+			if call := pass.TypesInfo.Interpolations[n]; call != nil {
+				checkPrintf(pass, fileVersion, KindPrintf, call, "fmt.Sprintf")
+			}
 		case *ast.CallExpr:
 			if callee := typeutil.Callee(pass.TypesInfo, n); callee != nil {
 				kind := callKind(pass, callee, res)

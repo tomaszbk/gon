@@ -1624,4 +1624,6 @@ const (
 	InvalidLambda
 	InvalidNilSafety
 	InvalidMatch
+	// InvalidInterpolation occurs for a missing fmt import or an invalid format.
+	InvalidInterpolation
 )

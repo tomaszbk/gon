@@ -25,10 +25,10 @@ import (
 
 // gonEngineConfig selects the analyzed build configuration.
 type gonEngineConfig struct {
-	Root             string // workspace root: nearest go.work or go.mod directory
-	Tags             string
-	Staticcheck      bool
-	MigrateOptionals bool
+	Root        string // workspace root: nearest go.work or go.mod directory
+	Tags        string
+	Staticcheck bool
+	NilAway     bool
 }
 
 // A gonEngine is an in-process gonpls session with a command-line client.
@@ -48,7 +48,7 @@ func newGonEngine(ctx context.Context, cfg gonEngineConfig) (*gonEngine, error) 
 		o.SymbolScope = settings.WorkspaceSymbolScope
 		o.RelatedInformationSupported = true
 		o.OnDemandDiagnostics = true
-		o.MigrateOptionals = cfg.MigrateOptionals
+		o.Nilaway = cfg.NilAway
 		if cfg.Tags != "" {
 			o.BuildFlags = append(o.BuildFlags, "-tags="+cfg.Tags)
 		}
@@ -97,10 +97,10 @@ func gonWorkspaceRoot(dir string, env []string) string {
 
 func (r *gonRequest) engineConfig() gonEngineConfig {
 	return gonEngineConfig{
-		Root:             gonWorkspaceRoot(r.inv.cwd, r.inv.env),
-		Tags:             r.str("tags"),
-		Staticcheck:      r.bool("staticcheck"),
-		MigrateOptionals: r.cmd.path == "refactor optionals",
+		Root:        gonWorkspaceRoot(r.inv.cwd, r.inv.env),
+		Tags:        r.str("tags"),
+		Staticcheck: r.bool("staticcheck"),
+		NilAway:     r.bool("nilaway"),
 	}
 }
 
@@ -128,7 +128,7 @@ func (r *gonRequest) release() {
 
 func (r *gonRequest) configuration() *gonConfigInfo {
 	cfg := r.engineConfig()
-	info := &gonConfigInfo{Workspace: cfg.Root, Staticcheck: cfg.Staticcheck}
+	info := &gonConfigInfo{Workspace: cfg.Root, Staticcheck: cfg.Staticcheck, NilAway: cfg.NilAway}
 	if cfg.Tags != "" {
 		info.BuildFlags = []string{"-tags=" + cfg.Tags}
 	}

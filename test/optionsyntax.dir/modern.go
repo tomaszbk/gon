@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 )
 
-type Parsed = Result[int?, error]
 type Maybe = int?
 type Container struct{ Value int? }
 
@@ -16,27 +14,10 @@ func optional(present bool) (number int?) {
 	}
 	return mark("V", 5)
 }
-func parsePort(text string) (port Parsed) {
-	defer func() { effects += "P" + parsedLabel(port) }()
-	if text == "" {
-		return .Ok(nil)
-	}
-	value := strconv.Atoi(text) or problem {
-		return .Err(problem)
-	}
-	return .Ok(value)
-}
 func optionalLabel(value int?) string {
 	return switch value {
 	case nil => "None"
 	case (number)? => fmt.Sprint("Some:", number)
-	}
-}
-func parsedLabel(value Parsed) string {
-	return switch value {
-	case Parsed.Ok(nil) => "empty"
-	case Parsed.Ok((number)?) => fmt.Sprint("port:", number)
-	case Parsed.Err(problem) => fmt.Sprint("error:", problem != nil)
 	}
 }
 func inferred[T any](anchor T, value T?) T? { _ = anchor; return value }
@@ -61,9 +42,6 @@ func scenario() {
 	})
 	emit("absent", optionalLabel(optional(false)))
 	emit("present", optionalLabel(optional(true)))
-	for _, text := range []string{"", "8080", "bad"} {
-		emit("parse", parsedLabel(parsePort(text)))
-	}
 	var number Maybe = mark("A", 0)
 	emit("zero present", optionalLabel(number))
 	number = nil
@@ -98,10 +76,6 @@ func scenario() {
 	emit("generic named", optionalLabel(inferred(value: (int)(13), anchor: 1)))
 	var callback func(int) int? = (value) => value
 	emit("lambda", optionalLabel(callback(14)))
-	var resultCallback func(int) Result[int, string] = (value) => .Ok(value)
-	emit("result lambda", resultCallback(15) or problem {
-		panic(problem)
-	})
 	var conditional int? = if false { mark("X", 99) } else { nil }
 	emit("conditional", optionalLabel(conditional))
 	var matched int? = switch true {
@@ -111,11 +85,6 @@ func scenario() {
 	emit("match", optionalLabel(matched))
 	emit("nil shadow", optionalLabel(shadowed()))
 	emit("Option shadow", optionalLabel(shadowedOption()))
-	var failure Result[int, error] = .Err(nil)
-	emit("Err nil", switch failure {
-	case Result[int, error].Err(nil) => true
-	default => false
-	})
 	var old Maybe = (int?)((int)(17))
 	emit("old syntax", optionalLabel(old))
 }

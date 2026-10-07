@@ -1,8 +1,0 @@
-{"Time":"2026-10-03T22:46:12.917655-03:00","Action":"start","Package":"cmd/cgo/internal/testconditional"}
-{"Time":"2026-10-03T22:46:13.148956-03:00","Action":"run","Package":"cmd/cgo/internal/testconditional","Test":"TestCgoConditionalBootstrap"}
-{"Time":"2026-10-03T22:46:13.149124-03:00","Action":"output","Package":"cmd/cgo/internal/testconditional","Test":"TestCgoConditionalBootstrap","Output":"=== RUN   TestCgoConditionalBootstrap\n","OutputType":"frame"}
-{"Time":"2026-10-03T22:46:13.888789-03:00","Action":"output","Package":"cmd/cgo/internal/testconditional","Test":"TestCgoConditionalBootstrap","Output":"--- PASS: TestCgoConditionalBootstrap (0.74s)\n","OutputType":"frame"}
-{"Time":"2026-10-03T22:46:13.888815-03:00","Action":"pass","Package":"cmd/cgo/internal/testconditional","Test":"TestCgoConditionalBootstrap","Elapsed":0.74}
-{"Time":"2026-10-03T22:46:13.888834-03:00","Action":"output","Package":"cmd/cgo/internal/testconditional","Output":"PASS\n","OutputType":"frame"}
-{"Time":"2026-10-03T22:46:13.889195-03:00","Action":"output","Package":"cmd/cgo/internal/testconditional","Output":"ok  \tcmd/cgo/internal/testconditional\t0.971s\n"}
-{"Time":"2026-10-03T22:46:13.889208-03:00","Action":"pass","Package":"cmd/cgo/internal/testconditional","Elapsed":0.972}

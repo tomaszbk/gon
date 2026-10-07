@@ -80,7 +80,7 @@ func describePayment(payment Payment) string {
 
 // END README alternatives
 
-// BEGIN README result
+// BEGIN README error-api
 func charge(amount int) (Payment, error) {
 	if amount < 0 {
 		return Payment{}, errors.New("negative amount")
@@ -96,7 +96,7 @@ func paymentStatus(amount int) string {
 	return describePayment(payment)
 }
 
-// END README result
+// END README error-api
 
 // BEGIN README lambda
 func sortUsers(users []User) {
@@ -194,12 +194,6 @@ func optionPropagation(present bool) string {
 	return name + "!"
 }
 
-func resultNilPreserved() bool {
-	failed := true
-	var problem error
-	return failed && problem == nil
-}
-
 func capturedValue() int {
 	offset := 2
 	var increment func(int) int = func(value int) int { return value + offset }
@@ -213,3 +207,19 @@ func lazyValue(condition bool) int {
 	}
 	return visit("no", 2)
 }
+
+// BEGIN README additions
+func userSummary(users []User) string {
+	names := make([]string, 0, len(users))
+	for _, user := range users {
+		names = append(names, user.Name)
+	}
+	if len(names) > 0 && names[0] != "" {
+		return fmt.Sprintf("%s: %d users", names[0], len(names))
+	}
+	return fmt.Sprintf("empty: %d users", len(names))
+}
+
+func settled(payment Payment) bool { return payment.state == paid }
+
+// END README additions

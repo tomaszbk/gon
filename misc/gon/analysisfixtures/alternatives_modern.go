@@ -37,16 +37,6 @@ func option(v int?) (out int?) {
 	n := v?
 	return (int?)((int)(n + 1))
 }
-func result(v Result[int, error]) Result[int, error] {
-	n := v!
-	return Result[int, error].Ok(n + 2)
-}
-func unwrap(v Result[int, error]) int {
-	return v or err {
-		check(err == nil)
-		return -1
-	}
-}
 func patternNames(b bool, p *int) int {
 	const item = 99
 	true, false, nil := 10, 20, 30
@@ -145,8 +135,6 @@ func main() {
 	trace = ""
 	check((option((int?)((int)(3))) ?? 0) == 4)
 	check((option((int?)(nil)) ?? -1) == -1 && trace == "DD")
-	check(unwrap(result(Result[int, error].Ok(3))) == 5)
-	check(unwrap(result(Result[int, error].Err(nil))) == -1)
 	p := ((*User)?)((*User)(nil))
 	check((p ?? &User{Name: "fallback"}) == nil)
 	check(((User?)((User)(User{Name: "Ada"}))?.Name ?? "absent") == "Ada")

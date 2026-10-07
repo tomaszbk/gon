@@ -1,0 +1,12 @@
+{
+  "module": "go.uber.org/nilaway",
+  "repository": "https://github.com/uber-go/nilaway",
+  "revision": "acb8859b9031bb9496be97e027df5573f9fb5340",
+  "version": "v0.0.0-20260918162853-acb8859b9031",
+  "revisionDate": "2026-09-18T16:28:53Z",
+  "license": "Apache-2.0",
+  "licenseFile": "LICENSE",
+  "noticeFile": "NOTICE",
+  "integrationDate": "2026-10-06",
+  "source": "pristine upstream checkout; maintained Gon adaptations are recorded in this repository"
+}

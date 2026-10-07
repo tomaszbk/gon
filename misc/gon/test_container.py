@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
-EXPECTED = "PASS: errors, nil, Option, enums, matching, Result, lambdas, conditionals, named arguments\n"
+EXPECTED = "PASS: errors, nil, optionals, enums, matching, lambdas, conditionals, named arguments\n"
 
 
 def main():

@@ -273,9 +273,13 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.applyList(n, "Args")
 		a.applyList(n, "ArgNames")
 
-	case *ast.ContextualVariantExpr:
-		a.apply(n, "Name", nil, n.Name)
-		a.applyList(n, "Args")
+	case *ast.InterpolatedStringExpr:
+		a.applyList(n, "Parts")
+	case *ast.InterpolationPart:
+		a.apply(n, "Expr", nil, n.Expr)
+	case *ast.PatternTestExpr:
+		a.apply(n, "X", nil, n.X)
+		a.apply(n, "Pattern", nil, n.Pattern)
 	case *ast.OptionalExpr:
 		a.apply(n, "X", nil, n.X)
 
@@ -293,7 +297,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.MatchStmt:
 		a.apply(n, "Match", nil, n.Match)
 	case *ast.MatchArm:
-		a.apply(n, "Pattern", nil, n.Pattern)
+		a.applyList(n, "Patterns")
 		a.apply(n, "Guard", nil, n.Guard)
 		a.apply(n, "Value", nil, n.Value)
 		a.apply(n, "Body", nil, n.Body)
@@ -309,6 +313,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 	case *ast.ErrorExpr:
 		a.apply(n, "X", nil, n.X)
 		a.apply(n, "Err", nil, n.Err)
+		a.apply(n, "Context", nil, n.Context)
 		a.apply(n, "Body", nil, n.Body)
 
 	case *ast.CondExpr:

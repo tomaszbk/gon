@@ -112,7 +112,6 @@ func main() {
 		{`func f(err error)int{return switch err{case N.A=>0;default=>1}}`, "N does not implement error"},
 		{`func f(err error)int{return switch err{case P.A=>0;default=>1}}`, "pointer receiver"},
 		{`func f(err error)int{return switch err{case S.X=>0;default=>1}}`, "qualified by an enum type"},
-		{`func f(err error)int{return switch err{case Result[int,error].Ok(v)=>v;default=>1}}`, "can never match interface error"},
 		{`func f(err error)int{return switch err{case v?=>1;default=>0}}`, "presence pattern requires an optional value"},
 		{`func f(err error)int{return switch err{case E.A=>0;case E.A=>1;default=>2}}`, "unreachable"},
 		{`func f(err error)int{return switch err{default=>0;case E.A=>1}}`, "unreachable"},

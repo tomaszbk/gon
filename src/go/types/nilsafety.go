@@ -7,9 +7,6 @@ import (
 )
 
 func isTargetExpr(e ast.Expr) bool {
-	if isOptionContextExpr(e) {
-		return true
-	}
 	switch e := e.(type) {
 	case *ast.LambdaExpr, *ast.SafeNavExpr:
 		return true
@@ -42,18 +39,18 @@ func (check *Checker) nilGuard(x *operand, e *ast.NilGuardExpr) {
 	if x.isValid() {
 		if IsOptional(x.typ()) {
 			if check.nilLegacyGuardSeen {
-				check.error(e, InvalidNilSafety, "mixed Option and nil navigation requires an explicit boundary")
+				check.error(e, InvalidNilSafety, "mixed optional and nil navigation requires an explicit boundary")
 				x.invalidate()
 				x.expr = e
 				return
 			}
 			check.nilOptionGuardSeen = true
-			x.typ_ = canonicalPayload(x.typ(), "$present")
+			x.typ_ = OptionalOf(x.typ()).Elem()
 			x.mode_, x.expr = value, e
 			return
 		}
 		if check.nilOptionGuardSeen {
-			check.error(e, InvalidNilSafety, "mixed Option and nil navigation requires an explicit boundary")
+			check.error(e, InvalidNilSafety, "mixed optional and nil navigation requires an explicit boundary")
 			x.invalidate()
 			x.expr = e
 			return
@@ -147,7 +144,7 @@ func (check *Checker) coalesceExpr(T *target, x *operand, e *ast.BinaryExpr) {
 	check.exclude(&a, 1<<novalue|1<<builtin|1<<typexpr)
 	check.singleValue(&a)
 	if a.isValid() && IsOptional(a.typ()) {
-		a.typ_ = canonicalPayload(a.typ(), "$present")
+		a.typ_ = OptionalOf(a.typ()).Elem()
 		a.mode_ = value
 		guarded = true
 	}
@@ -201,10 +198,10 @@ func (check *Checker) coalesceAssign(lhs, rhs ast.Expr) {
 		return
 	}
 	if IsOptional(a.typ()) {
-		payload := canonicalPayload(a.typ(), "$present")
+		payload := OptionalOf(a.typ()).Elem()
 		check.lhsVar(lhs)
-		check.expr(newTarget(payload, "Option coalescing assignment"), &b, rhs)
-		check.assignment(&b, payload, "Option coalescing assignment")
+		check.expr(newTarget(payload, "optional coalescing assignment"), &b, rhs)
+		check.assignment(&b, payload, "optional coalescing assignment")
 		return
 	}
 	if !hasNil(a.typ()) {

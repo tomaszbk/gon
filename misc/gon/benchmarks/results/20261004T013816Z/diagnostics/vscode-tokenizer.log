@@ -1,6 +1,0 @@
-npm warn Unknown user config "always-auth". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
-
-> gon@0.1.0 test:syntax
-> node gon-tests/syntax.cjs
-
-PASS: actual VS Code TextMate tokenizer, contextual enum, nested operators, optional types, contextual construction, comment/string isolation, qualified match indentation, snippet packaging

@@ -45,8 +45,6 @@ func extract(v data.Maybe[int]) int {
 func canonicalValues() {
     _ = (int?)(5)
     _ = (int?)(nil)
-    _ = Result[int, string].Ok(6)
-    _ = Result[int, string].Err("failure")
     var missing int?
     var present int? = -1
     var typedNil (*int)? = (*int)(nil)
@@ -148,17 +146,6 @@ with tempfile.TemporaryDirectory(prefix='gon-alternatives-editor-') as temp:
             assert definitions[0]['uri'] == liburi and definitions[0]['range']['start'] == position(LIB, 'Empty\n'), definitions
             hover = client.request('textDocument/hover', dict(doc, position=unit))
             assert 'Value.Empty' in hover['contents']['value'], hover
-            for spelling, declaration, signature in [
-                ('Ok(6)', 'Ok(T)', 'Result[int, string].Ok(int)'),
-                ('Err("failure")', 'Err(E)', 'Result[int, string].Err(string)'),
-            ]:
-                point = position(MODERN, spelling)
-                definitions = client.request('textDocument/definition', dict(doc, position=point))
-                builtin = Path(__file__).resolve().parents[2] / 'src' / 'builtin' / 'builtin.go'
-                assert definitions[0]['uri'].endswith('/src/builtin/builtin.go'), definitions
-                assert definitions[0]['range']['start'] == position(builtin.read_text(), declaration), definitions
-                hover = client.request('textDocument/hover', dict(doc, position=point))
-                assert signature in hover['contents']['value'], hover
             binder = position(MODERN, 'chosen)')
             use = position(MODERN, 'chosen >')
             definitions = client.request('textDocument/definition', dict(doc, position=use))

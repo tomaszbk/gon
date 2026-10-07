@@ -1,0 +1,80 @@
+{
+  "feature": "seq",
+  "partial": false,
+  "pending": [],
+  "results": [
+    {
+      "check": "seq-unit",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "gon/seq",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.468,
+      "log": "logs/seq/seq-unit.log.gz",
+      "testsRun": 7,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/seq/seq-unit.log"
+    },
+    {
+      "check": "seq-deps",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "go/build",
+        "-run",
+        "^TestDependencies$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 2.284,
+      "log": "logs/seq/seq-deps.log.gz",
+      "testsRun": 1,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/seq/seq-deps.log"
+    },
+    {
+      "check": "seq-execution",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/internal/testdir",
+        "-run",
+        "Test/seq\\.go$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 1.747,
+      "log": "logs/seq/seq-execution.log.gz",
+      "testsRun": 3,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/seq/seq-execution.log"
+    },
+    {
+      "check": "seq-vet",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "vet",
+        "test/seq.dir/common.go",
+        "test/seq.dir/modern.go"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.079,
+      "log": "logs/seq/seq-vet.log.gz",
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/seq/seq-vet.log"
+    }
+  ]
+}

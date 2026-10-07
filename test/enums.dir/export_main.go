@@ -12,9 +12,6 @@ func main() {
 	if lib.MakeOption(0) == lib.EmptyOption[int]() {
 		panic("exported canonical Option")
 	}
-	if lib.Failed() == lib.Success() {
-		panic("exported canonical Result")
-	}
 	constructor := lib.Constructor()
 	if constructor("value") != lib.MakeBox("value") {
 		panic("exported constructor callback")

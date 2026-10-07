@@ -106,11 +106,6 @@ func (w walker) node(n Node) {
 		}
 
 	// expressions
-	case *ContextualVariantExpr:
-		w.node(n.Name)
-		w.exprList(n.ArgList)
-	case *EnumConstructExpr:
-		w.exprList(n.ArgList)
 	case *OptionalExpr:
 		w.node(n.X)
 		if n.Body != nil {
@@ -133,11 +128,14 @@ func (w walker) node(n Node) {
 		for _, a := range n.Arms {
 			w.node(a)
 		}
+	case *PatternTestExpr:
+		w.node(n.X)
+		w.node(n.Pattern)
 	case *MatchStmt:
 		w.node(n.Match)
 	case *MatchArm:
-		if n.Pattern != nil {
-			w.node(n.Pattern)
+		for _, pattern := range n.Patterns {
+			w.node(pattern)
 		}
 		if n.Guard != nil {
 			w.node(n.Guard)
@@ -164,6 +162,15 @@ func (w walker) node(n Node) {
 	case *MatchField:
 		w.node(n.Name)
 		w.node(n.Pattern)
+
+	case *InterpolatedStringExpr:
+		for _, part := range n.Parts {
+			w.node(part)
+		}
+	case *InterpolationPart:
+		if n.Expr != nil {
+			w.node(n.Expr)
+		}
 
 	case *BadExpr: // nothing to do
 	case *Name: // nothing to do
@@ -240,6 +247,10 @@ func (w walker) node(n Node) {
 		}
 		if n.Body != nil {
 			w.node(n.Body)
+		}
+
+		if n.Context != nil {
+			w.node(n.Context)
 		}
 
 	case *CondExpr:

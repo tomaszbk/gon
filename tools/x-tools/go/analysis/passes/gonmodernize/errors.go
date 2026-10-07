@@ -22,11 +22,10 @@ var ErrorAnalyzer = &analysis.Analyzer{
 
 The analyzer recognizes fresh call-result declarations followed by an error
 check, and error-only declarations in an if initializer. It suggests postfix !
-when the handler returns the same error and zero values, when a function
-returning exactly one Result returns Err of the same error, or when a test
+when the handler returns the same error and zero values, or when a test
 function (in a _test.go file, with a first named *testing.T, *testing.B,
-*testing.F or testing.TB parameter, that returns neither error last nor one
-Result) only calls Fatal with the same error. Otherwise it suggests an or
+*testing.F or testing.TB parameter, that does not return error last) only calls
+Fatal with the same error. Otherwise it suggests an or
 handler to preserve wrapping or other behavior. Handlers must terminate when
 the call has success values; error-only handlers may fall through.
 
@@ -65,6 +64,10 @@ func runErrors(pass *analysis.Pass) (any, error) {
 			case *ast.LambdaExpr:
 				sig, _ = pass.TypesInfo.TypeOf(n).(*types.Signature)
 				labels = errorLabels(n.Block)
+			case *ast.ErrorExpr:
+				if sig != nil && !labels && errorContextFix(pass, file, content, sig, n) {
+					edits = append(edits, [2]token.Pos{n.Body.Pos(), n.Body.End()})
+				}
 			case *ast.BlockStmt:
 				if sig != nil && !labels {
 					for i, stmt := range n.List {
@@ -154,10 +157,9 @@ func errorFix(pass *analysis.Pass, file *ast.File, content []byte, sig *types.Si
 			}
 		}
 	}
-	// Postfix ! returns the error or Err(error), or reports it with Fatal,
+	// Postfix ! returns the error, or reports it with Fatal,
 	// exactly as such a handler does.
 	propagation := errorPropagation(pass, sig, check.Body, errObj)
-	resultErr := errorResultPropagation(pass, sig, check.Body, errObj)
 	fatal := errorFatalPropagation(pass, file, sig, check.Body, errObj)
 	if count > 1 && !errorTerminates(pass, check.Body) && !fatal || errorBranches(check.Body) {
 		return false
@@ -171,7 +173,7 @@ func errorFix(pass *analysis.Pass, file *ast.File, content []byte, sig *types.Si
 	source := func(n ast.Node) string { return string(content[tokFile.Offset(n.Pos()):tokFile.Offset(n.End())]) }
 	replacement := source(assign.Rhs[0])
 	message := "replace error check with a Gon or handler"
-	if (propagation || resultErr) && !errorComments(file, check.Body.Pos(), check.Body.End()) && !errorImportedUse(pass, check.Body) ||
+	if propagation && !errorComments(file, check.Body.Pos(), check.Body.End()) && !errorImportedUse(pass, check.Body) ||
 		fatal && !errorComments(file, check.Body.Pos(), check.Body.End()) {
 		replacement += "!"
 		message = "replace error check with Gon ! propagation"
@@ -233,37 +235,9 @@ func errorPropagation(pass *analysis.Pass, sig *types.Signature, body *ast.Block
 	return true
 }
 
-// errorResultPropagation reports whether body is exactly "return .Err(err)",
-// or the qualified Result[T, E].Err(err), in a function returning exactly one
-// Result whose error type accepts the error: Gon's ! returns the same value.
-func errorResultPropagation(pass *analysis.Pass, sig *types.Signature, body *ast.BlockStmt, errObj types.Object) bool {
-	if len(body.List) != 1 || sig.Results().Len() != 1 || !types.IsCanonicalResult(sig.Results().At(0).Type()) {
-		return false
-	}
-	ret, ok := body.List[0].(*ast.ReturnStmt)
-	if !ok || len(ret.Results) != 1 {
-		return false
-	}
-	result := sig.Results().At(0).Type()
-	failure := types.EnumStorageOf(result).Lookup("Err", nil)
-	if failure == nil || failure.NumFields() != 1 || !types.AssignableTo(types.Universe.Lookup("error").Type(), failure.Field(0).Type()) {
-		return false
-	}
-	switch e := ast.Unparen(ret.Results[0]).(type) {
-	case *ast.ContextualVariantExpr:
-		return e.Name.Name == "Err" && len(e.Args) == 1 && errorObject(pass, e.Args[0], errObj)
-	case *ast.CallExpr:
-		sel, ok := ast.Unparen(e.Fun).(*ast.SelectorExpr)
-		return ok && sel.Sel.Name == "Err" && len(e.Args) == 1 && len(e.ArgNames) == 0 && e.Ellipsis == token.NoPos &&
-			errorObject(pass, e.Args[0], errObj) && types.Identical(pass.TypesInfo.TypeOf(e), result) &&
-			pass.TypesInfo.Types[sel.X].IsType()
-	}
-	return false
-}
-
 // errorFatalPropagation reports whether body is exactly "t.Fatal(err)" for the
 // first parameter t of a test function, which Gon's ! calls for the same error.
-// A function returning error last or exactly one Result keeps its own
+// A function returning error last keeps its own
 // propagation, so its Fatal handler is not equivalent to !.
 func errorFatalPropagation(pass *analysis.Pass, file *ast.File, sig *types.Signature, body *ast.BlockStmt, errObj types.Object) bool {
 	if len(body.List) != 1 || !strings.HasSuffix(pass.Fset.PositionFor(file.Pos(), false).Filename, "_test.go") {
@@ -367,4 +341,41 @@ func errorWalkHazards(n ast.Node, allBranches bool) bool {
 		}
 	}
 	return false
+}
+
+// errorContextFix preserves a handler that returns one transformed error and
+// zeros for every success result. Imports mentioned only by a discarded zero
+// and comments in the handler require keeping the source block.
+func errorContextFix(pass *analysis.Pass, file *ast.File, content []byte, sig *types.Signature, e *ast.ErrorExpr) bool {
+	if e.Body == nil || len(e.Body.List) != 1 || sig.Results().Len() == 0 ||
+		!types.Identical(sig.Results().At(sig.Results().Len()-1).Type(), types.Universe.Lookup("error").Type()) ||
+		errorComments(file, e.Body.Pos(), e.Body.End()) {
+		return false
+	}
+	ret, ok := e.Body.List[0].(*ast.ReturnStmt)
+	if !ok || len(ret.Results) != sig.Results().Len() {
+		return false
+	}
+	for i, zero := range ret.Results[:len(ret.Results)-1] {
+		if !errorZero(pass, zero, sig.Results().At(i).Type()) {
+			return false
+		}
+	}
+	context := ret.Results[len(ret.Results)-1]
+	for id, obj := range pass.TypesInfo.Uses {
+		if e.Body.Pos() <= id.Pos() && id.End() <= e.Body.End() &&
+			!(context.Pos() <= id.Pos() && id.End() <= context.End()) {
+			if _, ok := obj.(*types.PkgName); ok || obj.Pkg() != nil && obj.Pkg() != pass.Pkg {
+				return false
+			}
+		}
+	}
+	tokFile := pass.Fset.File(file.Pos())
+	text := "=> " + string(content[tokFile.Offset(context.Pos()):tokFile.Offset(context.End())])
+	pass.Report(analysis.Diagnostic{
+		Pos: e.Body.Pos(), End: e.Body.End(),
+		Message:        "replace error handler with Gon error context",
+		SuggestedFixes: []analysis.SuggestedFix{{Message: "Use or =>", TextEdits: []analysis.TextEdit{{Pos: e.Body.Pos(), End: e.Body.End(), NewText: []byte(text)}}}},
+	})
+	return true
 }

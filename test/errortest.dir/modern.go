@@ -8,20 +8,6 @@ import (
 // Postfix ! in a function whose first parameter is a named *testing.T,
 // *testing.B, *testing.F or testing.TB reports a failure with Fatal.
 
-type IntResult = Result[int, error]
-type TextResult = Result[int, string]
-type CodedResult = Result[int, *CodedError]
-
-func okResult() IntResult  { return .Ok(3) }
-func badResult() IntResult { return .Err(errBoom) }
-func nilResult() IntResult { return .Err(nil) }
-func textResult() TextResult {
-	return .Err("text payload")
-}
-func codedResult() CodedResult {
-	return .Err(&CodedError{Code: 9})
-}
-
 func TestSuccess(t *testing.T) {
 	n := parse("12")! // MARK:never
 	if err := fail(); err == nil {
@@ -96,24 +82,6 @@ func (s suite) check(t *testing.T) {
 }
 
 func TestMethod(t *testing.T) { suite{"s"}.check(t) }
-
-func TestResult(t *testing.T) {
-	t.Run("ok", func(t *testing.T) {
-		okResult()! // MARK:never3
-	})
-	t.Run("error", func(t *testing.T) {
-		badResult()! // MARK:resulterror
-	})
-	t.Run("nil", func(t *testing.T) {
-		nilResult()! // MARK:resultnil
-	})
-	t.Run("text", func(t *testing.T) {
-		textResult()! // MARK:resulttext
-	})
-	t.Run("coded", func(t *testing.T) {
-		codedResult()! // MARK:coded
-	})
-}
 
 func must(tb testing.TB, s string) int {
 	return parse(s)! // MARK:tb

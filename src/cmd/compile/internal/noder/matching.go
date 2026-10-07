@@ -47,7 +47,14 @@ func (w *writer) matchExpr(e *syntax.MatchExpr, statement bool) {
 		w.openScope(a.Pos())
 		w.pos(a)
 		w.Bool(matchCatchall(a) || i+1 == len(e.Arms) && a.Guard == nil)
-		w.matchPattern(a.Pattern, w.p.typeOf(e.Tag))
+		patterns := a.Patterns
+		if len(patterns) == 0 {
+			patterns = []*syntax.MatchPattern{nil}
+		}
+		w.Len(len(patterns))
+		for _, pattern := range patterns {
+			w.matchPattern(pattern, w.p.typeOf(e.Tag))
+		}
 		w.optExpr(a.Guard)
 		if statement {
 			w.blockStmt(a.Body)
@@ -62,11 +69,15 @@ func matchCatchall(a *syntax.MatchArm) bool {
 	if a.Guard != nil {
 		return false
 	}
-	if a.Pattern == nil {
+	if len(a.Patterns) == 0 {
 		return true
 	}
-	n, ok := a.Pattern.Value.(*syntax.Name)
-	return ok && pNoPresence(a.Pattern) && n.Value == "_" && !a.Pattern.Lparen.IsKnown() && !a.Pattern.Lbrace.IsKnown()
+	if len(a.Patterns) != 1 {
+		return false
+	}
+	pattern := a.Patterns[0]
+	n, ok := pattern.Value.(*syntax.Name)
+	return ok && pNoPresence(pattern) && n.Value == "_" && !pattern.Lparen.IsKnown() && !pattern.Lbrace.IsKnown()
 }
 
 func pNoPresence(p *syntax.MatchPattern) bool { return p.Inner == nil && !p.Question.IsKnown() }
@@ -290,12 +301,43 @@ func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
 		armPos := r.pos()
 		catchall := r.Bool()
 		var declarations ir.Nodes
-		condition, bindings := r.matchPattern(armPos, input, &declarations)
+		var condition ir.Node
+		var bindings, selection ir.Nodes
+		count := r.Len()
+		if count == 1 {
+			condition, bindings = r.matchPattern(armPos, input, &declarations)
+		} else {
+			matched := r.temp(armPos, types.Types[types.TBOOL])
+			var attempts ir.Nodes
+			for range count {
+				test, init := r.matchPattern(armPos, input, &declarations)
+				pending := typecheck.Expr(ir.NewUnaryExpr(armPos, ir.ONOT, matched))
+				test = typecheck.Expr(ir.NewLogicalExpr(armPos, ir.OANDAND, pending, test))
+				init.Append(typecheck.Stmt(ir.NewAssignStmt(armPos, matched, ir.NewBool(armPos, true))))
+				attempts.Append(typecheck.Stmt(ir.NewIfStmt(armPos, test, init, nil)))
+			}
+			selection = append(declarations, ir.Nodes{
+				typecheck.Stmt(ir.NewDecl(armPos, ir.ODCL, matched)),
+				typecheck.Stmt(ir.NewAssignStmt(armPos, matched, ir.NewBool(armPos, false))),
+			}...)
+			selection.Append(attempts...)
+			condition = matched
+		}
 		guard := r.optExpr()
 		if guard != nil {
 			guard = typecheck.DefaultLit(guard, types.Types[types.TBOOL])
 		}
-		if !catchall && (len(bindings) > 0 || guard != nil) {
+		if count > 1 {
+			if guard != nil {
+				// The guard runs once after the first successful alternative. Failure
+				// skips the whole arm instead of trying another overlapping alternative.
+				assign := typecheck.Stmt(ir.NewAssignStmt(armPos, condition, guard))
+				selection.Append(typecheck.Stmt(ir.NewIfStmt(armPos, condition, []ir.Node{assign}, nil)))
+			}
+			if !catchall {
+				condition = nilInline(armPos, selection, condition.(*ir.Name))
+			}
+		} else if !catchall && (len(bindings) > 0 || guard != nil) {
 			matched := r.temp(armPos, types.Types[types.TBOOL])
 			body := append(declarations, ir.Nodes{
 				typecheck.Stmt(ir.NewDecl(armPos, ir.ODCL, matched)),
@@ -316,8 +358,12 @@ func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
 		// IR control flow retains that fact and its bindings dominate the
 		// selected body (including returns and escaping closures).
 		if catchall {
-			body.Append(declarations...)
-			body.Append(bindings...)
+			if count > 1 {
+				body.Append(selection...)
+			} else {
+				body.Append(declarations...)
+				body.Append(bindings...)
+			}
 		}
 		if statement {
 			body.Append(r.blockStmt()...)
@@ -339,4 +385,22 @@ func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
 	}
 	init.Append(typecheck.Stmt(match))
 	return nilInline(pos, init, result)
+}
+
+func (r *reader) patternTestExpr() ir.Node {
+	pos := r.pos()
+	var init, declarations ir.Nodes
+	input := r.tempCopy(pos, r.expr(), &init)
+	condition, bindings := r.matchPattern(pos, input, &declarations)
+	matched := r.temp(pos, types.Types[types.TBOOL])
+	if r.patternTestDeclarations != nil {
+		r.patternTestDeclarations.Append(declarations...)
+	} else {
+		init.Append(declarations...)
+	}
+	init.Append(typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, matched)), typecheck.Stmt(ir.NewAssignStmt(pos, matched, condition)))
+	if len(bindings) > 0 {
+		init.Append(typecheck.Stmt(ir.NewIfStmt(pos, matched, bindings, nil)))
+	}
+	return nilInline(pos, init, matched)
 }

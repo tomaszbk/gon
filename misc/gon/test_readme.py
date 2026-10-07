@@ -13,7 +13,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "misc/gon/readme-examples"
 DOCUMENTS = (ROOT / "README.md", ROOT / "doc/gon-examples.md")
-EXPECTED = "PASS: errors, nil, Option, enums, matching, Result, lambdas, conditionals, named arguments\n"
+EXPECTED = "PASS: errors, nil, optionals, enums, matching, lambdas, conditionals, named arguments\n"
 
 
 def snippets(source):

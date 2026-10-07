@@ -1,0 +1,107 @@
+{
+  "feature": "nilanalysis",
+  "partial": false,
+  "pending": [],
+  "results": [
+    {
+      "check": "nilaway-corpus",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "-p=1",
+        "-parallel=2",
+        "./...",
+        "-count=1"
+      ],
+      "cwd": "tools/nilaway",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 67.468,
+      "log": "logs/nilanalysis/nilaway-corpus.log.gz",
+      "testsRun": 216,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/nilanalysis/nilaway-corpus.log"
+    },
+    {
+      "check": "nilaway-gon",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        ".",
+        "-run",
+        "^TestGon",
+        "-count=1"
+      ],
+      "cwd": "tools/nilaway",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 16.988,
+      "log": "logs/nilanalysis/nilaway-gon.log.gz",
+      "testsRun": 2,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/nilanalysis/nilaway-gon.log"
+    },
+    {
+      "check": "nilaway-settings",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/settings",
+        "-run",
+        "^(TestNilAwayOptIn|TestGonAnalyzers)$",
+        "-count=1"
+      ],
+      "cwd": "tools/gonpls",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 4.806,
+      "log": "logs/nilanalysis/nilaway-settings.log.gz",
+      "testsRun": 5294,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/nilanalysis/nilaway-settings.log"
+    },
+    {
+      "check": "nilaway-cli",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/cmd",
+        "-run",
+        "^TestGonNilAwayOptIn$",
+        "-count=1"
+      ],
+      "cwd": "tools/gonpls",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 2.214,
+      "log": "logs/nilanalysis/nilaway-cli.log.gz",
+      "testsRun": 1,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/nilanalysis/nilaway-cli.log"
+    },
+    {
+      "check": "nilanalysis-execution",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/internal/testdir",
+        "-run",
+        "Test/nilanalysis\\.go$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 5.269,
+      "log": "logs/nilanalysis/nilanalysis-execution.log.gz",
+      "testsRun": 3,
+      "skippedTests": [],
+      "sourceLog": "/Users/tzbk/Documents/gon/pkg/gon-validation/nilanalysis/nilanalysis-execution.log"
+    }
+  ]
+}

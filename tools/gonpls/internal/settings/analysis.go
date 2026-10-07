@@ -3,6 +3,9 @@ package settings
 import (
 	"log"
 
+	"go.uber.org/nilaway"
+	nilawayconfig "go.uber.org/nilaway/config"
+
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/atomicalign"
 	"golang.org/x/tools/go/analysis/passes/deepequalerrors"
@@ -62,6 +65,9 @@ func (a *Analyzer) Enabled(o *Options) bool {
 	// An explicit setting by name takes precedence.
 	if v, found := o.Analyses[a.Analyzer().Name]; found {
 		return v
+	}
+	if a.analyzer == nilaway.Analyzer {
+		return o.Nilaway
 	}
 	if a.staticcheck != nil {
 		// An explicit staticcheck={true,false} setting
@@ -123,6 +129,11 @@ func (a *Analyzer) Tags() []protocol.DiagnosticTag { return a.tags }
 func (a *Analyzer) String() string { return a.analyzer.String() }
 
 func initAnalyzers() (res []*Analyzer) {
+	// Public NilAway opt-in includes ordinary Go closure captures. Keep the
+	// upstream module's standalone configuration available to other clients.
+	if err := nilawayconfig.Analyzer.Flags.Set(nilawayconfig.ExperimentalAnonymousFunctionFlag, "true"); err != nil {
+		panic(err)
+	}
 	seen := make(map[*analysis.Analyzer]bool)
 
 	// Start with the traditional vet and fix suites.
@@ -167,6 +178,9 @@ func initAnalyzers() (res []*Analyzer) {
 		{analyzer: recursiveiter.Analyzer},      // under evaluation
 		{analyzer: errorsastypeshadow.Analyzer}, // under evaluation
 		{analyzer: writestring.Analyzer},        // under evaluation
+
+		// Opt-in nil analysis uses its maintained Gon-aware module.
+		{analyzer: nilaway.Analyzer, nonDefault: true, severity: protocol.SeverityWarning},
 
 		// disabled due to high false positives
 		{analyzer: shadow.Analyzer, severity: protocol.SeverityHint, nonDefault: true},         // very noisy

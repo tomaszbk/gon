@@ -45,8 +45,9 @@ func TestNativeOptionalPatterns(t *testing.T) {
 }
 
 func TestNativeOptionalInvalid(t *testing.T) {
+	// Retired contextual constructors are covered by parser rejection tests.
 	for _, source := range []string{
-		`var _ Option[int]`, `var _ int? = .Some(1)`, `var _ int? = .None`,
+		`var _ Option[int]`,
 		`var _ = (int?).Some(1)`, `var _ = (int?).None`,
 		`func f(n int) int {return switch n {case value?=>value}}`,
 		`func f(n int?) int {return switch n {case nil?=>0;case nil=>0;default=>1}}`,

@@ -35,21 +35,28 @@ data := os.ReadFile(path) or err {
 ```
 
 The call must return exactly `error` last (aliases allowed). `!` requires the
-nearest function to return `error` last, or one bridge below; failure returns
+nearest function to return `error` last or qualify as a test below; failure returns
 the original error and zeros for other results, including named results, before
 defers. Keep explicit handling for useful partial results. Propagation never
 uses panic/recover. `or` binds its error locally and must terminate when the
 call has success results; error-only handlers may fall through. No
 labels/goto/labeled jumps in handlers; no direct `go f()!` or `defer f()!`.
 
-Bridges (only `!`; other tuple/Result conversions stay explicit): in a function
-returning one `Result[T,E]`, `!` on a call ending in `error` (assignable to E)
-fails as `.Err(err)`; in one returning `error` last, `!` on `Result[V,E]` (E
-assignable to error) returns the payload, and `Err(nil)` becomes
-`errors.ErrNilResult`. In `_test.go`, if the nearest function has neither and
-its first parameter is a named `*testing.T/B/F` or `testing.TB`, `!` calls
-`<param>.Fatal(err)` at that line and returns zeros (tests, subtests, fuzz,
-benchmarks, helpers, lambdas). `or` is unchanged.
+In `_test.go`, when the nearest function does not return `error` last and its
+first parameter is a named `*testing.T/B/F` or `testing.TB`, a failing `!` calls
+`<param>.Fatal(err)` at that line and returns zeros. This includes tests,
+subtests, fuzz callbacks, benchmarks, helpers and lambdas. Receivers, `_` and
+variadic first parameters do not qualify. Block `or` and optional `?` keep
+their existing contracts.
+
+```go
+data := os.ReadFile(path) or err => fmt.Errorf("read %q: %w", path, err)
+```
+
+The one-line form evaluates its context only on failure and propagates that
+error, with zeros for other results before defers. It is valid wherever `!` is
+valid, including qualifying tests. Its binding is local to the context. Use a
+block handler to recover, choose partial results or perform several statements.
 
 ## Conditional expressions and lambdas
 
@@ -114,7 +121,7 @@ keep precedence and string/byte payloads keep their raw SQL representation.
 Nested optionals, optional map keys
 and RawBytes payloads are rejected. xml/gob and native pgx need codecs.
 
-## Enums, Result and matching
+## Enums and matching
 
 ```go
 type Payment enum {
@@ -137,21 +144,15 @@ func describe(input int?) string {
     }
 }
 
-func parsePort(text string) Result[int, error] {
-    number := strconv.Atoi(text) or err { return .Err(err) }
-    return .Ok(number)
+func parsePort(text string) (int, error) {
+    number := strconv.Atoi(text)!
+    return number, nil
 }
 ```
 
 Enums need one `default` zero variant and qualified constructors. Positional
 payloads use `Payment.Rejected("reason")`; records require labels, with Go zeros
 for omissions. Export spelling and payload comparability follow Go.
-
-`Result[T,E]` is shadowable; zero is Ok(zero T), Err(nil) is failure.
-`.Ok`/`.Err` need a fully known target; otherwise qualify, e.g.
-`Result[int,error].Ok(7)`. Result `!` extracts Ok or propagates Err to exactly
-one Result return with an assignable error payload. `or problem` binds the
-payload and must terminate. Go tuples convert to/from Result only via `!` above.
 
 Matches are exhaustive: `=> expression` yields a value; `=> { ... }` is a
 statement arm. Evaluate the subject once, try arms in order. Qualify variants;
@@ -248,3 +249,55 @@ optional modernization hints. Checking does not build/run tests: follow edits
 with `gon fmt`, focused `gon test` and relevant `gon vet`. Inlining/extraction
 may decline named/lazy/contextual constructs. Flags: `gon help tooling` or
 `gon help <command>`.
+
+## Pattern tests and alternative patterns
+
+```go
+if seq.Lookup(users, id) is user? && user.Active { use(user) }
+kind := switch payment {
+case Payment.Pending, Payment.Rejected(_) => "unpaid"
+case Payment.Paid{...} => "paid"
+}
+```
+
+Several patterns share an arm only when they bind the same names with identical
+types. Evaluate the subject once, try alternatives in written order and then
+the guard once. `x is P` has comparison precedence and rejects an irrefutable
+pattern. Bindings are valid only in an `if` condition or top-level `&&`
+operands; later operands and the body can use them, the else branch cannot.
+An ordinary identifier named `is` retains Go meaning.
+
+## Interpolation and collections
+
+```go
+label := $"Hello ${user.Name}, total ${price:%.2f}"
+names := seq.Map(users, (user) => user.Name)
+var selected User? = seq.Find(users, (user) => user.Active)
+```
+
+Import `fmt` explicitly in the interpolation's file, and `gon/seq` for collection
+functions. The fmt import counts as used; aliases and shadowing work. `$"..."`
+and raw interpolated strings use `${expression}` with optional top-level
+`:verb`. The default is `%v`; one explicit fmt verb may consume the operand,
+without `*` or `%%`. Plain braces stay literal. `\$` escapes a dollar in
+interpreted text; raw text uses `${"${"}` to emit a literal opener. Interpreted
+interpolation forbids newlines even inside expressions. Operand expressions
+run once from left to right. The result is a typed nonconstant string. Vet
+checks formatting types. Struct tags, import paths and constant contexts reject
+interpolation.
+
+`gon/seq` provides Map, Filter, FlatMap, Reduce, GroupBy, KeyBy, Distinct, ToSet,
+Find, First, Last, At, Lookup, All, Count, Partition, MapSeq and FilterSeq.
+Slice results are never nil. Find/First/Last/At/Lookup return native `T?`;
+Lookup distinguishes a stored zero or typed nil from a missing key. Ordinary
+Go callbacks and Gon lambdas both work; named slice/map types are supported.
+
+## Nil analysis
+
+NilAway is opt-in: `gon check --nilaway ./...` or editor
+`"gon.serverSettings": { "nilaway": true }`. It reports warnings, keeps ordinary Go nil
+semantics and uses maintained Gon lowering for new constructs. An internal
+analysis error is visible; a no-panic run alone is not evidence that all
+nil-flow diagnostics are correct. Review warnings and verify behavior with
+project tests. NilAway is maintained in `tools/nilaway` with its Apache-2.0
+license and upstream provenance; it is not part of `gon vet`.

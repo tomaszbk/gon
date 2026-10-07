@@ -61,21 +61,15 @@ optional. `??` supplies a lazy fallback and `??=` assigns only on absence.
 Safe navigation retains its explicit boundary between optional presence and
 Go nil checking: a present nil payload is not absence.
 
-## Results and Go boundaries
+## Errors and Go boundaries
 
-`Result[T, E]`, `.Ok/.Err`, qualified Result constructors and patterns remain.
-`Result[int?, error]` can succeed with absence (`.Ok(nil)`) or a present integer
-(`.Ok(7)`). Contextual Result constructors need a fully known expected type.
-Result has no implicit conversion to or from legacy Go tuples, which may carry
-useful partial results alongside errors. Existing Go signatures keep their
-semantics. Postfix `!` is the one bridge: it fails a Go call ending in exactly
-`error` as `Result[T, E].Err(err)` in a function whose only result is a Result
-accepting `error`, and fails a `Result[V, E]` with `E` assignable to `error` as
-its payload in a function whose last result is `error`. A nil `Err` payload becomes `errors.ErrNilResult`,
-because a failed Result never turns into a nil error. In `_test.go` files with a
-named first `*testing.T`, `*testing.B`, `*testing.F` or `testing.TB` parameter,
-`!` reports the error or Result payload with `Fatal`. See
-[README.md](README.md#error-propagation-across-tests-tuples-and-result).
+Use ordinary Go tuples ending in `error` for failure. An optional result can
+coexist with an error: `func parse(text string) (int?, error)`. Successful
+absence is `nil, nil`; successful presence is a payload and nil; failure has
+an error. Existing APIs retain useful partial results for explicit handlers.
+Postfix `!` and `or err => expression` propagate errors and reset other result
+values before defers. In qualifying `_test.go` functions they call the named
+first testing parameter's `Fatal`. See [the error contract](README.md#error-propagation-in-tests).
 
 ## Introspection and representation
 
@@ -150,40 +144,12 @@ use `jsonb_agg`/`to_jsonb` in the query or a driver-specific adapter.
 Not covered: `encoding/xml`, `gob` and other encoders, and pgx's native API
 outside `database/sql`, which need their own codecs.
 
-## Reviewable migration
+## Retired syntax
 
-The current compiler rejects retired optional constructors. The semantic
-migration command recognizes them for analysis only, without adding Option to
-Universe or changing ordinary compiler/editor checking:
-
-```sh
-gon refactor optionals --dry-run ./...
-gon refactor optionals --dry-run --json ./... > optional-migration.json
-gon refactor apply optional-migration.json
-gon test ./...
-```
-
-Examples of retired migration input and the current native spelling:
-
-| Retired Gon input | Current Gon |
-| --- | --- |
-| `var n Option[int]` | `var n int?` |
-| `var n Option[int] = .Some(7)` | `var n int? = 7` |
-| `var n Option[int] = .None` | `var n int? = nil` |
-| `var p Option[*User] = .Some(nil)` | `var p (*User)? = (*User)(nil)` |
-| `case Option[int].Some(n)` | `case n?` |
-| `case Option[int].None` | `case nil` |
-| `case Option[Option[int]].Some(Option[int].Some(n))` | `case (n?)?` |
-
-The plan records each source revision and rejects stale files before writing.
-It migrates types, constructors, constructor function values and patterns while
-preserving typed nil and nested layers. User-defined homonyms are untouched.
-Source must type-check under the retired optional contract. Cases requiring
-inaccessible payload type names are declined and need an explicit adapter.
-Rewrites that would discard embedded comments are also declined; move the
-comment or migrate that declaration manually.
-Explicit conversions in the diff preserve expression types and are intentionally
-more verbose than manually written native code.
+The compiler and editor reject retired optional constructors. Use `T?`, direct
+payloads, untyped nil and `P?` patterns. `gon refactor optionals` is retired;
+ordinary semantic rename/apply refactoring remains available. Existing user
+declarations named `Option`, `Some`, `None` or `Result` remain ordinary names.
 
 See [STATUS](STATUS.md), [VALIDATION](VALIDATION.md) and the current
 [benchmark report](benchmarks/README.md) for executed checks and platform evidence.

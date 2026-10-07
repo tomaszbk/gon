@@ -106,7 +106,7 @@ func TestSimplifiedAlternativesSyntax(t *testing.T) {
  type OptionalPtr = (*int)?
  type OptionalSlice = ([]int)?
  type Nested = (int?)?
- type F func(int?, (*int)?, (int?)?) (int?, Result[int?, error])
+ type F func(int?, (*int)?, (int?)?) (int?, error)
  type OptionalReturns func(*int) (*int)?
  type SliceReturns func([]int) ([]int)?
  type NestedReturns func(int?) (int?)?
@@ -116,27 +116,14 @@ func TestSimplifiedAlternativesSyntax(t *testing.T) {
  func legacyTuple() (first *int, second []int) { return nil, nil }
  var a int? = (int)(3)
  var b int? = nil
- func f(x int?, y (int?)?, z []int?) (value Result[int?, error]) {
-     return .Ok(if true { (int)(x ?? 0) } else { nil })
+ func f(x int?, y (int?)?, z []int?) (value int?) {
+     return if true { (int)(x ?? 0) } else { nil }
  }
- func g() Result[int, error] { return .Err(nil) }
+ func g() int? { return nil }
 `
 	file, err := Parse(NewFileBase("simplified.go"), strings.NewReader(source), nil, nil, 0)
 	if err != nil {
 		t.Fatal(err)
-	}
-	var variants int
-	Inspect(file, func(node Node) bool {
-		if node, ok := node.(*ContextualVariantExpr); ok {
-			variants++
-			if StartPos(node).Cmp(node.Name.Pos()) >= 0 || EndPos(node).Cmp(node.Pos()) <= 0 {
-				t.Errorf("incorrect positions: %#v", node)
-			}
-		}
-		return true
-	})
-	if variants != 2 {
-		t.Fatalf("found %d contextual variants", variants)
 	}
 	ptr := file.DeclList[0].(*TypeDecl).Type.(*Operation)
 	if _, ok := ptr.X.(*OptionalExpr); !ok {
@@ -161,5 +148,88 @@ func TestSimplifiedAlternativesSyntax(t *testing.T) {
 	}
 	if out.String() != printed {
 		t.Fatalf("unstable syntax:\n%s\n%s", printed, out.String())
+	}
+}
+
+func TestRetiredContextualConstructorSyntax(t *testing.T) {
+	for _, source := range []string{
+		`package p; var x = .Ok(1)`,
+		`package p; var x = .Err(nil)`,
+		`package p; var x int? = .Some(1)`,
+		`package p; var x int? = .None`,
+		`package p; type Box enum { default Empty; Full(int) }; var x Box = .Full(1)`,
+	} {
+		if _, err := Parse(NewFileBase("retired.go"), strings.NewReader(source), nil, nil, 0); err == nil {
+			t.Errorf("accepted retired contextual constructor: %s", source)
+		}
+	}
+}
+
+func TestMatchAlternativesSyntax(t *testing.T) {
+	const source = `package p
+ type Shape enum { default Empty; Circle(int); Sphere(int) }
+ func value(shape Shape) int { return switch shape { case Shape.Circle(radius), Shape.Sphere(radius) if radius > 0 => radius; default => 0 } }
+ func statement(shape Shape) { switch shape { case Shape.Circle(radius), Shape.Sphere(radius) => { _ = radius }; case Shape.Empty => {} } }
+ `
+	file, err := Parse(NewFileBase("multipattern.go"), strings.NewReader(source), nil, nil, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var multiple int
+	Inspect(file, func(node Node) bool {
+		if arm, ok := node.(*MatchArm); ok && len(arm.Patterns) == 2 {
+			multiple++
+		}
+		return true
+	})
+	if multiple != 2 {
+		t.Fatalf("multi-pattern arms: %d", multiple)
+	}
+	var formatted bytes.Buffer
+	if _, err := Fprint(&formatted, file, 0); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Parse(NewFileBase("printed.go"), strings.NewReader(formatted.String()), nil, nil, 0); err != nil {
+		t.Fatalf("round trip: %v\n%s", err, formatted.String())
+	}
+}
+
+func TestPatternTestSyntax(t *testing.T) {
+	const source = `package p
+ type Shape enum { default Empty; Circle(int); Record{Radius int} }
+ func f(shape Shape,value int?,optionalShape Shape?) bool {
+  if shape is Shape.Empty {} else if shape is Shape.Record{Radius: radius} && radius>0 {return true}
+  if value is number? && number>0 {return true}
+  if optionalShape is Shape.Record{Radius: radius}? && radius>0 {return true}
+  if shape is Shape.Record{...} is true {return true}
+  is:=3
+  return !(shape is Shape.Circle(_)) && is==3
+ }
+ `
+	file, err := Parse(NewFileBase("is.go"), strings.NewReader(source), nil, nil, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := 0
+	Inspect(file, func(n Node) bool {
+		if _, ok := n.(*PatternTestExpr); ok {
+			tests++
+		}
+		return true
+	})
+	if tests != 7 {
+		t.Fatalf("pattern test nodes=%d", tests)
+	}
+	var output bytes.Buffer
+	if _, err := Fprint(&output, file, 0); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Parse(NewFileBase("formatted.go"), strings.NewReader(output.String()), nil, nil, 0); err != nil {
+		t.Fatalf("round trip: %v\n%s", err, output.String())
+	}
+	// The lookahead crosses the scanner's input buffer and must replay bytes.
+	large := "package p;func f(v bool)bool{if v is true {" + strings.Repeat(" ", 10000) + "return true};return false}"
+	if _, err := Parse(NewFileBase("large.go"), strings.NewReader(large), nil, nil, 0); err != nil {
+		t.Fatal(err)
 	}
 }

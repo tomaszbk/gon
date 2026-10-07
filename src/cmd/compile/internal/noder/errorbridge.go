@@ -6,83 +6,37 @@ import (
 )
 
 // prepareBangPropagation gives postfix ! its implicit handler. The type
-// checker has already validated the enclosing function, so the handler is
-// chosen by its signature alone:
+// checker has already validated the enclosing function. A final result of
+// exactly error receives the error after zeroing the other results; a test
+// function reports the error through its first parameter's Fatal method and
+// returns zero values. Fatal does not return, but the return keeps the control
+// flow well-formed.
 //
-//   - A final result of exactly error returns the zero values and the error,
-//     for an error tuple, or the Result payload converted to error, with
-//     the runtime's nil-Result error replacing a nil error.
-//   - Exactly one Result returns Err of the error, or of the payload.
-//   - Any other function is a test function: its first parameter's Fatal
-//     method reports the error or payload, and the function then returns
-//     zero values. Fatal does not return; the return keeps control flow
-//     well-formed.
-//
-// The synthesized nodes carry types and object identities and the position of
-// the !, so shadowing and user-defined names cannot change their meaning, and
-// a Fatal report names the line of the !.
+// The synthesized nodes carry types, object identities and the position of !,
+// so shadowing cannot change their meaning and Fatal reports the line of !.
 func prepareBangPropagation(pkg *types2.Package, info *types2.Info, serial *int, n *syntax.ErrorExpr, sig *types2.Signature) {
 	if n.Body != nil {
 		return
 	}
 	pos := n.Pos()
 	errorType := types2.Universe.Lookup("error").Type()
-	operand := n.X.GetTypeInfo().Type
-	isResult := types2.IsCanonicalResult(operand)
 	results := sig.Results()
 	last := results.Len() - 1
 	n.SynthesizedHandler = true
-
-	var errType types2.Type = errorType
-	if isResult {
-		errType = types2.EnumStorageOf(operand).Lookup("Err", nil).Field(0).Type()
-	}
-
-	switch {
-	case last >= 0 && types2.Identical(results.At(last).Type(), errorType):
-		def, use := propagationVariable(pkg, info, serial, pos, errType)
-		n.Err = def
-		if !isResult {
-			n.Body = propagationBlock(pkg, info, serial, pos, results, use)
-			break
-		}
-		// The binding holds the payload. The handler converts it to error,
-		// and a nil result of that conversion, which is still a failure,
-		// becomes the runtime's nil-Result error instead of a nil error.
-		errDef, errUse := propagationVariable(pkg, info, serial, pos, errorType)
-		convert := &syntax.VarDecl{NameList: []*syntax.Name{errDef}, Values: use}
-		convert.SetPos(pos)
-		convertStmt := &syntax.DeclStmt{DeclList: []syntax.Decl{convert}}
-		convertStmt.SetPos(pos)
-		n.Body = propagationBlock(pkg, info, serial, pos, results, errUse,
-			convertStmt, nilResultSubstitute(info, pos, errDef.Value, errUse))
-
-	case results.Len() == 1 && types2.IsCanonicalResult(results.At(0).Type()):
-		if isResult {
-			prepareResultPropagation(pkg, info, serial, n, sig)
-			return
-		}
-		// An error tuple fails as Result.Err(err): the enum construction
-		// converts the error to the Result's error type.
+	failure := n.Context
+	if failure == nil {
 		def, use := propagationVariable(pkg, info, serial, pos, errorType)
 		n.Err = def
-		destination := results.At(0).Type()
-		constructed := &syntax.EnumConstructExpr{Variant: 1, ArgList: []syntax.Expr{use}}
-		constructed.SetPos(pos)
-		tv := syntax.TypeAndValue{Type: destination}
-		tv.SetIsValue()
-		constructed.SetTypeInfo(tv)
-		ret := &syntax.ReturnStmt{Results: constructed}
-		ret.SetPos(pos)
-		block := &syntax.BlockStmt{Rbrace: pos, List: []syntax.Stmt{ret}}
-		block.SetPos(pos)
-		n.Body = block
-
-	default:
-		def, use := propagationVariable(pkg, info, serial, pos, errType)
-		n.Err = def
-		n.Body = propagationBlock(pkg, info, serial, pos, results, nil, fatalStatement(pkg, info, pos, sig, use))
+		failure = use
 	}
+	if last >= 0 && types2.Identical(results.At(last).Type(), errorType) {
+		n.Body = propagationBlock(pkg, info, serial, pos, results, failure)
+	} else {
+		n.Body = propagationBlock(pkg, info, serial, pos, results, nil, fatalStatement(pkg, info, pos, sig, failure))
+	}
+	// The expression is now in the synthesized handler. Keep a single tree
+	// occurrence so nested propagation and rangefunc visit it only once.
+	n.Context = nil
 }
 
 // propagationBlock returns the handler "{ var zeros...; stmts...; return
@@ -161,61 +115,3 @@ func fatalStatement(pkg *types2.Package, info *types2.Info, pos syntax.Pos, sig 
 	stmt.SetPos(pos)
 	return stmt
 }
-
-// nilResultSubstitute builds "if err == nil { err = runtime.nilResultErr() }":
-// a failed Result is a failure even when its payload converts to a nil error.
-func nilResultSubstitute(info *types2.Info, pos syntax.Pos, name string, err *syntax.Name) syntax.Stmt {
-	errorType := types2.Universe.Lookup("error").Type()
-	obj := info.Uses[err]
-
-	use := func() *syntax.Name {
-		n := syntax.NewName(pos, name)
-		info.Uses[n] = obj
-		tv := syntax.TypeAndValue{Type: errorType}
-		tv.SetIsValue()
-		tv.SetAddressable()
-		tv.SetAssignable()
-		n.SetTypeInfo(tv)
-		return n
-	}
-
-	nilName := syntax.NewName(pos, "nil")
-	info.Uses[nilName] = types2.Universe.Lookup("nil")
-	tv := syntax.TypeAndValue{Type: errorType}
-	tv.SetIsValue()
-	tv.SetIsNil()
-	nilName.SetTypeInfo(tv)
-
-	cond := &syntax.Operation{Op: syntax.Eql, X: use(), Y: nilName}
-	cond.SetPos(pos)
-	tv = syntax.TypeAndValue{Type: types2.Typ[types2.Bool]}
-	tv.SetIsValue()
-	cond.SetTypeInfo(tv)
-
-	// runtime.nilResultErr is a helper of the fake runtime package, as used by
-	// the range-over-func rewriter.
-	helper := types2.NewFunc(pos, runtimeHelpers, "nilResultErr", types2.NewSignatureType(nil, nil, nil, nil, types2.NewTuple(types2.NewParam(pos, runtimeHelpers, "", errorType)), false))
-	fun := syntax.NewName(pos, "runtime.nilResultErr")
-	info.Uses[fun] = helper
-	tv = syntax.TypeAndValue{Type: helper.Type()}
-	tv.SetIsValue()
-	tv.SetIsRuntimeHelper()
-	fun.SetTypeInfo(tv)
-	call := &syntax.CallExpr{Fun: fun}
-	call.SetPos(pos)
-	tv = syntax.TypeAndValue{Type: errorType}
-	tv.SetIsValue()
-	call.SetTypeInfo(tv)
-
-	assign := &syntax.AssignStmt{Lhs: use(), Rhs: call}
-	assign.SetPos(pos)
-	then := &syntax.BlockStmt{List: []syntax.Stmt{assign}, Rbrace: pos}
-	then.SetPos(pos)
-	stmt := &syntax.IfStmt{Cond: cond, Then: then}
-	stmt.SetPos(pos)
-	return stmt
-}
-
-// runtimeHelpers is a fake runtime package: only the name and package of a
-// helper function reach the unified IR, which resolves it in package runtime.
-var runtimeHelpers = types2.NewPackage("runtime", "runtime")

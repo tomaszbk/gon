@@ -3,9 +3,11 @@ package golang
 // This file defines the refactor.inline code action.
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"go/ast"
+	"go/printer"
 	"go/token"
 	"go/types"
 
@@ -228,8 +230,6 @@ func inlineVariableOne(pkg *cache.Package, pgf *parsego.File, start, end token.P
 		switch curIdent.ParentEdgeKind() {
 		case edge.SelectorExpr_Sel:
 			continue // ignore f in x.f
-		case edge.ContextualVariantExpr_Name:
-			continue // ignore Err in .Err(e): a variant of the expected type, not a lexical reference
 		case edge.CallExpr_ArgNames:
 			continue // ignore p in f(p: v): a parameter label, not a lexical reference
 		}
@@ -256,13 +256,36 @@ func inlineVariableOne(pkg *cache.Package, pgf *parsego.File, start, end token.P
 	// Add parens to 'new' as needed by the 'use' context.
 	rhs = astutil.MaybeParenthesize(curUse.Parent().Node(), use, rhs)
 
+	text := []byte(FormatNode(pkg.FileSet(), rhs))
+	if bytes.ContainsRune(text, '\n') {
+		offset := pgf.Tok.Offset(use.Pos())
+		line := pgf.Src[:offset]
+		line = line[bytes.LastIndexByte(line, '\n')+1:]
+		indent := line[:len(line)-len(bytes.TrimLeft(line, " \t"))]
+		columns := 0
+		for _, c := range indent {
+			if c == '\t' {
+				columns = (columns/8 + 1) * 8
+			} else {
+				columns++
+			}
+		}
+		depth := (columns + 7) / 8
+		var formatted bytes.Buffer
+		config := printer.Config{Tabwidth: 8, Indent: depth}
+		if err := config.Fprint(&formatted, pkg.FileSet(), rhs); err != nil {
+			return nil, nil, err
+		}
+		text = bytes.TrimPrefix(formatted.Bytes(), bytes.Repeat([]byte("\t"), depth))
+	}
+
 	return pkg.FileSet(), &analysis.SuggestedFix{
 		Message: fmt.Sprintf("Replace variable %q by its initializer expression", use.Name),
 		TextEdits: []analysis.TextEdit{
 			{
 				Pos:     use.Pos(),
 				End:     use.End(),
-				NewText: []byte(FormatNode(pkg.FileSet(), rhs)),
+				NewText: text,
 			},
 		},
 	}, nil

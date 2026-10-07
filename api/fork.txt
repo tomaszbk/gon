@@ -67,7 +67,7 @@ pkg go/ast, type MatchArm struct, Arrow token.Pos
 pkg go/ast, type MatchArm struct, Body *BlockStmt
 pkg go/ast, type MatchArm struct, Case token.Pos
 pkg go/ast, type MatchArm struct, Guard Expr
-pkg go/ast, type MatchArm struct, Pattern *MatchPattern
+pkg go/ast, type MatchArm struct, Patterns []*MatchPattern
 pkg go/ast, type MatchArm struct, Value Expr
 pkg go/ast, type MatchExpr struct
 pkg go/ast, type MatchExpr struct, Arms []*MatchArm
@@ -112,7 +112,6 @@ pkg go/token, const SAFE_PERIOD = 90
 pkg go/token, const SAFE_PERIOD Token
 pkg go/types, func EnumOf(Type) *Enum
 pkg go/types, func IsOptional(Type) bool
-pkg go/types, func IsCanonicalResult(Type) bool
 pkg go/types, func NewEnum([]*EnumVariant, int) *Struct
 pkg go/types, func NewStringEnum([]*EnumVariant, int) *Struct
 pkg go/types, func NewEnumVariant(string, *Package, []*Var, bool) *EnumVariant
@@ -154,14 +153,6 @@ pkg database/sql, func CollectOne[$0 interface{}](*Rows) ($0, error)
 pkg database/sql, method (*Row) ScanStruct(interface{}) error
 pkg database/sql, method (*Rows) ScanStruct(interface{}) error
 pkg database/sql, var ErrTooManyRows error
-pkg go/ast, method (*ContextualVariantExpr) End() token.Pos
-pkg go/ast, method (*ContextualVariantExpr) Pos() token.Pos
-pkg go/ast, type ContextualVariantExpr struct
-pkg go/ast, type ContextualVariantExpr struct, Dot token.Pos
-pkg go/ast, type ContextualVariantExpr struct, Name *Ident
-pkg go/ast, type ContextualVariantExpr struct, Lparen token.Pos
-pkg go/ast, type ContextualVariantExpr struct, Rparen token.Pos
-pkg go/ast, type ContextualVariantExpr struct, Args []Expr
 pkg go/types, type Info struct, OptionalConversions map[ast.Expr]Type
 pkg go/ast, type MatchPattern struct, Inner *MatchPattern
 pkg go/ast, type MatchPattern struct, Question token.Pos
@@ -173,11 +164,63 @@ pkg go/types, func NewOptional(Type) *Optional
 pkg go/types, func OptionalOf(Type) *Optional
 pkg go/types, func OptionalStorage(Type) *Struct
 pkg go/types, func EnumStorageOf(Type) *Enum
-pkg go/types, type Config struct, MigrateOptionals bool
 pkg reflect, func IsOptional(Type) bool
 pkg reflect, func OptionalElement(Type) Type
 pkg reflect, func OptionalValuePresent(Value) bool
 pkg reflect, func OptionalValuePayload(Value) Value
 pkg reflect, func OptionalValueSetPayload(Value, Value)
-pkg errors, var ErrNilResult error
 pkg go/types, func TestFatalParam(*Signature) *Var
+pkg gon/seq, func All[$0 interface{ ~[]$1 }, $1 interface{}]($0, func($1) bool) bool
+pkg gon/seq, func At[$0 interface{ ~[]$1 }, $1 interface{}]($0, int) $1?
+pkg gon/seq, func Count[$0 interface{ ~[]$1 }, $1 interface{}]($0, func($1) bool) int
+pkg gon/seq, func Distinct[$0 interface{ ~[]$1 }, $1 comparable]($0) $0
+pkg gon/seq, func Filter[$0 interface{ ~[]$1 }, $1 interface{}]($0, func($1) bool) $0
+pkg gon/seq, func FilterSeq[$0 interface{}](iter.Seq[$0], func($0) bool) iter.Seq[$0]
+pkg gon/seq, func Find[$0 interface{ ~[]$1 }, $1 interface{}]($0, func($1) bool) $1?
+pkg gon/seq, func First[$0 interface{ ~[]$1 }, $1 interface{}]($0) $1?
+pkg gon/seq, func FlatMap[$0 interface{ ~[]$1 }, $1 interface{}, $2 interface{}]($0, func($1) []$2) []$2
+pkg gon/seq, func GroupBy[$0 interface{ ~[]$1 }, $1 interface{}, $2 comparable]($0, func($1) $2) map[$2]$0
+pkg gon/seq, func KeyBy[$0 interface{ ~[]$1 }, $1 interface{}, $2 comparable]($0, func($1) $2) map[$2]$1
+pkg gon/seq, func Last[$0 interface{ ~[]$1 }, $1 interface{}]($0) $1?
+pkg gon/seq, func Lookup[$0 interface{ ~map[$1]$2 }, $1 comparable, $2 interface{}]($0, $1) $2?
+pkg gon/seq, func Map[$0 interface{ ~[]$1 }, $1 interface{}, $2 interface{}]($0, func($1) $2) []$2
+pkg gon/seq, func MapSeq[$0 interface{}, $1 interface{}](iter.Seq[$0], func($0) $1) iter.Seq[$1]
+pkg gon/seq, func Partition[$0 interface{ ~[]$1 }, $1 interface{}]($0, func($1) bool) ($0, $0)
+pkg gon/seq, func Reduce[$0 interface{ ~[]$1 }, $1 interface{}, $2 interface{}]($0, $2, func($2, $1) $2) $2
+pkg gon/seq, func ToSet[$0 interface{ ~[]$1 }, $1 comparable]($0) map[$1]struct{}
+pkg go/ast, type ErrorExpr struct, Arrow token.Pos
+pkg go/ast, type ErrorExpr struct, Context Expr
+pkg go/ast, method (*PatternTestExpr) End() token.Pos
+pkg go/ast, method (*PatternTestExpr) Pos() token.Pos
+pkg go/ast, type PatternTestExpr struct
+pkg go/ast, type PatternTestExpr struct, X Expr
+pkg go/ast, type PatternTestExpr struct, Is token.Pos
+pkg go/ast, type PatternTestExpr struct, Pattern *MatchPattern
+pkg go/ast, type InterpolatedStringExpr struct
+pkg go/ast, method (*InterpolatedStringExpr) Pos() token.Pos
+pkg go/ast, method (*InterpolatedStringExpr) End() token.Pos
+pkg go/ast, type InterpolatedStringExpr struct, Dollar token.Pos
+pkg go/ast, type InterpolatedStringExpr struct, Quote byte
+pkg go/ast, type InterpolatedStringExpr struct, Parts []*InterpolationPart
+pkg go/ast, type InterpolatedStringExpr struct, Rquote token.Pos
+pkg go/ast, type InterpolationPart struct
+pkg go/ast, method (*InterpolationPart) Pos() token.Pos
+pkg go/ast, method (*InterpolationPart) End() token.Pos
+pkg go/ast, type InterpolationPart struct, Start token.Pos
+pkg go/ast, type InterpolationPart struct, EndPos token.Pos
+pkg go/ast, type InterpolationPart struct, Text string
+pkg go/ast, type InterpolationPart struct, Expr Expr
+pkg go/ast, type InterpolationPart struct, Format string
+pkg go/types, type Info struct, Interpolations map[*ast.InterpolatedStringExpr]*ast.CallExpr
+pkg go/token, const INTERPOLATION_START = 95
+pkg go/token, const INTERPOLATION_START Token
+pkg go/token, const INTERPOLATION_TEXT = 96
+pkg go/token, const INTERPOLATION_TEXT Token
+pkg go/token, const INTERPOLATION_OPEN = 97
+pkg go/token, const INTERPOLATION_OPEN Token
+pkg go/token, const INTERPOLATION_CLOSE = 98
+pkg go/token, const INTERPOLATION_CLOSE Token
+pkg go/token, const INTERPOLATION_FORMAT = 99
+pkg go/token, const INTERPOLATION_FORMAT Token
+pkg go/token, const INTERPOLATION_END = 100
+pkg go/token, const INTERPOLATION_END Token

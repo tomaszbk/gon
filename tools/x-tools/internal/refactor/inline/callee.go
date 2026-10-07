@@ -113,7 +113,7 @@ func AnalyzeCallee(logf func(string, ...any), fset *token.FileSet, pkg *types.Pa
 			if n.Tok == token.COALESCE_ASSIGN {
 				return nil, fmt.Errorf("cannot inline Gon control-flow expressions")
 			}
-		case *ast.ErrorExpr, *ast.CondExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.MatchStmt, *ast.OptionalExpr, *ast.ContextualVariantExpr:
+		case *ast.ErrorExpr, *ast.CondExpr, *ast.LambdaExpr, *ast.NilGuardExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.MatchStmt, *ast.OptionalExpr, *ast.InterpolatedStringExpr, *ast.PatternTestExpr:
 			return nil, fmt.Errorf("cannot inline function containing Gon control-flow expressions")
 		}
 	}

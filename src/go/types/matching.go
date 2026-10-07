@@ -71,7 +71,7 @@ func (check *Checker) matchPattern(p *ast.MatchPattern, t Type, top bool, bindin
 			return &matchCoverage{wild: true}
 		}
 	}
-	if sel, ok := p.Value.(*ast.SelectorExpr); ok && check.sourceEnum(t) != nil {
+	if sel, ok := p.Value.(*ast.SelectorExpr); ok && EnumOf(t) != nil {
 		var q operand
 		check.exprOrType(&q, sel.X, false)
 		if !q.isValid() {
@@ -139,7 +139,7 @@ func (check *Checker) matchPattern(p *ast.MatchPattern, t Type, top bool, bindin
 // matchVariant checks a qualified variant pattern against the enum type t. The
 // qualifier has already been resolved to t.
 func (check *Checker) matchVariant(p *ast.MatchPattern, sel *ast.SelectorExpr, t Type, bindings *[]matchBinding) *matchCoverage {
-	e := check.sourceEnum(t)
+	e := EnumOf(t)
 	v := e.Lookup(sel.Sel.Name, check.pkg)
 	if v == nil {
 		check.errorf(sel.Sel, InvalidMatch, "unknown or inaccessible alternative %s of %s", sel.Sel.Name, t)
@@ -225,7 +225,7 @@ func (check *Checker) matchInterfaceVariant(p *ast.MatchPattern, sel *ast.Select
 	if !q.isValid() {
 		return matchNever(p)
 	}
-	if q.mode() != typexpr || check.sourceEnum(q.typ()) == nil {
+	if q.mode() != typexpr || EnumOf(q.typ()) == nil {
 		check.errorf(sel.X, InvalidMatch, "pattern alternative on interface %s must be qualified by an enum type", t)
 		return matchNever(p)
 	}
@@ -383,19 +383,69 @@ func (check *Checker) matchExpr(T *target, x *operand, e *ast.MatchExpr, ctxt st
 	}
 	for _, a := range e.Arms {
 		check.openScope(a, "match arm")
-		var bindings []matchBinding
-		p := check.matchPattern(a.Pattern, tag.typ(), true, &bindings)
-		for _, b := range bindings {
-			obj := newVar(LocalVar, b.name.Pos(), check.pkg, b.name.Name, b.typ)
-			check.declare(check.scope, b.name, obj, a.Pos())
+		patterns := a.Patterns
+		if len(patterns) == 0 {
+			patterns = []*ast.MatchPattern{nil}
 		}
-		if tag.isValid() {
-			budget := 10000
-			if matchUseful(rows, []*matchCoverage{p}, []Type{tag.typ()}, &budget) == nil {
-				check.error(a, InvalidMatch, "unreachable match arm")
+		// Resolve every qualified pattern head in the outer environment before
+		// any payload binding is introduced into the common arm scope.
+		coverages := make([]*matchCoverage, len(patterns))
+		alternatives := make([][]matchBinding, len(patterns))
+		for i, pattern := range patterns {
+			coverages[i] = check.matchPattern(pattern, tag.typ(), true, &alternatives[i])
+		}
+		var first []matchBinding
+		objects := make(map[string]*Var)
+		armRows := append([][]*matchCoverage(nil), rows...)
+		for i, pattern := range patterns {
+			bindings := alternatives[i]
+			coverage := coverages[i]
+			if len(patterns) > 1 && coverage.wild {
+				check.error(pattern, InvalidMatch, "wildcard cannot be combined with other match alternatives")
 			}
-			if a.Guard == nil {
-				rows = append(rows, []*matchCoverage{p})
+			seen := make(map[string]bool)
+			for _, b := range bindings {
+				if seen[b.name.Name] {
+					check.errorf(b.name, InvalidMatch, "%s redeclared in this pattern", b.name.Name)
+					continue
+				}
+				seen[b.name.Name] = true
+				if i == 0 {
+					obj := newVar(LocalVar, b.name.Pos(), check.pkg, b.name.Name, b.typ)
+					check.declare(check.scope, b.name, obj, a.Pos())
+					objects[b.name.Name] = obj
+				} else if obj := objects[b.name.Name]; obj == nil || !Identical(obj.typ, b.typ) {
+					check.errorf(b.name, InvalidMatch, "match alternatives must bind the same names with identical types: %s", b.name.Name)
+				} else {
+					check.recordUse(b.name, obj)
+				}
+			}
+			if i == 0 {
+				first = bindings
+			} else {
+				for _, b := range first {
+					if !seen[b.name.Name] {
+						check.errorf(pattern, InvalidMatch, "match alternatives must bind the same names with identical types: missing %s", b.name.Name)
+					}
+				}
+			}
+			if tag.isValid() {
+				budget := 10000
+				if matchUseful(armRows, []*matchCoverage{coverage}, []Type{tag.typ()}, &budget) == nil {
+					at := positioner(a)
+					if pattern != nil {
+						at = pattern
+					}
+					message := "unreachable match arm"
+					if len(patterns) > 1 {
+						message = "unreachable match alternative"
+					}
+					check.error(at, InvalidMatch, message)
+				}
+				armRows = append(armRows, []*matchCoverage{coverage})
+				if a.Guard == nil {
+					rows = append(rows, []*matchCoverage{coverage})
+				}
 			}
 		}
 		if a.Guard != nil {

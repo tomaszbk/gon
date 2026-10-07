@@ -1,0 +1,314 @@
+{
+  "go-legacy": {
+    "rebuild": [
+      {
+        "wallSeconds": 1.0778447500197217,
+        "userSeconds": 0.13,
+        "systemSeconds": 0.14,
+        "maxRSSBytes": 85098496,
+        "cpuSeconds": 0.27
+      },
+      {
+        "wallSeconds": 0.244333042006474,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 89849856,
+        "cpuSeconds": 0.18
+      },
+      {
+        "wallSeconds": 0.24533333303406835,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 89620480,
+        "cpuSeconds": 0.18
+      },
+      {
+        "wallSeconds": 0.2517296249861829,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 89571328,
+        "cpuSeconds": 0.18
+      },
+      {
+        "wallSeconds": 0.24936233297921717,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 89702400,
+        "cpuSeconds": 0.18
+      },
+      {
+        "wallSeconds": 0.24919487501028925,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 90062848,
+        "cpuSeconds": 0.18
+      },
+      {
+        "wallSeconds": 0.25399800000013784,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 89817088,
+        "cpuSeconds": 0.18
+      }
+    ],
+    "noop": [
+      {
+        "wallSeconds": 0.10516254202229902,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25755648,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.10739387496141717,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 26394624,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.10390820796601474,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25821184,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.10406491701724008,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 26361856,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.1119786660419777,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25378816,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.10542166698724031,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25657344,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.10496812500059605,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 26296320,
+        "cpuSeconds": 0.07
+      }
+    ]
+  },
+  "gon-legacy": {
+    "rebuild": [
+      {
+        "wallSeconds": 0.706688915961422,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.12,
+        "maxRSSBytes": 82231296,
+        "cpuSeconds": 0.24
+      },
+      {
+        "wallSeconds": 0.2609678750159219,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.07,
+        "maxRSSBytes": 86753280,
+        "cpuSeconds": 0.19
+      },
+      {
+        "wallSeconds": 0.2442099999752827,
+        "userSeconds": 0.11,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 86802432,
+        "cpuSeconds": 0.16999999999999998
+      },
+      {
+        "wallSeconds": 0.24877695902250707,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 86491136,
+        "cpuSeconds": 0.18
+      },
+      {
+        "wallSeconds": 0.24560475000180304,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 86671360,
+        "cpuSeconds": 0.18
+      },
+      {
+        "wallSeconds": 0.24918591702589765,
+        "userSeconds": 0.11,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 86736896,
+        "cpuSeconds": 0.16999999999999998
+      },
+      {
+        "wallSeconds": 0.24732929200399667,
+        "userSeconds": 0.11,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 86671360,
+        "cpuSeconds": 0.16999999999999998
+      }
+    ],
+    "noop": [
+      {
+        "wallSeconds": 0.10724612500052899,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25968640,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.10935391701059416,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 26050560,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.10606079100398347,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25722880,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.12150933302473277,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25722880,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.11015075002796948,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25591808,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.11822291603311896,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 25526272,
+        "cpuSeconds": 0.08
+      },
+      {
+        "wallSeconds": 0.10833675001049414,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25968640,
+        "cpuSeconds": 0.07
+      }
+    ]
+  },
+  "gon-modern": {
+    "rebuild": [
+      {
+        "wallSeconds": 0.25894204195355996,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 82591744,
+        "cpuSeconds": 0.18
+      },
+      {
+        "wallSeconds": 0.2464499999769032,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 86687744,
+        "cpuSeconds": 0.18
+      },
+      {
+        "wallSeconds": 0.25118383299559355,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.07,
+        "maxRSSBytes": 86982656,
+        "cpuSeconds": 0.19
+      },
+      {
+        "wallSeconds": 0.25149633298860863,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.07,
+        "maxRSSBytes": 86458368,
+        "cpuSeconds": 0.19
+      },
+      {
+        "wallSeconds": 0.2487737910123542,
+        "userSeconds": 0.11,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 87015424,
+        "cpuSeconds": 0.16999999999999998
+      },
+      {
+        "wallSeconds": 0.25085612502880394,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.06,
+        "maxRSSBytes": 86835200,
+        "cpuSeconds": 0.18
+      },
+      {
+        "wallSeconds": 0.2572737500304356,
+        "userSeconds": 0.12,
+        "systemSeconds": 0.07,
+        "maxRSSBytes": 86671360,
+        "cpuSeconds": 0.19
+      }
+    ],
+    "noop": [
+      {
+        "wallSeconds": 0.1250862079905346,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25346048,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.11460420797811821,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25444352,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.11159858299652115,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25870336,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.11803587502799928,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25919488,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.1098548750160262,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25870336,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.11311674996977672,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25903104,
+        "cpuSeconds": 0.07
+      },
+      {
+        "wallSeconds": 0.1191061659483239,
+        "userSeconds": 0.02,
+        "systemSeconds": 0.05,
+        "maxRSSBytes": 25853952,
+        "cpuSeconds": 0.07
+      }
+    ]
+  }
+}

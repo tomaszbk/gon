@@ -128,13 +128,6 @@ func gonCommands() []*gonCommand {
 			run: (*gonRequest).rename,
 		},
 		{
-			path: "refactor optionals", args: "[package|file.go]...",
-			summary: "migrate retired optional syntax to native T? with a reviewable diff",
-			flags:   append(append([]gonFlag{}, gonSemanticFlags...), gonFlag{"dry-run", gonBool, "true", "preview edits without writing files"}),
-			min:     0, max: -1, semantic: true,
-			run: (*gonRequest).migrateOptionals,
-		},
-		{
 			path: "refactor apply", args: "<plan.json | ->", summary: "apply a revision-checked refactor plan",
 			detail: "The plan is rejected, without writing any file, unless every file still has the\nanalyzed content.",
 			flags:  []gonFlag{gonJSONFlag},
@@ -150,6 +143,7 @@ func gonCommands() []*gonCommand {
 				gonFlag{"category", gonString, "all", "language, analysis or all"},
 				gonFlag{"code", gonString, "", "report only diagnostics with this code"},
 				gonFlag{"staticcheck", gonBool, "false", "also run the Staticcheck analyzers"},
+				gonFlag{"nilaway", gonBool, "false", "also analyze nil flows with NilAway"},
 				gonFlag{"limit", gonInt, "200", "maximum number of diagnostics (0 means no limit)"},
 				gonOffsetFlag),
 			min: 0, max: -1, semantic: true,
@@ -348,6 +342,7 @@ type gonConfigInfo struct {
 	GOFLAGS     string   `json:"goflags,omitempty"`
 	BuildFlags  []string `json:"buildFlags,omitempty"`
 	Staticcheck bool     `json:"staticcheck"`
+	NilAway     bool     `json:"nilaway"`
 }
 
 type gonErrorInfo struct {

@@ -46,12 +46,12 @@ type gonCase struct {
 	Fix     string `json:"fix"`
 }
 
-// gonErrorHandlingCases are the diagnostics of postfix ! and "or name { }".
+// gonErrorHandlingCases are diagnostics of postfix !, local handlers and error context.
 // They mirror the messages of types2 and go/types.
 var gonErrorHandlingCases = []gonCase{
 	{"error handling requires a function or method call",
-		"The legacy error-return protocol requires a function call. Canonical Result values also support ! and or handlers.",
-		"Call a function returning error last, or use a canonical Result value with an explicit handler or compatible Result return type."},
+		"The error-return protocol requires a function call.",
+		"Call a function returning error last."},
 	{"error handling is only permitted inside a function",
 		"! and or handlers need an enclosing function, for example not in a package-level var.",
 		"Move the call into a function, such as init or a helper returning error."},
@@ -59,17 +59,16 @@ var gonErrorHandlingCases = []gonCase{
 		"The called function's last result must have exactly type error (an alias is accepted). " +
 			"Named interfaces, concrete error types, type parameters and non-final errors do not qualify.",
 		"Keep the explicit form: v, err := f(); if err != nil { ... }."},
-	{"error propagation requires an enclosing function with a final result of type error, exactly one Result, or, in a _test.go file, a first named parameter of type *testing.T, *testing.B, *testing.F or testing.TB",
+	{"error propagation requires an enclosing function with a final result of type error or, in a _test.go file, a first named parameter of type *testing.T, *testing.B, *testing.F or testing.TB",
 		"Postfix ! on a Go error tuple returns from the nearest enclosing function literal, lambda or declaration. That function must return error last, " +
-			"return exactly one Result, or be a test function: in a _test.go file, a function that does not qualify otherwise and whose first parameter is named " +
+			"or be a test function: in a _test.go file, a function that does not qualify otherwise and whose first parameter is named " +
 			"(not blank) with type *testing.T, *testing.B, *testing.F or testing.TB reports the failure with Fatal, at the line of the !, and then returns zero values. " +
 			"Method receivers are not parameters.",
 		"Handle the error locally with 'or err { ... }', or make the function a test function: name its first parameter and use the standard testing type. " +
-			"Adding an error or Result result changes the function's contract; review its callers before choosing that design alternative."},
-	{"error propagation into a Result requires error to be assignable to its error type",
-		"Inside a function returning exactly one Result[T, E], ! on a Go error tuple fails as Result[T, E].Err(err), converting the error to E. " +
-			"The error type must therefore be assignable to E, for example error, any or an interface that error implements.",
-		"Return Result[T, error], or handle the error with 'or err { return .Err(convert(err)) }'."},
+			"Adding an error result changes the function's contract; review its callers before choosing that design alternative."},
+	{"error context requires an explicit error binding",
+		"A one-line error context names the error before transforming it. The transformation runs only on failure.",
+		"Write call() or err => expr, where expr is assignable to error; the enclosing function must permit postfix !."},
 	{"error handler requires an explicit error binding",
 		"An or handler must name the error it receives.",
 		"Write 'call() or err { ... }'; the binding may be left unused."},
@@ -120,9 +119,9 @@ func (r *gonRequest) explain(ctx context.Context) (gonResult, error) {
 			if c.name == "InvalidNilSafety" {
 				ex.Cases = []gonCase{
 					{"cannot be nil; use ?? to provide a value when it is absent", "A safe-navigation chain may stop before producing a result whose type has no nil value.", "Consume the chain with ?? and supply a default."},
-					{"safe navigation requires a pointer or interface", "?. guards pointer or interface operands; ?( guards a function value. Canonical Option checks Some/None and wraps the final result in Option.", "Use the guard corresponding to the operand, or explicit nil checks."},
-					{"absence propagation requires an enclosing function returning exactly one Option", "Postfix ? returns None from the nearest compatible function. Some(nil) and Some(zero) remain present.", "Return exactly Option[U], or handle None with ?? or exhaustive matching."},
-					{"mixed Option and nil navigation requires an explicit boundary", "The first implementation keeps Option presence and Go nil guards in separate chains.", "Extract or coalesce the Option payload, then start a separate nil-navigation chain."},
+					{"safe navigation requires a pointer, interface or function", "?. guards pointer or interface operands; ?( guards a function value. Native optionals guard presence and wrap the final result in an optional.", "Use the guard corresponding to the operand, or explicit nil checks."},
+					{"absence propagation requires an enclosing function returning exactly one optional", "Postfix ? returns absence from the nearest compatible function. Present typed nil and zero payloads remain present.", "Return one U? result, or handle absence with ?? or exhaustive matching."},
+					{"mixed optional and nil navigation requires an explicit boundary", "Optional presence and Go nil guards need an explicit boundary where their chains mix.", "Extract or coalesce the optional payload, then start a separate nil-navigation chain."},
 				}
 				if doc := filepath.Join(root, "design", "null-safety", "README.md"); gonExists(doc) {
 					ex.References = append(ex.References, doc)
@@ -130,6 +129,9 @@ func (r *gonRequest) explain(ctx context.Context) (gonResult, error) {
 			}
 			if c.name == "InvalidMatch" {
 				ex.Cases = []gonCase{
+					{"match alternatives must bind the same names with identical types", "Every pattern sharing an arm writes the same binding variables. The guard runs once after the first successful alternative.", "Use matching binding names and types across alternatives, or split the arm."},
+					{"pattern test bindings require an if condition or a top-level && operand of that condition", "Bindings from x is P are visible to later top-level && operands and the then body, and are absent from else.", "Move the test to the if condition or a top-level && operand, or use a binding-free pattern."},
+					{"pattern test must not use a pattern that always matches", "A pattern test must distinguish at least two cases; a wildcard or irrefutable binding does not test anything.", "Use a presence, literal or variant pattern that can fail."},
 					{"non-exhaustive match", "Every alternative and nested payload case needs coverage. Guards do not establish complete coverage.", "Add the missing patterns, an irrefutable payload binding, or an explicit default/_ arm."},
 					{"record pattern must list every field or explicitly ignore the rest with ...", "Record variants use named fields and explicit rest patterns.", "List the remaining accessible fields or add ... to ignore the remainder."},
 					{"unreachable match arm", "An earlier unguarded pattern already covers every value in this arm.", "Remove the arm or make its earlier covering pattern more specific."},
@@ -141,18 +143,15 @@ func (r *gonRequest) explain(ctx context.Context) (gonResult, error) {
 					ex.References = append(ex.References, doc)
 				}
 			}
+			if c.name == "InvalidInterpolation" {
+				ex.Cases = []gonCase{
+					{`string interpolation requires an explicit import of "fmt" in this file`, "Interpolation formats its operands with fmt.Sprintf; its dependency is resolved from the file's import path even with an alias or a shadowed fmt name.", `Add import "fmt" in this file; the editor offers an import quick fix.`},
+					{"interpolation format must be one fmt verb consuming one operand (without * or %%)", "Each ${expression:verb} contributes exactly one operand in written order.", "Use one fmt verb such as %v, %q or %.2f; remove * widths and %% from the verb."},
+				}
+			}
+
 			if c.name == "InvalidErrorHandling" {
-				ex.Cases = append(append([]gonCase(nil), gonErrorHandlingCases...),
-					gonCase{"Result propagation requires exactly one enclosing Result with an assignable error type, a final result of type error, or, in a _test.go file, a first named parameter of type *testing.T, *testing.B, *testing.F or testing.TB",
-						"Result ! propagates Err by its variant, including Err(nil), to the nearest function returning exactly one Result with an assignable error type, " +
-							"to a function whose last result is error when the payload is assignable to error, or, in a test function (see the previous case), to Fatal.",
-						"Return exactly Result[U,F] with the source error assignable to F, return error last, name a first *testing.T, *testing.B, *testing.F or testing.TB parameter in a _test.go file, or handle it explicitly with or problem { ... }."},
-					gonCase{"Result propagation into a final result of type error requires an error type assignable to error",
-						"Inside a function returning error last, ! on a Result returns the payload as the error, with zero values for the other results. " +
-							"A nil payload is still a failure: it is returned as errors.ErrNilResult, never as a nil error. " +
-							"The payload type must be assignable to error; a typed nil pointer payload stays a non-nil error, as in Go.",
-						"Use a Result whose error type is error or implements it, or handle the payload with 'or problem { return ..., convert(problem) }'."},
-					gonCase{"Result error handler must terminate", "Result has one success payload even when its type is struct{}.", "End every handler path with return, panic, or another terminating statement."})
+				ex.Cases = append([]gonCase(nil), gonErrorHandlingCases...)
 				if doc := filepath.Join(root, "design", "error-handling", "README.md"); gonExists(doc) {
 					ex.References = append(ex.References, doc)
 				}

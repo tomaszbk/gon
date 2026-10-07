@@ -13,7 +13,10 @@ import (
 func TestGonAlternativesReplacement(t *testing.T) {
 	f, err := parser.ParseFile(token.NewFileSet(), "p.go", `package p
 type E enum { default Empty; Value(int); Record { Number int } }
-func f(e E) int { return switch e { case E.Empty => 0; case E.Value(n) if n>0 => n; case E.Value(_) => 0; case E.Record{Number:n,...} => n } }
+func f(e E) int { return switch e { case E.Empty, E.Value(0) => 0; case E.Value(n) if n>0 => n; case E.Value(_) => 0; case E.Record{Number:n,...} => n } }
+func pattern(e E) bool { return e is E.Empty }
+func interpolate() string { return $"literal ${1:%d}" }
+func context() error { f() or err => wrap(err); return nil }
 func g(e E) { switch e { case _ => { f(first:e,second:e) } }; _=option?; var o int? = (int)(1); o = nil }
 `, parser.SkipObjectResolution)
 	if err != nil {

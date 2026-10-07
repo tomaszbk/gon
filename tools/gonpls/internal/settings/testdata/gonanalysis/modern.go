@@ -1,5 +1,7 @@
 package gonanalysis
 
+import "fmt"
+
 func read(v int) (int, error)   { return v, nil }
 func flag(v bool) (bool, error) { return v, nil }
 func flush() error              { return nil }
@@ -40,4 +42,16 @@ func Modern(c bool, xs []int, m map[int][]int) (int, error) {
 		return c
 	}
 	return f()!, nil
+}
+
+func Interpolation(n int) string {
+	return $"value=${n:%d}, nested=${$"${n}"}"
+}
+func Context() (int, error) { return read(1) or err => err, nil }
+
+func PatternTest(value int?) int {
+	if value is number? && number > 0 {
+		return number
+	}
+	return 0
 }

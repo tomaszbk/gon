@@ -15,10 +15,6 @@ func TestGonEffects(t *testing.T) {
 		effects bool
 	}{
 		{"if c { 1 } else { 2 }", false},
-		{".Some(1)", false},
-		{".Some(f())", true},
-		{".Ok(f()!)", true},
-		{".None", false},
 		{"if c { f() } else { 2 }", true},
 		{"if c { 1 } else { f() }", true},
 		{"f()!", true},

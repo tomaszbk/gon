@@ -217,6 +217,8 @@ func needsParens(parentNode ast.Node, old, new ast.Expr) bool {
 			return token.UnaryPrec
 		case *ast.BinaryExpr:
 			return n.Op.Precedence()
+		case *ast.PatternTestExpr:
+			return token.EQL.Precedence()
 		}
 		return -1
 	}

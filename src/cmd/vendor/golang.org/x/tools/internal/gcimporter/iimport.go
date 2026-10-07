@@ -74,7 +74,7 @@ const (
 	unionType
 	aliasType
 	enumType
-	canonicalEnumType
+	_ // reserved: retired canonical enum encoding
 	optionalType
 	stringEnumType
 )
@@ -912,12 +912,6 @@ func (r *importReader) doType(base *types.Named) (res types.Type) {
 
 	case optionalType:
 		return types.NewOptional(r.typ())
-	case canonicalEnumType:
-		name := r.string()
-		if name != "Result" {
-			panic("invalid canonical enum in indexed export data")
-		}
-		return types.Universe.Lookup(name).Type()
 	case enumType, stringEnumType:
 		stringEnum := k == stringEnumType
 		variants := make([]*types.EnumVariant, r.uint64())

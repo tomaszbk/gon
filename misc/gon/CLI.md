@@ -43,8 +43,7 @@ and still includes the upstream Go modernizers. Its flags and exit status follow
 `gon help fix`, independently of the semantic-command schema below.
 
 The recognized patterns include call results followed by a fresh error check
-(`!` for equivalent zero-value error returns, for `return .Err(err)` in a
-function returning one Result, and for an exact `<first param>.Fatal(err)` in a
+(`!` for equivalent zero-value error returns and an exact `<first param>.Fatal(err)` in a
 qualifying test function; otherwise `or err { ... }`),
 simple return/assignment branches (conditional expressions), nil defaults and
 guards (`??=`, `??`, `?.`, `?(`), and function literals with known contextual
@@ -53,7 +52,7 @@ signatures (lambdas).
 Conversions are deliberately conservative. They decline cases that would lose
 partial results, remove a still-used error binding, alter evaluation or typing,
 or discard comments or required imports. They do not automatically convert
-qualified Result constructors to contextual forms, introduce `T?`, lift
+introduce `T?`, lift
 payloads into optionals, or rewrite enums and matching. These constructs are
 implemented, but no automatic modernization analyzer is supplied for them.
 The absence of a suggestion does not mean a manual rewrite is impossible.
@@ -63,14 +62,6 @@ newly exposed source shapes may also need a manual rewrite.
 
 `T?` is a native optional type. `case value?` extracts presence and `case nil`
 matches absence. Typed nil remains present; nested layers never flatten.
-Contextual `.Ok/.Err` require a fully known Result target. Ordinary named results
-such as `(port Result[int?, error])` remain Go result variables.
-
-`gon refactor optionals --dry-run ./...` previews migration of retired optional
-syntax. `--json` emits a revision-checked plan for `gon refactor apply`.
-Migration checks source using gonpls, preserves user-defined homonyms, and
-retains typed nil and nested layers. Normal checking rejects retired constructs.
-
 Semantic output spells optionals with `T?`, including imported types. Type
 queries identify `optional-type`, `optional-propagation` and
 `optional-coalescing`. Source inlining and extraction conservatively decline
@@ -87,7 +78,7 @@ A **target** is a position or a symbol:
   bytes, as in compiler diagnostics. `file.go:#offset` is a 0-based byte offset.
   Positions address anything, including local variables, handler bindings,
   function literals, the `!` or `or` of a Gon error-handling construct, the `?`
-  of an optional type, and the leading dot of a contextual constructor.
+  of an optional type, a pattern test or an embedded interpolation expression.
 - A symbol: `Name`, `Type.Method` or `Type.Field` in the package of the
   current directory; `pkg.Name` for a package imported there; `./dir.Name`
   (or `../dir`, or an absolute directory); or an import path such as
@@ -101,7 +92,14 @@ limit) and `--offset n` page through the items of each target.
 Common semantic flags: `--json` and `--tags a,b` (build tags of the analyzed
 configuration). `gon check` also accepts `--severity`
 (`error`, `warning` (default), `info`, `hint`), `--category`
-(`language`, `analysis`, `all`), `--code`, `--staticcheck` and paging flags.
+(`language`, `analysis`, `all`), `--code`, `--staticcheck`, `--nilaway` and paging flags. NilAway is opt-in and
+reports warnings. Enable the same analyzer in VS Code with:
+
+```json
+{
+  "gon.serverSettings": { "nilaway": true }
+}
+```
 
 ## Exit status
 
@@ -146,13 +144,11 @@ kind, package and signature, `hover` documentation for definitions,
 `container` for symbols); `truncated` (`omitted`, `nextOffset`) when paged; and
 `error` for a target that failed. `query type` returns `type` with the
 expression, type, underlying type, mode, constant value and a Gon `construct`
-when relevant: `enum-type`, `match-expression`, `error-propagation`,
-`error-handler`, `result-propagation`, `result-handler`, `conditional-expression`,
-`lambda`, `option-propagation`, `option-type` for `T?`, `contextual-constructor`
-for leading-dot construction, `nil-guard`, `option-guard`, `safe-navigation`,
-`nil-coalescing`, or `option-coalescing`. It does not name the sub-kinds of
-`!` (test `Fatal`, tuple to Result, Result to error), and `gon query refs
-Result` reports references to the predeclared type as unsupported.
+when relevant: `enum-type`, `match-expression`, `pattern-test`,
+`error-propagation`, `test-error-propagation`, `error-handler`, `error-context`,
+`conditional-expression`, `lambda`, `optional-propagation`, `optional-type`,
+`nil-guard`, `option-guard`, `safe-navigation`, `nil-coalescing`,
+`optional-coalescing` and `string-interpolation`.
 
 **`check`** returns `patterns`, `packages`, `verified` (`parse`,
 `type-check`, `analysis`), `analyzers` (names), `notVerified` (for example

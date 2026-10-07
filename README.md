@@ -22,7 +22,7 @@ existing Go APIs. Choose Gon per project, alongside your normal Go installation.
 
 ## See the difference
 
-Four everyday situations show all nine additions. Each Go/Gon pair is compiled
+Four everyday situations show the core additions. Each Go/Gon pair is compiled
 and executed against the same assertions, including failure and absence cases.
 
 ### Keep the successful path in view
@@ -44,6 +44,7 @@ func loadConfig(path string) (Config, error) {
 	}
 	return config, nil
 }
+
 ```
 
 **Gon**
@@ -51,18 +52,17 @@ func loadConfig(path string) (Config, error) {
 <!-- readme-example: error-context modern -->
 ```go
 func loadConfig(path string) (Config, error) {
-	data := os.ReadFile(path) or err {
-		return Config{}, fmt.Errorf("read config %q: %w", path, err)
-	}
+	data := os.ReadFile(path) or err => fmt.Errorf("read config %q: %w", path, err)
 	config := parseConfig(data)!
 	return config, nil
 }
+
 ```
 
 `!` returns early on failure; `or err { ... }` lets you handle the error yourself.
-Both work with existing Go error-returning APIs. `!` also works in test functions,
-where it calls `t.Fatal(err)` at that line, and between Go error tuples and
-`Result` in either direction.
+Both work with existing Go error-returning APIs. `or err => expression` adds
+context and propagates the resulting error. `!` also works in qualifying test
+functions, where it calls `t.Fatal(err)` at that line.
 
 ### Short callbacks, optional access and readable calls
 
@@ -88,6 +88,7 @@ func userList(users []User, owner *User) string {
 	}
 	return formatList(title, len(users), unit)
 }
+
 ```
 
 **Gon**
@@ -100,6 +101,7 @@ func userList(users []User, owner *User) string {
 	unit := if len(users) == 1 { "user" } else { "users" }
 	return formatList(title: title, count: len(users), unit: unit)
 }
+
 ```
 
 The callback gets its types from context. `?.` guards a nil owner, `??` supplies
@@ -142,6 +144,7 @@ func describePayment(payment Payment) string {
 		panic("invalid payment state")
 	}
 }
+
 ```
 
 **Gon**
@@ -161,6 +164,7 @@ func describePayment(payment Payment) string {
 	case Payment.Rejected(reason) => "rejected: " + reason
 	}
 }
+
 ```
 
 Gon checks the new match for exhaustive coverage. Add a state, and the compiler
@@ -189,7 +193,7 @@ each arm searches the wrapped-error tree like `errors.AsType`, so
 
 ### A missing value is different from a failed operation
 
-**Optional values (`T?`) · Result.** Read an optional port number: empty input means no setting;
+**Optional values (`T?`) · error returns.** Read an optional port number: empty input means no setting;
 non-numeric input means parsing failed. A present zero is still a value.
 
 **Go**
@@ -217,20 +221,19 @@ func portLabel(text string) string {
 	}
 	return strconv.Itoa(port)
 }
+
 ```
 
 **Gon**
 
 <!-- readme-example: optional-port modern -->
 ```go
-func parsePort(text string) (port Result[int?, error]) {
+func parsePort(text string) (port int?, err error) {
 	if text == "" {
-		return .Ok(nil)
+		return nil, nil
 	}
-	number := strconv.Atoi(text) or err {
-		return .Err(err)
-	}
-	return .Ok(number)
+	number := strconv.Atoi(text)!
+	return number, nil
 }
 
 func portLabel(text string) string {
@@ -239,24 +242,23 @@ func portLabel(text string) string {
 	}
 	return strconv.Itoa(port ?? 8080)
 }
+
 ```
 
 `int?` means an optional integer: `nil` is absent, while an integer, including
-zero, is present. `Result[int?, error]` adds success or failure around that
-optional value. `.Ok(nil)` succeeds without a setting, `.Ok(number)` succeeds
-with the parsed number, and `.Err(err)` reports failure. The named result `port`
-supplies the type for these constructors.
+zero, is present. The ordinary `(int?, error)` return keeps absence and failure
+separate: `(nil, nil)` has no setting, `(number, nil)` has one, and an error
+reports a failed parse.
 
-| Input | Gon result | Display |
+| Input | Gon return | Display |
 | --- | --- | --- |
-| `"443"` | `.Ok(443)` — present setting | `"443"` |
-| `""` | `.Ok(nil)` — absent setting | `"8080"` |
-| `"0"` | `.Ok(0)` — present zero | `"0"` |
-| `"abc"` | `.Err(err)` — parsing failed | `"invalid port"` |
+| `"443"` | `443, nil` | `"443"` |
+| `""` | `nil, nil` | `"8080"` |
+| `"0"` | `0, nil` | `"0"` |
+| `"abc"` | `nil, err` | `"invalid port"` |
 
-`or` handles failure; `??` defaults only on absence. Result is a choice for
-an API: existing `(value, error)` functions still work, including useful partial
-results alongside errors.
+`or` handles failure; `??` defaults only on absence. Existing Go error returns
+also retain useful partial results when callers handle them explicitly.
 
 `T?` is the native optional type. Match presence with `case value?` and absence
 with `case nil`. A typed nil can be present; nested optionals retain their
@@ -339,7 +341,7 @@ Build Gon once and keep its toolchain directory in place.
    ```
 
    `fix` covers supported error handling, conditional expressions, nil operators
-   and lambdas. Introduce optional values, Result and enums where your APIs need
+   and lambdas. Introduce optional values and enums where your APIs need
    them; existing Go error-returning APIs already work with `!` and `or`.
 
 5. **Use the same toolchain in CI and on teammates' machines.** Provision Gon
@@ -357,8 +359,8 @@ expose the same semantic engine to scripts and agents.
 [Current implementation status](misc/gon/STATUS.md) and
 [validation evidence](misc/gon/VALIDATION.md) are maintained in place.
 
-**In development for Gon 2.27, the first stable release.** All nine native
-feature cores are implemented. See the [validation record](misc/gon/VALIDATION.md)
+**In development for Gon 2.27, the first stable release.** The eight original features and accepted 2.27 additions are implemented in
+the native compiler and maintained tools. See the [validation record](misc/gon/VALIDATION.md)
 for executed checks and platforms, and the [supported tooling limits](misc/gon/features.json).
 
 Gon 2.27 preserves existing **Go 1.27+** source and behavior, with one accepted
@@ -369,7 +371,7 @@ without replacing or globally shadowing one another.
 
 ## Performance, measured
 
-The [24-workload benchmark suite](misc/gon/benchmarks/README.md) compares
+The [22-workload benchmark suite](misc/gon/benchmarks/README.md) compares
 unmodified Go 1.27.1, Gon running legacy Go, and Gon running equivalent modern
 code with native optionals on Apple M4 / darwin/arm64. Compiler optimizations
 remove redundant presence loads, intermediate tags and unused register values.
@@ -379,7 +381,7 @@ All three variants pass the same 16 correctness tests with identical observable
 output. The current report includes every workload, heap allocations, storage
 sizes and build costs, including increases. Go/Gon base revisions differ;
 modern versus legacy Gon isolates syntax on the same toolchain.
-[Full measurements, raw samples and limits →](misc/gon/benchmarks/results/20261004T013816Z/report.md)
+[Measurements, raw samples and limits →](misc/gon/benchmarks/results/20261007T033706Z/report.md)
 
 ## Upstream and license
 

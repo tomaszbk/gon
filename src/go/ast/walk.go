@@ -67,6 +67,10 @@ func walkChildren(v Visitor, node Node) {
 		walkList(v, n.List)
 
 	// Expressions
+	case *InterpolatedStringExpr:
+		walkList(v, n.Parts)
+	case *InterpolationPart:
+		if n.Expr != nil { Walk(v,n.Expr) }
 	case *BadExpr, *Ident, *BasicLit:
 		// nothing to do
 
@@ -136,6 +140,10 @@ func walkChildren(v Visitor, node Node) {
 			Walk(v, n.Body)
 		}
 
+		if n.Context != nil {
+			Walk(v, n.Context)
+		}
+
 	case *LambdaExpr:
 		walkList(v, n.Params)
 		if n.Body != nil {
@@ -150,10 +158,6 @@ func walkChildren(v Visitor, node Node) {
 
 	case *SafeNavExpr:
 		Walk(v, n.X)
-
-	case *ContextualVariantExpr:
-		Walk(v, n.Name)
-		walkList(v, n.Args)
 
 	case *OptionalExpr:
 		Walk(v, n.X)
@@ -182,13 +186,14 @@ func walkChildren(v Visitor, node Node) {
 		}
 		walkList(v, n.Arms)
 
+	case *PatternTestExpr:
+		Walk(v, n.X)
+		Walk(v, n.Pattern)
 	case *MatchStmt:
 		Walk(v, n.Match)
 
 	case *MatchArm:
-		if n.Pattern != nil {
-			Walk(v, n.Pattern)
-		}
+		walkList(v, n.Patterns)
 		if n.Guard != nil {
 			Walk(v, n.Guard)
 		}

@@ -34,17 +34,6 @@ type optional[T any] struct {
 
 func some[T any](v T) optional[T] { return optional[T]{present: true, value: v} }
 
-type result[T any, E any] struct {
-	failed  bool
-	value   T
-	problem E
-}
-
-func ok[T any, E any](v T) result[T, E] { return result[T, E]{value: v} }
-func failed[T any, E any](problem E) result[T, E] {
-	return result[T, E]{failed: true, problem: problem}
-}
-
 func main() {
 	var color Color
 	assert(color == red() && color != green(), "stable default")
@@ -59,8 +48,6 @@ func main() {
 	var none optional[int]
 	assert(none == (optional[int]{}) && none != some(0), "Some zero is present")
 	assert(some[*int](nil) != (optional[*int]{}), "Some nil is present")
-	var outcome result[int, error]
-	assert(outcome == ok[int, error](0) && outcome != failed[int, error](nil), "Result zero and Err nil")
 	n := 42
 	value := pointer(&n)
 	copied := value

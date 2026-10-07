@@ -135,6 +135,7 @@ func BuildPackage(tc *types.Config, fset *token.FileSet, pkg *types.Package, fil
 	info := &types.Info{
 		Types:               make(map[ast.Expr]types.TypeAndValue),
 		OptionalConversions: make(map[ast.Expr]types.Type),
+		Interpolations:      make(map[*ast.InterpolatedStringExpr]*ast.CallExpr),
 		Defs:                make(map[*ast.Ident]types.Object),
 		Uses:                make(map[*ast.Ident]types.Object),
 		Implicits:           make(map[ast.Node]types.Object),

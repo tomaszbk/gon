@@ -120,6 +120,8 @@ var depsRules = `
 	< iter
 	< maps, slices;
 
+	iter < gon/seq;
+
 	internal/oserror, maps, slices
 	< RUNTIME;
 

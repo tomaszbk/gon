@@ -226,6 +226,14 @@ func (d *deadState) findDead(stmt ast.Stmt) {
 		}
 	}
 
+	if n, ok := stmt.(*ast.IfStmt); ok && n.Init != nil {
+		d.findDead(n.Init)
+	}
+	if n, ok := stmt.(*ast.ForStmt); ok && n.Init != nil {
+		d.findDead(n.Init)
+	}
+	d.findExpressionDead(stmt)
+
 	switch x := stmt.(type) {
 	default:
 		log.Fatalf("%s: internal error in findDead: unexpected statement %T", d.pass.Fset.Position(x.Pos()), x)
@@ -364,6 +372,9 @@ func (d *deadState) findExpressionLabels(n ast.Node) {
 			return false
 		case *ast.ErrorExpr:
 			d.findExpressionLabels(n.X)
+			if n.Context != nil {
+				d.findExpressionLabels(n.Context)
+			}
 			if n.Body != nil {
 				d.findLabels(n.Body)
 			}
@@ -379,6 +390,53 @@ func (d *deadState) findExpressionLabels(n ast.Node) {
 				}
 				if a.Body != nil {
 					d.findLabels(a.Body)
+				}
+			}
+			return false
+		}
+		return true
+	})
+}
+
+// findExpressionDead checks statement bodies embedded in expressions. A local
+// handler runs only on failure, so its terminating paths do not terminate the
+// enclosing statement's successful path. Nested functions are checked by run.
+func (d *deadState) findExpressionDead(root ast.Node) {
+	ast.Inspect(root, func(n ast.Node) bool {
+		if n != root {
+			if _, stmt := n.(ast.Stmt); stmt {
+				return false
+			}
+		}
+		switch n := n.(type) {
+		case *ast.FuncLit, *ast.LambdaExpr:
+			return false
+		case *ast.ErrorExpr:
+			d.findExpressionDead(n.X)
+			if n.Context != nil {
+				d.findExpressionDead(n.Context)
+			}
+			if n.Body != nil {
+				reachable := d.reachable
+				d.reachable = true
+				d.findDead(n.Body)
+				d.reachable = reachable
+			}
+			return false
+		case *ast.MatchExpr:
+			d.findExpressionDead(n.Tag)
+			for _, arm := range n.Arms {
+				if arm.Guard != nil {
+					d.findExpressionDead(arm.Guard)
+				}
+				if arm.Value != nil {
+					d.findExpressionDead(arm.Value)
+				}
+				if arm.Body != nil {
+					reachable := d.reachable
+					d.reachable = true
+					d.findDead(arm.Body)
+					d.reachable = reachable
 				}
 			}
 			return false

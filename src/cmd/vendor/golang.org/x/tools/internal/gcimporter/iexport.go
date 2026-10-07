@@ -1044,11 +1044,6 @@ func (w *exportWriter) doTyp(t types.Type, pkg *types.Package) {
 			w.typ(t.Origin(), pkg)
 			return
 		}
-		if types.IsCanonicalResult(t) {
-			w.startType(canonicalEnumType)
-			w.string(t.Obj().Name())
-			return
-		}
 		w.startType(definedType)
 		w.qualifiedType(t.Obj())
 

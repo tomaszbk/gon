@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestPairedCgoOptionResult(t *testing.T) {
+func TestPairedCgoOptionTuple(t *testing.T) {
 	testenv.MustHaveGoRun(t)
 	testenv.MustHaveCGO(t)
 	baseline := os.Getenv("GON_BASELINE_GO")

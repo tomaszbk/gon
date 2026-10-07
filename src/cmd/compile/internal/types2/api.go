@@ -102,10 +102,6 @@ type ImporterFrom interface {
 // A Config specifies the configuration for type checking.
 // The zero value for Config is a ready-to-use default configuration.
 type Config struct {
-	// MigrateOptionals permits retired Option constructors for migration analysis only.
-	// It does not change Universe and must not be enabled for ordinary checking.
-	MigrateOptionals bool
-
 	// Context is the context used for resolving global identifiers. If nil, the
 	// type checker will initialize this field with a newly created context.
 	Context *Context

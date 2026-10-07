@@ -7,15 +7,14 @@ import "strings"
 type propagationTarget int
 
 const (
-	noPropagation     propagationTarget = iota
-	propagateToError                    // the last result is exactly error
-	propagateToResult                   // the only result is a canonical Result
-	propagateToTest                     // a test function reports the failure with Fatal
+	noPropagation    propagationTarget = iota
+	propagateToError                   // the last result is exactly error
+	propagateToTest                    // a test function reports the failure with Fatal
 )
 
 // propagationTarget reports the target of postfix ! in a function with
-// signature sig. A function that already returns error last or exactly one
-// Result never uses the test-function rule. The test-function rule needs a
+// signature sig. A function that already returns error last never uses the
+// test-function rule. The test-function rule needs a
 // _test.go file at the position at, and a named first parameter of type
 // *testing.T, *testing.B, *testing.F or testing.TB.
 func (check *Checker) propagationTarget(sig *Signature, at positioner) propagationTarget {
@@ -25,9 +24,6 @@ func (check *Checker) propagationTarget(sig *Signature, at positioner) propagati
 	n := sig.results.Len()
 	if n > 0 && Identical(sig.results.At(n-1).typ, universeError) {
 		return propagateToError
-	}
-	if n == 1 && IsCanonicalResult(sig.results.At(0).typ) {
-		return propagateToResult
 	}
 	if check.fset != nil && strings.HasSuffix(check.fset.PositionFor(at.Pos(), false).Filename, "_test.go") && TestFatalParam(sig) != nil {
 		return propagateToTest
@@ -70,20 +66,14 @@ func testingParam(sig *Signature) *Var {
 // with signature sig reports a failure, or nil. That is the first parameter,
 // when it is named, not blank and has type *testing.T, *testing.B, *testing.F
 // or testing.TB from the standard testing package, and the function does not
-// qualify for ordinary propagation: it neither returns error last nor exactly
-// one Result. The rule applies only in _test.go files, which the caller checks.
+// return error last. The rule applies only in _test.go files, which the caller
+// checks.
 func TestFatalParam(sig *Signature) *Var {
 	if sig == nil {
 		return nil
 	}
-	if n := sig.results.Len(); n > 0 && Identical(sig.results.At(n-1).typ, universeError) ||
-		n == 1 && IsCanonicalResult(sig.results.At(0).typ) {
+	if n := sig.results.Len(); n > 0 && Identical(sig.results.At(n-1).typ, universeError) {
 		return nil
 	}
 	return testingParam(sig)
-}
-
-// enclosingResultError returns the error type of the Result returned by sig.
-func enclosingResultError(sig *Signature) Type {
-	return canonicalPayload(sig.results.At(0).typ, "Err")
 }

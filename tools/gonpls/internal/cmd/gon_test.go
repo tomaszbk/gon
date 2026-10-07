@@ -529,7 +529,7 @@ func TestGonExplain(t *testing.T) {
 	}
 	gonJSON(t, tree, nil, &ex, "explain", "InvalidErrorHandling", "ErrorCode(10000)", "UndeclaredName", "unusedwrite", "SA4006").checkCode(0)
 	e := ex.Explanations
-	if e[0].Kind != "type-error" || e[0].Number == nil || *e[0].Number != 10000 || len(e[0].Cases) != 12 || len(e[0].References) != 1 ||
+	if e[0].Kind != "type-error" || e[0].Number == nil || *e[0].Number != 10000 || len(e[0].Cases) != 9 || len(e[0].References) != 1 ||
 		e[1].Code != "InvalidErrorHandling" || e[2].Kind != "type-error" ||
 		e[3].Kind != "analyzer" || e[3].DefaultEnabled == nil || e[4].Kind != "analyzer" {
 		t.Errorf("explanations: %+v", ex)

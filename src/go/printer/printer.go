@@ -71,11 +71,14 @@ type printer struct {
 	// white space). If there's a difference and SourcePos is set in
 	// ConfigMode, //line directives are used in the output to restore
 	// original source positions for a reader.
-	pos          token.Position // current position in AST (source) space
-	out          token.Position // current position in output space
-	last         token.Position // value of pos after calling writeString
-	linePtr      *int           // if set, record out.Line for the next token in *linePtr
-	sourcePosErr error          // if non-nil, the first error emitting a //line directive
+	pos                  token.Position // current position in AST (source) space
+	out                  token.Position // current position in output space
+	last                 token.Position // value of pos after calling writeString
+	linePtr              *int           // if set, record out.Line for the next token in *linePtr
+	inInterpolationText  bool           // do not indent literal text at its own line beginnings
+	inInterpolationExpr  bool           // expressions inside ${} require explicit list separators
+	compactInterpolation bool           // quoted interpolation expressions cannot contain layout newlines
+	sourcePosErr         error          // if non-nil, the first error emitting a //line directive
 
 	// The list of all source comments, in order of appearance.
 	comments        []*ast.CommentGroup // may be nil
@@ -144,7 +147,7 @@ func (p *printer) nextComment() {
 // before the next position in the source code and printing it does
 // not introduce implicit semicolons.
 func (p *printer) commentBefore(next token.Position) bool {
-	return p.commentOffset < next.Offset && (!p.impliedSemi || !p.commentNewline)
+	return p.commentOffset < next.Offset && (p.inInterpolationExpr || !p.impliedSemi || !p.commentNewline)
 }
 
 // commentSizeBefore returns the estimated size of the
@@ -251,13 +254,22 @@ func (p *printer) writeByte(ch byte, n int) {
 	}
 
 	for i := 0; i < n; i++ {
-		p.output = append(p.output, ch)
+		if p.compactInterpolation && (ch == '\n' || ch == '\f') {
+			p.output = append(p.output, ' ')
+		} else {
+			p.output = append(p.output, ch)
+		}
 	}
 
 	// update positions
 	p.pos.Offset += n
 	if ch == '\n' || ch == '\f' {
 		p.pos.Line += n
+		if p.compactInterpolation {
+			p.pos.Column = 1
+			p.out.Column += n
+			return
+		}
 		p.out.Line += n
 		p.pos.Column = 1
 		p.out.Column = 1
@@ -278,7 +290,7 @@ func (p *printer) writeByte(ch byte, n int) {
 // avoids processing extra escape characters and reduces run time of the
 // printer benchmark by up to 10%.
 func (p *printer) writeString(pos token.Position, s string, isLit bool) {
-	if p.out.Column == 1 {
+	if p.out.Column == 1 && !p.inInterpolationText {
 		if p.Config.Mode&SourcePos != 0 {
 			p.writeLineDirective(pos)
 		}
@@ -789,7 +801,7 @@ func (p *printer) intersperseComments(next token.Position, tok token.Token) (wro
 		// use that information to decide more directly.
 		needsLinebreak := false
 		if p.mode&noExtraBlank == 0 &&
-			last.Text[1] == '*' && p.lineFor(last.Pos()) == next.Line &&
+			last.Text[1] == '*' && (p.lineFor(last.Pos()) == next.Line || p.inInterpolationExpr) &&
 			tok != token.COMMA &&
 			(tok != token.RPAREN || p.prevOpen == token.LPAREN) &&
 			(tok != token.RBRACK || p.prevOpen == token.LBRACK) {

@@ -7,16 +7,16 @@ type item struct{ N int }
 var calls int
 
 func next() int { calls++; return calls }
-func port(empty bool) Result[int?, string] {
+func port(empty bool) int? {
 	if empty {
-		return .Ok(nil)
+		return nil
 	}
-	return .Ok(next())
+	return next()
 }
 func main() {
 	p := port(true)
 	switch p {
-	case Result[int?, string].Ok(nil) => {
+	case nil => {
 	}
 	default => {
 		panic("absence")
@@ -27,7 +27,7 @@ func main() {
 	}
 	p = port(false)
 	switch p {
-	case Result[int?, string].Ok(n?) if n == 1 => {
+	case n? if n == 1 => {
 	}
 	default => {
 		panic("single evaluation")
@@ -64,14 +64,6 @@ func main() {
 	}
 	if calls != 2 {
 		panic("nested effects")
-	}
-	var bad Result[int, string] = .Err("bad")
-	switch bad {
-	case Result[int, string].Err(problem) if problem == "bad" => {
-	}
-	default => {
-		panic("failure")
-	}
 	}
 	var boxed item? = item{N: next()}
 	switch boxed {

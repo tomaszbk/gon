@@ -685,16 +685,16 @@ func (b *builder) expr0(fn *Function, e ast.Expr, tv types.TypeAndValue) Value {
 		}
 	}
 	switch e := e.(type) {
+	case *ast.PatternTestExpr:
+		return b.patternTest(fn, e)
+	case *ast.InterpolatedStringExpr:
+		call := fn.info.Interpolations[e]
+		if call == nil {
+			panic("missing typed interpolation call")
+		}
+		return b.expr(fn, call)
 	case *ast.MatchExpr:
 		return b.match(fn, e, false, nil)
-	case *ast.ContextualVariantExpr:
-		typ := fn.typeOf(e)
-		variant := enumAlternative(typ, e.Name.Name)
-		values := make([]Value, len(e.Args))
-		for i, arg := range e.Args {
-			values[i] = b.expr(fn, arg)
-		}
-		return enumValue(fn, typ, variant, values, e.Pos())
 	case *ast.OptionalExpr:
 		return b.optionExpr(fn, e)
 	case *ast.ErrorExpr:

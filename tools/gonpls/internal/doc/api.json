@@ -1516,7 +1516,7 @@
 						},
 						{
 							"Name": "\"gonerrors\"",
-							"Doc": "replace eligible error checks with Gon propagation or local handlers\n\nThe analyzer recognizes fresh call-result declarations followed by an error\ncheck, and error-only declarations in an if initializer. It suggests postfix !\nwhen the handler returns the same error and zero values, or an or handler to\npreserve wrapping or other behavior. Handlers must terminate when the call has\nsuccess values; error-only handlers may fall through.\n\nIt keeps checks that observe partial results, reuse bindings, use the error\nafter the check, or have unsupported control flow or comments that would be\nlost. Only calls with exactly error as their final result are eligible.",
+							"Doc": "replace eligible error checks with Gon propagation or local handlers\n\nThe analyzer recognizes fresh call-result declarations followed by an error\ncheck, and error-only declarations in an if initializer. It suggests postfix !\nwhen the handler returns the same error and zero values, or when a test\nfunction (in a _test.go file, with a first named *testing.T, *testing.B,\n*testing.F or testing.TB parameter, that does not return error last) only calls\nFatal with the same error. Otherwise it suggests an or\nhandler to preserve wrapping or other behavior. Handlers must terminate when\nthe call has success values; error-only handlers may fall through.\n\nIt keeps checks that observe partial results, reuse bindings, use the error\nafter the check, or have unsupported control flow or comments that would be\nlost. Only calls with exactly error as their final result are eligible.",
 							"Default": "true",
 							"Status": ""
 						},
@@ -1602,6 +1602,12 @@
 							"Name": "\"newexpr\"",
 							"Doc": "simplify code by using go1.26's new(expr)\n\nThis analyzer finds declarations of functions of this form:\n\n\tfunc varOf(x int) *int { return \u0026x }\n\nand suggests a fix to turn them into inlinable wrappers around\ngo1.26's built-in new(expr) function:\n\n\t//go:fix inline\n\tfunc varOf(x int) *int { return new(x) }\n\n(The directive comment causes the 'inline' analyzer to suggest\nthat calls to such functions are inlined.)\n\nIn addition, this analyzer suggests a fix for each call\nto one of the functions before it is transformed, so that\n\n\tuse(varOf(123))\n\nis replaced by:\n\n\tuse(new(123))\n\nWrapper functions such as varOf are common when working with Go\nserialization packages such as for JSON or protobuf, where pointers\nare often used to express optionality.",
 							"Default": "true",
+							"Status": ""
+						},
+						{
+							"Name": "\"nilaway\"",
+							"Doc": "Run NilAway on this package to report any possible flows of nil values to erroneous sites that our system can detect",
+							"Default": "false",
 							"Status": ""
 						},
 						{
@@ -1920,6 +1926,20 @@
 				},
 				"EnumValues": null,
 				"Default": "{}",
+				"Status": "",
+				"Hierarchy": "ui.diagnostic",
+				"DeprecationMessage": ""
+			},
+			{
+				"Name": "nilaway",
+				"Type": "bool",
+				"Doc": "nilaway enables interprocedural analysis of nil values. It is disabled\nby default and reports possible nil dereferences as warnings.\n",
+				"EnumKeys": {
+					"ValueType": "",
+					"Keys": null
+				},
+				"EnumValues": null,
+				"Default": "false",
 				"Status": "",
 				"Hierarchy": "ui.diagnostic",
 				"DeprecationMessage": ""
@@ -3573,7 +3593,7 @@
 		},
 		{
 			"Name": "gonerrors",
-			"Doc": "replace eligible error checks with Gon propagation or local handlers\n\nThe analyzer recognizes fresh call-result declarations followed by an error\ncheck, and error-only declarations in an if initializer. It suggests postfix !\nwhen the handler returns the same error and zero values, or an or handler to\npreserve wrapping or other behavior. Handlers must terminate when the call has\nsuccess values; error-only handlers may fall through.\n\nIt keeps checks that observe partial results, reuse bindings, use the error\nafter the check, or have unsupported control flow or comments that would be\nlost. Only calls with exactly error as their final result are eligible.",
+			"Doc": "replace eligible error checks with Gon propagation or local handlers\n\nThe analyzer recognizes fresh call-result declarations followed by an error\ncheck, and error-only declarations in an if initializer. It suggests postfix !\nwhen the handler returns the same error and zero values, or when a test\nfunction (in a _test.go file, with a first named *testing.T, *testing.B,\n*testing.F or testing.TB parameter, that does not return error last) only calls\nFatal with the same error. Otherwise it suggests an or\nhandler to preserve wrapping or other behavior. Handlers must terminate when\nthe call has success values; error-only handlers may fall through.\n\nIt keeps checks that observe partial results, reuse bindings, use the error\nafter the check, or have unsupported control flow or comments that would be\nlost. Only calls with exactly error as their final result are eligible.",
 			"URL": "",
 			"Default": true
 		},
@@ -3660,6 +3680,12 @@
 			"Doc": "simplify code by using go1.26's new(expr)\n\nThis analyzer finds declarations of functions of this form:\n\n\tfunc varOf(x int) *int { return \u0026x }\n\nand suggests a fix to turn them into inlinable wrappers around\ngo1.26's built-in new(expr) function:\n\n\t//go:fix inline\n\tfunc varOf(x int) *int { return new(x) }\n\n(The directive comment causes the 'inline' analyzer to suggest\nthat calls to such functions are inlined.)\n\nIn addition, this analyzer suggests a fix for each call\nto one of the functions before it is transformed, so that\n\n\tuse(varOf(123))\n\nis replaced by:\n\n\tuse(new(123))\n\nWrapper functions such as varOf are common when working with Go\nserialization packages such as for JSON or protobuf, where pointers\nare often used to express optionality.",
 			"URL": "https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/modernize#hdr-Analyzer_newexpr",
 			"Default": true
+		},
+		{
+			"Name": "nilaway",
+			"Doc": "Run NilAway on this package to report any possible flows of nil values to erroneous sites that our system can detect",
+			"URL": "",
+			"Default": false
 		},
 		{
 			"Name": "nilfunc",

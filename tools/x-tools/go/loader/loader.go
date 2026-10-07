@@ -1024,6 +1024,7 @@ func (imp *importer) newPackageInfo(path, dir string) *PackageInfo {
 	info := &PackageInfo{
 		Pkg: pkg,
 		Info: types.Info{
+			Interpolations:      make(map[*ast.InterpolatedStringExpr]*ast.CallExpr),
 			Types:               make(map[ast.Expr]types.TypeAndValue),
 			OptionalConversions: make(map[ast.Expr]types.Type),
 			Defs:                make(map[*ast.Ident]types.Object),

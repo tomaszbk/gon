@@ -125,7 +125,11 @@ func (b *builder) matchPattern(fn *Function, p *ast.MatchPattern, value Value, n
 		if id.Name == "_" {
 			return
 		}
-		if obj, ok := fn.info.Defs[id].(*types.Var); ok {
+		obj, _ := fn.info.Defs[id].(*types.Var)
+		if obj == nil {
+			obj, _ = fn.info.Uses[id].(*types.Var)
+		}
+		if obj != nil {
 			*bindings = append(*bindings, patternBinding{obj, value, id})
 			return
 		}
@@ -173,12 +177,34 @@ func (b *builder) match(fn *Function, e *ast.MatchExpr, statement bool, label *l
 	}
 	for _, arm := range e.Arms {
 		next := fn.newBasicBlock("match.next")
-		var bindings []patternBinding
-		b.matchPattern(fn, arm.Pattern, value, next, &bindings)
-		for _, binding := range bindings {
-			addr := emitLocalVar(fn, binding.object, binding.source)
-			emitStore(fn, addr, binding.value, binding.source)
+		matched := fn.newBasicBlock("match.arm")
+		if len(arm.Patterns) == 0 {
+			emitJump(fn, matched, arm)
+		} else {
+			// The checker declares the common bindings in the first
+			// alternative; following alternatives refer to the same objects.
+			for node := range ast.Preorder(arm.Patterns[0]) {
+				if id, ok := node.(*ast.Ident); ok {
+					if obj, ok := fn.info.Defs[id].(*types.Var); ok {
+						emitLocalVar(fn, obj, id)
+					}
+				}
+			}
+			for i, pattern := range arm.Patterns {
+				failure := next
+				if i < len(arm.Patterns)-1 {
+					failure = fn.newBasicBlock("match.alternative")
+				}
+				var bindings []patternBinding
+				b.matchPattern(fn, pattern, value, failure, &bindings)
+				for _, binding := range bindings {
+					emitStore(fn, fn.lookup(binding.object, false), binding.value, binding.source)
+				}
+				emitJump(fn, matched, arm)
+				fn.currentBlock = failure
+			}
 		}
+		fn.currentBlock = matched
 		if arm.Guard != nil {
 			body := fn.newBasicBlock("match.guard")
 			emitIf(fn, b.expr(fn, arm.Guard), body, next, arm.Guard)
@@ -201,6 +227,35 @@ func (b *builder) match(fn *Function, e *ast.MatchExpr, statement bool, label *l
 		return nil
 	}
 	return emitLoad(fn, result, e)
+}
+
+// patternTest evaluates the subject once, writes bindings only after the full
+// pattern succeeds, and yields a bool. The checker scopes those bindings to
+// later top-level && operands and the if body.
+func (b *builder) patternTest(fn *Function, e *ast.PatternTestExpr) Value {
+	value := b.expr(fn, e.X)
+	failed := fn.newBasicBlock("is.false")
+	done := fn.newBasicBlock("is.done")
+	for node := range ast.Preorder(e.Pattern) {
+		if id, ok := node.(*ast.Ident); ok {
+			if obj, ok := fn.info.Defs[id].(*types.Var); ok {
+				emitLocalVar(fn, obj, id)
+			}
+		}
+	}
+	var bindings []patternBinding
+	b.matchPattern(fn, e.Pattern, value, failed, &bindings)
+	for _, binding := range bindings {
+		emitStore(fn, fn.lookup(binding.object, false), binding.value, binding.source)
+	}
+	emitJump(fn, done, e)
+	fn.currentBlock = failed
+	emitJump(fn, done, e)
+	fn.currentBlock = done
+	typ := types.Default(fn.typ(fn.typeOf(e)))
+	phi := &Phi{Edges: []Value{emitConv(fn, vTrue, typ, e), emitConv(fn, NewConst(constant.MakeBool(false), tBool, e), typ, e)}}
+	phi.typ = typ
+	return done.emit(phi, e)
 }
 
 var (

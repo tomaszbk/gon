@@ -36,6 +36,8 @@ COPY --from=build /opt/gon/api /opt/gon/api
 COPY --from=build /opt/gon/LICENSE /opt/gon/PATENTS /opt/gon/VERSION /opt/gon/go.env /opt/gon/
 COPY --from=build /opt/gon/tools/x-tools/LICENSE /usr/share/doc/gon/x-tools-LICENSE
 COPY --from=build /opt/gon/tools/staticcheck/LICENSE /usr/share/doc/gon/staticcheck-LICENSE
+COPY --from=build /opt/gon/tools/nilaway/LICENSE /usr/share/doc/gon/nilaway-LICENSE
+COPY --from=build /opt/gon/tools/nilaway/NOTICE /usr/share/doc/gon/nilaway-NOTICE
 
 ARG GON_REVISION=local
 LABEL org.opencontainers.image.title="Gon" \

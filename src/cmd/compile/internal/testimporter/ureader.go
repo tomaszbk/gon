@@ -288,17 +288,6 @@ func (r *reader) doTyp() (res types2.Type) {
 		return r.enumType(false)
 	case pkgbits.TypeStringEnum:
 		return r.enumType(true)
-	case pkgbits.TypeCanonicalEnum:
-		name := r.String()
-		args := make([]types2.Type, r.Len())
-		for i := range args {
-			args[i] = r.typ()
-		}
-		instance, err := types2.Instantiate(nil, types2.Universe.Lookup(name).Type(), args, false)
-		if err != nil {
-			panic(err)
-		}
-		return instance
 	case pkgbits.TypeStruct:
 		return r.structType()
 	case pkgbits.TypeInterface:

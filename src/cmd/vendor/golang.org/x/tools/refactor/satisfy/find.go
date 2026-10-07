@@ -386,29 +386,9 @@ func (f *Finder) errorExpr(e *ast.ErrorExpr) {
 	}
 	if e.Body != nil {
 		f.stmt(e.Body)
-	} else if types.IsCanonicalResult(f.info.TypeOf(e.X)) && f.sig != nil && f.sig.Results().Len() > 0 &&
-		types.Identical(f.sig.Results().At(f.sig.Results().Len()-1).Type(), types.Universe.Lookup("error").Type()) {
-		// A failed Result returns its payload as the error of the enclosing
-		// function, converting the payload to error.
-		source := types.EnumOf(f.info.TypeOf(e.X))
-		for i := range source.NumVariants() {
-			if src := source.Variant(i); src.Name() == "Err" {
-				f.assign(types.Universe.Lookup("error").Type(), src.Field(0).Type())
-			}
-		}
-	} else if types.IsCanonicalResult(f.info.TypeOf(e.X)) && f.sig != nil && f.sig.Results().Len() == 1 {
-		source, target := types.EnumOf(f.info.TypeOf(e.X)), types.EnumOf(f.sig.Results().At(0).Type())
-		if target != nil {
-			for i := range source.NumVariants() {
-				if src := source.Variant(i); src.Name() == "Err" {
-					for j := range target.NumVariants() {
-						if dst := target.Variant(j); dst.Name() == "Err" {
-							f.assign(dst.Field(0).Type(), src.Field(0).Type())
-						}
-					}
-				}
-			}
-		}
+	}
+	if e.Context != nil {
+		f.assign(types.Universe.Lookup("error").Type(), f.expr(e.Context))
 	}
 }
 
@@ -453,15 +433,12 @@ func (f *Finder) exprUnwrapped(e ast.Expr) types.Type {
 			f.expr(e.Elt)
 		}
 
-	case *ast.ContextualVariantExpr:
-		desc := types.EnumOf(tv.Type)
-		for i := range desc.NumVariants() {
-			variant := desc.Variant(i)
-			if variant.Name() == e.Name.Name {
-				for j, arg := range e.Args {
-					f.assign(variant.Field(j).Type(), f.expr(arg))
-				}
-				break
+	case *ast.PatternTestExpr:
+		f.matchPattern(e.Pattern, f.expr(e.X))
+	case *ast.InterpolatedStringExpr:
+		for _, part := range e.Parts {
+			if part.Expr != nil {
+				f.expr(part.Expr)
 			}
 		}
 	case *ast.OptionalExpr:

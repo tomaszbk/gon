@@ -302,6 +302,8 @@ func (check *Checker) updateExprType(x syntax.Expr, typ Type, final bool) {
 	case *syntax.ParenExpr:
 		check.updateExprType(x.X, typ, final)
 
+	case *syntax.PatternTestExpr:
+		// The boolean result is independent of the subject and payload types.
 	case *syntax.MatchExpr:
 		for _, arm := range x.Arms {
 			if arm.Value != nil {
@@ -1125,15 +1127,6 @@ func (check *Checker) rawExpr(T *target, x *operand, e syntax.Expr, allowGeneric
 		T = nil
 	}
 
-	if T != nil && T.kind == inferTarget && isOptionContextExpr(e) {
-		if check.deferredOptionContexts == nil {
-			check.deferredOptionContexts = make(map[syntax.Expr]bool)
-		}
-		check.deferredOptionContexts[e] = true
-		x.mode_, x.typ_, x.expr = value, T.typ, e
-		return expression
-	}
-
 	kind := check.exprInternal(T, x, e)
 
 	if !allowGeneric {
@@ -1229,7 +1222,7 @@ func (check *Checker) exprInternal(T *target, x *operand, e syntax.Expr) exprKin
 		// type inference doesn't go past parentheses (target types T/U = nil),
 		// but a parenthesized conditional expression keeps its target: the
 		// target determines the conversions of its branches.
-		if !isCondExpr(e.X) && !isMatchExpr(e.X) && !isNilTargetExpr(e.X) && !isOptionContextExpr(e.X) {
+		if !isCondExpr(e.X) && !isMatchExpr(e.X) && !isNilTargetExpr(e.X) {
 			T = nil
 		}
 		kind := check.rawExpr(T, x, e.X, false)
@@ -1292,12 +1285,6 @@ func (check *Checker) exprInternal(T *target, x *operand, e syntax.Expr) exprKin
 		check.use(e.X)
 		goto Error
 
-	case *syntax.ContextualVariantExpr:
-		check.contextualVariant(T, x, e)
-		if !x.isValid() {
-			goto Error
-		}
-
 	case *syntax.OptionalExpr:
 		return check.optionExpr(x, e)
 
@@ -1309,11 +1296,16 @@ func (check *Checker) exprInternal(T *target, x *operand, e syntax.Expr) exprKin
 	case *syntax.SafeNavExpr:
 		return check.safeNavExpr(T, x, e, false)
 
+	case *syntax.PatternTestExpr:
+		check.patternTestExpr(x, e)
 	case *syntax.MatchExpr:
 		check.matchExpr(T, x, e, 0, false)
 		if !x.isValid() {
 			goto Error
 		}
+
+	case *syntax.InterpolatedStringExpr:
+		check.interpolatedString(x, e)
 
 	case *syntax.CondExpr:
 		check.condExpr(T, x, e)

@@ -18,13 +18,13 @@ The same optional hints are available in the editor and with `gon check
 
 Current implementation and evidence are consolidated in [STATUS.md](STATUS.md)
 and [VALIDATION.md](VALIDATION.md). The [native optional contract](OPTIONALS.md)
-describes presence, absence and assisted migration.
+describes presence, absence and serialization.
 
 ## Closed alternatives and named calls
 
 Gon implements contextual `type Name enum` declarations, qualified unit,
 positional and record constructors, exhaustive statement/expression matching,
-native optional `T?`, shadowable `Result[T, E]`, and named arguments.
+native optional `T?` and named arguments.
 Existing Go switches, function types and positional calls retain their semantics.
 
 ```go
@@ -54,10 +54,10 @@ Aliases preserve this protocol; separately defined types do not adopt it.
 noncomparable payloads; a present typed nil remains present.
 
 ```go
-func parsePort(text string) (port Result[int?, error]) {
-    if text == "" { return .Ok(nil) }
-    value := strconv.Atoi(text) or problem { return .Err(problem) }
-    return .Ok(value)
+func parsePort(text string) (port int?, err error) {
+    if text == "" { return nil, nil }
+    value := strconv.Atoi(text)!
+    return value, nil
 }
 var selected int? = 3
 var absent int? = nil
@@ -73,32 +73,17 @@ check both presence layers. An explicit `(T?)(payload)` conversion is available
 when no assignment target provides the type. Each lift constructs exactly one
 layer; nested values never flatten or recursively lift.
 
-Leading-dot `.Ok(value)` and `.Err(problem)` require a fully known canonical
-Result target from a return, declaration, assignment or parameter. Qualified
-`Result[T, E].Ok/Err` constructors and patterns remain available. Apart from the
-postfix `!` bridge [described below](#error-propagation-across-tests-tuples-and-result),
-there is no implicit conversion into Result or between Result and Go error
-tuples. The `port` in `(port Result[int?, error])` is a real Go named result
-visible to defers, not a descriptive label inside a generic argument.
-
 Enums require qualified variants and an explicit default variant. Record
 construction uses field names and Go zeros for omitted fields; partial record
 patterns require `...`. New matching is exhaustive. Payload identifiers bind
 fresh arm variables; true/false/nil are contextual values even under shadowing.
 Use guards to compare outer variables or local constants.
 
-An optional's zero value is absent; Result zero is Ok(zero T). `?` propagates
-absence to a function returning one optional. `!` propagates Result failure;
-`or problem { ... }` handles it locally. Present nil payloads and Err(nil) retain
-their meaning (propagating `Err(nil)` to an `error` result yields
-`errors.ErrNilResult`). Optional and legacy nil navigation require an explicit
-payload boundary between chains.
-
-For source that used the retired Gon constructors, `gon refactor optionals
-./...` previews a semantic migration; `--json` writes a hash-checked plan for
-`gon refactor apply`. The analysis recognizes old Gon identities only for this
-migration command and leaves user-declared homonyms unchanged. Normal compiler
-and editor checking use the current language. See [OPTIONALS.md](OPTIONALS.md).
+An optional's zero value is absent. `?` propagates absence to a function
+returning one optional. `!` handles calls ending in `error`; `or problem { ... }`
+handles them locally, and `or problem => expression` propagates a contextualized
+error. Optional and legacy nil navigation require an explicit payload boundary
+between chains. See [OPTIONALS.md](OPTIONALS.md).
 
 Named calls use visible signature parameter names. Evaluate callee/receiver
 first, then every argument once in written order before passing values in
@@ -180,54 +165,35 @@ including contextual constructors and native optional conversions whose target
 would change after extraction. These forms are not automatically rewritten by
 `gon fix`.
 
-## Error propagation across tests, tuples and Result
-
-Postfix `!` also works where the nearest function has no `error` result. These
-are opt-in uses of existing syntax; existing code is unaffected.
+## Error propagation in tests
 
 ```go
 func TestLoad(t *testing.T) {
-    config := loadConfig("testdata/app.json")! // on failure: t.Fatal(err) at this line
-    if config.Name != "app" {
-        t.Fatalf("name = %q", config.Name)
-    }
+    config := loadConfig("testdata/app.json")!
+    if config.Name != "app" { t.Fatalf("name = %q", config.Name) }
 }
 
-func parse(text string) Result[Config, error] {
-    config := decode(text)! // decode returns (Config, error); failure is .Err(err)
-    return .Ok(config)
-}
-
-func load(text string) (Config, error) {
-    config := parse(text)! // a failed Result returns its payload as the error
-    return config, nil
+func load(path string) (Config, error) {
+    data := os.ReadFile(path) or err => fmt.Errorf("read %q: %w", path, err)
+    return decode(data)!, nil
 }
 ```
 
-- **Test functions.** In a `_test.go` file, when the nearest enclosing function
-  (declaration, literal or lambda) neither returns `error` last nor exactly one
-  Result, and its first parameter is named (not `_`) with type `*testing.T`,
-  `*testing.B`, `*testing.F` or `testing.TB` (aliases allowed; a variadic first
-  parameter or a receiver does not count), a failing `!` calls
-  `<param>.Fatal(err)` at the line of the `!`, without `Helper`, and returns
-  zero values. A Result operand reports its payload. This covers tests,
-  subtests, fuzz callbacks, benchmarks, helpers and lambdas; `or` and `?` are
-  unchanged. `go/types.TestFatalParam` exposes the rule to tools.
-- **Tuple to Result.** In a function whose only result is `Result[T, E]`, `!` on
-  a Go call ending in exactly `error` is valid when `error` is assignable to
-  `E`; failure returns `Result[T, E].Err(err)`. An `or err { return .Err(err) }`
-  handler is unchanged.
-- **Result to error.** In a function returning `error` last, `!` on a
-  `Result[V, E]` with `E` assignable to `error` returns zero values and the
-  payload as the error; named results are reset before defers. `Err(nil)`
-  (a nil interface after conversion) becomes `errors.ErrNilResult`, which
-  `errors.Is` recognizes, so a failed Result never becomes a nil error. A typed
-  nil pointer payload stays a non-nil error, as in Go.
+In a `_test.go` file, when the nearest function (declaration, literal or lambda)
+does not return `error` last, its first parameter can authorize test propagation:
+it must be named, not `_`, and have type `*testing.T`, `*testing.B`, `*testing.F`
+or `testing.TB` (aliases allowed). A receiver or variadic first parameter does
+not qualify. A failing `!` or one-line `or` calls `<param>.Fatal(err)` at the
+operator line and returns zero values without `Helper`. This covers tests,
+subtests, fuzz callbacks, benchmarks, helpers and lambdas. Block `or` and
+optional `?` retain their existing rules. `go/types.TestFatalParam` exposes the
+rule to tools.
 
-The gonerrors analyzer suggests `!` for `return .Err(err)` handlers in Result
-functions and for exact `<first param>.Fatal(err)` handlers in qualifying tests,
-and `testinggoroutine` treats a test `!` as an implicit `Fatal`. `gon explain
-InvalidErrorHandling` lists every diagnostic case.
+The gonerrors analyzer suggests `!` for equivalent zero-value error returns
+and exact testing Fatal handlers. It suggests `or err => expression` for a
+block handler that returns zeros and a contextual error. `testinggoroutine`
+models test propagation as an implicit Fatal. `gon explain InvalidErrorHandling`
+describes invalid contexts.
 
 ## Matching interface and error subjects
 
@@ -343,7 +309,7 @@ PostgreSQL array text still needs a codec.
 Executable legacy/modern pairs live in `test/{enums,stringenums,stringenums_sql,matching,matchinterface,
 namedarguments,errorbridge,errortest,optionresult,optionsyntax,optionaljson,optionalsql,sqlstruct}.go` and
 their `.dir` folders. The `modern` profile runs the enum, matching (including
-`matchinterface`), optional (including `optionaljson` and `optionalsql`), Result
+`matchinterface`), optional (including `optionaljson` and `optionalsql`),
 and named-argument pairs; the `errorhandling` profile adds `errorbridge` and
 `errortest`; the `tooling` profile also runs `sqlstruct`. Run the deduplicated
 focused gate:
@@ -369,7 +335,7 @@ python3 misc/gon/build.py
 
 The build requires Python 3 and network access for transitive dependencies not
 already cached. It builds maintained source directly from `tools/gonpls`,
-`tools/x-tools` and `tools/staticcheck`. Their `UPSTREAM.json` files record source
+`tools/x-tools`, `tools/staticcheck` and `tools/nilaway`. Their `UPSTREAM.json` files record source
 provenance; `go.mod` and `go.sum` pin transitive dependencies. Builds do not
 rewrite maintained modules or apply patches. The old `pkg/gon-tools` trees are
 unused disposable output from the previous workflow.
@@ -494,10 +460,10 @@ public commands to select Gon for this project.
    ```
 
    The supported conversions cover ordinary Go error handling, conditional
-   expressions, nil checks and lambdas. Optional values, Result, enums and
+   expressions, nil checks and lambdas. Optional values, enums and
    matches are API/design choices you can adopt incrementally. Existing
    `(value, error)` APIs already work with propagation and local handlers;
-   changing them to Result is optional.
+   retain them when useful partial results accompany an error.
 
 4. **Select Gon in automation.** Provision the same Gon toolchain for CI and
    other developers. Change project build/test/vet/fmt commands to their `gon`
@@ -630,15 +596,9 @@ pointer-check rewriting also applies inside conditional expressions.
 `gon vet`'s `httpresponse` and `sqlrowserr` analyzers look through postfix `!`
 and `or` handlers: `resp := client.Do(req)!` before `defer resp.Body.Close()` is
 clean, and `rows := db.Query(...)!` is analyzed like the tuple form, while
-genuine Go misuse is still reported. gonpls indexes and queries methods that
-return the predeclared `Result` (method sets, test code lens, inline variable on
-contextual `.Ok/.Err` names and named-argument labels); implement-interface is
-declined for an alias of `Result` with a clear error. Known gaps: the
-`unreachable` analyzer does not inspect `or` handler bodies, inline variable on
-an `or`-handler initializer yields an oddly formatted edit, `gon query refs
-Result` reports builtin references as unsupported, `gon query type` does not
-name the `!` sub-kinds, and the new `!` forms have no dedicated editor action
-beyond the gonerrors suggestions.
+genuine Go misuse is still reported. The `unreachable` analyzer also inspects
+block `or` handlers. Inline variable preserves valid formatting of handler
+initializers. `gon query type` identifies ordinary and test error propagation.
 
 The SSA and Staticcheck IR builders lower Gon error expressions to ordinary
 branches and returns, including named result resets, `defer`, typed-nil errors,
@@ -697,3 +657,36 @@ unsaved editor buffer does not reach command-line results. The Go tests of the
 commands run from `tools/gonpls` with `gon test ./internal/cmd -run TestGon`;
 they cover target resolution, JSON contracts, checks, stale and atomic plans,
 formatting and explanations.
+
+## Additions for 2.27
+
+Match arms accept several comma-separated patterns. Every alternative must
+bind exactly the same names with identical types; the subject is evaluated once,
+then alternatives in written order, and the guard runs once after a match.
+
+`x is P` is a contextual pattern test at comparison precedence. Bindings are
+allowed only in an `if` condition or its top-level `&&` operands. They become
+available to later operands and the body, and stay out of the else branch.
+Irrefutable tests are rejected. Ordinary identifiers named `is` remain valid.
+
+`$"...${expression}..."` and raw interpolated strings format values with `%v`.
+A top-level colon introduces one fmt verb, such as `${price:%.2f}`. Plain
+braces and dollar signs remain literal; `\$` escapes a dollar in interpreted
+text. Expressions may nest literals, composites, named calls and interpolation.
+Require an explicit `fmt` import in that file; aliases and shadowing work.
+Interpolation produces a nonconstant string and evaluates operands once in
+written order. Vet checks format/operand compatibility; the editor offers the
+missing import and supports embedded expression services.
+
+`gon/seq` supplies 18 generic functions: Map, Filter, FlatMap, Reduce, GroupBy,
+KeyBy, Distinct, ToSet, Find, First, Last, At, Lookup, All, Count, Partition,
+MapSeq and FilterSeq. Find/First/Last/At/Lookup return native optionals. Slice
+results are never nil. These are functions, with ordinary Go callbacks or Gon
+lambdas, and support named slice/map types.
+
+NilAway is maintained at `tools/nilaway`, with Apache-2.0 license and upstream
+provenance. Enable it explicitly with `gon check --nilaway ./...` or editor
+`"gon.serverSettings": { "nilaway": true }`; diagnostics are warnings. It uses maintained
+Gon flow/type lowering and reports internal analysis errors visibly. Ordinary
+nil semantics remain unchanged. See [INTEGRATION.md](INTEGRATION.md) and
+[VALIDATION.md](VALIDATION.md) for coverage and execution evidence.

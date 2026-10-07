@@ -65,13 +65,9 @@ func (env *environment) lookup(name string) Object {
 	return obj
 }
 
-// lookupScope preserves ordinary shadowing while exposing the retired alias
-// solely to the semantic migration checker.
+// lookupScope looks up an identifier in the current environment.
 func (check *Checker) lookupScope(name string) (*Scope, Object) {
 	s, obj := check.environment.lookupScope(name)
-	if obj == nil && name == "Option" && check.conf.MigrateOptionals {
-		return Universe, migrationOption.Obj()
-	}
 	return s, obj
 }
 func (check *Checker) lookup(name string) Object { _, obj := check.lookupScope(name); return obj }
@@ -118,13 +114,13 @@ type actionDesc struct {
 // A Checker maintains the state of the type checker.
 // It must be created with NewChecker.
 type Checker struct {
-	optionLiftDepth        int
-	deferredOptionContexts map[syntax.Expr]bool
-	nilGuardDepth          int
-	nilOptionGuardSeen     bool
-	nilLegacyGuardSeen     bool
-	inferLambdaSig         *Signature
-	lambdaTypes            map[*syntax.LambdaExpr]*Signature
+	patternTestContexts map[*syntax.PatternTestExpr]bool
+	optionLiftDepth     int
+	nilGuardDepth       int
+	nilOptionGuardSeen  bool
+	nilLegacyGuardSeen  bool
+	inferLambdaSig      *Signature
+	lambdaTypes         map[*syntax.LambdaExpr]*Signature
 	// package information
 	// (initialized by NewChecker, valid for the life-time of checker)
 	conf *Config

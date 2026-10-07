@@ -169,6 +169,7 @@ const (
 	ErrorExpr_X
 	ErrorExpr_Err
 	ErrorExpr_Body
+	ErrorExpr_Context
 
 	CondExpr_Cond
 	CondExpr_Then
@@ -189,7 +190,7 @@ const (
 	MatchExpr_Tag
 	MatchExpr_Arms
 	MatchStmt_Match
-	MatchArm_Pattern
+	MatchArm_Patterns
 	MatchArm_Guard
 	MatchArm_Value
 	MatchArm_Body
@@ -201,9 +202,11 @@ const (
 	MatchField_Pattern
 
 	OptionalExpr_X
-	ContextualVariantExpr_Name
-	ContextualVariantExpr_Args
 
+	InterpolatedStringExpr_Parts
+	InterpolationPart_Expr
+	PatternTestExpr_X
+	PatternTestExpr_Pattern
 	maxKind
 )
 
@@ -229,29 +232,31 @@ func info[N ast.Node](fieldName string) fieldInfo {
 }
 
 var fieldInfos = [...]fieldInfo{
-	ContextualVariantExpr_Name: info[*ast.ContextualVariantExpr]("Name"),
-	ContextualVariantExpr_Args: info[*ast.ContextualVariantExpr]("Args"),
-	OptionalExpr_X:             info[*ast.OptionalExpr]("X"),
-	CallExpr_ArgNames:          info[*ast.CallExpr]("ArgNames"),
-	EnumType_Variants:          info[*ast.EnumType]("Variants"),
-	EnumVariant_Doc:            info[*ast.EnumVariant]("Doc"),
-	EnumVariant_Comment:        info[*ast.EnumVariant]("Comment"),
-	EnumVariant_Name:           info[*ast.EnumVariant]("Name"),
-	EnumVariant_Payload:        info[*ast.EnumVariant]("Payload"),
-	EnumVariant_Value:          info[*ast.EnumVariant]("Value"),
-	MatchExpr_Tag:              info[*ast.MatchExpr]("Tag"),
-	MatchExpr_Arms:             info[*ast.MatchExpr]("Arms"),
-	MatchStmt_Match:            info[*ast.MatchStmt]("Match"),
-	MatchArm_Pattern:           info[*ast.MatchArm]("Pattern"),
-	MatchArm_Guard:             info[*ast.MatchArm]("Guard"),
-	MatchArm_Value:             info[*ast.MatchArm]("Value"),
-	MatchArm_Body:              info[*ast.MatchArm]("Body"),
-	MatchPattern_Inner:         info[*ast.MatchPattern]("Inner"),
-	MatchPattern_Value:         info[*ast.MatchPattern]("Value"),
-	MatchPattern_Args:          info[*ast.MatchPattern]("Args"),
-	MatchPattern_Fields:        info[*ast.MatchPattern]("Fields"),
-	MatchField_Name:            info[*ast.MatchField]("Name"),
-	MatchField_Pattern:         info[*ast.MatchField]("Pattern"),
+	InterpolatedStringExpr_Parts: info[*ast.InterpolatedStringExpr]("Parts"),
+	InterpolationPart_Expr:       info[*ast.InterpolationPart]("Expr"),
+	PatternTestExpr_X:            info[*ast.PatternTestExpr]("X"),
+	PatternTestExpr_Pattern:      info[*ast.PatternTestExpr]("Pattern"),
+	OptionalExpr_X:               info[*ast.OptionalExpr]("X"),
+	CallExpr_ArgNames:            info[*ast.CallExpr]("ArgNames"),
+	EnumType_Variants:            info[*ast.EnumType]("Variants"),
+	EnumVariant_Doc:              info[*ast.EnumVariant]("Doc"),
+	EnumVariant_Comment:          info[*ast.EnumVariant]("Comment"),
+	EnumVariant_Name:             info[*ast.EnumVariant]("Name"),
+	EnumVariant_Payload:          info[*ast.EnumVariant]("Payload"),
+	EnumVariant_Value:            info[*ast.EnumVariant]("Value"),
+	MatchExpr_Tag:                info[*ast.MatchExpr]("Tag"),
+	MatchExpr_Arms:               info[*ast.MatchExpr]("Arms"),
+	MatchStmt_Match:              info[*ast.MatchStmt]("Match"),
+	MatchArm_Patterns:            info[*ast.MatchArm]("Patterns"),
+	MatchArm_Guard:               info[*ast.MatchArm]("Guard"),
+	MatchArm_Value:               info[*ast.MatchArm]("Value"),
+	MatchArm_Body:                info[*ast.MatchArm]("Body"),
+	MatchPattern_Inner:           info[*ast.MatchPattern]("Inner"),
+	MatchPattern_Value:           info[*ast.MatchPattern]("Value"),
+	MatchPattern_Args:            info[*ast.MatchPattern]("Args"),
+	MatchPattern_Fields:          info[*ast.MatchPattern]("Fields"),
+	MatchField_Name:              info[*ast.MatchField]("Name"),
+	MatchField_Pattern:           info[*ast.MatchField]("Pattern"),
 
 	LambdaExpr_Params:     info[*ast.LambdaExpr]("Params"),
 	LambdaExpr_Body:       info[*ast.LambdaExpr]("Body"),
@@ -260,6 +265,7 @@ var fieldInfos = [...]fieldInfo{
 	SafeNavExpr_X:         info[*ast.SafeNavExpr]("X"),
 	ErrorExpr_X:           info[*ast.ErrorExpr]("X"),
 	ErrorExpr_Err:         info[*ast.ErrorExpr]("Err"),
+	ErrorExpr_Context:     info[*ast.ErrorExpr]("Context"),
 	ErrorExpr_Body:        info[*ast.ErrorExpr]("Body"),
 	CondExpr_Cond:         info[*ast.CondExpr]("Cond"),
 	CondExpr_Then:         info[*ast.CondExpr]("Then"),

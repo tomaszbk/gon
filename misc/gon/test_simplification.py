@@ -25,11 +25,11 @@ import "strconv"
 // Number is a count passed through optional type syntax.
 type Number int
 // Parse returns the parsed port, absence, or a conversion failure.
-func Parse(text string) (port Result[int?, error]) {
-    if text == "" { return .Ok(nil) }
+func Parse(text string) (port int?, err error) {
+    if text == "" { return nil, nil }
     value, problem := strconv.Atoi(text)
-    if problem != nil { return .Err(problem) }
-    return .Ok(value)
+    if problem != nil { return nil, problem }
+    return value, nil
 }
 // Present returns a present Number.
 func Present(value Number) (present Number?) { return value }
@@ -38,24 +38,19 @@ MAIN = '''package main
 import ("fmt"; "example.com/simplified/data")
 type Choice int
 var declared data.Number? = 4
-func ready(chosenInt int, chosenText string) (port Result[int?, error]) {
+func ready(chosenInt int, chosenText string) (port int?) {
     _ = chosenText
-    return .Ok(chosenInt)
+    return chosenInt
 }
 func present(chosenInt int, chosenText string) int? {
     _ = chosenText
     return chosenInt
 }
 func absent() int? { return nil }
-func failed(chosenError error, chosenInt int) Result[int, error] {
-    _ = chosenInt
-    return .Err(chosenError)
-}
 func extract(value data.Number?) data.Number { return switch value { case nil => 0; case number? => number } }
 func main() {
-    result := data.Parse(text: "23")
-    port := result or failure { panic(failure) }
-    readyPort := ready(chosenInt: 7, chosenText: "unused") or failure { panic(failure) }
+    port := data.Parse(text: "23") or failure { panic(failure) }
+    readyPort := ready(chosenInt: 7, chosenText: "unused")
     fmt.Println(port ?? 0, data.Present(value: 4) ?? 0, present(chosenInt: 5, chosenText: "unused") ?? 0, declared ?? 0, readyPort ?? 0, absent() ?? -1)
 }
 '''
@@ -103,25 +98,14 @@ with tempfile.TemporaryDirectory(prefix='gon-simplification-editor-') as tempora
                 diagnostics = client.diagnostics(fileuri, 1, lambda _: True)
                 assert not any(d.get('severity') == 1 for d in diagnostics), diagnostics
 
-            for needle, signature, declaration in [
-                ('Ok(chosenInt)', 'Result[int?, error].Ok(int?)', 'Ok(T)'),
-                ('Err(chosenError)', 'Result[int, error].Err(error)', 'Err(E)'),
-            ]:
-                point = position(MAIN, needle)
-                hover = client.request('textDocument/hover', dict(doc, position=point))
-                assert signature in hover['contents']['value'], (needle, hover)
-                definitions = client.request('textDocument/definition', dict(doc, position=point))
-                assert definitions[0]['uri'].endswith('/src/builtin/builtin.go'), definitions
-                assert definitions[0]['range']['start'] == position((ROOT / 'src/builtin/builtin.go').read_text(), declaration), definitions
-
             number = position(MAIN, 'data.Number?', len('data.'))
             definitions = client.request('textDocument/definition', dict(doc, position=number))
             assert definitions[0]['uri'] == liburi and definitions[0]['range']['start'] == position(LIB, 'Number int'), definitions
             hover = client.request('textDocument/hover', dict(doc, position=position(MAIN, 'data.Parse', len('data.'))))
             signature = hover['contents']['value']
-            assert 'Parse(text string)' in signature and 'port Result[' in signature and 'int?' in signature, hover
+            assert 'Parse(text string)' in signature and 'port int?' in signature and 'int?' in signature, hover
             definitions = client.request('textDocument/definition', dict(doc, position=position(MAIN, 'return chosenInt', len('return '))))
-            assert definitions[0]['range']['start'] == position(MAIN, 'present(chosenInt', len('present(')), definitions
+            assert definitions[0]['range']['start'] == position(MAIN, 'ready(chosenInt', len('ready(')), definitions
             refs = client.request('textDocument/references', {'textDocument': {'uri': liburi}, 'position': position(LIB, 'Number int'), 'context': {'includeDeclaration': True}})
             assert any(ref['uri'] == uri and ref['range']['start'] == number for ref in refs), refs
             renamed = client.request('textDocument/rename', {'textDocument': {'uri': liburi}, 'position': position(LIB, 'Number int'), 'newName': 'Count'})
@@ -137,31 +121,16 @@ with tempfile.TemporaryDirectory(prefix='gon-simplification-editor-') as tempora
             tokens = decoded_tokens(client, client.request('textDocument/semanticTokens/full', doc))
             for needle, offset, kind in [
                 ('data.Number?', len('data.Number'), 'operator'),
-                ('.Ok(chosenInt)', 0, 'operator'), ('number? =>', len('number'), 'operator'),
-                ('Ok(chosenInt)', 0, 'enumMember'), ('number? =>', 0, 'variable'),
+                ('number? =>', len('number'), 'operator'),
+                ('number? =>', 0, 'variable'),
             ]:
                 point = position(MAIN, needle, offset)
                 token = tokens.get((point['line'], point['character']))
                 assert token and token[1] == kind, (needle, kind, token, tokens)
             edits = client.request('textDocument/formatting', dict(doc, options={'tabSize': 4, 'insertSpaces': False}))
             formatted = apply_edits(MAIN, edits or [])
-            assert 'data.Number?' in formatted and 'Result[int?, error]' in formatted and '.Ok(chosenInt)' in formatted and 'case number?' in formatted, formatted
-            for needle in ('.Ok(chosenInt)',):
-                actions = client.request('textDocument/codeAction', dict(doc,
-                    range={'start': position(MAIN, needle), 'end': position(MAIN, needle, len(needle))},
-                    context={'diagnostics': [], 'only': ['refactor.extract.variable', 'refactor.extract.variable-all']}))
-                assert not actions, actions
-            for needle, expected_name, payload_type in [('Ok(chosenInt)', '.Ok', 'int?'), ('Err(chosenError)', '.Err', 'error')]:
-                help_result = client.request('textDocument/signatureHelp', dict(doc, position=position(MAIN, needle, len(needle.split('(')[0])+1)))
-                signature = help_result['signatures'][0]
-                assert signature['label'].startswith(expected_name+'(') and payload_type in signature['label'], help_result
-                assert signature['activeParameter'] == 0, help_result
-
+            assert 'data.Number?' in formatted and 'port int?' in formatted and 'return chosenInt' in formatted and 'case number?' in formatted, formatted
             cases = [
-                ('.Ok(chosenInt)', '.O', 'return .O', ['Ok'], ['Err', 'Some', 'None']),
-                ('.Ok(chosenInt)', '.E', 'return .E', ['Err'], ['Ok', 'Some', 'None']),
-                ('.Ok(chosenInt)', '.Ok(cho)', '.Ok(cho', ['chosenInt'], ['chosenText']),
-                ('.Err(chosenError)', '.Err(cho)', '.Err(cho', ['chosenError'], ['chosenInt']),
                 ('var declared data.Number? = 4', 'var declared Cho? = 4', 'var declared Cho', ['Choice'], ['chosenInt']),
             ]
             for version, (old, new, needle, names, absent) in enumerate(cases, 2):
@@ -185,11 +154,10 @@ with tempfile.TemporaryDirectory(prefix='gon-simplification-editor-') as tempora
 
     for needle, offset, expected_construct in [
         ('data.Number?', len('data.Number'), 'optional-type'),
-        ('.Ok(chosenInt)', 0, 'contextual-constructor'),
     ]:
         point = position(MAIN, needle, offset)
         target = 'main.go:%d:%d' % (point['line']+1, point['character']+1)
         query = json.loads(command(GON, 'query', 'type', target, '--json', cwd=folder, env=ENV))
         assert query['results'][0]['type']['construct'] == expected_construct, query
 
-print('PASS: optional syntax baseline/legacy/modern execution, LSP diagnostics, imported named results, Result builtin definitions, native presence bindings/references/rename, tokens, formatting, signatures, contextual and payload completion, extraction safety, CLI types')
+print('PASS: optional syntax baseline/legacy/modern execution, LSP diagnostics, imported named results, native presence bindings/references/rename, tokens, formatting, signatures, optional completion, CLI types')

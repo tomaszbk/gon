@@ -875,7 +875,18 @@ func (p *parser) binaryExpr(x Expr, prec int) Expr {
 	if x == nil {
 		x = p.unaryExpr()
 	}
-	for (p.tok == _Operator || p.tok == _Star) && p.prec > prec {
+	for {
+		if p.tok == _Name && p.lit == "is" && precCmp > prec {
+			test := &PatternTestExpr{X: x, Is: p.pos()}
+			test.pos = x.Pos()
+			p.next()
+			test.Pattern = p.matchPattern()
+			x = test
+			continue
+		}
+		if (p.tok != _Operator && p.tok != _Star) || p.prec <= prec {
+			break
+		}
 		t := new(Operation)
 		t.pos = p.pos()
 		t.Op = p.op
@@ -1020,27 +1031,8 @@ func (p *parser) operand(keep_parens bool) Expr {
 	}
 
 	switch p.tok {
-	case _Dot:
-		x := new(ContextualVariantExpr)
-		x.pos = p.pos()
-		p.next()
-		x.Name = p.name()
-		if p.tok == _Lparen {
-			x.Lparen = p.pos()
-			p.next()
-			p.xnest++
-			for p.tok != _Rparen && p.tok != _EOF {
-				x.ArgList = append(x.ArgList, p.expr())
-				if !p.got(_Comma) {
-					break
-				}
-			}
-			p.xnest--
-			x.Rparen = p.pos()
-			p.want(_Rparen)
-		}
-		return x
-
+	case _InterpStart:
+		return p.interpolatedString()
 	case _Name:
 		return p.name()
 
@@ -1312,7 +1304,7 @@ func (p *parser) skipBranch() {
 // startsExpr reports whether the current token may start an expression.
 func (p *parser) startsExpr() bool {
 	switch p.tok {
-	case _Name, _Literal, _Lparen, _Lbrack, _Lbrace, _Func, _Chan, _Map,
+	case _InterpStart, _Name, _Literal, _Lparen, _Lbrack, _Lbrace, _Func, _Chan, _Map,
 		_Struct, _Interface, _Arrow, _Star, _If, _Dot:
 		return true
 	case _Operator:
@@ -1372,7 +1364,7 @@ loop:
 
 		case _Name:
 			// or remains an ordinary identifier everywhere except immediately
-			// before an explicit error-handler binding and block.
+			// before an explicit error-handler binding.
 			if p.lit != "or" {
 				break loop
 			}
@@ -1380,6 +1372,13 @@ loop:
 			t.pos, t.X = pos, x
 			p.next()
 			t.Err = p.name()
+			if p.tok == _FatArrow {
+				t.Arrow = p.pos()
+				p.next()
+				t.Context = p.expr()
+				x = t
+				continue
+			}
 			errcnt := p.errcnt
 			p.xnest++
 			t.Body = p.blockStmt("error binding")
@@ -2899,7 +2898,9 @@ func (p *parser) caseClause() *CaseClause {
 		c.Arrow = p.pos()
 		p.next()
 		if c.Cases != nil {
-			c.Pattern = p.patternFromExpr(c.Cases)
+			for _, expression := range UnpackListExpr(c.Cases) {
+				c.Patterns = append(c.Patterns, p.patternFromExpr(expression))
+			}
 		}
 		c.Body = []Stmt{p.blockStmt("match arm")}
 		p.got(_Semi)

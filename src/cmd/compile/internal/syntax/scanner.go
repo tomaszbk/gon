@@ -26,6 +26,7 @@ const (
 type scanner struct {
 	source
 	mode   uint
+	interpolations []*interpolationFrame
 	nlsemi bool // if set '\n' and EOF translate to ';'
 
 	// current token, valid after calling next()
@@ -43,6 +44,7 @@ func (s *scanner) init(src io.Reader, errh func(line, col uint, msg string), mod
 	s.source.init(src, errh)
 	s.mode = mode
 	s.nlsemi = false
+	s.interpolations = nil
 }
 
 // errorf reports an error at the most recently read character position.
@@ -82,7 +84,9 @@ func (s *scanner) setLit(kind LitKind, ok bool) {
 // flag, only comments containing a //line, /*line, or //go: directive
 // are reported, in the same way as regular comments.
 func (s *scanner) next() {
+	if s.interpolationToken() { return }
 	nlsemi := s.nlsemi
+	if len(s.interpolations)>0 { nlsemi=false }
 	s.nlsemi = false
 
 redo:
@@ -90,6 +94,7 @@ redo:
 	s.stop()
 	startLine, startCol := s.pos()
 	for s.ch == ' ' || s.ch == '\t' || s.ch == '\n' && !nlsemi || s.ch == '\r' {
+		if s.ch=='\n' && len(s.interpolations)>0 && s.interpolations[len(s.interpolations)-1].quote=='"' { s.errorf("newline in interpolated string") }
 		s.nextch()
 	}
 
@@ -97,6 +102,7 @@ redo:
 	s.line, s.col = s.pos()
 	s.blank = s.line > startLine || startCol == colbase
 	s.start()
+	if s.interpolationExprToken() { return }
 	if isLetter(s.ch) || s.ch >= utf8.RuneSelf && s.atIdentChar(true) {
 		s.nextch()
 		s.ident()
@@ -119,6 +125,11 @@ redo:
 
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		s.number(false)
+
+	case '$':
+		s.nextch()
+		if s.ch!='"' && s.ch!='`' { s.errorAtf(0,"$ must immediately precede a string literal");s.tok=_Name;s.lit="$";break }
+		s.lit=string(s.ch);s.interpolations=append(s.interpolations,&interpolationFrame{quote:s.ch,text:true});s.nextch();s.tok=_InterpStart
 
 	case '"':
 		s.stdString()

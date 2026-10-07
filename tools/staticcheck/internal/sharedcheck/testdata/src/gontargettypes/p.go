@@ -14,22 +14,20 @@ func f(flag bool, p *int, n *node) {
 func identityOption(value int?) int? { return value }
 
 func simplified(flag bool, pointer *int) {
-	var absent int? = .None
-	var explicit (*int)? = .Some(nil)
-	var present int? = (.Some(1))
-	var failure Result[int, string] = .Err("bad")
-	var success Result[int?, string] = .Ok(nil)
+	var absent int? = nil
+	var explicit (*int)? = (*int)(nil)
+	var present int? = (int)(1)
 	var implicit int? = 2
 	var typedNil (*int)? = pointer
 	var nested (int?)? = present
-	var call int? = identityOption(.Some(3))
-	var branch int? = if flag { .Some(4) } else { .None }
+	var call int? = identityOption(3)
+	var branch int? = if flag { 4 } else { nil }
 	var match int? = switch flag {
-	case true => .Some(5)
-	case false => .None
+	case true => 5
+	case false => nil
 	}
-	var qualified Option[int] = Option[int].Some(6)           // want "should omit type Option\\[int\\]"
-	var ordinary int = 7                                      // want "should omit type int"
-	var factory func() int? = func() int? { return .Some(8) } // want "should omit type func\\(\\) int\\?"
-	_, _, _, _, _, _, _, _, _, _, _, _, _, _ = absent, explicit, present, failure, success, implicit, typedNil, nested, call, branch, match, qualified, ordinary, factory
+	var qualified int? = (int?)(6)
+	var ordinary int = 7                               // want "should omit type int"
+	var factory func() int? = func() int? { return 8 } // want "should omit type func\\(\\) int\\?"
+	_, _, _, _, _, _, _, _, _, _, _, _ = absent, explicit, present, implicit, typedNil, nested, call, branch, match, qualified, ordinary, factory
 }

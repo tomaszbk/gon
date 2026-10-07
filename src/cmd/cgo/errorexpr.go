@@ -25,6 +25,9 @@ func (f *File) walkErrorExpr(x any, visit func(*File, any, astContext)) bool {
 	if n.Body != nil {
 		f.walk(n.Body, ctxStmt, visit)
 	}
+	if n.Context != nil {
+		f.walk(&n.Context, ctxExpr, visit)
+	}
 	return true
 }
 

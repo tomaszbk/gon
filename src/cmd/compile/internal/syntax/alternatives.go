@@ -1,5 +1,10 @@
 package syntax
 
+import (
+	"bytes"
+	"io"
+)
+
 // EnumType describes a closed set of variants. enum remains an identifier
 // outside the right-hand side of a defined type declaration.
 type EnumType struct {
@@ -19,27 +24,10 @@ type EnumVariant struct {
 	node
 }
 
-// EnumConstructExpr is compiler-generated after type checking for checked
-// propagation boundaries; it is never parsed from source.
-type EnumConstructExpr struct {
-	Variant int
-	ArgList []Expr
-	expr
-}
-
-// ContextualVariantExpr constructs a canonical Option or Result using a target.
-// Its position is the leading dot.
-type ContextualVariantExpr struct {
-	Name           *Name
-	Lparen, Rparen Pos
-	ArgList        []Expr
-	expr
-}
-
 type OptionalExpr struct {
 	X        Expr
 	Question Pos
-	Body     *BlockStmt // compiler-prepared None return for range-function rewriting
+	Body     *BlockStmt // compiler-prepared absence return for range-function rewriting
 	expr
 }
 
@@ -50,17 +38,25 @@ type MatchExpr struct {
 	expr
 }
 
+// PatternTestExpr evaluates its subject once and tests one structural pattern.
+type PatternTestExpr struct {
+	X       Expr
+	Is      Pos
+	Pattern *MatchPattern
+	expr
+}
+
 type MatchStmt struct {
 	Match *MatchExpr
 	stmt
 }
 
 type MatchArm struct {
-	Arrow   Pos
-	Pattern *MatchPattern // nil for default
-	Guard   Expr
-	Value   Expr
-	Body    *BlockStmt
+	Arrow    Pos
+	Patterns []*MatchPattern // nil for default
+	Guard    Expr
+	Value    Expr
+	Body     *BlockStmt
 	node
 }
 
@@ -181,7 +177,10 @@ func (p *parser) matchExpr() *MatchExpr {
 		switch p.tok {
 		case _Case:
 			p.next()
-			a.Pattern = p.matchPattern()
+			a.Patterns = append(a.Patterns, p.matchPattern())
+			for p.got(_Comma) {
+				a.Patterns = append(a.Patterns, p.matchPattern())
+			}
 		case _Default:
 			p.next()
 		default:
@@ -269,6 +268,9 @@ func (p *parser) matchPattern() *MatchPattern {
 		n.Rparen = p.pos()
 		p.want(_Rparen)
 	case _Lbrace:
+		if p.xnest < 0 && !p.patternTestRecordAhead() {
+			break
+		}
 		n.Lbrace = p.pos()
 		p.next()
 		for p.tok != _Rbrace && p.tok != _EOF {
@@ -321,7 +323,7 @@ func (p *parser) matchSwitch(s *SwitchStmt) Stmt {
 		if !c.Arrow.IsKnown() {
 			p.errorAt(c.Pos(), "cannot mix : and => in one switch")
 		}
-		a := &MatchArm{Pattern: c.Pattern, Guard: c.Guard, Arrow: c.Arrow}
+		a := &MatchArm{Patterns: c.Patterns, Guard: c.Guard, Arrow: c.Arrow}
 		a.pos = c.Pos()
 		if len(c.Body) == 1 {
 			a.Body, _ = c.Body[0].(*BlockStmt)
@@ -389,8 +391,6 @@ func (p *parser) patternFromExpr(x Expr) *MatchPattern {
 
 func (p *printer) printAlternative(n Node) {
 	switch n := n.(type) {
-	case *EnumConstructExpr:
-		p.print(_Name, "<enum construction>")
 	case *EnumType:
 		p.print(_Name, "enum", blank)
 		if n.String.IsKnown() {
@@ -434,10 +434,16 @@ func (p *printer) printAlternative(n Node) {
 	case *MatchStmt:
 		p.print(n.Match)
 	case *MatchArm:
-		if n.Pattern == nil {
+		if len(n.Patterns) == 0 {
 			p.print(_Default)
 		} else {
-			p.print(_Case, blank, n.Pattern)
+			p.print(_Case, blank)
+			for i, pattern := range n.Patterns {
+				if i > 0 {
+					p.print(_Comma, blank)
+				}
+				p.print(pattern)
+			}
 		}
 		if n.Guard != nil {
 			p.print(blank, _If, blank, n.Guard)
@@ -491,4 +497,39 @@ func (p *printer) printAlternative(n Node) {
 	case *MatchField:
 		p.print(n.Name, _Colon, blank, n.Pattern)
 	}
+}
+
+// A control-clause pattern's braces are payload syntax only when followed by
+// another condition token or the body brace. Snapshot the buffered scanner,
+// replaying any additional reader bytes, so lookahead is safe across refills.
+func (p *parser) patternTestRecordAhead() bool {
+	snapshot := p.scanner
+	snapshot.source.buf = append([]byte(nil), snapshot.source.buf...)
+	snapshot.interpolations = nil
+	for _, frame := range p.scanner.interpolations {
+		copy := *frame
+		snapshot.interpolations = append(snapshot.interpolations, &copy)
+	}
+	var replay bytes.Buffer
+	snapshot.source.in = io.TeeReader(p.scanner.source.in, &replay)
+	snapshot.source.errh = func(uint, uint, string) {}
+	defer func() {
+		if replay.Len() != 0 {
+			p.scanner.source.in = io.MultiReader(bytes.NewReader(replay.Bytes()), p.scanner.source.in)
+		}
+	}()
+	depth := 1
+	for depth > 0 {
+		snapshot.next()
+		switch snapshot.tok {
+		case _Lbrace:
+			depth++
+		case _Rbrace:
+			depth--
+		case _EOF:
+			return false
+		}
+	}
+	snapshot.next()
+	return snapshot.tok == _Lbrace || snapshot.tok == _Operator || snapshot.tok == _FatArrow || snapshot.tok == _Comma || snapshot.tok == _Rparen || snapshot.tok == _Question || snapshot.tok == _Name && snapshot.lit == "is"
 }

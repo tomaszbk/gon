@@ -93,7 +93,6 @@ func main() {
  assert(!reflect.ValueOf((int?)(0)).IsZero() && !reflect.DeepEqual((int?)(nil), (int?)(0)), "present zero retained")
  assert(fmt.Sprint((int?)(nil)) == "nil" && fmt.Sprint((int?)(7)) == "7", "optional formatting")
  assert(fmt.Sprint(map[int?]int{(int?)(2):2, (int?)(nil):0, (int?)(1):1}) == "map[nil:0 1:1 2:2]", "optional map ordering")
-	assert(reflect.EnumValueVariant(reflect.ValueOf(Result[int, error].Err(nil))).Name == "Err", "Err nil metadata")
 	assert(fmt.Sprint(Ref.Text("value")) == "main.Ref.Text(value)" && fmt.Sprint(Ref.Empty) == "main.Ref.Empty", "active enum formatting")
 	assert(fmt.Sprint(Ref.Pair{X: 1, Y: 2}) == "main.Ref.Pair{X:1, Y:2, hidden:}", "record enum formatting")
 	assert(fmt.Sprint(map[Ref]int{Ref.Text("b"): 2, Ref.Text("a"): 1}) == "map[main.Ref.Text(a):1 main.Ref.Text(b):2]", "enum map key ordering")

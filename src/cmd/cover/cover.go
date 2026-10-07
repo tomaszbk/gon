@@ -593,6 +593,9 @@ func (f *File) Visit(node ast.Node) ast.Visitor {
 		return nil
 	case *ast.ErrorExpr:
 		ast.Walk(f, n.X)
+		if n.Context != nil {
+			ast.Walk(f, n.Context)
+		}
 		if n.Body != nil {
 			if *pkgcfg != "" && f.fn.counterVar == "" {
 				// A handler in a package-initialized expression lambda

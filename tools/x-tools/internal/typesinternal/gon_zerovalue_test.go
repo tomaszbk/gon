@@ -49,13 +49,6 @@ func TestGonEnumZeroValue(t *testing.T) {
 		t.Fatal(err)
 	}
 	fixtures["lib.Generic[int]"] = generic
-	for name, args := range map[string][]types.Type{"Result": {types.Typ[types.Int], types.Universe.Lookup("error").Type()}} {
-		typ, err := types.Instantiate(nil, types.Universe.Lookup(name).Type(), args, true)
-		if err != nil {
-			t.Fatal(err)
-		}
-		fixtures[types.TypeString(typ, qual)] = typ
-	}
 	fixtures["int?"] = types.NewOptional(types.Typ[types.Int])
 	for name, typ := range fixtures {
 		t.Run(name, func(t *testing.T) {

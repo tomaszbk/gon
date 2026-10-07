@@ -49,33 +49,6 @@ func (b *builder) optionExpr(fn *Function, e *ast.OptionalExpr) Value {
 	fn.currentBlock = some
 	return canonicalPayload(fn, value, enumAlternative(value.Type(), "$present"), e.Question)
 }
-func (b *builder) resultExpr(fn *Function, e *ast.ErrorExpr) []Value {
-	value := b.expr(fn, e.X)
-	v := enumAlternative(value.Type(), "Err")
-	failed := fn.newBasicBlock("result.err")
-	done := fn.newBasicBlock("result.ok")
-	tag := enumField(fn, value, 0, e.OpPos)
-	emitIf(fn, emitCompare(fn, token.EQL, tag, emitConv(fn, intConst(int64(v.Tag())), tag.Type()), e.OpPos), failed, done)
-	fn.currentBlock = failed
-	problem := canonicalPayload(fn, value, v, e.OpPos)
-	if e.Body != nil {
-		if !isBlankIdent(e.Err) {
-			addr := emitLocalVar(fn, identVar(fn, e.Err))
-			emitStore(fn, addr, problem, e.OpPos)
-		}
-		b.stmt(fn, e.Body)
-		emitJump(fn, done)
-	} else if propagationOf(fn.source.Signature) == propagateResult {
-		result := fn.typ(fn.source.Signature.Results().At(0).Type())
-		err := enumAlternative(result, "Err")
-		resultValue := enumValue(fn, result, err, []Value{emitConv(fn, problem, err.Field(0).Type())}, e.OpPos)
-		b.returnValues(fn, &ast.ReturnStmt{Return: e.OpPos}, []Value{resultValue})
-	} else {
-		b.propagateFailure(fn, e, problem, true)
-	}
-	fn.currentBlock = done
-	return []Value{canonicalPayload(fn, value, enumAlternative(value.Type(), "Ok"), e.OpPos)}
-}
 func (b *builder) optionPresent(fn *Function, value Value, absent *BasicBlock, e ast.Node) Value {
 	present := fn.newBasicBlock("option.present")
 	tag := enumField(fn, value, 0, e.Pos())

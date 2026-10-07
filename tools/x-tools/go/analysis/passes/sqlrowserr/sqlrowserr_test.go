@@ -19,5 +19,5 @@ func Test(t *testing.T) {
 // TestGon checks that Gon "!" and "or" handlers on a query are analyzed
 // like the Go assignment form.
 func TestGon(t *testing.T) {
-	analysistest.Run(t, analysistest.TestData(), sqlrowserr.Analyzer, "gon")
+	analysistest.Run(t, analysistest.TestData(), sqlrowserr.Analyzer, "gonfixture")
 }

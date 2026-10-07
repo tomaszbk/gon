@@ -54,7 +54,7 @@ const (
 	TypeTypeParam
 	TypeEnum
 	TypeOptional
-	TypeCanonicalEnum
+	_ // reserved: retired canonical enum encoding
 	TypeStringEnum
 )
 

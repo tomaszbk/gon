@@ -561,15 +561,6 @@ func (pw *pkgWriter) typIdx(typ types2.Type, dict *writerDict) typeInfo {
 		w.typ(typ.Elem())
 
 	case *types2.Named:
-		if types2.IsCanonicalResult(typ) {
-			w.Code(pkgbits.TypeCanonicalEnum)
-			w.String(typ.Obj().Name())
-			w.Len(typ.TypeArgs().Len())
-			for i := 0; i < typ.TypeArgs().Len(); i++ {
-				w.typ(typ.TypeArgs().At(i))
-			}
-			break
-		}
 		w.Code(pkgbits.TypeNamed)
 		w.namedType(splitNamed(typ))
 
@@ -2028,13 +2019,13 @@ func (w *writer) expr(expr syntax.Expr) {
 	default:
 		w.p.unexpected("expression", expr)
 
+	case *syntax.InterpolatedStringExpr:
+		assert(expr.Lowered != nil)
+		w.expr(expr.Lowered)
+
 	case *syntax.OptionalExpr:
 		w.optionExpr(expr)
 	case *syntax.ErrorExpr:
-		if types2.IsCanonicalResult(w.p.typeOf(expr.X)) {
-			w.resultErrorExpr(expr)
-			break
-		}
 		w.Code(exprError)
 		w.pos(expr)
 		w.Bool(expr.SynthesizedHandler)
@@ -2044,6 +2035,11 @@ func (w *writer) expr(expr syntax.Expr) {
 		w.blockStmt(expr.Body)
 		w.closeScope(expr.Body.Rbrace)
 
+	case *syntax.PatternTestExpr:
+		w.Code(exprPatternTest)
+		w.pos(expr)
+		w.expr(expr.X)
+		w.matchPattern(expr.Pattern, w.p.typeOf(expr.X))
 	case *syntax.MatchExpr:
 		w.matchExpr(expr, false)
 

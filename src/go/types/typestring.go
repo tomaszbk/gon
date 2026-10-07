@@ -344,10 +344,6 @@ func (w *typeWriter) typ(typ Type) {
 		}
 
 	case *Alias:
-		if migrationOption != nil && (t.Obj() == migrationOption.Obj() || t.Origin() == migrationOption) {
-			w.typ(Unalias(t))
-			break
-		}
 		w.typeName(t.obj)
 		if list := t.targs.list(); len(list) != 0 {
 			// instantiated type

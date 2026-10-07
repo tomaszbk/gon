@@ -154,7 +154,7 @@ func (check *Checker) enumSelector(x *operand, e *ast.SelectorExpr, wantType boo
 	if n, ok := Unalias(x.typ()).(*Named); ok && n.Origin().unpack().fromRHS == nil {
 		return false
 	}
-	enum := check.sourceEnum(x.typ())
+	enum := EnumOf(x.typ())
 	if enum == nil {
 		return false
 	}

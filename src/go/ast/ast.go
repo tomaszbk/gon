@@ -393,13 +393,15 @@ type (
 	}
 
 	// An ErrorExpr handles the final error result of a function call.
-	// With a nil Body it represents postfix ! propagation. Otherwise Err
-	// names the error within the local handler Body introduced by "or".
+	// Err binds the error in Body or Context, introduced by "or". A Context
+	// expression is propagated on failure; with neither, it is postfix !.
 	ErrorExpr struct {
-		X     Expr       // function call, possibly parenthesized
-		OpPos token.Pos  // position of "!" or "or"
-		Err   *Ident     // handler error binding; nil for propagation
-		Body  *BlockStmt // local error handler; nil for propagation
+		X       Expr       // function call, possibly parenthesized
+		OpPos   token.Pos  // position of "!" or "or"
+		Err     *Ident     // handler error binding; nil for propagation
+		Body    *BlockStmt // local error handler; nil for propagation
+		Arrow   token.Pos  // position of => for an expression handler
+		Context Expr       // error expression to propagate on failure
 	}
 
 	// A LambdaExpr is a contextually typed function literal. Exactly one of
@@ -602,6 +604,9 @@ func (x *SliceExpr) End() token.Pos      { return x.Rbrack + 1 }
 func (x *TypeAssertExpr) End() token.Pos { return x.Rparen + 1 }
 func (x *CallExpr) End() token.Pos       { return x.Rparen + 1 }
 func (x *ErrorExpr) End() token.Pos {
+	if x.Context != nil {
+		return x.Context.End()
+	}
 	if x.Body != nil {
 		return x.Body.End()
 	}

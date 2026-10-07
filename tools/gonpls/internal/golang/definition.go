@@ -307,21 +307,6 @@ func builtinDecl(ctx context.Context, snapshot *cache.Snapshot, obj types.Object
 			if err != nil {
 				return nil, nil, err
 			}
-		} else if owner, variant := canonicalEnumConstructor(obj); variant != nil {
-			name := types.Unalias(owner).(*types.Named).Obj().Name()
-			decl, _, err := declaringIdent(pgf.File, name)
-			if err != nil {
-				return nil, nil, err
-			}
-			for _, v := range decl.(*ast.TypeSpec).Type.(*ast.EnumType).Variants {
-				if v.Name.Name == variant.Name() {
-					ident = v.Name
-					break
-				}
-			}
-			if ident == nil {
-				return nil, nil, bug.Errorf("no documentation for canonical alternative %s.%s", name, obj.Name())
-			}
 		} else if obj.Name() == "Error" {
 			// error.Error method
 			decl, _, err := declaringIdent(pgf.File, "error")

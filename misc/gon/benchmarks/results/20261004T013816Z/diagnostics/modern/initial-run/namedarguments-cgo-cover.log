@@ -1,8 +1,0 @@
-{"Time":"2026-10-03T11:32:15.735786-03:00","Action":"start","Package":"cmd/cgo/internal/testconditional"}
-{"Time":"2026-10-03T11:32:15.968896-03:00","Action":"run","Package":"cmd/cgo/internal/testconditional","Test":"TestPairedCgoNamedArguments"}
-{"Time":"2026-10-03T11:32:15.968997-03:00","Action":"output","Package":"cmd/cgo/internal/testconditional","Test":"TestPairedCgoNamedArguments","Output":"=== RUN   TestPairedCgoNamedArguments\n","OutputType":"frame"}
-{"Time":"2026-10-03T11:32:21.079187-03:00","Action":"output","Package":"cmd/cgo/internal/testconditional","Test":"TestPairedCgoNamedArguments","Output":"--- PASS: TestPairedCgoNamedArguments (5.11s)\n","OutputType":"frame"}
-{"Time":"2026-10-03T11:32:21.07925-03:00","Action":"pass","Package":"cmd/cgo/internal/testconditional","Test":"TestPairedCgoNamedArguments","Elapsed":5.11}
-{"Time":"2026-10-03T11:32:21.079287-03:00","Action":"output","Package":"cmd/cgo/internal/testconditional","Output":"PASS\n","OutputType":"frame"}
-{"Time":"2026-10-03T11:32:21.080019-03:00","Action":"output","Package":"cmd/cgo/internal/testconditional","Output":"ok  \tcmd/cgo/internal/testconditional\t5.344s\n"}
-{"Time":"2026-10-03T11:32:21.080049-03:00","Action":"pass","Package":"cmd/cgo/internal/testconditional","Elapsed":5.344}

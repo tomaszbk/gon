@@ -3275,7 +3275,7 @@ Default: on.
 <a id='gonerrors'></a>
 ## `gonerrors`: replace eligible error checks with Gon propagation or local handlers
 
-The analyzer recognizes fresh call-result declarations followed by an error check, and error-only declarations in an if initializer. It suggests postfix ! when the handler returns the same error and zero values, or an or handler to preserve wrapping or other behavior. Handlers must terminate when the call has success values; error-only handlers may fall through.
+The analyzer recognizes fresh call-result declarations followed by an error check, and error-only declarations in an if initializer. It suggests postfix ! when the handler returns the same error and zero values, or when a test function (in a \_test.go file, with a first named \*testing.T, \*testing.B, \*testing.F or testing.TB parameter, that does not return error last) only calls Fatal with the same error. Otherwise it suggests an or handler to preserve wrapping or other behavior. Handlers must terminate when the call has success values; error-only handlers may fall through.
 
 It keeps checks that observe partial results, reuse bindings, use the error after the check, or have unsupported control flow or comments that would be lost. Only calls with exactly error as their final result are eligible.
 
@@ -3642,6 +3642,13 @@ Wrapper functions such as varOf are common when working with Go serialization pa
 Default: on.
 
 Package documentation: [newexpr](https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/modernize#hdr-Analyzer_newexpr)
+
+<a id='nilaway'></a>
+## `nilaway`: Run NilAway on this package to report any possible flows of nil values to erroneous sites that our system can detect
+
+
+
+Default: off. Enable by setting `"analyses": {"nilaway": true}`.
 
 <a id='nilfunc'></a>
 ## `nilfunc`: check for useless comparisons between functions and nil

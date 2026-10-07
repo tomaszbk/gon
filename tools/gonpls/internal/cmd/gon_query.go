@@ -285,13 +285,15 @@ func (r *gonRequest) queryType(ctx context.Context, item *gonQueryItem, t *gonTa
 			ti.Construct = "enum-type"
 		case *ast.MatchExpr:
 			ti.Construct = "match-expression"
+		case *ast.PatternTestExpr:
+			ti.Construct = "pattern-test"
+		case *ast.InterpolatedStringExpr:
+			ti.Construct = "string-interpolation"
 		case *ast.OptionalExpr:
 			ti.Construct = "optional-propagation"
 			if tv.IsType() {
 				ti.Construct = "optional-type"
 			}
-		case *ast.ContextualVariantExpr:
-			ti.Construct = "contextual-constructor"
 		case *ast.LambdaExpr:
 			ti.Construct = "lambda"
 		case *ast.NilGuardExpr:
@@ -314,13 +316,10 @@ func (r *gonRequest) queryType(ctx context.Context, item *gonQueryItem, t *gonTa
 			ti.Construct = "error-propagation"
 			if e.Body != nil {
 				ti.Construct = "error-handler"
-			}
-			if types.IsCanonicalResult(info.TypeOf(e.X)) {
-				if e.Body != nil {
-					ti.Construct = "result-handler"
-				} else {
-					ti.Construct = "result-propagation"
-				}
+			} else if e.Context != nil {
+				ti.Construct = "error-context"
+			} else if strings.HasSuffix(t.loc.URI.Path(), "_test.go") && gonTestPropagation(t.path, info) {
+				ti.Construct = "test-error-propagation"
 			}
 			if tup, isTuple := typ.(*types.Tuple); isTuple && tup.Len() == 0 {
 				ti.Type = "(no value)"
@@ -453,4 +452,27 @@ func gonSymbolKind(k protocol.SymbolKind) string {
 		return names[k-1]
 	}
 	return "symbol"
+}
+
+// gonTestPropagation identifies the nearest function, matching the checker's
+// function boundary and signature rules for ! in test files.
+func gonTestPropagation(path []ast.Node, info *types.Info) bool {
+	for _, node := range path {
+		var typ types.Type
+		switch node := node.(type) {
+		case *ast.FuncDecl:
+			if obj := info.Defs[node.Name]; obj != nil {
+				typ = obj.Type()
+			}
+		case *ast.FuncLit:
+			typ = info.TypeOf(node)
+		case *ast.LambdaExpr:
+			typ = info.TypeOf(node)
+		default:
+			continue
+		}
+		sig, _ := typ.(*types.Signature)
+		return sig != nil && types.TestFatalParam(sig) != nil
+	}
+	return false
 }

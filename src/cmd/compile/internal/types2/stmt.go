@@ -607,12 +607,22 @@ func (check *Checker) stmt(ctxt stmtContext, s syntax.Stmt) {
 		defer check.closeScope()
 
 		check.simpleStmt(s.Init)
+		previous := check.patternTestContexts
+		check.patternTestContexts = conditionPatternTests(s.Cond)
+		bindingScope := len(check.patternTestContexts) > 0
+		if bindingScope {
+			check.openPatternScope(s.Cond, s.Then)
+		}
 		var x operand
 		check.expr(nil, &x, s.Cond)
 		if x.isValid() && !allBoolean(x.typ()) {
 			check.error(s.Cond, InvalidCond, "non-boolean condition in if statement")
 		}
+		check.patternTestContexts = previous
 		check.stmt(inner, s.Then)
+		if bindingScope {
+			check.closeScope()
+		}
 		// The parser produces a correct AST but if it was modified
 		// elsewhere the else branch may be invalid. Check again.
 		switch s.Else.(type) {

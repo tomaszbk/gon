@@ -9,32 +9,6 @@ import (
 // handlers deliberately stay on the MARK line, so this file is not gofmt'd: the
 // harness compares the line each failure is reported at with its marker.
 
-type IntResult struct {
-	Value   int
-	Problem error
-	Failed  bool
-}
-type TextResult struct {
-	Value   int
-	Problem string
-	Failed  bool
-}
-type CodedResult struct {
-	Value   int
-	Problem *CodedError
-	Failed  bool
-}
-
-func okResult() IntResult  { return IntResult{Value: 3} }
-func badResult() IntResult { return IntResult{Problem: errBoom, Failed: true} }
-func nilResult() IntResult { return IntResult{Failed: true} }
-func textResult() TextResult {
-	return TextResult{Problem: "text payload", Failed: true}
-}
-func codedResult() CodedResult {
-	return CodedResult{Problem: &CodedError{Code: 9}, Failed: true}
-}
-
 func TestSuccess(t *testing.T) {
 	n, err := parse("12")
 	if err != nil { t.Fatal(err) } // MARK:never
@@ -114,29 +88,6 @@ func (s suite) check(t *testing.T) {
 }
 
 func TestMethod(t *testing.T) { suite{"s"}.check(t) }
-
-func TestResult(t *testing.T) {
-	t.Run("ok", func(t *testing.T) {
-		r := okResult()
-		if r.Failed { t.Fatal(r.Problem) } // MARK:never3
-	})
-	t.Run("error", func(t *testing.T) {
-		r := badResult()
-		if r.Failed { t.Fatal(r.Problem) } // MARK:resulterror
-	})
-	t.Run("nil", func(t *testing.T) {
-		r := nilResult()
-		if r.Failed { t.Fatal(r.Problem) } // MARK:resultnil
-	})
-	t.Run("text", func(t *testing.T) {
-		r := textResult()
-		if r.Failed { t.Fatal(r.Problem) } // MARK:resulttext
-	})
-	t.Run("coded", func(t *testing.T) {
-		r := codedResult()
-		if r.Failed { t.Fatal(r.Problem) } // MARK:coded
-	})
-}
 
 func must(tb testing.TB, s string) int {
 	n, err := parse(s)

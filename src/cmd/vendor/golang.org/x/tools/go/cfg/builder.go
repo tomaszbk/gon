@@ -524,11 +524,6 @@ func (b *builder) add(n ast.Node) {
 			return false
 		case *ast.TypeSpec, *ast.ArrayType, *ast.StructType, *ast.EnumType, *ast.FuncType, *ast.InterfaceType, *ast.MapType, *ast.ChanType:
 			return false
-		case *ast.ContextualVariantExpr:
-			for _, arg := range e.Args {
-				b.add(arg)
-			}
-			return false
 		case *ast.FuncLit, *ast.LambdaExpr:
 			return false
 		case *ast.SafeNavExpr:
@@ -573,6 +568,17 @@ func (b *builder) add(n ast.Node) {
 				b.current = done
 				return false
 			}
+		case *ast.PatternTestExpr:
+			b.add(e.X)
+			b.current.Nodes = append(b.current.Nodes, e.Pattern)
+			return false
+		case *ast.InterpolatedStringExpr:
+			for _, part := range e.Parts {
+				if part.Expr != nil {
+					b.add(part.Expr)
+				}
+			}
+			return false
 		case *ast.OptionalExpr:
 			b.add(e.X)
 			absent := b.newBlock(KindOptionAbsent, nil)
@@ -595,6 +601,9 @@ func (b *builder) add(n ast.Node) {
 			if e.Body != nil {
 				b.stmt(e.Body)
 			} else {
+				if e.Context != nil {
+					b.add(e.Context)
+				}
 				// A non-nil results list distinguishes propagation (which
 				// zeros named results) from an ordinary naked return.
 				b.stmt(&ast.ReturnStmt{Return: e.OpPos, Results: []ast.Expr{}})

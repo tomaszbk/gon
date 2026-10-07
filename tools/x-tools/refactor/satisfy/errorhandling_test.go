@@ -52,37 +52,3 @@ func TestErrorHandling(t *testing.T) {
 		t.Fatal("interface assignment inside error handler was not visited")
 	}
 }
-
-// A failed Result propagated into a function returning error converts its
-// payload to error, so a concrete error type satisfies error there.
-func TestResultToErrorPropagation(t *testing.T) {
-	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "p.go", `package p
- type E struct{}
- func (E) Error() string { return "" }
- func read() Result[int, E] { return .Ok(1) }
- func f() (int, error) {
-  n := read()!
-  return n, nil
- }
-`, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	info := &types.Info{
-		Types:      make(map[ast.Expr]types.TypeAndValue),
-		Defs:       make(map[*ast.Ident]types.Object),
-		Uses:       make(map[*ast.Ident]types.Object),
-		Selections: make(map[*ast.SelectorExpr]*types.Selection),
-	}
-	pkg, err := new(types.Config).Check("p", fset, []*ast.File{f}, info)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var finder Finder
-	finder.Find(info, []*ast.File{f})
-	constraint := Constraint{LHS: types.Universe.Lookup("error").Type(), RHS: pkg.Scope().Lookup("E").Type()}
-	if !finder.Result[constraint] {
-		t.Fatalf("Result payload converted to error was not recorded: %v", finder.Result)
-	}
-}

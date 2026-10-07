@@ -21,15 +21,9 @@ import (
 
 const simplificationLib = `package lib
 type Maybe = int?
-type Outcome[T any] = Result[T?,string]
 func Some[T any](value T) (out T?) { return (T)(value) }
 func Lift[T any](value T) (out T?) { return value }
 func Absent[T any]() (out T?) { return nil }
-func Wrap[T any](value T, fail bool) (out Outcome[T]) {
- if fail { return .Err("bad") }
- return .Ok(value)
-}
-func Zero[T any]() (out Outcome[T]) { return .Ok(nil) }
 func NilPresent() (out (*int)?) { return (*int)(nil) }
 `
 
@@ -42,9 +36,6 @@ func main() {
  var pointer *int
  switch lib.Lift(pointer) { case p? if p == nil => {}; default => { panic("typed nil presence") } }
  switch lib.NilPresent() { case p? if p == nil => {}; default => { panic("explicit nil presence") } }
- switch lib.Wrap(fail: false, value: 9) { case Result[int?,string].Ok(n?) if n == 9 => {}; default => { panic("success") } }
- switch lib.Zero[int]() { case Result[int?,string].Ok(nil) => {}; default => { panic("nil success") } }
- switch lib.Wrap(value: 10, fail: true) { case Result[int?,string].Err(problem) if problem == "bad" => {}; default => { panic("failure") } }
  var alias lib.Maybe = 11
  if (alias ?? 0) != 11 { panic("exported alias") }
  println("PASS")
@@ -54,15 +45,9 @@ func main() {
 const simplificationLegacyLib = `package lib
 type Option[T any] struct { Present bool; Value T }
 type Maybe = Option[int]
-type Outcome[T any] struct { Failed bool; Value Option[T]; Problem string }
 func Some[T any](value T) (out Option[T]) { return Option[T]{true,value} }
 func Lift[T any](value T) (out Option[T]) { return Option[T]{true,value} }
 func Absent[T any]() (out Option[T]) { return Option[T]{} }
-func Wrap[T any](value T, fail bool) (out Outcome[T]) {
- if fail { return Outcome[T]{Failed:true,Problem:"bad"} }
- return Outcome[T]{Value:Option[T]{true,value}}
-}
-func Zero[T any]() (out Outcome[T]) { return Outcome[T]{} }
 func NilPresent() (out Option[*int]) { return Option[*int]{true,nil} }
 `
 
@@ -75,9 +60,6 @@ func main() {
  var pointer *int
  if p:=lib.Lift(pointer); !p.Present || p.Value!=nil { panic("typed nil presence") }
  if p:=lib.NilPresent(); !p.Present || p.Value!=nil { panic("explicit nil presence") }
- if r:=lib.Wrap(9,false); r.Failed || !r.Value.Present || r.Value.Value!=9 { panic("success") }
- if r:=lib.Zero[int](); r.Failed || r.Value.Present { panic("nil success") }
- if r:=lib.Wrap(10,true); !r.Failed || r.Problem!="bad" { panic("failure") }
  var alias lib.Maybe = lib.Option[int]{true,11}
  if !alias.Present || alias.Value!=11 { panic("exported alias") }
  println("PASS")
@@ -123,34 +105,17 @@ func assertSimplificationSignatures(t *testing.T, pkg *types.Package) {
 	if !types.IsOptional(pkg.Scope().Lookup("Maybe").Type()) {
 		t.Fatal("exported optional alias lost canonical identity")
 	}
-	for _, name := range []string{"Some", "Lift", "Absent", "Wrap", "Zero", "NilPresent"} {
+	for _, name := range []string{"Some", "Lift", "Absent", "NilPresent"} {
 		sig := pkg.Scope().Lookup(name).Type().(*types.Signature)
 		if sig.Results().Len() != 1 || sig.Results().At(0).Name() != "out" {
 			t.Fatalf("%s named single result lost: %v", name, sig)
 		}
 		result := sig.Results().At(0).Type()
-		if name == "Wrap" || name == "Zero" {
-			if !types.IsCanonicalResult(result) {
-				t.Fatalf("%s result identity lost", name)
-			}
-			desc := types.EnumOf(result)
-			var payload types.Type
-			for i := range desc.NumVariants() {
-				if v := desc.Variant(i); v.Name() == "Ok" {
-					payload = v.Field(0).Type()
-				}
-			}
-			if !types.IsOptional(payload) {
-				t.Fatalf("%s success payload optional identity lost", name)
-			}
-		} else if !types.IsOptional(result) {
+		if !types.IsOptional(result) {
 			t.Fatalf("%s optional result identity lost", name)
 		}
 		if sig.Params().Len() > 0 && sig.Params().At(0).Name() != "value" {
 			t.Fatalf("%s parameter name lost", name)
-		}
-		if name == "Wrap" && sig.Params().At(1).Name() != "fail" {
-			t.Fatal("reordered named argument signature lost")
 		}
 	}
 }

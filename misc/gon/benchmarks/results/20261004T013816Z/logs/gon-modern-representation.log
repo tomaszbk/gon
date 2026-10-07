@@ -1,1 +1,0 @@
-{"sizesByShape":{"(*int)?":16,"Result[int,error]":32,"Result[int,string]":32,"enum/record":32,"enum/unit":16,"int?":16,"struct{}?":16},"retention":{"count":10000,"checksum":49995000,"sliceBytes":160000,"heapDeltaBytes":243824,"gcCycles":1}}

@@ -49,7 +49,7 @@ func f(p Payment[int]) string {
 	}
 	body := f.Decls[1].(*ast.FuncDecl).Body
 	match := body.List[0].(*ast.AssignStmt).Rhs[0].(*ast.MatchExpr)
-	if len(match.Arms) != 4 || match.Arms[1].Guard == nil || !match.Arms[3].Pattern.Rest.IsValid() {
+	if len(match.Arms) != 4 || match.Arms[1].Guard == nil || !match.Arms[3].Patterns[0].Rest.IsValid() {
 		t.Fatalf("bad match: %#v", match)
 	}
 	if _, ok := body.List[1].(*ast.MatchStmt); !ok {
@@ -82,8 +82,8 @@ case Option[Option[int]].None => -1
 		t.Fatal(err)
 	}
 	m := x.(*ast.MatchExpr)
-	if len(m.Arms[0].Pattern.Args[0].Args) != 1 {
-		t.Fatalf("nested pattern: %#v", m.Arms[0].Pattern)
+	if len(m.Arms[0].Patterns[0].Args[0].Args) != 1 {
+		t.Fatalf("nested pattern: %#v", m.Arms[0].Patterns[0])
 	}
 	var walk func(ast.Node)
 	walk = func(n ast.Node) {
@@ -162,6 +162,11 @@ const student = "student"
 
 func TestAlternativesInvalidSyntax(t *testing.T) {
 	for _, src := range []string{
+		`package p; var x = .Ok(1)`,
+		`package p; var x = .Err(nil)`,
+		`package p; var x int? = .Some(1)`,
+		`package p; var x int? = .None`,
+		`package p; type Box enum { default Empty; Full(int) }; var x Box = .Full(1)`,
 		`package p; type E enum; { default V }`,
 		`package p; type E = enum { default V }`,
 		`package p; type E enum { default V(x int) }`,
@@ -233,7 +238,7 @@ func TestMatchObjectScopes(t *testing.T) {
 		t.Fatal(err)
 	}
 	m := f.Decls[1].(*ast.FuncDecl).Body.List[0].(*ast.ReturnStmt).Results[0].(*ast.MatchExpr)
-	binding := m.Arms[0].Pattern.Args[0].Value.(*ast.Ident)
+	binding := m.Arms[0].Patterns[0].Args[0].Value.(*ast.Ident)
 	use := m.Arms[0].Value.(*ast.Ident)
 	if binding.Obj == nil || use.Obj != binding.Obj || binding.Obj.Pos() != binding.Pos() {
 		t.Fatal("pattern binding was not resolved in its arm")
@@ -272,7 +277,7 @@ func TestSimplifiedAlternativesSyntax(t *testing.T) {
  type OptionalPtr = (*int)?
  type OptionalSlice = ([]int)?
  type Nested = (int?)?
- type F func(int?, (*int)?, (int?)?) (int?, Result[int?, error])
+ type F func(int?, (*int)?, (int?)?) (int?, error)
  type OptionalReturns func(*int) (*int)?
  type SliceReturns func([]int) ([]int)?
  type NestedReturns func(int?) (int?)?
@@ -282,43 +287,27 @@ func TestSimplifiedAlternativesSyntax(t *testing.T) {
  func legacyTuple() (first *int, second []int) { return nil, nil }
  var a int? = (int)(3)
  var b int? = nil
- func f(x int?, y (int?)?, z []int?) (value Result[int?, error]) {
+ func f(x int?, y (int?)?, z []int?) (value int?) {
      var p (*int)? = (*int)(nil)
      _ = p
-     return .Ok(if true { (int)(x ?? 0) } else { nil })
+     return if true { (int)(x ?? 0) } else { nil }
  }
- func g() Result[int, error] { return .Err(nil) }
+ func g() int? { return nil }
 `
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, "simplified.go", src, parser.ParseComments)
 	if err != nil {
 		t.Fatal(err)
 	}
-	var optional, variants int
+	var optional int
 	ast.Inspect(file, func(node ast.Node) bool {
-		switch node := node.(type) {
-		case *ast.OptionalExpr:
+		if _, ok := node.(*ast.OptionalExpr); ok {
 			optional++
-		case *ast.ContextualVariantExpr:
-			variants++
-			if node.Pos() != node.Dot || node.End() <= node.Pos() {
-				t.Errorf("invalid contextual positions: %#v", node)
-			}
-			var children []ast.Node
-			for child := range ast.Children(node) {
-				children = append(children, child)
-			}
-			if len(children) != len(node.Args)+1 || children[0] != node.Name {
-				t.Errorf("invalid contextual children: %#v", children)
-			}
-			if node.Name.Obj != nil {
-				t.Errorf("contextual variant resolved as ordinary identifier: %s", node.Name.Name)
-			}
 		}
 		return true
 	})
-	if optional < 10 || variants != 2 {
-		t.Fatalf("unexpected nodes: %d option, %d contextual", optional, variants)
+	if optional < 10 {
+		t.Fatalf("unexpected nodes: %d optional", optional)
 	}
 	ptr := file.Decls[0].(*ast.GenDecl).Specs[0].(*ast.TypeSpec).Type.(*ast.StarExpr)
 	if _, ok := ptr.X.(*ast.OptionalExpr); !ok {
@@ -364,8 +353,9 @@ func TestSimplifiedAlternativesSyntaxErrors(t *testing.T) {
 
 func TestSimplifiedAlternativesMultiline(t *testing.T) {
 	const source = `package p
-func f() Result[int, error] {
- return .Ok(
+type Box enum { default Empty; Full(int) }
+func f() Box {
+ return Box.Full(
  // payload
  42,
  )
@@ -377,12 +367,101 @@ func f() Result[int, error] {
 	}
 	again, err := format.Source(formatted)
 	if err != nil {
-		t.Fatalf("formatted contextual construction failed: %v\n%s", err, formatted)
+		t.Fatalf("formatted enum construction failed: %v\n%s", err, formatted)
 	}
 	if !bytes.Equal(formatted, again) {
 		t.Fatalf("unstable formatting:\n%s\n%s", formatted, again)
 	}
 	if !bytes.Contains(formatted, []byte("// payload")) {
 		t.Fatalf("comment lost:\n%s", formatted)
+	}
+}
+
+func TestMatchAlternativesSyntax(t *testing.T) {
+	const source = `package p
+ type Shape enum { default Empty; Circle(int); Sphere(int) }
+ func value(shape Shape) int { return switch shape { case Shape.Circle(radius), Shape.Sphere(radius) if radius > 0 => radius; default => 0 } }
+ func statement(shape Shape) { switch shape { case Shape.Circle(radius), Shape.Sphere(radius) => { _ = radius }; case Shape.Empty => {} } }
+ `
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, "multipattern.go", source, parser.ParseComments)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var multiple int
+	ast.Inspect(file, func(node ast.Node) bool {
+		if arm, ok := node.(*ast.MatchArm); ok && len(arm.Patterns) == 2 {
+			multiple++
+			first := arm.Patterns[0].Args[0].Value.(*ast.Ident)
+			second := arm.Patterns[1].Args[0].Value.(*ast.Ident)
+			if first.Obj == nil || first.Obj != second.Obj {
+				t.Error("alternatives must share their arm binding identity")
+			}
+			var patterns int
+			for child := range ast.Children(arm) {
+				if _, ok := child.(*ast.MatchPattern); ok {
+					patterns++
+				}
+			}
+			if patterns != 2 {
+				t.Errorf("pattern children=%d", patterns)
+			}
+		}
+		return true
+	})
+	if multiple != 2 {
+		t.Fatalf("multi-pattern arms: %d", multiple)
+	}
+	var formatted bytes.Buffer
+	if err := format.Node(&formatted, fset, file); err != nil {
+		t.Fatal(err)
+	}
+	again, err := format.Source(formatted.Bytes())
+	if err != nil || !bytes.Equal(formatted.Bytes(), again) {
+		t.Fatalf("round trip: %v\n%s\n%s", err, formatted.String(), again)
+	}
+}
+
+func TestPatternTestSyntax(t *testing.T) {
+	const source = `package p
+ type Shape enum { default Empty; Circle(int); Record{Radius int} }
+ func f(shape Shape,value int?,optionalShape Shape?) bool {
+  if shape is Shape.Empty {} else if shape is Shape.Record{Radius: radius} && radius>0 {return true}
+  if value is number? && number>0 {return true}
+  if optionalShape is Shape.Record{Radius: radius}? && radius>0 {return true}
+  if shape is Shape.Record{...} is true {return true}
+  is:=3
+  return !(shape is Shape.Circle(_)) && is==3
+ }
+ `
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, "is.go", source, parser.ParseComments)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := 0
+	ast.Inspect(file, func(n ast.Node) bool {
+		if test, ok := n.(*ast.PatternTestExpr); ok {
+			tests++
+			var children []ast.Node
+			for child := range ast.Children(test) {
+				children = append(children, child)
+			}
+			if len(children) != 2 || children[0] != test.X || children[1] != test.Pattern || test.End() <= test.Pos() {
+				t.Errorf("pattern test structure: %#v", test)
+			}
+		}
+		return true
+	})
+	if tests != 7 {
+		t.Fatalf("pattern test nodes=%d", tests)
+	}
+	var output bytes.Buffer
+	if err := format.Node(&output, fset, file); err != nil {
+		t.Fatal(err)
+	}
+	again, err := format.Source(output.Bytes())
+	if err != nil || !bytes.Equal(output.Bytes(), again) {
+		t.Fatalf("round trip: %v\n%s\n%s", err, output.String(), again)
 	}
 }

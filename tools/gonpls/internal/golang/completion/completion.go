@@ -291,11 +291,10 @@ type completer struct {
 	// also includes our package scope and the universal scope at the
 	// end.
 	//
-	// (It is tempting to replace this with fileScope.Innermost(pos)
-	// and simply follow the Scope.Parent chain, but we need to
-	// preserve the pairwise association of scopes[i] and path[i]
-	// because there is no way to get from the Scope to the Node.)
-	scopes []*types.Scope
+	// scopeNodes retains the defining AST node for invalid-type recovery,
+	// including the condition scope shared with a pattern-test then body.
+	scopes     []*types.Scope
+	scopeNodes map[*types.Scope]ast.Node
 }
 
 // tooNew reports whether obj is a standard library symbol that is too
@@ -596,19 +595,30 @@ func Completion(ctx context.Context, snapshot *cache.Snapshot, fh file.Handle, p
 		}
 	}
 
-	// Collect all surrounding scopes, innermost first, inserting
-	// nils as needed to preserve the correspondence with path[i].
+	// Collect all surrounding scopes, innermost first. Pattern bindings
+	// belong to the condition scope, which also encloses the then body
+	// without being an ancestor of it in the AST.
 	var scopes []*types.Scope
+	scopeNodes := make(map[*types.Scope]ast.Node)
 	for _, n := range path {
 		switch node := n.(type) {
 		case *ast.FuncDecl:
 			n = node.Type
 		case *ast.FuncLit:
 			n = node.Type
+		case *ast.IfStmt:
+			if node.Body.Pos() <= pos && pos <= node.Body.End() {
+				if scope := info.Scopes[node.Cond]; scope != nil {
+					scopes = append(scopes, scope)
+					scopeNodes[scope] = node.Cond
+				}
+			}
 		}
+		scopeNodes[info.Scopes[n]] = n
 		scopes = append(scopes, info.Scopes[n])
 	}
 	scopes = append(scopes, pkg.Types().Scope(), types.Universe)
+	scopeNodes[pkg.Types().Scope()] = pgf.File
 
 	opts := snapshot.Options()
 	c := &completer{
@@ -650,6 +660,7 @@ func Completion(ctx context.Context, snapshot *cache.Snapshot, fh file.Handle, p
 		mapper:             pgf.Mapper,
 		startTime:          startTime,
 		scopes:             scopes,
+		scopeNodes:         scopeNodes,
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
@@ -739,9 +750,6 @@ func (c *completer) collectCompletions(ctx context.Context) error {
 	}
 
 	if c.matchPatternFields() {
-		return nil
-	}
-	if c.contextualVariants() {
 		return nil
 	}
 
@@ -1551,12 +1559,7 @@ func (c *completer) lexical(ctx context.Context) error {
 			if !isPkgName(obj) && !typeIsValid(obj.Type()) {
 				// Match the scope to its ast.Node. If the scope is the package scope,
 				// use the *ast.File as the starting node.
-				var node ast.Node
-				if i < len(c.path) {
-					node = c.path[i]
-				} else if i == len(c.path) { // use the *ast.File for package scope
-					node = c.path[i-1]
-				}
+				node := c.scopeNodes[scope]
 				if node != nil {
 					if resolved := resolveInvalid(c.pkg.FileSet(), obj, node, c.pkg.TypesInfo()); resolved != nil {
 						obj = resolved
@@ -2289,27 +2292,6 @@ func expectedCandidate(ctx context.Context, c *completer) (inf candidateInferenc
 Nodes:
 	for i, node := range c.path {
 		switch node := node.(type) {
-		case *ast.ContextualVariantExpr:
-			if c.pos <= node.Name.End() {
-				if typ := c.pkg.TypesInfo().TypeOf(node); types.IsOptional(typ) || types.IsCanonicalResult(typ) {
-					inf.objType = typ
-					return inf
-				}
-				continue
-			}
-			if typ := c.pkg.TypesInfo().TypeOf(node); types.IsOptional(typ) || types.IsCanonicalResult(typ) {
-				if variant := types.EnumStorageOf(typ).Lookup(node.Name.Name, nil); variant != nil && variant.NumFields() == 1 {
-					inf.objType = variant.Field(0).Type()
-					return inf
-				}
-			}
-			defer func() {
-				if types.IsOptional(inf.objType) || types.IsCanonicalResult(inf.objType) {
-					if variant := types.EnumStorageOf(inf.objType).Lookup(node.Name.Name, nil); variant != nil && variant.NumFields() == 1 {
-						inf.objType = variant.Field(0).Type()
-					}
-				}
-			}()
 		case *ast.LambdaExpr:
 			if node.Body != nil && c.pos >= node.Arrow {
 				if typ := c.pkg.TypesInfo().TypeOf(node); typ != nil {

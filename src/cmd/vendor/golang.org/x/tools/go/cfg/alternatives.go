@@ -21,14 +21,21 @@ func (b *builder) match(e *ast.MatchExpr, stmt ast.Stmt, label *lblock) {
 		next := b.newBlock(KindMatchTest, stmt)
 		// Exhaustiveness is mandatory in well-typed Gon matches, so the
 		// final unguarded arm covers all values surviving earlier tests.
-		if arm.Pattern == nil || i == len(e.Arms)-1 && arm.Guard == nil {
+		if len(arm.Patterns) == 0 || i == len(e.Arms)-1 && arm.Guard == nil {
 			b.jump(body)
 		} else {
-			// A MatchPattern is not an expression. The tag is the only
-			// evaluated operand of a test, and is already evaluated once.
-			// Retain the pattern as structural test syntax, never the tag again.
-			b.current.Nodes = append(b.current.Nodes, arm.Pattern)
-			b.ifelse(body, next)
+			for j, pattern := range arm.Patterns {
+				failure := next
+				if j < len(arm.Patterns)-1 {
+					failure = b.newBlock(KindMatchTest, stmt)
+				}
+				// Pattern heads and bindings are structural tests, never
+				// arbitrary evaluated expressions. Success skips the other
+				// alternatives and reaches the arm's single guard.
+				b.current.Nodes = append(b.current.Nodes, pattern)
+				b.ifelse(body, failure)
+				b.current = failure
+			}
 		}
 		b.current = body
 		if arm.Guard != nil {

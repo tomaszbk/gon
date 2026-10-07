@@ -28,7 +28,7 @@ func TestGonErrorCodes(t *testing.T) {
 			t.Errorf("%s: got %d (present %v), toolchain has %d", name, got, ok, value)
 		}
 	}
-	for _, name := range []string{"InvalidErrorHandling", "InvalidLambda", "InvalidNilSafety", "InvalidMatch"} {
+	for _, name := range []string{"InvalidErrorHandling", "InvalidLambda", "InvalidNilSafety", "InvalidMatch", "InvalidInterpolation"} {
 		if got := typesinternal.ErrorCode(std[name]).String(); got != name {
 			t.Errorf("%s.String() = %q", name, got)
 		}

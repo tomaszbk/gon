@@ -64,3 +64,29 @@ func TestGenericOrConstraintErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestErrorContextSyntax(t *testing.T) {
+	for _, src := range []string{
+		`func f() error { _ = read() or err => wrap(err); return nil }`,
+		`func f() error { use(read() or err => wrap(err), 7); return nil }`,
+		`func f() error { _ = read() or _ => if flag { first } else { second }; return nil }`,
+		`func f() error { _ = (read() or err => wrap(err)) + 1; return nil }`,
+		`func f() error { _ = read() or err => func() error { return err }(); return nil }`,
+	} {
+		f, err := Parse(NewFileBase("context.go"), strings.NewReader("package p; "+src), nil, nil, CheckBranches)
+		if err != nil { t.Errorf("%s: %v", src, err); continue }
+		verifyPrint(t, "context.go", f)
+		Inspect(f, func(n Node) bool {
+			if e, ok := n.(*ErrorExpr); ok && e.Context != nil {
+				if e.Err == nil || !e.Arrow.IsKnown() || EndPos(e) != EndPos(e.Context) { t.Errorf("error context positions: %#v", e) }
+			}
+			return true
+		})
+	}
+	for _, src := range []string{
+		`func f() error { read() or => nil; return nil }`,
+		`func f() error { read() or err =>; return nil }`,
+	} {
+		if _, err := Parse(NewFileBase("context.go"), strings.NewReader("package p; "+src), func(error){}, nil, 0); err == nil { t.Errorf("accepted malformed context: %s", src) }
+	}
+}

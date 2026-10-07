@@ -1,6 +1,5 @@
-This is a test of the refactor.inline.variable code action on Gon initializers
-whose identifiers are not lexical references: named-argument labels, and the
-contextual variants of the predeclared Result, which has no package.
+This checks inline variable on named argument labels and a multiline or handler.
+The handler retains the indentation of its insertion site.
 
 -- go.mod --
 module example.com/a
@@ -10,44 +9,63 @@ go 1.27
 package a
 
 func scale(width, height int) int { return width * height }
+func read() (int, error)         { return 1, nil }
 
 func _() int {
 	v := scale(height: 2, width: 3)
 	return v //@codeaction("v", "refactor.inline.variable", result=inlineNamed)
 }
 
-func _(err error) Result[int, error] {
-	var res Result[int, error] = .Err(err)
-	return res //@codeaction("res", "refactor.inline.variable", result=inlineVariant)
+func _() int {
+	v := read() or err {
+		println(err, `first
+second`)
+		return 0
+	}
+	return v //@codeaction("v", "refactor.inline.variable", result=inlineHandler)
 }
 
 -- @inlineNamed/a/a.go --
 package a
 
 func scale(width, height int) int { return width * height }
+func read() (int, error)         { return 1, nil }
 
 func _() int {
 	v := scale(height: 2, width: 3)
 	return scale(height: 2, width: 3) //@codeaction("v", "refactor.inline.variable", result=inlineNamed)
 }
 
-func _(err error) Result[int, error] {
-	var res Result[int, error] = .Err(err)
-	return res //@codeaction("res", "refactor.inline.variable", result=inlineVariant)
+func _() int {
+	v := read() or err {
+		println(err, `first
+second`)
+		return 0
+	}
+	return v //@codeaction("v", "refactor.inline.variable", result=inlineHandler)
 }
 
--- @inlineVariant/a/a.go --
+-- @inlineHandler/a/a.go --
 package a
 
 func scale(width, height int) int { return width * height }
+func read() (int, error)         { return 1, nil }
 
 func _() int {
 	v := scale(height: 2, width: 3)
 	return v //@codeaction("v", "refactor.inline.variable", result=inlineNamed)
 }
 
-func _(err error) Result[int, error] {
-	var res Result[int, error] = .Err(err)
-	return .Err(err) //@codeaction("res", "refactor.inline.variable", result=inlineVariant)
+func _() int {
+	v := read() or err {
+		println(err, `first
+second`)
+		return 0
+	}
+	return read() or err {
+		println(err, `first
+second`)
+		return 0
+	} //@codeaction("v", "refactor.inline.variable", result=inlineHandler)
 }
 

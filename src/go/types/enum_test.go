@@ -17,7 +17,6 @@ func TestEnumConstructorMetadata(t *testing.T) {
  var o = (string?)((string)("payload"))
  type Alias = string?
  var a Alias
- var r Result[int,error]
  `
 	file, err := parser.ParseFile(fset, "metadata.go", source, parser.SkipObjectResolution)
 	if err != nil {
@@ -47,18 +46,18 @@ func TestEnumConstructorMetadata(t *testing.T) {
 	if instantiated.Lookup("Full", pkg).Object().(*Func).Origin() != origin.Lookup("Full", pkg).Object() || instantiated.Lookup("Record", pkg).Field(0).Origin() != origin.Lookup("Record", pkg).Field(0) {
 		t.Fatal("instantiated enum declaration origins were lost")
 	}
-	if EnumOf(pkg.Scope().Lookup("o").Type()) != nil || OptionalOf(pkg.Scope().Lookup("o").Type()).Elem() != Typ[String] || Universe.Lookup("Option") != nil {
+	if EnumOf(pkg.Scope().Lookup("o").Type()) != nil || OptionalOf(pkg.Scope().Lookup("o").Type()).Elem() != Typ[String] || Universe.Lookup("Option") != nil || Universe.Lookup("Result") != nil {
 		t.Fatal("native optional identity leaked enum constructors")
 	}
-	if !IsOptional(pkg.Scope().Lookup("a").Type()) || !IsCanonicalResult(pkg.Scope().Lookup("r").Type()) {
-		t.Fatal("canonical alias identity was lost")
+	if !IsOptional(pkg.Scope().Lookup("a").Type()) {
+		t.Fatal("optional alias identity was lost")
 	}
 	if EnumOf(pkg.Scope().Lookup("b").Type()).Default().Tag() != 0 {
 		t.Fatal("reordered default changed its zero tag")
 	}
 }
 
-func TestEnumCanonicalNamesShadow(t *testing.T) {
+func TestEnumRetiredNamesAreOrdinary(t *testing.T) {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, "shadow.go", `package p; type Option[T any] enum { default None; Some(T) }; type Result[T,E any] struct { T T; E E }; var o Option[int]; var r Result[int,error]`, parser.SkipObjectResolution)
 	if err != nil {
@@ -68,7 +67,7 @@ func TestEnumCanonicalNamesShadow(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if IsOptional(pkg.Scope().Lookup("o").Type()) || IsCanonicalResult(pkg.Scope().Lookup("r").Type()) {
-		t.Fatal("shadowing declaration adopted canonical protocol")
+	if IsOptional(pkg.Scope().Lookup("o").Type()) || EnumOf(pkg.Scope().Lookup("r").Type()) != nil {
+		t.Fatal("ordinary declaration adopted a retired protocol")
 	}
 }

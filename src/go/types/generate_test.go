@@ -99,7 +99,19 @@ var filemap = map[string]action{
 	"enum.go":       fixTokenPos,
 	"stringenum.go": nil,
 	"optional.go":   nil,
-	"alias.go":      fixTokenPos,
+	"optional_test.go": func(f *ast.File) {
+		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`, `"cmd/compile/internal/types2"->"go/types"`)
+		renameIdents(f, "types2->types", "syntax->ast")
+		fixFSet(f)
+		// fixFSet stops at Check calls; also adapt their nested mustParse calls.
+		ast.Inspect(f, func(n ast.Node) bool {
+			if call, ok := n.(*ast.CallExpr); ok && isIdent(call.Fun, "mustParse") && len(call.Args) == 1 {
+				call.Args = insert(call.Args, 0, newIdent(call.Lparen, "testFSet"))
+			}
+			return true
+		})
+	},
+	"alias.go": fixTokenPos,
 	"alias_test.go": func(f *ast.File) {
 		renameImportPath(f, `"cmd/compile/internal/types2"->"go/types"`)
 		renameIdents(f, "types2->types")
@@ -125,6 +137,36 @@ var filemap = map[string]action{
 		renameIdents(f, "syntax->ast")
 	},
 	"chan.go": nil,
+	"patterntest.go": func(f *ast.File) {
+		insertImportPath(f, `"go/token"`)
+		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`)
+		renameSelectorExprs(f, "syntax.Operation->ast.BinaryExpr", "syntax.AndAnd->token.LAND", "binding.name.Value->binding.name.Name")
+		ast.Inspect(f, func(n ast.Node) bool {
+			if sel, ok := n.(*ast.SelectorExpr); ok && sel.Sel.Name == "Value" {
+				if recv, ok := sel.X.(*ast.SelectorExpr); ok && recv.Sel.Name == "name" {
+					sel.Sel.Name = "Name"
+				}
+			}
+			if call, ok := n.(*ast.CallExpr); ok {
+				if sel, ok := call.Fun.(*ast.SelectorExpr); ok && sel.Sel.Name == "EndPos" {
+					call.Fun = &ast.SelectorExpr{X: call.Args[0], Sel: ast.NewIdent("End")}
+					call.Args = nil
+				}
+			}
+			return true
+		})
+		renameIdents(f, "syntax->ast")
+	},
+	"patterntest_test.go": func(f *ast.File) {
+		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`, `"cmd/compile/internal/types2"->"go/types"`)
+		renameSelectorExprs(f, "syntax.Name->ast.Ident", "ident.Value->ident.Name")
+		renameIdents(f, "types2->types", "syntax->ast")
+	},
+	"matchalternatives_test.go": func(f *ast.File) {
+		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`, `"cmd/compile/internal/types2"->"go/types"`)
+		renameSelectorExprs(f, "syntax.Name->ast.Ident", "ident.Value->ident.Name")
+		renameIdents(f, "types2->types", "syntax->ast")
+	},
 	"matching.go": func(f *ast.File) {
 		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`)
 		renameSelectorExprs(f, "syntax.Name->ast.Ident", "n.Value->n.Name", "sel.Sel.Value->sel.Sel.Name", "f.Name.Value->f.Name.Name", "b.name.Value->b.name.Name")
@@ -137,7 +179,7 @@ var filemap = map[string]action{
 			}
 			return true
 		})
-		renameIdents(f, "syntax->ast")
+		renameIdents(f, "syntax->ast", "poser->positioner")
 		renameSelectors(f, "IsKnown->IsValid")
 	},
 	"condexpr.go": func(f *ast.File) {
@@ -215,17 +257,7 @@ var filemap = map[string]action{
 		fixTokenPos(f)
 	},
 	"optionresult.go": func(f *ast.File) {
-		insertImportPath(f, `"go/token"`)
 		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`)
-		renameSelectorExprs(f, "syntax.Goto->token.GOTO")
-		ast.Inspect(f, func(n ast.Node) bool {
-			if sel, ok := n.(*ast.SelectorExpr); ok && sel.Sel.Name == "Value" {
-				if receiver, ok := sel.X.(*ast.SelectorExpr); ok && receiver.Sel.Name == "Err" {
-					sel.Sel.Name = "Name"
-				}
-			}
-			return true
-		})
 		renameIdents(f, "syntax->ast")
 	},
 	"namedarguments.go": func(f *ast.File) {

@@ -119,15 +119,6 @@ func helperError(t *testing.T) error {
 	return nil
 }
 
-// A function returning one Result likewise.
-func helperResult(t *testing.T) Result[int, error] {
-	x, err := read()
-	if err != nil {
-		t.Fatal(err)
-	}
-	return .Ok(x)
-}
-
 // An unnamed first parameter cannot report a failure.
 func blankFirst(_ *testing.T, t2 *testing.T) {
 	x, err := read()
@@ -148,7 +139,7 @@ func (s suite) check() {
 	_ = x
 }
 
-func ResultInTest(t *testing.T) {
+func ErrorOnlyInTest(t *testing.T) {
 	// want +1 "replace error check with Gon ! propagation"
 	if err := flush(); err != nil {
 		t.Fatal(err)

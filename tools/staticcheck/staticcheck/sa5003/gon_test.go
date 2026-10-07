@@ -11,5 +11,5 @@ func TestGon(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	analysistest.Run(t, dir, Analyzer, "gon")
+	analysistest.Run(t, dir, Analyzer, "gonfixture")
 }

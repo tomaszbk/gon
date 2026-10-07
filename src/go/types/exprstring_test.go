@@ -102,6 +102,16 @@ var testExprs = []testEntry{
 	dup("f(s...)"),
 	dup("f(a, s...)"),
 
+	// Gon expressions use concise source representations in diagnostics.
+	{`$"hello ${name}"`, `$"…"`},
+	{"$`hello ${name}`", "$`…`"},
+	{`f($"${x}")`, `f($"…")`},
+	dup("int?"),
+	dup("read()?"),
+	dup("f(read()?)"),
+	{"switch value { case nil => 0; default => 1 }", "switch value {…}"},
+	{"f(switch value { case nil => 0; default => 1 })", "f(switch value {…})"},
+
 	// generic functions
 	dup("f[T]()"),
 	dup("f[T](T)"),

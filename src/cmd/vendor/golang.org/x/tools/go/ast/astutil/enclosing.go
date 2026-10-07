@@ -235,8 +235,11 @@ func childrenOf(n ast.Node) []ast.Node {
 			tok(n.TokPos, len(n.Tok.String())))
 
 	case *ast.ErrorExpr:
+		if n.Arrow.IsValid() {
+			children = append(children, tok(n.Arrow, 2))
+		}
 		width := 1
-		if n.Body != nil {
+		if n.Body != nil || n.Context != nil {
 			width = 2
 		}
 		children = append(children, tok(n.OpPos, width))
@@ -259,11 +262,14 @@ func childrenOf(n ast.Node) []ast.Node {
 		children = append(children, tok(n.Question, 1))
 	case *ast.SafeNavExpr:
 		// The underlying primary expression owns the chain's tokens.
-	case *ast.ContextualVariantExpr:
-		children = append(children, tok(n.Dot, 1))
-		if n.Lparen.IsValid() {
-			children = append(children, tok(n.Lparen, 1), tok(n.Rparen, 1))
+	case *ast.InterpolatedStringExpr:
+		children = append(children, tok(n.Dollar, 2), tok(n.Rquote, 1))
+	case *ast.InterpolationPart:
+		if n.Expr != nil {
+			children = append(children, tok(n.Start, 2), tok(n.EndPos-1, 1))
 		}
+	case *ast.PatternTestExpr:
+		children = append(children, tok(n.Is, 2))
 	case *ast.OptionalExpr:
 		children = append(children, tok(n.Question, 1))
 	case *ast.EnumType:
@@ -279,7 +285,7 @@ func childrenOf(n ast.Node) []ast.Node {
 		children = append(children, tok(n.Switch, 6), tok(n.Lbrace, 1), tok(n.Rbrace, 1))
 	case *ast.MatchArm:
 		width := 4
-		if n.Pattern == nil {
+		if len(n.Patterns) == 0 {
 			width = 7
 		}
 		children = append(children, tok(n.Case, width), tok(n.Arrow, 2))
@@ -593,6 +599,9 @@ func NodeDescription(n ast.Node) string {
 			return "fall-through statement"
 		}
 	case *ast.ErrorExpr:
+		if n.Context != nil {
+			return "error context"
+		}
 		if n.Body == nil {
 			return "error propagation"
 		}
@@ -605,8 +614,12 @@ func NodeDescription(n ast.Node) string {
 		return "nil guard"
 	case *ast.SafeNavExpr:
 		return "safe navigation"
-	case *ast.ContextualVariantExpr:
-		return "contextual variant constructor"
+	case *ast.PatternTestExpr:
+		return "pattern test"
+	case *ast.InterpolatedStringExpr:
+		return "interpolated string"
+	case *ast.InterpolationPart:
+		return "interpolation part"
 	case *ast.OptionalExpr:
 		return "absence propagation"
 	case *ast.EnumType:

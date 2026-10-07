@@ -276,12 +276,14 @@ type (
 		expr
 	}
 
-	// X! or X or Err { Body }. X must be a function or method call.
-	// A nil Body propagates the error; otherwise Err binds the error in Body.
+	// X!, X or Err { Body }, or X or Err => Context. X must be a call.
+	// Err binds the error in Body or Context; the other forms propagate.
 	ErrorExpr struct {
-		X    Expr
-		Err  *Name
-		Body *BlockStmt
+		X       Expr
+		Err     *Name
+		Body    *BlockStmt
+		Arrow   Pos  // position of => for an expression handler
+		Context Expr // error expression to propagate on failure
 		// SynthesizedHandler distinguishes postfix propagation's implicit
 		// return locals from a source-written or-handler binding.
 		SynthesizedHandler bool
@@ -495,12 +497,12 @@ type (
 	}
 
 	CaseClause struct {
-		Pattern *MatchPattern
-		Guard   Expr
-		Arrow   Pos
-		Cases   Expr // nil means default clause
-		Body    []Stmt
-		Colon   Pos
+		Patterns []*MatchPattern
+		Guard    Expr
+		Arrow    Pos
+		Cases    Expr // nil means default clause
+		Body     []Stmt
+		Colon    Pos
 		node
 	}
 

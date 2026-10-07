@@ -11,7 +11,8 @@ func TestGonAlternatives(t *testing.T) {
 		body     string
 		noReturn bool
 	}{
-		{`_ = Option[int].None?; panic(0)`, false},
+		{`_ = value?; panic(0)`, false},
+		{`switch value { case Event.A, Event.B if guard() => { return }; default => { panic(0) } }`, false},
 		{`_ = switch value { case Event.A => fail()?; default => 1 }; panic(0)`, false},
 		{`switch value { case Event.A => { return }; default => { panic(0) } }`, false},
 		{`switch value { case Event.A if guard() => { panic(0) }; default => { panic(0) } }`, true},

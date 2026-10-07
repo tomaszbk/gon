@@ -70,10 +70,11 @@ type whitespace struct {
 }
 
 type printer struct {
-	output     io.Writer
-	written    int // number of bytes written
-	form       Form
-	linebreaks bool // print linebreaks instead of semis
+	output              io.Writer
+	written             int // number of bytes written
+	form                Form
+	linebreaks          bool // print linebreaks instead of semis
+	inInterpolationExpr bool // ${} disables automatic semicolon insertion
 
 	indent  int // current indentation level
 	nlcount int // number of consecutive newlines
@@ -156,7 +157,7 @@ func (p *printer) flush(next token) {
 			if sawParen {
 				sawParen = false
 				k = none // eliminate semi
-			} else if sawNewline && impliesSemi(p.pending[i].last) {
+			} else if sawNewline && !p.inInterpolationExpr && impliesSemi(p.pending[i].last) {
 				sawNewline = false
 				k = none // eliminate semi
 			}
@@ -348,23 +349,42 @@ func (p *printer) printRawNode(n Node) {
 		// we should not reach here but don't crash
 
 	// expressions and types
-	case *ContextualVariantExpr:
-		p.print(_Dot, n.Name)
-		if n.Lparen.IsKnown() {
-			p.print(_Lparen)
-			for i, arg := range n.ArgList {
-				if i > 0 {
-					p.print(_Comma, blank)
-				}
-				p.print(arg)
-			}
-			p.print(_Rparen)
-		}
+	case *PatternTestExpr:
+		p.print(n.X, blank, _Name, "is", blank, n.Pattern)
 	case *OptionalExpr:
 		p.print(n.X, _Question)
-	case *EnumConstructExpr, *EnumType, *EnumVariant, *MatchExpr, *MatchStmt, *MatchArm, *MatchPattern, *MatchField:
+	case *EnumType, *EnumVariant, *MatchExpr, *MatchStmt, *MatchArm, *MatchPattern, *MatchField:
 		p.printAlternative(n)
 
+	case *InterpolatedStringExpr:
+		p.flush(_InterpStart)
+		p.writeString("$" + string(n.Quote))
+		p.lastTok = _InterpStart
+		for _, part := range n.Parts {
+			if part.Expr == nil {
+				if part.Text != "" {
+					p.writeString(part.Text)
+				}
+			} else {
+				p.writeString("${")
+				p.lastTok = _InterpOpen
+				previousExpr, previousLinebreaks := p.inInterpolationExpr, p.linebreaks
+				p.inInterpolationExpr = true
+				if n.Quote == '"' {
+					p.linebreaks = false
+				}
+				p.print(part.Expr)
+				p.flush(_InterpClose)
+				p.inInterpolationExpr, p.linebreaks = previousExpr, previousLinebreaks
+				if part.Format != "" {
+					p.writeString(":" + part.Format)
+				}
+				p.writeString("}")
+				p.lastTok = _InterpClose
+			}
+		}
+		p.writeString(string(n.Quote))
+		p.lastTok = _Literal
 	case *BadExpr:
 		p.print(_Name, "<bad expr>")
 
@@ -458,7 +478,9 @@ func (p *printer) printRawNode(n Node) {
 
 	case *ErrorExpr:
 		p.print(n.X)
-		if n.Body == nil {
+		if n.Context != nil {
+			p.print(blank, _Name, "or", blank, n.Err, blank, _FatArrow, blank, n.Context)
+		} else if n.Body == nil {
 			p.print(Not)
 		} else {
 			p.print(blank, _Name, "or", blank, n.Err, blank, n.Body)

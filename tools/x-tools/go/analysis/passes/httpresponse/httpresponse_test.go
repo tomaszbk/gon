@@ -20,5 +20,5 @@ func Test(t *testing.T) {
 // handlers count as the error check before a deferred Body.Close, while
 // the Go diagnostics remain reported.
 func TestGon(t *testing.T) {
-	analysistest.Run(t, analysistest.TestData(), httpresponse.Analyzer, "gon")
+	analysistest.Run(t, analysistest.TestData(), httpresponse.Analyzer, "gonfixture")
 }

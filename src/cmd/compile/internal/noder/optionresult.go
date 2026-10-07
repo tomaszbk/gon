@@ -42,29 +42,6 @@ func prepareOptionPropagation(pkg *types2.Package, info *types2.Info, serial *in
 	n.Body = block
 }
 
-func prepareResultPropagation(pkg *types2.Package, info *types2.Info, serial *int, n *syntax.ErrorExpr, sig *types2.Signature) {
-	if n.Body != nil {
-		return
-	}
-	pos := n.Pos()
-	input := n.X.GetTypeInfo().Type
-	failure := types2.EnumStorageOf(input).Lookup("Err", nil)
-	def, use := propagationVariable(pkg, info, serial, pos, failure.Field(0).Type())
-	n.Err = def
-	destination := sig.Results().At(0).Type()
-	constructed := &syntax.EnumConstructExpr{Variant: 1, ArgList: []syntax.Expr{use}}
-	constructed.SetPos(pos)
-	tv := syntax.TypeAndValue{Type: destination}
-	tv.SetIsValue()
-	constructed.SetTypeInfo(tv)
-	ret := &syntax.ReturnStmt{Results: constructed}
-	ret.SetPos(pos)
-	block := &syntax.BlockStmt{Rbrace: pos, List: []syntax.Stmt{ret}}
-	block.SetPos(pos)
-	n.Body = block
-	n.SynthesizedHandler = true
-}
-
 func enumPayload(pos src.XPos, value ir.Node, storage, field int) ir.Node {
 	intermediate := typecheck.DotField(pos, value, storage)
 	intermediate.GonEnumStorage = true
@@ -128,50 +105,6 @@ func (r *reader) optionExpr() ir.Node {
 	r.closeScope()
 	body.Append(typecheck.Stmt(ir.NewIfStmt(pos, enumTagTest(pos, value, tag, ir.ONE), handler, nil)))
 	return nilInlineValue(pos, body, enumPayload(pos, value, storage, 0))
-}
-
-func (w *writer) resultErrorExpr(e *syntax.ErrorExpr) {
-	desc := types2.EnumStorageOf(w.p.typeOf(e.X))
-	failure, success := desc.Lookup("Err", nil), desc.Lookup("Ok", nil)
-	w.Code(exprResultError)
-	w.pos(e)
-	w.Bool(e.SynthesizedHandler)
-	w.Len(failure.Tag())
-	w.Len(failure.StorageIndex())
-	w.Len(success.StorageIndex())
-	w.expr(e.X)
-	w.openScope(e.Pos())
-	w.assign(e.Err)
-	w.blockStmt(e.Body)
-	w.closeScope(e.Body.Rbrace)
-}
-
-func (r *reader) resultErrorExpr() ir.Node {
-	pos := r.pos()
-	synthesized := r.Bool()
-	tag, failure, success := r.Len(), r.Len(), r.Len()
-	var body ir.Nodes
-	value := r.tempCopy(pos, r.expr(), &body)
-	r.openScope()
-	bound, def := r.assign()
-	assign := ir.NewAssignStmt(pos, bound, enumPayload(pos, value, failure, 0))
-	assign.GonBinding = true
-	if def {
-		assign.Def = true
-		name := bound.(*ir.Name)
-		name.Defn = assign
-		decl := ir.NewDecl(pos, ir.ODCL, name)
-		decl.GonBinding = true
-		assign.PtrInit().Append(decl)
-	}
-	handler := ir.Nodes{typecheck.Stmt(assign)}
-	handler.Append(r.blockStmt()...)
-	if synthesized {
-		markPropagationTemporaries(handler)
-	}
-	r.closeScope()
-	body.Append(typecheck.Stmt(ir.NewIfStmt(pos, enumTagTest(pos, value, tag, ir.OEQ), handler, nil)))
-	return nilInlineValue(pos, body, enumPayload(pos, value, success, 0))
 }
 
 func (w *writer) optionConversion(dst, srcType types2.Type, pos syntax.Pos) {

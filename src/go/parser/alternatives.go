@@ -6,6 +6,7 @@ package parser
 
 import (
 	"go/ast"
+	"go/scanner"
 	"go/token"
 )
 
@@ -144,7 +145,11 @@ func (p *parser) parseMatchArms(x *ast.MatchExpr, statement bool) {
 		isCase := p.tok == token.CASE
 		p.next()
 		if isCase {
-			a.Pattern = p.parseMatchPattern()
+			a.Patterns = append(a.Patterns, p.parseMatchPattern())
+			for p.tok == token.COMMA {
+				p.next()
+				a.Patterns = append(a.Patterns, p.parseMatchPattern())
+			}
 		}
 		if p.tok == token.IF {
 			p.next()
@@ -224,6 +229,9 @@ func (p *parser) parseMatchPattern() *ast.MatchPattern {
 		}
 		x.Rparen = p.expectClosing(token.RPAREN, "positional pattern")
 	case token.LBRACE:
+		if p.exprLev < 0 && !p.patternTestRecordAhead() {
+			break
+		}
 		x.Lbrace = p.pos
 		p.next()
 		for p.tok != token.RBRACE && p.tok != token.EOF {
@@ -250,4 +258,29 @@ func (p *parser) parseMatchPattern() *ast.MatchPattern {
 		p.next()
 	}
 	return x
+}
+
+func (p *parser) patternTestRecordAhead() bool {
+	source := p.src[p.file.Offset(p.pos):]
+	file := token.NewFileSet().AddFile("pattern-lookahead", -1, len(source))
+	var scan scanner.Scanner
+	scan.Init(file, source, nil, 0)
+	_, first, _ := scan.Scan()
+	if first != token.LBRACE {
+		return false
+	}
+	depth := 1
+	for depth > 0 {
+		_, tok, _ := scan.Scan()
+		switch tok {
+		case token.LBRACE:
+			depth++
+		case token.RBRACE:
+			depth--
+		case token.EOF:
+			return false
+		}
+	}
+	_, following, literal := scan.Scan()
+	return following == token.LBRACE || following.Precedence() > 0 || following == token.FATARROW || following == token.COMMA || following == token.RPAREN || following == token.QUESTION || following == token.IDENT && literal == "is"
 }

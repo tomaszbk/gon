@@ -300,6 +300,8 @@ func (check *Checker) updateExprType(x ast.Expr, typ Type, final bool) {
 	case *ast.ParenExpr:
 		check.updateExprType(x.X, typ, final)
 
+	case *ast.PatternTestExpr:
+		// The boolean result is independent of the subject and payload types.
 	case *ast.MatchExpr:
 		for _, arm := range x.Arms {
 			if arm.Value != nil {
@@ -1117,15 +1119,6 @@ func (check *Checker) rawExpr(T *target, x *operand, e ast.Expr, allowGeneric bo
 		T = nil
 	}
 
-	if T != nil && T.kind == inferTarget && isOptionContextExpr(e) {
-		if check.deferredOptionContexts == nil {
-			check.deferredOptionContexts = make(map[ast.Expr]bool)
-		}
-		check.deferredOptionContexts[e] = true
-		x.mode_, x.typ_, x.expr = value, T.typ, e
-		return expression
-	}
-
 	kind := check.exprInternal(T, x, e)
 
 	if !allowGeneric {
@@ -1214,7 +1207,7 @@ func (check *Checker) exprInternal(T *target, x *operand, e ast.Expr) exprKind {
 		// type inference doesn't go past parentheses (target types T/U = nil),
 		// but a parenthesized conditional expression keeps its target: the
 		// target determines the conversions of its branches.
-		if !isCondExpr(e.X) && !isMatchExpr(e.X) && !isNilTargetExpr(e.X) && !isOptionContextExpr(e.X) {
+		if !isCondExpr(e.X) && !isMatchExpr(e.X) && !isNilTargetExpr(e.X) {
 			T = nil
 		}
 		kind := check.rawExpr(T, x, e.X, false)
@@ -1274,12 +1267,6 @@ func (check *Checker) exprInternal(T *target, x *operand, e ast.Expr) exprKind {
 		x.mode_ = commaok
 		x.typ_ = T
 
-	case *ast.ContextualVariantExpr:
-		check.contextualVariant(T, x, e)
-		if !x.isValid() {
-			goto Error
-		}
-
 	case *ast.OptionalExpr:
 		return check.optionExpr(x, e)
 
@@ -1290,11 +1277,16 @@ func (check *Checker) exprInternal(T *target, x *operand, e ast.Expr) exprKind {
 		check.nilGuard(x, e)
 	case *ast.SafeNavExpr:
 		return check.safeNavExpr(T, x, e, false)
+	case *ast.PatternTestExpr:
+		check.patternTestExpr(x, e)
 	case *ast.MatchExpr:
 		check.matchExpr(T, x, e, 0, false)
 		if !x.isValid() {
 			goto Error
 		}
+
+	case *ast.InterpolatedStringExpr:
+		check.interpolatedString(x, e)
 
 	case *ast.CondExpr:
 		check.condExpr(T, x, e)

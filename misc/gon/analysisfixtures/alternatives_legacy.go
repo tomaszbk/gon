@@ -15,12 +15,6 @@ type IntOption struct {
 	present bool
 	value   int
 }
-type IntResult struct {
-	failed bool
-	value  int
-	err    error
-}
-
 var trace string
 
 func mark(s string, n int) int { trace += s; return n }
@@ -53,19 +47,6 @@ func option(v IntOption) (out IntOption) {
 		return IntOption{}
 	}
 	return IntOption{true, v.value + 1}
-}
-func result(v IntResult) IntResult {
-	if v.failed {
-		return IntResult{failed: true, err: v.err}
-	}
-	return IntResult{value: v.value + 2}
-}
-func unwrap(v IntResult) int {
-	if v.failed {
-		check(v.err == nil)
-		return -1
-	}
-	return v.value
 }
 func coalesce(v IntOption, fallback int) int {
 	if v.present {
@@ -168,8 +149,6 @@ func main() {
 	trace = ""
 	check(coalesce(option(IntOption{true, 3}), 0) == 4)
 	check(coalesce(option(IntOption{}), -1) == -1 && trace == "DD")
-	check(unwrap(result(IntResult{value: 3})) == 5)
-	check(unwrap(result(IntResult{failed: true, err: nil})) == -1)
 	p := struct {
 		present bool
 		value   *User

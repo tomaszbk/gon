@@ -386,6 +386,14 @@ Example Usage:
 
 Default: `{}`.
 
+<a id='nilaway'></a>
+### `nilaway bool`
+
+nilaway enables interprocedural analysis of nil values. It is disabled
+by default and reports possible nil dereferences as warnings.
+
+Default: `false`.
+
 <a id='staticcheck'></a>
 ### `staticcheck bool`
 

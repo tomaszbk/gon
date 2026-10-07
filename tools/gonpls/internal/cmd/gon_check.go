@@ -313,6 +313,9 @@ func (r *gonRequest) check(ctx context.Context) (gonResult, error) {
 	if !r.bool("staticcheck") {
 		result.NotVerified = append(result.NotVerified, "Staticcheck analyzers outside the default set; rerun with --staticcheck")
 	}
+	if !r.bool("nilaway") {
+		result.NotVerified = append(result.NotVerified, "NilAway nil-flow analysis; rerun with --nilaway")
+	}
 	result.NotVerified = append(result.NotVerified, "other GOOS/GOARCH and build tag configurations")
 	for _, d := range diags {
 		if d.Category != "analysis" && d.severity == protocol.SeverityError {
@@ -451,6 +454,9 @@ func (c *gonCheckResult) text(w io.Writer, r *gonRequest) {
 	fmt.Fprintf(w, "not verified: build, tests, gon vet")
 	if !r.bool("staticcheck") {
 		fmt.Fprint(w, ", staticcheck")
+	}
+	if !r.bool("nilaway") {
+		fmt.Fprint(w, ", nilaway")
 	}
 	fmt.Fprintln(w, ", other configurations")
 	s := c.Summary

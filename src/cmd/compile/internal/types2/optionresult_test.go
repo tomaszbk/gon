@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestOptionResultOperators(t *testing.T) {
+func TestOptionalOperators(t *testing.T) {
 	cases := []struct{ source, error string }{
 		{`type User struct{Name string};type Node struct{User User?};func f(x *Node)string{return x?.User?.Name ?? "none"}`, "explicit boundary"},
 		{`type User struct{Name string};type Node struct{User *User};func f(x Node?)string{return x?.User?.Name ?? "none"}`, "explicit boundary"},
@@ -21,16 +21,9 @@ func TestOptionResultOperators(t *testing.T) {
 		{`func f(){var x int?;x ??= (int?)((int)(3))}`, "cannot use"},
 		{`type User struct{Name string};func f(x User?) string{return x?.Name ?? "none"}`, ""},
 		{`type User struct{Name string};func f(x User?) any{return x?.Name}`, ""},
-		{`func f(x Result[int,string]) Result[string,string] {n:=x!;return Result[string,string].Ok(string(rune(n)))}`, ""},
-		{`func f(x Result[int,string]) int {return x or e {panic(e)}}`, ""},
-		{`func f(x Result[int,error]) Result[int,any] {n:=x!;return Result[int,any].Ok(n)}`, ""},
 		{`type Counter struct{};func(c *Counter)Increment(){};func f(x Counter?){x?.Increment()}`, "pointer method"},
 		{`type Counter struct{};func(c *Counter)Increment(){};func f(x (*Counter)?){x?.Increment()}`, ""},
 		{`func f(x int?) int {return x?}`, "enclosing function"},
-		{`func f(x Result[int,string]) int {return x!}`, "enclosing Result"},
-		{`func f(x Result[int,string]) Result[int,error] {n:=x!;return Result[int,error].Ok(n)}`, "assignable error"},
-		{`func f(x Result[int,string]) int {return x or e {_ = e}}`, "must terminate"},
-		{`func f(x Result[int,string]) int {return x ?? 0}`, "operator ??"},
 		{`type Option[T any] struct{value T};func f(x Option[int]) Option[int] {_ = x?;return x}`, "optional value"},
 	}
 	for _, test := range cases {

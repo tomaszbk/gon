@@ -1465,7 +1465,6 @@ type typeCheckInputs struct {
 	goFiles, compiledGoFiles []file.Handle
 	sizes                    types.Sizes
 	depsByImpPath            map[ImportPath]PackageID
-	migrateOptionals         bool
 	goVersion                string // packages.Module.GoVersion, e.g. "1.18"
 
 	// Used for type check diagnostics:
@@ -1506,15 +1505,14 @@ func (s *Snapshot) typeCheckInputs(ctx context.Context, mp *metadata.Package) (*
 	}
 
 	return &typeCheckInputs{
-		id:               mp.ID,
-		pkgPath:          mp.PkgPath,
-		name:             mp.Name,
-		goFiles:          goFiles,
-		compiledGoFiles:  compiledGoFiles,
-		sizes:            mp.TypesSizes,
-		depsByImpPath:    mp.DepsByImpPath,
-		goVersion:        goVersion,
-		migrateOptionals: s.Options().MigrateOptionals,
+		id:              mp.ID,
+		pkgPath:         mp.PkgPath,
+		name:            mp.Name,
+		goFiles:         goFiles,
+		compiledGoFiles: compiledGoFiles,
+		sizes:           mp.TypesSizes,
+		depsByImpPath:   mp.DepsByImpPath,
+		goVersion:       goVersion,
 
 		supportsRelatedInformation: s.Options().RelatedInformationSupported,
 		linkTarget:                 s.Options().LinkTarget,
@@ -1548,7 +1546,7 @@ func localPackageKey(inputs *typeCheckInputs) file.Hash {
 	fmt.Fprintf(hasher, "package: %s %s %s\n", inputs.id, inputs.name, inputs.pkgPath)
 
 	// module Go version
-	fmt.Fprintf(hasher, "go %s migrate-optionals %t\n", inputs.goVersion, inputs.migrateOptionals)
+	fmt.Fprintf(hasher, "go %s\n", inputs.goVersion)
 
 	// import map
 	for impPath, depID := range moremaps.Sorted(inputs.depsByImpPath) {
@@ -1602,6 +1600,7 @@ func (b *typeCheckBatch) checkPackage(ctx context.Context, fset *token.FileSet, 
 			Scopes:              make(map[ast.Node]*types.Scope),
 			FileVersions:        make(map[*ast.File]string),
 			OptionalConversions: make(map[ast.Expr]types.Type),
+			Interpolations:      make(map[*ast.InterpolatedStringExpr]*ast.CallExpr),
 		},
 	}
 
@@ -1729,9 +1728,8 @@ var goVersionRx = regexp.MustCompile(`^go[1-9][0-9]*(?:\.(0|[1-9][0-9]*)){0,2}$`
 
 func (b *typeCheckBatch) typesConfig(ctx context.Context, inputs *typeCheckInputs, imports map[PackagePath]*types.Package, onError func(e error)) *types.Config {
 	cfg := &types.Config{
-		MigrateOptionals: inputs.migrateOptionals,
-		Sizes:            inputs.sizes,
-		Error:            onError,
+		Sizes: inputs.sizes,
+		Error: onError,
 		Importer: importerFunc(func(path string) (*types.Package, error) {
 			// While all of the import errors could be reported
 			// based on the metadata before we start type checking,

@@ -243,7 +243,7 @@ func TestMatchInterfaceSubjectInvalid(t *testing.T) {
 		{`var _ = switch err { case P.A => 1; default => 0 }`, "pointer receiver"},
 		{`var _ = switch r { case F.X => 1; default => 0 }`, "F does not implement Reader"},
 		{`var _ = switch err { case S.X => 1; default => 0 }`, "qualified by an enum type"},
-		{`var _ = switch err { case Result[int, error].Ok(v) => v; default => 0 }`, "can never match interface error"},
+		{`type Result[T,E any] enum { default Ok(T); Err(E) }; var _ = switch err { case Result[int, error].Ok(v) => v; default => 0 }`, "can never match interface error"},
 		{`var _ = switch err { case value? => 1; default => 0 }`, "presence pattern requires an optional value"},
 		{`var _ = switch err { case v => 1; default => 0 }`, "top-level pattern requires a qualified alternative"},
 		{`var _ = switch err { case E.A => 1; case E.A => 2; default => 0 }`, "unreachable match arm"},

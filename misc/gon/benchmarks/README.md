@@ -24,11 +24,12 @@ same checksum, failure count and effects. The runner also verifies that the
 legacy source files are byte-identical across toolchains.
 
 The modern fixture uses native optional values: `T?`, nil absence, direct
-payload assignment, one-layer conversions and presence patterns. Result uses
-contextual `.Ok/.Err` when an expected type is known. Benchmark names containing
+payload assignment, one-layer conversions, presence patterns and `is` tests.
+Wrapping handlers use one-line error context, matching uses alternative patterns,
+captured callbacks use seq.Reduce and formatting uses string interpolation. Benchmark names containing
 "Option" identify optional workloads; they do not name a language API.
 
-The twenty-four benchmarks cover all nine additions:
+The twenty-two benchmarks cover the eight original features and runtime additions:
 
 | Feature | Workloads |
 | --- | --- |
@@ -39,7 +40,8 @@ The twenty-four benchmarks cover all nine additions:
 | Enums | construction of unit/positional/record variants; copied storage |
 | Matching | exhaustive arms; guards with observable side effects and lazy bodies |
 | Option | present/absent propagation/defaults; assignment into mixed slots |
-| Result | successful/failed propagation, including Err(nil); local handlers |
+| Interpolation | 64 ordered integer formats, equivalent to fmt.Sprintf |
+| Collections | seq.Reduce with a captured lambda, equivalent to the legacy loop |
 | Named arguments | reordered arguments after observable callee evaluation; final slice variadic |
 | Combined existing syntax | successful/failed/mixed parse/transform pipelines |
 
@@ -52,12 +54,10 @@ uses bounded input values and batch-local totals. Global sinks and retained
 enum storage keep results observable. Constructor/copy workloads include stores
 to a reused array; matching reads a prepared array rather than reconstructing it.
 
-The legacy equivalents of enums/Option/Result use explicit tagged structs,
-including a separate failure tag that preserves an error payload of nil.
-Correctness checks cover present zero, present nil, nested absence, Err(nil), zero
-Result, exact once evaluation, guards and copying. They do not assume a Go
-`(value, error)` tuple is equivalent to Result. Shared drivers/tests stay identical
-across all three variants.
+Legacy equivalents of enums and optionals use explicit tagged structs.
+Correctness checks cover present zero, present nil, nested absence, exact-once
+evaluation, guards, copying, error failure/partial values and formatted output.
+Shared drivers and tests stay identical across all three variants.
 
 Before collecting timing samples, check fixtures without benchmark execution:
 
@@ -74,9 +74,9 @@ GON_BASELINE_GO=/absolute/path/to/unmodified/go python3 misc/gon/benchmark.py \
   --samples 7 --benchtime 200ms --build-samples 7
 ```
 
-With 24 benchmarks and three variants, this requests about 101 seconds of
+With 22 benchmarks and three variants, this requests about 92 seconds of
 runtime sampling alone; calibration, warmups, cache preparation and builds add
-time. The default requests about 216 seconds of runtime sampling alone.
+time. The default requests about 198 seconds of runtime sampling alone.
 
 Each measured run retains `report.md`, `report.html`, `summary.json`, raw samples, command logs,
 source copies and binaries in a new directory under `pkg/gon-benchmarks/`.
@@ -94,7 +94,7 @@ an executable that accepts Gon's `capabilities --json` command, including a Gon
 launcher from a different installation.
 
 `representation.json` records value size for record and unit enums, native optionals with
-int/pointer/zero-sized payloads, and Result with error/string payloads. It also
+int/pointer/zero-sized payloads. It also
 records one separate, untimed retained-pointer sample per variant: 10,000 present
 values with distinct pointers, a forced GC, checked checksum, exact slice storage
 bytes, observed heap delta and GC cycles. The heap observation includes allocator
@@ -125,20 +125,11 @@ the two Gon variants isolates the effect of source syntax on this workload
 with the same compiler/runtime. These benchmarks do not establish performance
 for other programs or architectures.
 
-The [latest report](results/20261004T013816Z/report.md) measures all 24 workloads
-using native optional syntax and the optimized compiler on Apple M4,
-macOS 27.0.1, darwin/arm64. It uses ten 300 ms runtime samples and seven build
-samples. Go is the released 1.27.1 baseline; Gon's go1.28-devel version records
-provenance. All sixteen correctness tests pass in each variant with identical
-observable output. All workload results are retained, including increases.
+The current report is linked from [VALIDATION.md](../VALIDATION.md). It records
+all workloads, including regressions, and the exact fixture/compiler hashes.
+The final run is collected after source/toolchain builds and validation settle;
+partially collected runs with changed compiler hashes are rejected by the runner.
 
-Sources, runner, commands, raw samples, hashes, representation observations and
-current validation logs are retained beside the report. Binaries and build
-caches remain ignored under pkg/. Native optional int/pointer shapes have the
-same measured size as their tagged Go equivalents; zero-sized optional payloads
-and unit enums have measured storage overhead. No stable layout ABI is promised.
-
-Only the current published experiment is kept. Superseded report directories
-and compiler snapshots are removed. Its diagnostics contain current complete
-focused gates, source-only bootstrap and the actually executed/cross-compiled
-platform evidence; compare Go versus Gon using this experiment's complete table.
+Native optional int/pointer shapes and zero-sized payloads are measured on the
+executed host; no stable layout ABI is promised. Source copies, raw samples and
+commands accompany the report. Binaries/caches remain ignored under pkg/.

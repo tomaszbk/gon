@@ -236,7 +236,6 @@ func init() {
 	Unsafe.complete = true
 
 	defPredeclaredTypes()
-	defPredeclaredEnums()
 	defPredeclaredConsts()
 	defPredeclaredNil()
 	defPredeclaredFuncs()

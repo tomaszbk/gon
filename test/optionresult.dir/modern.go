@@ -7,7 +7,6 @@ type Holder struct {
 	Inner   IntOption
 	Pointer *User
 }
-type IntResult = Result[int, error]
 type Presence[T any] = T?
 
 func isAbsent[T any](value Presence[T]) bool { return value == nil }
@@ -68,24 +67,6 @@ func propagate(present bool) (out string?) {
 	n := maybe(present)?
 	return (string?)((string)(fmt.Sprint(n)))
 }
-func getResult(failed bool) IntResult {
-	effects += "R"
-	if failed {
-		return IntResult.Err(nil)
-	}
-	return IntResult.Ok(4)
-}
-func resultLabel(input Result[string, error]) string {
-	return input or problem {
-		return fmt.Sprintf("error:%v", problem)
-	}
-}
-func resultPropagate(failed bool) (out Result[string, error]) {
-	out = Result[string, error].Ok("stale")
-	defer func() { effects += "D" + resultLabel(out) }()
-	n := getResult(failed)!
-	return Result[string, error].Ok(fmt.Sprint(n * 2))
-}
 func rangeOption() IntOption {
 	for n := range iter {
 		if n == 2 {
@@ -95,32 +76,6 @@ func rangeOption() IntOption {
 	}
 	return (IntOption)((int)(7))
 }
-func rangeResult() IntResult {
-	for n := range iter {
-		if n == 2 {
-			_ = IntResult.Err(nil)!
-		}
-		effects += fmt.Sprint(n)
-	}
-	return IntResult.Ok(7)
-}
-func bridge(failed bool) (int, error) {
-	n := getResult(failed) or problem {
-		if problem == nil {
-			problem = fmt.Errorf("empty failure")
-		}
-		return 0, problem
-	}
-	return n, nil
-}
-func adapt(input Result[int, string]) Result[int, any] { n := input!; return Result[int, any].Ok(n) }
-func domainLabel(input Result[int, any]) string {
-	n := input or problem {
-		return fmt.Sprintf("%T:%v", problem, problem)
-	}
-	return fmt.Sprint(n)
-}
-
 func optionOptimizationCases() {
 	slots := []IntOption{(IntOption)(nil), (IntOption)((int)(0)), (IntOption)((int)(8))}
 	sum := 0
@@ -182,61 +137,6 @@ func optionOptimizationCases() {
 	check("assign index out of bounds", panics(func() { slots[0] ??= mark("F", 5) }), true, "")
 }
 
-func conditionalResult(ok bool, payload *int) Result[*int, error] {
-	effects += "C"
-	if ok {
-		effects += "O"
-		return Result[*int, error].Ok(payload)
-	}
-	effects += "E"
-	return Result[*int, error].Err(nil)
-}
-
-func handleConditionalResult(ok bool, payload *int) (out string) {
-	defer func() { effects += "D" + out }()
-	pointer := conditionalResult(ok, payload) or problem {
-		effects += "H"
-		if problem != nil {
-			panic(problem)
-		}
-		*payload += 10
-		return "failure"
-	}
-	if pointer == nil {
-		effects += "N"
-		return "nil"
-	}
-	effects += "S"
-	*pointer += 1
-	return fmt.Sprint(*pointer)
-}
-
-func resultOptimizationCases() {
-	for _, ok := range []bool{true, false} {
-		payload := 7
-		label := handleConditionalResult(ok, &payload)
-		if ok {
-			check("conditional Result handler", fmt.Sprintf("%s:%d", label, payload), "8:8", "COSD8")
-		} else {
-			check("conditional Result handler", fmt.Sprintf("%s:%d", label, payload), "failure:17", "CEHDfailure")
-		}
-	}
-	check("conditional Result Ok nil", handleConditionalResult(true, nil), "nil", "CONDnil")
-
-	payload := 7
-	r := conditionalResult(true, &payload)
-	copy := r
-	payload = 9
-	pointer := r or problem {
-		panic(problem)
-	}
-	copiedPointer := copy or problem {
-		panic(problem)
-	}
-	*pointer = 11
-	check("Result copied pointer payload", fmt.Sprintf("%d:%d", *pointer, *copiedPointer), "11:11", "CO")
-}
-
 func main() {
 	optionalNilComparisons()
 	var zero IntOption
@@ -259,7 +159,6 @@ func main() {
 	m[key()] ??= mark("A", 5)
 	m[key()] ??= fallback()
 	emit("map assign", fmt.Sprintf("%d:%d", m[2] ?? 0, locations))
-	emit("typed domain", domainLabel(adapt(Result[int, string].Err("domain"))))
 
 	emit("Some user", (User?)((User)(User{Name: "Ada"}))?.Name ?? "none")
 	emit("None user", (User?)(nil)?.Len() ?? fallback())
@@ -277,26 +176,11 @@ func main() {
 	for _, present := range []bool{true, false} {
 		emit("propagate", propagate(present) ?? "none")
 	}
-	var result IntResult
-	emit("zero Result", func(input IntResult) int {
-		return input or problem {
-			panic(problem)
-		}
-	}(result))
-	for _, failed := range []bool{false, true} {
-		emit("Result propagate", resultLabel(resultPropagate(failed)))
-	}
 	var lift func(int?) int? = (input) => { n := input?; return (IntOption)((int)(n + 1)) }
 	emit("lambda Some", lift((IntOption)((int)(2))) ?? 0)
 	emit("lambda None", lift((IntOption)(nil)) ?? 0)
 	emit("range Option", rangeOption() ?? 0)
-	emit("range Result", resultLabel(func() Result[string, error] { n := rangeResult()!; return Result[string, error].Ok(fmt.Sprint(n)) }()))
-	for _, failed := range []bool{false, true} {
-		n, err := bridge(failed)
-		emit("bridge", fmt.Sprintf("%d:%v", n, err))
-	}
 	var boxed any = (User?)(nil)?.Name
 	emit("boxed None", boxed != nil)
 	optionOptimizationCases()
-	resultOptimizationCases()
 }

@@ -1,0 +1,3998 @@
+{
+  "go-legacy": [
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 70.93,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.06,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1045.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.03,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.68,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 28.93,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 37.52,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 86.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 55.28,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 366.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5055.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2710.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.15,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.55,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 126.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.63,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 39.11,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 57.88,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3577.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 79.27,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 52.99,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1090.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.09,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.63,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 28.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 27.56,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 87.19,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 55.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 362.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5107.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2750.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.78,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.36,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 126.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 128.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.36,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.85,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 57.96,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3577.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 75.81,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.01,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1094.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.07,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.65,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 28.52,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 28.35,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 85.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 55.33,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 369.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5070.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2767.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 55.22,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.48,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 130.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.37,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 41.66,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 64.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3693.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 70.46,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.13,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1071.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.02,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.64,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 28.52,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 31.46,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 85.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 55.24,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 381.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5147.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2746.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.89,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.38,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 128.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.47,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.83,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 57.66,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 118.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3638.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 73.16,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.22,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1049.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.97,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.66,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 28.55,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 30.51,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 98.87,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 55.24,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 384.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5109.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2771.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.44,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 128.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.48,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.64,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 58.22,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 120.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3669.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 80.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.16,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1087.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.03,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 28.62,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 30.13,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 87.21,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 55.25,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 379.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5127.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2771.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 55.01,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.41,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 126.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 128.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.46,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.12,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 57.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3569.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 69.51,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.65,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1040.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.03,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 28.61,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 29.29,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 87.27,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 55.28,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 372.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5100.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2732.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.67,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.36,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 126.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.45,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.88,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 57.84,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3634.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 80.62,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.09,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1074.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.03,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.64,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 28.61,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 28.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 85.62,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 55.52,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 366.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5040.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2727.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.57,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.56,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.88,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 57.69,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3605.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 73.87,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.11,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1067.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.99,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.65,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 28.56,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 27.84,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 85.59,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 55.28,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 376.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5157.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2746.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.45,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.43,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 126.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 128.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.39,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.86,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 57.89,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3641.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 68.95,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.09,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1068.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 30.78,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.64,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 28.54,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 26.88,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 86.97,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 55.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 365.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5056.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2778.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.78,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 126.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.45,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.85,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 57.66,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3649.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    }
+  ],
+  "gon-legacy": [
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 75.85,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.21,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1065.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.15,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.68,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.24,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 32.26,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.45,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 47.15,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 369.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5249.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2780.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.35,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.82,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.39,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.86,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.57,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3622.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 68.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1110.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.99,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.73,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 35.36,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.79,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 47.11,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 382.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5151.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2762.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.44,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.91,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 130.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.97,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 41.31,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.48,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3599.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 71.91,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.55,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1075.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.96,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.64,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.29,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 38.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.24,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 47.08,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 377.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5133.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2769.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.93,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 126.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.42,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.89,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.24,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 118.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 119.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3567.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 87.81,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1054.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.05,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.68,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.42,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 28.03,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.52,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 47.21,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 372.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5127.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2740.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.77,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 126.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.53,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.95,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.66,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3469.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 81.43,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.26,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1060.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.97,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.69,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.25,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 31.11,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.36,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 47.22,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 366.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5139.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2770.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.89,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.86,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.43,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.83,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.39,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3556.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 76.43,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1089.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.68,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.26,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 26.49,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.38,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 47.22,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 373.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5200.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2776.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.61,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.89,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.41,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 39.98,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.41,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3540.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 78.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.82,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1121.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.97,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.66,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.22,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 27.57,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 95.96,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 46.93,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 369.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5098.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2753.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.68,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 128.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.33,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.36,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3597.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 74.28,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.37,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1066.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.04,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.71,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.24,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 29.53,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.47,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 47.19,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 374.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5115.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2728.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.81,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.49,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.83,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.64,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 117.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3595.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 71.19,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1073.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 28.02,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.68,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.33,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 25.78,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.48,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 47.07,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 379.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5110.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2727.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.09,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.95,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.42,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.46,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3583.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 76.23,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1123.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.98,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.29,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 27.38,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 98.89,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 47.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 375.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5066.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2754.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.99,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.84,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 125.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.49,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.84,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.11,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 118.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3518.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    }
+  ],
+  "gon-modern": [
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 68.35,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.01,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1067.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.78,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 21.95,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.24,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 29.93,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 97.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 46.64,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 372.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5097.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2747.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.55,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.86,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 115.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 125.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.94,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.96,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 50.26,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 118.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 88.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3517.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 72.26,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.27,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1107.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.94,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 21.97,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.31,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 25.76,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.84,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 46.37,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 375.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5318.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2852.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 49.88,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 112.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 121.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.92,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.84,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 89.92,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3446.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 68.71,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.18,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1065.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.79,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 21.96,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.24,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 25.93,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.81,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 46.26,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 375.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5083.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2734.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.19,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 49.88,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 115.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 128.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.38,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.06,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.63,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 88.31,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3522.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 69.15,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.02,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1090.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.84,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.01,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.38,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 28.14,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 97.02,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 46.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 379.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5133.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2765.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.12,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.79,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 110.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 124.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.46,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 39.45,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 50.02,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 88.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3559.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 68.95,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.16,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1119.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.82,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.42,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 26.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 26.26,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 98.22,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 46.29,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 374.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5151.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2767.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.83,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.62,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 120.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 130.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.44,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.94,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.61,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 88.85,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3568.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 75.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.19,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1096.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.85,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.25,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 31.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 103.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 49.33,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 373.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5126.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2782.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 55.91,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.74,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 114.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 124.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.48,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.17,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 51.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 151.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 91.02,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3458.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 73.14,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.13,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1111.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 21.99,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 25.84,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 97.08,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 46.12,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 370.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5053.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2734.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 114.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 127.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.36,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 39.78,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.84,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 88.44,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3595.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 77.33,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.07,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1068.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 21.98,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.29,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 25.58,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.9,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 46.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 385.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5063.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2726.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 53.94,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.65,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 116.3,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 129.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.89,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.78,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.5,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 88.42,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3549.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 68.34,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 53.08,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1057.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.81,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 22.02,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.25,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 27.75,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.71,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 46.25,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 403.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5362.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2805.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 54.29,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.21,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 109.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 123.0,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.46,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.92,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.77,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.8,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 88.51,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3526.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    },
+    {
+      "BenchmarkErrorPropagationSuccessBatch": {
+        "ns/op": 77.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorPropagationFailureBatch": {
+        "ns/op": 55.14,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkErrorHandlerMixedBatch": {
+        "ns/op": 1051.0,
+        "items/op": 64.0,
+        "B/op": 1024.0,
+        "allocs/op": 32.0
+      },
+      "BenchmarkConditionalMixedBatch": {
+        "ns/op": 27.84,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkLambdaCapturedBatch": {
+        "ns/op": 21.99,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldPresentBatch": {
+        "ns/op": 25.25,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeFieldAbsentBatch": {
+        "ns/op": 27.44,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkSafeCallMixedBatch": {
+        "ns/op": 96.81,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkCoalesceAssignMixedBatch": {
+        "ns/op": 46.26,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineSuccessBatch": {
+        "ns/op": 371.2,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkPipelineFailureBatch": {
+        "ns/op": 5048.0,
+        "items/op": 64.0,
+        "B/op": 6400.0,
+        "allocs/op": 160.0
+      },
+      "BenchmarkPipelineMixedBatch": {
+        "ns/op": 2708.0,
+        "items/op": 64.0,
+        "B/op": 3200.0,
+        "allocs/op": 80.0
+      },
+      "BenchmarkEnumConstructionBatch": {
+        "ns/op": 55.02,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkEnumCopyBatch": {
+        "ns/op": 50.88,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingExhaustiveBatch": {
+        "ns/op": 113.4,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkMatchingGuardedBatch": {
+        "ns/op": 122.1,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionPresentBatch": {
+        "ns/op": 37.45,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAbsentBatch": {
+        "ns/op": 40.6,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkOptionAssignmentMixedBatch": {
+        "ns/op": 49.78,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedReorderedBatch": {
+        "ns/op": 117.7,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkNamedVariadicBatch": {
+        "ns/op": 88.47,
+        "items/op": 64.0,
+        "B/op": 0.0,
+        "allocs/op": 0.0
+      },
+      "BenchmarkInterpolationBatch": {
+        "ns/op": 3555.0,
+        "B/op": 512.0,
+        "allocs/op": 64.0
+      }
+    }
+  ]
+}

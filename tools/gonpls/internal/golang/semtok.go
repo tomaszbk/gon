@@ -392,10 +392,37 @@ func (tv *tokenVisitor) inspect(n ast.Node) (descend bool) {
 	case *ast.NilGuardExpr:
 		tv.token(n.Question, 2, semtok.TokOperator)
 	case *ast.SafeNavExpr:
+	case *ast.PatternTestExpr:
+		tv.token(n.Is, 2, semtok.TokKeyword)
+	case *ast.InterpolatedStringExpr:
+		tv.token(n.Dollar, 1, semtok.TokOperator)
+		tv.token(n.Dollar+1, 1, semtok.TokString)
+		tv.token(n.Rquote, 1, semtok.TokString)
+	case *ast.InterpolationPart:
+		if n.Expr == nil {
+			if strings.Contains(n.Text, "\n") {
+				tv.multiline(n.Start, n.EndPos, semtok.TokString)
+			} else {
+				tv.token(n.Start, int(n.EndPos-n.Start), semtok.TokString)
+			}
+		} else {
+			tv.token(n.Start, 2, semtok.TokOperator)
+			tv.token(n.EndPos-1, 1, semtok.TokOperator)
+			if n.Format != "" {
+				// Raw format text reaches the closing brace; deriving the colon
+				// position avoids a colon inside a trailing expression comment.
+				start := n.EndPos - token.Pos(len(n.Format)) - 2
+				if start.IsValid() {
+					if tv.pgf.Tok.Line(start) != tv.pgf.Tok.Line(n.EndPos-1) {
+						tv.multiline(start, n.EndPos-1, semtok.TokString)
+					} else {
+						tv.token(start, int(n.EndPos-1-start), semtok.TokString)
+					}
+				}
+			}
+		}
 	case *ast.OptionalExpr:
 		tv.token(n.Question, 1, semtok.TokOperator)
-	case *ast.ContextualVariantExpr:
-		tv.token(n.Dot, 1, semtok.TokOperator)
 	case *ast.EnumType:
 		tv.token(n.Enum, len("enum"), semtok.TokKeyword)
 		if n.String.IsValid() {
@@ -417,19 +444,22 @@ func (tv *tokenVisitor) inspect(n ast.Node) (descend bool) {
 		}
 	case *ast.MatchArm:
 		keyword := "case"
-		if n.Pattern == nil {
+		if len(n.Patterns) == 0 {
 			keyword = "default"
 		}
 		tv.token(n.Case, len(keyword), semtok.TokKeyword)
 		tv.token(n.Arrow, 2, semtok.TokOperator)
-		if n.Guard != nil && n.Pattern != nil {
-			tv.token(tv.findKeyword("if", n.Pattern.End(), n.Guard.Pos()), 2, semtok.TokKeyword)
+		if n.Guard != nil && len(n.Patterns) != 0 {
+			tv.token(tv.findKeyword("if", n.Patterns[len(n.Patterns)-1].End(), n.Guard.Pos()), 2, semtok.TokKeyword)
 		}
 	case *ast.CondExpr:
 		tv.token(n.If, len("if"), semtok.TokKeyword)
 		tv.token(n.ElsePos, len("else"), semtok.TokKeyword)
 	case *ast.ErrorExpr:
-		if n.Body == nil {
+		if n.Context != nil {
+			tv.token(n.Arrow, 2, semtok.TokOperator)
+		}
+		if n.Body == nil && n.Context == nil {
 			tv.token(n.OpPos, 1, semtok.TokOperator)
 		} else {
 			tv.token(n.OpPos, 2, semtok.TokKeyword)
@@ -828,8 +858,8 @@ func (tv *tokenVisitor) unkIdent(id *ast.Ident) (semtok.Type, []semtok.Modifier)
 		*ast.ReturnStmt, *ast.ChanType, *ast.SendStmt,
 		*ast.ForStmt, // possibly incomplete
 		*ast.IfStmt,  /* condition */
-		*ast.NilGuardExpr, *ast.SafeNavExpr, *ast.OptionalExpr, *ast.ContextualVariantExpr,
-		*ast.MatchExpr, *ast.MatchArm,
+		*ast.NilGuardExpr, *ast.SafeNavExpr, *ast.OptionalExpr,
+		*ast.MatchExpr, *ast.MatchArm, *ast.InterpolatedStringExpr, *ast.InterpolationPart, *ast.PatternTestExpr,
 		*ast.CondExpr,     // condition or branch, possibly incomplete
 		*ast.KeyValueExpr, // either key or value
 		*ast.IndexListExpr:

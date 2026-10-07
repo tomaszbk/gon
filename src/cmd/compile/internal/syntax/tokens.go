@@ -69,6 +69,13 @@ const (
 	_SafeLparen // ?(
 	_Question   // ?
 
+	_InterpStart // interpolated string
+	_InterpText // string text
+	_InterpOpen // ${
+	_InterpClose // interpolation }
+	_InterpFormat // format
+	_InterpEnd // string end
+
 	// empty line comment to exclude it from .String
 	tokenCount //
 )

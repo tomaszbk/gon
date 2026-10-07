@@ -37,7 +37,6 @@ func TestGonTargetType(t *testing.T) {
 	}{
 		{`() => nil`, true}, {`p?.Field`, true}, {`(p?.Field)`, true}, {`a ?? b`, true},
 		{`(a ?? b)`, true}, {`a+b`, false}, {`func() {}`, false},
-		{`.Some(C.int(3))`, true}, {`.Ok(C.f())`, true}, {`.None`, true},
 	} {
 		e, err := parser.ParseExpr(test.src)
 		if err != nil {
@@ -50,7 +49,7 @@ func TestGonTargetType(t *testing.T) {
 }
 
 func TestGonWalk(t *testing.T) {
-	for _, src := range []string{`(x) => C.f(x)`, `() => { C.f() }`, `p?.Field ?? C.f()`, `f?(C.f())`, `C.f()?`, `.Ok(C.f())`, `.Some(C.f())`} {
+	for _, src := range []string{`(x) => C.f(x)`, `() => { C.f() }`, `p?.Field ?? C.f()`, `f?(C.f())`, `C.f()?`, `read() or err => C.wrap(err)`, `$"${C.f()}"`, `C.f() is value?`} {
 		e, err := parser.ParseExpr(src)
 		if err != nil {
 			t.Fatal(err)
@@ -66,6 +65,14 @@ func TestGonWalk(t *testing.T) {
 		})
 		if refs != 1 {
 			t.Errorf("%q: found %d C references", src, refs)
+		}
+	}
+}
+
+func TestGonRetiredConstructors(t *testing.T) {
+	for _, src := range []string{`.Some(C.int(3))`, `.None`, `.Ok(C.f())`, `.Err(C.f())`} {
+		if _, err := parser.ParseExpr(src); err == nil {
+			t.Errorf("retired constructor accepted: %s", src)
 		}
 	}
 }

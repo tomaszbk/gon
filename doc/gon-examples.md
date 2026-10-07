@@ -26,6 +26,7 @@ func loadConfig(path string) (Config, error) {
 	}
 	return config, nil
 }
+
 ```
 
 **Gon**
@@ -33,12 +34,11 @@ func loadConfig(path string) (Config, error) {
 <!-- readme-example: error-context modern -->
 ```go
 func loadConfig(path string) (Config, error) {
-	data := os.ReadFile(path) or err {
-		return Config{}, fmt.Errorf("read config %q: %w", path, err)
-	}
+	data := os.ReadFile(path) or err => fmt.Errorf("read config %q: %w", path, err)
 	config := parseConfig(data)!
 	return config, nil
 }
+
 ```
 
 `!` returns the original error and zero values for the other enclosing results.
@@ -61,6 +61,7 @@ func displayName(user *User) string {
 	}
 	return name
 }
+
 ```
 
 **Gon**
@@ -70,6 +71,7 @@ func displayName(user *User) string {
 func displayName(user *User) string {
 	return user?.Name ?? "guest"
 }
+
 ```
 
 Safe navigation skips the guarded tail on nil; the default runs only when
@@ -107,6 +109,7 @@ func greeting(user User) string {
 	}
 	return name
 }
+
 ```
 
 **Gon**
@@ -123,6 +126,7 @@ func nickname(user User) (name string?) {
 func greeting(user User) string {
 	return nickname(user) ?? "guest"
 }
+
 ```
 
 An optional value's zero is absence. Return a value directly when it is present,
@@ -165,6 +169,7 @@ func describePayment(payment Payment) string {
 		panic("invalid payment state")
 	}
 }
+
 ```
 
 **Gon**
@@ -184,6 +189,7 @@ func describePayment(payment Payment) string {
 	case Payment.Rejected(reason) => "rejected: " + reason
 	}
 }
+
 ```
 
 Unit, positional and record variants share one closed enum model. Every enum
@@ -196,28 +202,16 @@ it or deliberately using a catch-all. Payload bindings are local copies in
 the selected arm, guards run in source order, and unselected bodies stay lazy.
 Ordinary Go switches retain their existing rules.
 
-## Result: a value, or a reason it failed
+## Error returns: preserve existing Go APIs
 
-A payment operation either succeeds with a `Payment` or fails with a reason.
-`Result[Payment, string]` represents those two possibilities in one value:
-
-- `Ok(payment)` is the success alternative, carrying a `Payment`.
-- `Err("negative amount")` is the failure alternative, carrying a `string`.
-
-These are alternative constructors, not exceptions. In code they need their
-type name in front. A Go type alias gives the operation a short, readable name:
-`type ChargeResult = Result[Payment, string]`. Then
-`ChargeResult.Err("negative amount")` means “create a failed charge with this
-reason.” The alias names the same type; it adds no wrapper or conversion.
-
-Unlike Go's `(Payment, error)`, a Result cannot carry a success payload and a
-failure payload at the same time. Use conventional Go returns when useful
-partial results can accompany an error. You can use Gon's error propagation
-with existing Go APIs without adopting Result.
+A payment operation returns `(Payment, error)`. Gon keeps this contract and
+lets `or` handle its failure while the successful path receives the payment.
+Useful partial results remain available to callers that handle the tuple
+explicitly.
 
 **Go**
 
-<!-- readme-example: result legacy -->
+<!-- readme-example: error-api legacy -->
 ```go
 func charge(amount int) (Payment, error) {
 	if amount < 0 {
@@ -233,37 +227,33 @@ func paymentStatus(amount int) string {
 	}
 	return describePayment(payment)
 }
+
 ```
 
 **Gon**
 
-<!-- readme-example: result modern -->
+<!-- readme-example: error-api modern -->
 ```go
-type ChargeResult = Result[Payment, string]
-
-func charge(amount int) (payment ChargeResult) {
+func charge(amount int) (Payment, error) {
 	if amount < 0 {
-		return .Err("negative amount")
+		var zero Payment
+		return zero, errors.New("negative amount")
 	}
-	return .Ok(newPaid(fmt.Sprintf("receipt-%d", amount)))
+	return newPaid(fmt.Sprintf("receipt-%d", amount)), nil
 }
 
 func paymentStatus(amount int) string {
-	payment := charge(amount) or reason {
-		return "failed: " + reason
+	payment := charge(amount) or err {
+		return "failed: " + err.Error()
 	}
 	return describePayment(payment)
 }
+
 ```
 
-`Result[T, E]` gives an API an exclusive success/failure contract with a typed
-error payload. The example chooses a string domain error; `E` can also be
-`error` or another type. `Err(nil)` remains an error variant. Its 2.27 zero is
-`Ok(zero T)`. `!` propagates to a compatible Result return, while `or` handles
-it locally. Go tuple returns remain separate: only postfix `!` bridges them (a
-failing call ending in `error` becomes `.Err(err)` in a Result function, and a
-failed Result returns its payload as the error from an `error`-returning
-function); Gon does not silently convert them or lose their partial data.
+The error remains an ordinary Go `error`. `!` propagates it and returns zero
+values for the other results; a block `or` handler chooses its own return.
+`or err => expression` propagates a newly contextualized error.
 
 ## Lambdas: keep the closure, shorten the callback
 
@@ -276,6 +266,7 @@ func sortUsers(users []User) {
 		return cmp.Compare(a.Name, b.Name)
 	})
 }
+
 ```
 
 **Gon**
@@ -285,6 +276,7 @@ func sortUsers(users []User) {
 func sortUsers(users []User) {
 	slices.SortFunc(users, (a, b) => cmp.Compare(a.Name, b.Name))
 }
+
 ```
 
 Parameter and result types come from context. Lambdas have ordinary Go closure,
@@ -304,6 +296,7 @@ func itemLabel(count int) string {
 	}
 	return fmt.Sprintf("%d %s", count, label)
 }
+
 ```
 
 **Gon**
@@ -314,6 +307,7 @@ func itemLabel(count int) string {
 	label := if count == 1 { "item" } else { "items" }
 	return fmt.Sprintf("%d %s", count, label)
 }
+
 ```
 
 Both branches are required and produce one value. Only the chosen branch runs;
@@ -333,6 +327,7 @@ func previewSize() string {
 	width := dimension("width", 640)
 	return resize(width, height)
 }
+
 ```
 
 **Gon**
@@ -342,6 +337,7 @@ func previewSize() string {
 func previewSize() string {
 	return resize(height: dimension("height", 480), width: dimension("width", 640))
 }
+
 ```
 
 Both versions evaluate height before width. Names come from the visible static
@@ -374,6 +370,7 @@ func userList(users []User, owner *User) string {
 	}
 	return formatList(title, len(users), unit)
 }
+
 ```
 
 **Gon**
@@ -386,13 +383,14 @@ func userList(users []User, owner *User) string {
 	unit := if len(users) == 1 { "user" } else { "users" }
 	return formatList(title: title, count: len(users), unit: unit)
 }
+
 ```
 
 ## Optional settings that can fail to parse
 
 An empty port setting is absent; an invalid integer is a failure. Successful
 parsing produces a present integer, including zero. This example combines
-Optional values and Result without collapsing their distinct alternatives.
+Optional values without collapsing their distinct presence layers.
 
 **Go**
 
@@ -419,20 +417,19 @@ func portLabel(text string) string {
 	}
 	return strconv.Itoa(port)
 }
+
 ```
 
 **Gon**
 
 <!-- readme-example: optional-port modern -->
 ```go
-func parsePort(text string) (port Result[int?, error]) {
+func parsePort(text string) (port int?, err error) {
 	if text == "" {
-		return .Ok(nil)
+		return nil, nil
 	}
-	number := strconv.Atoi(text) or err {
-		return .Err(err)
-	}
-	return .Ok(number)
+	number := strconv.Atoi(text)!
+	return number, nil
 }
 
 func portLabel(text string) string {
@@ -441,15 +438,14 @@ func portLabel(text string) string {
 	}
 	return strconv.Itoa(port ?? 8080)
 }
+
 ```
 
-## Contextual construction and optional types
+## Optional types and ordinary errors
 
-The executed optional-port example uses `int?` for an optional integer. In its
-`Result[int?, error]` return, `.Ok(nil)` succeeds without a setting,
-`.Ok(number)` succeeds with a present number, and `.Err(err)` reports failure.
-The named result supplies the expected type. A `Result[int, error]` instead
-contains an ordinary integer in its success alternative.
+The executed port example returns `(int?, error)`: absence is `nil, nil`, a
+present setting is `number, nil`, and a failed parse returns an error. The
+named results are ordinary Go result variables.
 
 `T?` is a native optional type. Its zero value and untyped `nil` represent
 absence. An immediate compatible payload becomes present, including zero,
@@ -469,16 +465,53 @@ nested optionals. The existing `??` token retains its coalescing meaning.
 An explicit conversion, such as `(int?)(7)`, supplies a target when inference
 has none. Prefer direct values in typed declarations, assignments and returns.
 
-A contextual constructor needs an expected canonical Result type. `value := .Ok(3)`
-lacks an error type and is rejected; a typed declaration, assignment, return,
-or known call parameter supplies the target. Generic calls use explicit type
-arguments and ordinary argument inference before checking contextual
-constructors. They never invent an error type from success alone. Implicit
-lifting accepts single-valued expressions and never recursively adds layers.
+## Collections, pattern tests and interpolation
 
-Ordinary named results, such as `(port Result[int?, error])`, communicate the
-result's role using existing Go syntax and create a real result variable. Gon
-does not add labels inside Result type arguments.
+`gon/seq` supplies generic functions. `is` tests a pattern; bindings in an
+`if` condition are available in later `&&` operands and its body. Several
+patterns can share an arm when their bindings have identical names and types.
+Interpolation formats operands once in written order and requires a `fmt`
+import in the same file. Use `${value:%.2f}` for an explicit fmt verb.
+
+**Go**
+
+<!-- readme-example: additions legacy -->
+```go
+func userSummary(users []User) string {
+	names := make([]string, 0, len(users))
+	for _, user := range users {
+		names = append(names, user.Name)
+	}
+	if len(names) > 0 && names[0] != "" {
+		return fmt.Sprintf("%s: %d users", names[0], len(names))
+	}
+	return fmt.Sprintf("empty: %d users", len(names))
+}
+
+func settled(payment Payment) bool { return payment.state == paid }
+
+```
+
+**Gon**
+
+<!-- readme-example: additions modern -->
+```go
+func userSummary(users []User) string {
+	names := seq.Map(users, (user) => user.Name)
+	if seq.First(names) is first? && first != "" {
+		return $"${first}: ${len(names)} users"
+	}
+	return $"empty: ${len(names)} users"
+}
+
+func settled(payment Payment) bool {
+	return switch payment {
+	case Payment.Pending, Payment.Rejected(_) => false
+	case Payment.Paid{...} => true
+	}
+}
+
+```
 
 ## Run these examples
 

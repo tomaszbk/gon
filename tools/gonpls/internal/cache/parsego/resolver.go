@@ -274,8 +274,75 @@ func (r *resolver) Visit(node ast.Node) ast.Visitor {
 			ast.Walk(r, n.Body)
 		}
 
+	case *ast.MatchExpr:
+		if n.Tag != nil {
+			ast.Walk(r, n.Tag)
+		}
+		for _, a := range n.Arms {
+			ast.Walk(r, a)
+		}
+
+	case *ast.PatternTestExpr:
+		r.walkPatternTest(n, false)
+	case *ast.MatchArm:
+		r.openScope(n.Pos())
+		defer r.closeScope()
+		var bindings []*ast.MatchPattern
+		var pattern func(*ast.MatchPattern, bool)
+		pattern = func(p *ast.MatchPattern, top bool) {
+			if p == nil {
+				return
+			}
+			if p.Inner != nil {
+				pattern(p.Inner, top && !p.Question.IsValid())
+				return
+			}
+			if id, ok := p.Value.(*ast.Ident); ok && !p.Lparen.IsValid() && !p.Lbrace.IsValid() {
+				if id.Name != "_" && id.Name != "true" && id.Name != "false" && id.Name != "nil" && !top {
+					bindings = append(bindings, p)
+				}
+			} else if p.Value != nil {
+				ast.Walk(r, p.Value)
+			}
+			for _, a := range p.Args {
+				pattern(a, false)
+			}
+			for _, f := range p.Fields {
+				pattern(f.Pattern, false)
+			}
+		}
+		for _, p := range n.Patterns {
+			pattern(p, true)
+		}
+		// Resolve every qualified head before introducing any payload binding.
+		for _, p := range bindings {
+			id := p.Value.(*ast.Ident)
+			if obj := r.topScope.Lookup(id.Name); obj != nil {
+				// Alternatives share the arm's binding identities. The checker validates
+				// that every alternative declares the same names with identical types.
+				id.Obj = obj
+			} else {
+				r.declare(p, nil, r.topScope, ast.Var, id)
+			}
+		}
+		if n.Guard != nil {
+			ast.Walk(r, n.Guard)
+		}
+		if n.Value != nil {
+			ast.Walk(r, n.Value)
+		}
+		if n.Body != nil {
+			r.walkStmts(n.Body.List)
+		}
+
 	case *ast.ErrorExpr:
 		ast.Walk(r, n.X)
+		if n.Context != nil {
+			r.openScope(n.Context.Pos())
+			defer r.closeScope()
+			r.declare(n, nil, r.topScope, ast.Var, n.Err)
+			ast.Walk(r, n.Context)
+		}
 		if n.Body != nil {
 			r.openScope(n.Body.Pos())
 			defer r.closeScope()
@@ -354,8 +421,15 @@ func (r *resolver) Visit(node ast.Node) ast.Visitor {
 		if n.Init != nil {
 			ast.Walk(r, n.Init)
 		}
-		ast.Walk(r, n.Cond)
+		patternScope := conditionHasPatternTest(n.Cond)
+		if patternScope {
+			r.openScope(n.Cond.Pos())
+		}
+		r.walkPatternCondition(n.Cond)
 		ast.Walk(r, n.Body)
+		if patternScope {
+			r.closeScope()
+		}
 		if n.Else != nil {
 			ast.Walk(r, n.Else)
 		}
@@ -628,4 +702,61 @@ func (r *resolver) walkBody(body *ast.BlockStmt) {
 	r.openLabelScope()
 	defer r.closeLabelScope()
 	r.walkStmts(body.List)
+}
+
+func conditionHasPatternTest(expression ast.Expr) bool {
+	switch expression := ast.Unparen(expression).(type) {
+	case *ast.PatternTestExpr:
+		return true
+	case *ast.BinaryExpr:
+		return expression.Op == token.LAND && (conditionHasPatternTest(expression.X) || conditionHasPatternTest(expression.Y))
+	}
+	return false
+}
+
+func (r *resolver) walkPatternCondition(expression ast.Expr) {
+	switch expression := ast.Unparen(expression).(type) {
+	case *ast.PatternTestExpr:
+		r.walkPatternTest(expression, true)
+	case *ast.BinaryExpr:
+		if expression.Op == token.LAND {
+			r.walkPatternCondition(expression.X)
+			r.walkPatternCondition(expression.Y)
+		} else {
+			ast.Walk(r, expression)
+		}
+	default:
+		ast.Walk(r, expression)
+	}
+}
+
+func (r *resolver) walkPatternTest(test *ast.PatternTestExpr, bind bool) {
+	ast.Walk(r, test.X)
+	var bindings []*ast.MatchPattern
+	var pattern func(*ast.MatchPattern, bool)
+	pattern = func(p *ast.MatchPattern, top bool) {
+		if p.Inner != nil {
+			pattern(p.Inner, top && !p.Question.IsValid())
+			return
+		}
+		if id, ok := p.Value.(*ast.Ident); ok && !p.Lparen.IsValid() && !p.Lbrace.IsValid() {
+			if id.Name != "_" && id.Name != "true" && id.Name != "false" && id.Name != "nil" {
+				if !top && bind {
+					bindings = append(bindings, p)
+				}
+			}
+		} else if p.Value != nil {
+			ast.Walk(r, p.Value)
+		}
+		for _, arg := range p.Args {
+			pattern(arg, false)
+		}
+		for _, field := range p.Fields {
+			pattern(field.Pattern, false)
+		}
+	}
+	pattern(test.Pattern, true)
+	for _, binding := range bindings {
+		r.declare(binding, nil, r.topScope, ast.Var, binding.Value.(*ast.Ident))
+	}
 }

@@ -31,6 +31,7 @@ import (
 
 // The parser structure holds the parser's internal state.
 type parser struct {
+	src     []byte
 	file    *token.File
 	errors  scanner.ErrorList
 	scanner scanner.Scanner
@@ -73,6 +74,7 @@ type parser struct {
 
 func (p *parser) init(file *token.File, src []byte, mode Mode) {
 	p.file = file
+	p.src = src
 	eh := func(pos token.Position, msg string) { p.errors.Add(pos, msg) }
 	p.scanner.Init(p.file, src, eh, scanner.ScanComments)
 
@@ -1501,19 +1503,8 @@ func (p *parser) parseOperand() ast.Expr {
 	}
 
 	switch p.tok {
-	case token.PERIOD:
-		x := &ast.ContextualVariantExpr{Dot: p.pos}
-		p.next()
-		x.Name = p.parseIdent()
-		if p.tok == token.LPAREN {
-			call := p.parseCallOrConversion(x.Name)
-			x.Lparen, x.Rparen, x.Args = call.Lparen, call.Rparen, call.Args
-			if call.ArgNames != nil || call.Ellipsis.IsValid() {
-				p.error(x.Pos(), "contextual variants do not accept named or expanded arguments")
-			}
-		}
-		return x
-
+	case token.INTERPOLATION_START:
+		return p.parseInterpolatedString()
 	case token.IDENT:
 		return p.parseIdent()
 
@@ -2002,6 +1993,12 @@ func (p *parser) parsePrimaryExpr(x ast.Expr) ast.Expr {
 			pos := p.pos
 			p.next()
 			err := p.parseIdent()
+			if p.tok == token.FATARROW {
+				arrow := p.pos
+				p.next()
+				x = &ast.ErrorExpr{X: x, OpPos: pos, Err: err, Arrow: arrow, Context: p.parseRhs()}
+				continue
+			}
 			// The handler is a statement block even in an if/for header.
 			level := p.exprLev
 			p.exprLev = 0
@@ -2196,6 +2193,13 @@ func (p *parser) parseBinaryExpr(x ast.Expr, prec1 int) ast.Expr {
 	defer func() { p.nestLev -= n }()
 	for n = 1; ; n++ {
 		incNestLev(p)
+		if p.tok == token.IDENT && p.lit == "is" && token.EQL.Precedence() >= prec1 {
+			test := &ast.PatternTestExpr{X: x, Is: p.pos}
+			p.next()
+			test.Pattern = p.parseMatchPattern()
+			x = test
+			continue
+		}
 		op, oprec := p.tokPrec()
 		if oprec < prec1 {
 			return x

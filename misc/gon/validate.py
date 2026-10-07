@@ -11,7 +11,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[2]
 GON = ROOT / 'gon/bin' / ('gon.exe' if os.name == 'nt' else 'gon')
-MODERN_FEATURES = ('namedarguments', 'enums', 'matching', 'option', 'result')
+MODERN_FEATURES = ('namedarguments', 'enums', 'matching', 'option', 'seq', 'errorcontext', 'matchalternatives', 'patterntest', 'interpolation', 'nilanalysis')
 
 
 def checks(feature):
@@ -52,12 +52,63 @@ def checks(feature):
         test('staticcheck-safety', 'tools/staticcheck', ['./analysis/code', './go/ast/astutil', './go/types/typeutil'], '^TestGon'),
         test('optional-inference', 'tools/gonpls', ['./internal/golang', './internal/golang/completion'], '^TestGonOptional'),
     ]
+    if feature in ('matchalternatives', 'patterntest'):
+        name = 'MatchAlternatives' if feature == 'matchalternatives' else 'PatternTest'
+        return [
+            test(feature+'-syntax', '.', ['cmd/compile/internal/syntax', 'go/parser', 'go/ast', 'go/printer', 'go/format'], name+'|TestChildren'),
+            test(feature+'-types', '.', ['cmd/compile/internal/types2', 'go/types'], name+'|TestGenerate'),
+            test(feature+'-execution', '.', ['cmd/internal/testdir'], 'Test/'+feature+r'\.go$'),
+            test(feature+'-cgo', '.', ['cmd/cgo/internal/testconditional'], '^TestPairedCgoMatching$'),
+            test(feature+'-ssa', 'tools/x-tools', ['./go/ssa'], '^TestGon'+name),
+            test(feature+'-ir', 'tools/staticcheck', ['./go/ir'], '^TestGon'+name),
+            test('analyzers', 'tools/gonpls', ['./internal/settings'], '^TestGonAnalyzers$'),
+        ]
+    if feature == 'interpolation':
+        return [
+            test('interpolation-syntax', '.', ['cmd/compile/internal/syntax', 'go/scanner', 'go/token', 'go/parser', 'go/ast', 'go/printer', 'go/format'], 'Interpolation|TestChildren'),
+            test('interpolation-types', '.', ['cmd/compile/internal/types2', 'go/types'], 'Interpolation|TestExprString'),
+            test('interpolation-execution', '.', ['cmd/internal/testdir'], r'Test/interpolation\.go$'),
+            test('interpolation-cgo-cover', '.', ['cmd/cgo/internal/testconditional'], '^TestPairedCgoInterpolation$'),
+            test('interpolation-ssa', 'tools/x-tools', ['./go/ssa'], '^TestGonInterpolation'),
+            test('interpolation-ir', 'tools/staticcheck', ['./go/ir'], '^TestGonInterpolation'),
+            test('interpolation-printf', 'tools/x-tools', ['./go/analysis/passes/printf'], '^Test'),
+            test('interpolation-imports', 'tools/x-tools', ['./internal/imports'], '^TestGonInterpolationImports$'),
+            test('analyzers', 'tools/gonpls', ['./internal/settings'], '^TestGonAnalyzers$'),
+            test('interpolation-editor', 'tools/gonpls', ['./internal/test/marker'], '^Test/quickfix/interpolation'),
+        ]
+    if feature == 'errorcontext':
+        return [
+            test('errorcontext-syntax', '.', ['cmd/compile/internal/syntax', 'go/parser', 'go/ast', 'go/printer', 'go/format'], 'ErrorContext|TestChildren'),
+            test('errorcontext-types', '.', ['cmd/compile/internal/types2', 'go/types'], 'ErrorContext'),
+            test('errorcontext-execution', '.', ['cmd/internal/testdir'], r'Test/errorcontext\.go$'),
+            test('errorcontext-cgo', '.', ['cmd/cgo/internal/testconditional'], '^TestPairedCgoErrorContext$'),
+            test('errorcontext-cover', '.', ['cmd/cover'], '^TestErrorContextCoverage$'),
+            test('errorcontext-ssa', 'tools/x-tools', ['./go/ssa'], '^TestGonErrorContext'),
+            test('errorcontext-ir', 'tools/staticcheck', ['./go/ir'], '^TestGonErrorContext'),
+            test('errorcontext-modernize', 'tools/x-tools', ['./go/analysis/passes/gonmodernize'], '^Test'),
+            test('errorcontext-query', 'tools/gonpls', ['./internal/cmd'], '^TestGon(AlternativesQuery|TestPropagationQuery)$'),
+        ]
+    if feature == 'nilanalysis':
+        return [
+            ('nilaway-corpus', 'tools/nilaway', [str(GON), 'test', '-json', '-p=1', '-parallel=2', './...', '-count=1']),
+            test('nilaway-gon', 'tools/nilaway', ['.'], '^TestGon'),
+            test('nilaway-settings', 'tools/gonpls', ['./internal/settings'], '^(TestNilAwayOptIn|TestGonAnalyzers)$'),
+            test('nilaway-cli', 'tools/gonpls', ['./internal/cmd'], '^TestGonNilAwayOptIn$'),
+            test('nilanalysis-execution', '.', ['cmd/internal/testdir'], r'Test/nilanalysis\.go$'),
+        ]
+    if feature == 'seq':
+        return [
+            test('seq-unit', '.', ['gon/seq']),
+            test('seq-deps', '.', ['go/build'], '^TestDependencies$'),
+            test('seq-execution', '.', ['cmd/internal/testdir'], r'Test/seq\.go$'),
+            ('seq-vet', '.', [str(GON), 'vet', 'test/seq.dir/common.go', 'test/seq.dir/modern.go']),
+        ]
     pairs = []
     if feature in ('enums', 'tooling'):
         common.append(test('sql', '.', ['database/sql', 'database/sql/driver']))
         if os.environ.get('GON_SQL_POSTGRES') == '1':
             common.append(('stringenums-postgres', '.', [sys.executable, 'misc/gon/test_stringenums_postgres.py']))
-    features = ['errorhandling', 'errorbridge', 'errortest', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'stringenums', 'stringenums_sql', 'matching', 'matchinterface', 'optionresult', 'optionsyntax'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature in ('option', 'result') else (['enums', 'stringenums', 'stringenums_sql'] if feature == 'enums' else (['matching', 'matchinterface'] if feature == 'matching' else (['errorhandling', 'errorbridge', 'errortest'] if feature == 'errorhandling' else [feature]))))
+    features = ['errorhandling', 'errortest', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'stringenums', 'stringenums_sql', 'matching', 'matchinterface', 'optionresult', 'optionsyntax', 'seq', 'errorcontext', 'matchalternatives', 'patterntest', 'interpolation', 'nilanalysis'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature == 'option' else (['enums', 'stringenums', 'stringenums_sql'] if feature == 'enums' else (['matching', 'matchinterface'] if feature == 'matching' else (['errorhandling', 'errortest'] if feature == 'errorhandling' else [feature]))))
     if feature in ('option', 'tooling'):
         # Native optionals at the JSON, SQL and reflection boundaries. The v1
         # JSON implementation is checked separately: the v2 based one is the default.
@@ -85,8 +136,6 @@ def checks(feature):
             test('typerefs', 'tools/gonpls', ['./internal/cache/typerefs'], '^TestRefs$'),
             test('unusedfunc', 'tools/gonpls', ['./internal/analysis/unusedfunc']),
             test('vet-error-handlers', 'tools/x-tools', ['./go/analysis/passes/httpresponse', './go/analysis/passes/sqlrowserr'], '^TestGon$'),
-            test('predeclared-result-index', 'tools/gonpls', ['./internal/cache/methodsets', './internal/util/fingerprint'], '^TestPredeclaredResult'),
-            test('predeclared-result-lsp', 'tools/gonpls', ['./internal/test/integration/misc'], '^TestGonResult'),
             test('inline-variable-gon', 'tools/gonpls', ['./internal/test/marker'], '^Test/codeaction/inline-var-gon'),
             ('lsp', '.', [sys.executable, 'misc/gon/test.py']),
             ('namedarguments-lsp', '.', [sys.executable, 'misc/gon/test_namedarguments.py']),
@@ -102,8 +151,7 @@ def checks(feature):
     pattern = {'conditional': 'CondExpr|CondParen', 'errorhandling': 'ErrorHandling|ErrorExpr',
                'lambda': 'Lambda|NilSafety|NullSafety', 'nullsafety': 'Lambda|NilSafety|NullSafety',
                'namedarguments': 'NamedArguments', 'enums': 'Enum|Alternatives',
-               'matching': 'Match|Alternatives', 'option': 'NativeOptional|OptionResult|OptionContext|Alternatives',
-               'result': 'OptionResult|OptionContext|Alternatives'}[feature]
+               'matching': 'Match|Alternatives', 'option': 'NativeOptional|OptionalOperators|OptionContext|Alternatives'}[feature]
     extra = []
     if feature == 'conditional':
         extra = [
@@ -134,10 +182,10 @@ def checks(feature):
             test('staticcheck-diagnostics', 'tools/staticcheck', ['./internal/sharedcheck', './simple/s1023'] +
                  ['./staticcheck/'+p for p in ['sa4004', 'sa4009', 'sa5003', 'sa9001']], '^TestGon'),
         ]
-    elif feature in ('namedarguments', 'enums', 'matching', 'option', 'result'):
+    elif feature in ('namedarguments', 'enums', 'matching', 'option'):
         cgo_pattern = {'namedarguments': 'NamedArguments', 'enums': '(Matching|StringEnums)',
-                       'matching': 'Matching', 'option': 'OptionResult', 'result': 'OptionResult'}[feature]
-        fixture = 'optionresult' if feature in ('option', 'result') else feature
+                       'matching': 'Matching', 'option': 'OptionTuple'}[feature]
+        fixture = 'optionresult' if feature == 'option' else feature
         extra = [
             test('lexical', '.', ['go/token', 'go/scanner'], '^Test(GonTokens|Scan|Semis|ScanErrors)$'),
             # Verify the adapted cgo source still builds against the baseline AST.
@@ -151,8 +199,6 @@ def checks(feature):
         if feature != 'namedarguments':
             extra.append(test('export-data', 'tools/x-tools', ['./internal/gcimporter'], '^TestGon(Alternatives|StringEnums)'))
         if feature == 'option':
-            extra.append(test('optional-migration', 'tools/gonpls', ['./internal/cmd'], '^TestGon(NativeOptionalMigration|OptionalMigrationPlan)$'))
-        if feature in ('option', 'result'):
             extra.append(('simplification-lsp', '.', [sys.executable, 'misc/gon/test_simplification.py']))
         if feature == 'matching':
             extra.append(('matchinterface-vet', '.', [str(GON), 'vet', 'test/matchinterface.dir/common.go', 'test/matchinterface.dir/modern.go']))

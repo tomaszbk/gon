@@ -15,13 +15,16 @@ func TestGonAlternativesInventory(t *testing.T) {
  type Role enum string { default Unknown(string); Teacher = teacher }
  const teacher = "teacher"
  func f(c Choice) string { return switch c {
- case Choice.Empty => "empty"
+ case Choice.Empty, Choice.Value(0) => "empty"
  case Choice.Value(n) if n > 0 => "positive"
  case Choice.Value(_) => "other"
  case Choice.Record{Number: n, ...} => "record"
  } }
  func g(c Choice) { switch c { case _ => { f(second: c, first: c) } } }
- func h() { _ = opt?; var o int? = (int)(1); o = nil; var result Result[int,string] = .Ok(3); _ = result; switch o { case nil => {}; case value? => {_ = value} } }
+ func pattern(c Choice) bool { return c is Choice.Empty }
+ func interpolate() string { return $"literal ${1:%d}" }
+ func context() error { f() or problem => wrap(problem); return nil }
+ func h() { _ = opt?; var o int? = (int)(1); o = nil; switch o { case nil => {}; case value? => {_ = value} } }
  `, parser.SkipObjectResolution)
 	if err != nil {
 		t.Fatal(err)
@@ -38,7 +41,7 @@ func TestGonAlternativesInventory(t *testing.T) {
 	if !slices.Equal(want, got) {
 		t.Fatal("inspector order differs from ast.Walk")
 	}
-	kinds := []ast.Node{(*ast.EnumType)(nil), (*ast.EnumVariant)(nil), (*ast.MatchExpr)(nil), (*ast.MatchStmt)(nil), (*ast.MatchArm)(nil), (*ast.MatchPattern)(nil), (*ast.MatchField)(nil), (*ast.OptionalExpr)(nil), (*ast.ContextualVariantExpr)(nil)}
+	kinds := []ast.Node{(*ast.EnumType)(nil), (*ast.EnumVariant)(nil), (*ast.MatchExpr)(nil), (*ast.MatchStmt)(nil), (*ast.MatchArm)(nil), (*ast.MatchPattern)(nil), (*ast.MatchField)(nil), (*ast.OptionalExpr)(nil), (*ast.ErrorExpr)(nil), (*ast.PatternTestExpr)(nil), (*ast.InterpolatedStringExpr)(nil), (*ast.InterpolationPart)(nil)}
 	var masks []nodeMask
 	for _, kind := range kinds {
 		mask := typeOf(kind)
@@ -60,6 +63,13 @@ func TestGonAlternativesInventory(t *testing.T) {
 		})
 		if visits == 0 {
 			t.Fatalf("missing %T from traversal", kind)
+		}
+	}
+	for cur := range in.Root().Preorder((*ast.MatchArm)(nil)) {
+		for i, pattern := range cur.Node().(*ast.MatchArm).Patterns {
+			if cur.ChildAt(edge.MatchArm_Patterns, i).Node() != pattern {
+				t.Fatal("missing alternative cursor")
+			}
 		}
 	}
 	for cur := range in.Root().Preorder(kinds...) {

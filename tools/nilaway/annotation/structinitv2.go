@@ -1,0 +1,221 @@
+//  Copyright (c) 2023 Uber Technologies, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package annotation
+
+import (
+	"fmt"
+	"go/token"
+	"go/types"
+)
+
+// This file contains annotation triggers for the allocation-site-sensitive struct
+// initialization analysis.
+
+// StructFieldNil is a producer for a nil field in a specific struct allocation. It always
+// produces nil. Because it is attached to the field node for that allocation, different allocations
+// of the same struct type keep separate producers.
+type StructFieldNil struct {
+	*ProduceTriggerTautology
+
+	// FieldName is the name of the field that is nil, used only for diagnostics.
+	FieldName string
+}
+
+// equals returns true if the passed ProducingAnnotationTrigger is equal to this one.
+func (s *StructFieldNil) equals(other ProducingAnnotationTrigger) bool {
+	if other, ok := other.(*StructFieldNil); ok {
+		return s.FieldName == other.FieldName &&
+			s.ProduceTriggerTautology.equals(other.ProduceTriggerTautology)
+	}
+	return false
+}
+
+// Repr returns this StructFieldNil as a fmt.Stringer.
+func (s *StructFieldNil) Repr() fmt.Stringer {
+	return StructFieldNilRepr{FieldName: s.FieldName}
+}
+
+// StructFieldNilRepr is a fmt.Stringer storing the information needed to compactly encode a
+// StructFieldNil.
+type StructFieldNilRepr struct {
+	FieldName string
+}
+
+func (s StructFieldNilRepr) String() string {
+	return fmt.Sprintf("uninitialized field `%s`", s.FieldName)
+}
+
+// Field-path context sites carry struct field nilability across function boundaries.
+
+// StructFieldContextKind distinguishes whether a context site summarizes a field of a function
+// return value or of a function parameter/receiver.
+type StructFieldContextKind uint8
+
+const (
+	// StructFieldReturnContext is the nilability of a field of a function's return value.
+	StructFieldReturnContext StructFieldContextKind = iota
+	// StructFieldParamContext is the nilability of a field of a function's parameter/receiver,
+	// as observed on entry to the function (the value passed in by the caller).
+	StructFieldParamContext
+	// StructFieldParamOutContext is the nilability of a parameter or receiver field after the
+	// function has assigned it.
+	StructFieldParamOutContext
+)
+
+func (k StructFieldContextKind) string() string {
+	switch k {
+	case StructFieldReturnContext:
+		return "result"
+	default:
+		return "param"
+	}
+}
+
+// boundaryDesc renders the boundary descriptor used in diagnostics, e.g. "param 0 of `f`",
+// "result 0 of `g`", or "method receiver of `m`" (when the param index is the receiver index).
+func boundaryDesc(kind StructFieldContextKind, index int, funcName string) string {
+	if kind != StructFieldReturnContext && index == ReceiverParamIndex {
+		return fmt.Sprintf("method receiver of `%s`", funcName)
+	}
+	return fmt.Sprintf("%s %d of `%s`", kind.string(), index, funcName)
+}
+
+// StructFieldContextSite is an annotation site (annotation.Key) representing the nilability
+// of a nested field, identified by Path, of the Index-th return value or parameter of FuncObj.
+// It is inference-only.
+type StructFieldContextSite struct {
+	FuncObj *types.Func
+	Kind    StructFieldContextKind
+	Index   int
+	// Path is the field path from the boundary value to the tracked field. The zero value
+	// denotes a site describing the boundary value itself.
+	Path FieldPath
+	// Location is set for a call-site-scoped field site: return param sources are instantiated per call
+	// site, so each call gets its own site and one caller's argument cannot poison another
+	// caller's result. The zero value denotes the ordinary formal function-boundary site shared
+	// by all callers.
+	Location token.Position
+}
+
+// Object returns the function this site belongs to. Cross-package inference identity uses Object()
+// together with String(); the function is unique across packages, while the field may come from a
+// shared struct type.
+func (s *StructFieldContextSite) Object() types.Object { return s.FuncObj }
+
+func (s *StructFieldContextSite) equals(other Key) bool {
+	if other, ok := other.(*StructFieldContextSite); ok {
+		// Order the value comparison so the cheap, selective scalar fields (Kind, Index, FuncObj
+		// identity) run before the Path string and Location compares.
+		return s.Kind == other.Kind && s.Index == other.Index && s.FuncObj == other.FuncObj &&
+			s.Path == other.Path && s.Location == other.Location
+	}
+	return false
+}
+
+func (s *StructFieldContextSite) copy() Key {
+	c := *s
+	return &c
+}
+
+func (s *StructFieldContextSite) String() string {
+	// Kind value is included in String to differentiate param-in and param-out site. Without it the two
+	// would collapse into one inference site, conflating a parameter's entry value with its
+	// post-call state. The call-site location keeps call-site-scoped sites of different calls
+	// distinct.
+	subject := fmt.Sprintf("field `%s`", s.Path)
+	if s.Path.IsRoot() {
+		subject = "value"
+	}
+	if s.Location.IsValid() {
+		return fmt.Sprintf("%s of kind %d %s at %s", subject, s.Kind, boundaryDesc(s.Kind, s.Index, s.FuncObj.Name()), s.Location.String())
+	}
+	return fmt.Sprintf("%s of kind %d %s", subject, s.Kind, boundaryDesc(s.Kind, s.Index, s.FuncObj.Name()))
+}
+
+// StructFieldFromContext is a producer: the value of a field (read from a boundary, e.g.
+// `b.f` where `b := give()`) is nil iff the corresponding context site is inferred nilable.
+type StructFieldFromContext struct {
+	*TriggerIfNilable
+}
+
+func (s *StructFieldFromContext) equals(other ProducingAnnotationTrigger) bool {
+	if other, ok := other.(*StructFieldFromContext); ok {
+		return s.TriggerIfNilable.equals(other.TriggerIfNilable)
+	}
+	return false
+}
+
+// Repr returns this StructFieldFromContext as a fmt.Stringer.
+func (s *StructFieldFromContext) Repr() fmt.Stringer {
+	site := s.Ann.(*StructFieldContextSite)
+	return StructFieldFromContextRepr{Path: site.Path.String(), Kind: site.Kind, Index: site.Index, FuncName: site.FuncObj.Name()}
+}
+
+// StructFieldFromContextRepr is the compact encoding of a StructFieldFromContext.
+type StructFieldFromContextRepr struct {
+	Path     string
+	Kind     StructFieldContextKind
+	Index    int
+	FuncName string
+}
+
+func (s StructFieldFromContextRepr) String() string {
+	if s.Path == "" {
+		return boundaryDesc(s.Kind, s.Index, s.FuncName)
+	}
+	return fmt.Sprintf("field `%s` of %s", s.Path, boundaryDesc(s.Kind, s.Index, s.FuncName))
+}
+
+// StructFieldToContext is a consumer: a value flows into a field of a boundary (e.g. a
+// returned struct's field). It requires the context site to be nonnil; when a definitely-nil
+// producer reaches it, inference marks the site nilable.
+type StructFieldToContext struct {
+	*TriggerIfNonNil
+}
+
+func (s *StructFieldToContext) equals(other ConsumingAnnotationTrigger) bool {
+	if other, ok := other.(*StructFieldToContext); ok {
+		return s.TriggerIfNonNil.equals(other.TriggerIfNonNil)
+	}
+	return false
+}
+
+// Copy returns a deep copy of this consumer.
+func (s *StructFieldToContext) Copy() ConsumingAnnotationTrigger {
+	c := *s
+	c.TriggerIfNonNil = s.TriggerIfNonNil.Copy().(*TriggerIfNonNil)
+	return &c
+}
+
+// Repr returns this StructFieldToContext as a fmt.Stringer.
+func (s *StructFieldToContext) Repr() fmt.Stringer {
+	site := s.Ann.(*StructFieldContextSite)
+	return StructFieldToContextRepr{Path: site.Path.String(), Kind: site.Kind, Index: site.Index, FuncName: site.FuncObj.Name()}
+}
+
+// StructFieldToContextRepr is the compact encoding of a StructFieldToContext.
+type StructFieldToContextRepr struct {
+	Path     string
+	Kind     StructFieldContextKind
+	Index    int
+	FuncName string
+}
+
+func (s StructFieldToContextRepr) String() string {
+	if s.Path == "" {
+		return fmt.Sprintf("reaches %s", boundaryDesc(s.Kind, s.Index, s.FuncName))
+	}
+	return fmt.Sprintf("field `%s` reaches %s", s.Path, boundaryDesc(s.Kind, s.Index, s.FuncName))
+}

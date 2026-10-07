@@ -872,28 +872,6 @@ func hoverBuiltin(ctx context.Context, snapshot *cache.Snapshot, obj types.Objec
 		return nil, err
 	}
 
-	if typ, variant := canonicalEnumConstructor(obj); variant != nil {
-		declaration, _ := enumVariantDecl(pgf, ident.Pos())
-		comment := declaration.Doc
-		if comment == nil {
-			comment = declaration.Comment
-		}
-		signature := "variant " + types.TypeString(typ, nil) + "." + variant.Name()
-		if variant.NumFields() != 0 {
-			var fields []string
-			for i := 0; i < variant.NumFields(); i++ {
-				fields = append(fields, types.TypeString(variant.Field(i).Type(), nil))
-			}
-			signature += "(" + strings.Join(fields, ", ") + ")"
-		}
-		docText := comment.Text()
-		return &hoverResult{
-			Signature: signature, SingleLine: signature,
-			Synopsis: doc.Synopsis(docText), FullDocumentation: docText,
-			SymbolName: types.Unalias(typ).(*types.Named).Obj().Name() + "." + variant.Name(),
-		}, nil
-	}
-
 	var (
 		comment *ast.CommentGroup
 		decl    ast.Decl

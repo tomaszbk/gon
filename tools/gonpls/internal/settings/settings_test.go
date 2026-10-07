@@ -1,12 +1,14 @@
 package settings_test
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/tools/gopls/internal/clonetest"
+	"golang.org/x/tools/gopls/internal/doc"
 	. "golang.org/x/tools/gopls/internal/settings"
 )
 
@@ -26,6 +28,8 @@ func TestOptions_Set(t *testing.T) {
 		check     func(Options) bool
 	}
 	tests := []testCase{
+		{name: "nilaway", value: true, check: func(o Options) bool { return o.Nilaway }},
+		{name: "nilaway", value: "true", wantError: true, check: func(o Options) bool { return !o.Nilaway }},
 		{
 			name:  "symbolStyle",
 			value: "Dynamic",
@@ -257,5 +261,66 @@ func TestOptions_Clone(t *testing.T) {
 	clonetest.ZeroOut(opts2)
 	if diff := cmp.Diff(golden, opts); diff != "" {
 		t.Errorf("Mutating clone mutated the original (-want +got):\n%s", diff)
+	}
+}
+
+func TestNilAwayOptIn(t *testing.T) {
+	options := DefaultOptions()
+	for _, analyzer := range AllAnalyzers {
+		if analyzer.Analyzer().Name != "nilaway" {
+			continue
+		}
+		if analyzer.Enabled(options) {
+			t.Fatal("NilAway is enabled by default")
+		}
+		if _, errs := options.Set(map[string]any{"nilaway": true}); len(errs) > 0 {
+			t.Fatal(errs)
+		}
+		if !analyzer.Enabled(options) {
+			t.Fatal("nilaway setting did not enable analyzer")
+		}
+		options.Analyses = map[string]bool{"nilaway": false}
+		if analyzer.Enabled(options) {
+			t.Fatal("per-analyzer disable did not override setting")
+		}
+		return
+	}
+	t.Fatal("NilAway is missing from analyzer registry")
+}
+
+func TestNilAwaySettingMetadata(t *testing.T) {
+	var api doc.API
+	if err := json.Unmarshal([]byte(doc.JSON), &api); err != nil {
+		t.Fatal(err)
+	}
+	var option *doc.Option
+	for _, options := range api.Options {
+		for _, candidate := range options {
+			switch candidate.Name {
+			case "nilaway":
+				if option != nil {
+					t.Fatal("duplicate nilaway option in API metadata")
+				}
+				option = candidate
+			case "nilAway":
+				t.Fatal("API metadata contains unsupported nilAway spelling")
+			}
+		}
+	}
+	if option == nil {
+		t.Fatal("nilaway option is missing from API metadata")
+	}
+	if option.Type != "bool" || option.Default != "false" {
+		t.Fatalf("nilaway metadata: type %q, default %q; want bool, false", option.Type, option.Default)
+	}
+	options := DefaultOptions()
+	if _, errs := options.Set(map[string]any{option.Name: true}); len(errs) > 0 {
+		t.Fatalf("documented option is rejected: %v", errs)
+	}
+	if !options.Nilaway {
+		t.Fatal("documented option did not enable NilAway")
+	}
+	if _, errs := options.Set(map[string]any{"nilAway": true}); len(errs) == 0 {
+		t.Fatal("unsupported nilAway spelling was accepted")
 	}
 }

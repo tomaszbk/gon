@@ -157,15 +157,3 @@ func optionBoundary(ok bool) int {
 	case nil => 0
 	}
 }
-func resultArm(ok bool) Result[int, string] {
-	return Result[int, string].Ok(switch ok {
-	case true => Result[int, string].Ok(8)!
-	case false => Result[int, string].Err("failure")!
-	})
-}
-func resultBoundary(ok bool) string {
-	return switch resultArm(ok) {
-	case Result[int, string].Ok(value) => fmt.Sprint(value)
-	case Result[int, string].Err(problem) => problem
-	}
-}

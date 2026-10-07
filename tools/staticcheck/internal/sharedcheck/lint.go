@@ -231,7 +231,7 @@ func declarationNeedsTarget(value ast.Expr, info *types.Info) bool {
 		switch node := node.(type) {
 		case *ast.FuncLit:
 			return false // its written signature supplies its body's context
-		case *ast.ContextualVariantExpr, *ast.LambdaExpr, *ast.CondExpr, *ast.MatchExpr, *ast.SafeNavExpr:
+		case *ast.LambdaExpr, *ast.CondExpr, *ast.MatchExpr, *ast.SafeNavExpr:
 			needed = true
 		case *ast.BinaryExpr:
 			needed = node.Op == token.COALESCE

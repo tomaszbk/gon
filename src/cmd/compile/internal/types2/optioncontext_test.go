@@ -14,11 +14,9 @@ import (
 func TestOptionContextTypes(t *testing.T) {
 	const source = `package p
 type Maybe = int?
-type Outcome = Result[int,error]
 type GenericMaybe[T any] = T?
 var alias Maybe = 1
 var genericAlias GenericMaybe[int] = (int)(2)
-var outcome Outcome = .Ok(3)
 var pointer *int
 var payload int
 var option int? = payload
@@ -26,8 +24,6 @@ var absent int? = nil
 var present (*int)? = pointer
 var explicit (*int)? = (*int)(nil)
 var none int? = (nil)
-var ok Result[int?, error] = (.Ok(payload))
-var failure Result[int, error] = .Err(nil)
 var elements = []int?{1, nil, (int)(2), (nil)}
 var record = struct { Field int? } { Field: payload }
 var mapping = map[int?]int? {1: nil}
@@ -37,32 +33,22 @@ var ptr *int?
 var nested (int?)? = option
 var preserved (int?)? = (int?)(option)
 func consume(value int?) {}
-func consumeResult(value Result[int, error]) {}
 func identity[T any](seed T, value T?) T? { return value }
-func resultIdentity[T, E any](seed T, problem E, value Result[T, E]) Result[T,E] { return value }
-func lambdaGeneric[T,E any](seed T, problem E, action func() Result[T,E]) {}
-func genericBody[T,E any](value T, problem E) Result[T,E] { return .Ok(value) }
 func variadic(values ...int?) {}
 func returnValue() int? { return payload }
 func returnAbsence() int? { return nil }
 func optionTuple() (int?, int) { return (int)(1), 2 }
 func preserveTuple() (int?, int) { return optionTuple() }
-func named() (bytesEscritos Result[int,error]) { return .Ok(1) }
-func conditional(b bool) Result[int?, error] { return if b { .Ok(nil) } else { .Ok(payload) } }
 func match(b bool) int? { return switch b { case true => (int)(1); case false => nil } }
 var lambda func() int? = () => payload
 func calls() {
  consume(payload)
  consume(value: nil)
  consume(((int)(payload)))
- consumeResult(.Ok(1))
  identity(1, (int)(2))
  identity(1, nil)
  identity(1, 2)
  identity[int](1, (int)(2))
- resultIdentity(1, "error", .Ok(2))
- resultIdentity(1, "error", if true { .Ok(2) } else { .Err("bad") })
- lambdaGeneric(1, "bad", () => .Ok(2))
  variadic(1, nil, (int)(2))
  variadic(values: []int?{1,nil}...)
  option = payload
@@ -86,7 +72,7 @@ func shadow() {
 	}
 	for expr, target := range info.OptionalConversions {
 		if !IsOptional(target) {
-			t.Fatalf("conversion target %s is not canonical", target)
+			t.Fatalf("conversion target %s is not optional", target)
 		}
 		if info.Types[expr].Type == nil {
 			t.Fatalf("missing source type for %T", expr)
@@ -95,31 +81,18 @@ func shadow() {
 			t.Fatalf("lift lost source type at %T", expr)
 		}
 	}
-	for expr, tv := range info.Types {
-		if _, ok := expr.(*syntax.ContextualVariantExpr); ok && !IsOptional(tv.Type) && !IsCanonicalResult(tv.Type) {
-			t.Fatalf("contextual constructor has type %s", tv.Type)
-		}
-	}
+
 }
 
 func TestOptionContextInvalid(t *testing.T) {
 	for _, tc := range []struct{ source, want string }{
-		{`var _ = .Ok(1)`, "fully known canonical"},
-		{`var _ = .None`, "fully known canonical"},
-		{`var _ int = .Some(1)`, "fully known canonical"},
-		{`type Other enum { default Ok(int) }; var _ Other = .Ok(1)`, "fully known canonical"},
-		{`type Option[T any] struct{}; var _ Option[int] = .Some(1)`, "fully known canonical"},
-		{`var _ int? = .Ok(1)`, "fully known canonical"},
-		{`var _ Result[int,error] = .None`, "does not belong"},
-		{`var _ int? = .Some(nil)`, "fully known canonical"},
-		{`var _ int? = .Some`, "fully known canonical"},
-		{`var _ int? = .Some(1, 2)`, "fully known canonical"},
-		{`var _ int? = .None()`, "fully known canonical"},
+		{`var _ Result[int,error]`, "undefined: Result"},
+		{`var _ Option[int]`, "undefined: Option"},
+		{`type Result[T,E any] enum { default Ok(T); Err(E) }; func f(x Result[int,error]) error { _ = x!; return nil }`, "requires a function or method call"},
+		{`type Result[T,E any] enum { default Ok(T); Err(E) }; func get() Result[int,error] { return Result[int,error].Ok(1) }; func f() error { _ = get()!; return nil }`, "requires a final result of type error"},
 		{`var _ int? = "wrong"`, "cannot use"},
 		{`var _ (int?)? = 1`, "cannot use"},
-		{`func f[T any](x T?) {} ; func g() { f(.Some(1)) }`, "cannot infer"},
 		{`func f[T any](x T?) {} ; func g() { f(1) }`, "cannot infer"},
-		{`func f[T,E any](x T, r Result[T,E]) {} ; func g() { f(1, .Ok(2)) }`, "cannot infer"},
 		{`func pair()(int,int) { return 1,2 }; func f(a int?, b int) {}; func g(){f(pair())}`, "cannot use"},
 		{`func pair()(int,int) { return 1,2 }; var a int?; var b int; func g(){ a,b = pair() }`, "cannot use"},
 		{`func pair()(int,int) { return 1,2 }; func f()(int?,int){ return pair() }`, "cannot use"},

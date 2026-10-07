@@ -2,7 +2,9 @@ package main
 
 import (
 	"cmp"
+	"errors"
 	"fmt"
+	"gon/seq"
 	"os"
 	"slices"
 	"strconv"
@@ -10,9 +12,7 @@ import (
 
 // BEGIN README error-context
 func loadConfig(path string) (Config, error) {
-	data := os.ReadFile(path) or err {
-		return Config{}, fmt.Errorf("read config %q: %w", path, err)
-	}
+	data := os.ReadFile(path) or err => fmt.Errorf("read config %q: %w", path, err)
 	config := parseConfig(data)!
 	return config, nil
 }
@@ -57,24 +57,23 @@ func describePayment(payment Payment) string {
 
 // END README alternatives
 
-// BEGIN README result
-type ChargeResult = Result[Payment, string]
-
-func charge(amount int) (payment ChargeResult) {
+// BEGIN README error-api
+func charge(amount int) (Payment, error) {
 	if amount < 0 {
-		return .Err("negative amount")
+		var zero Payment
+		return zero, errors.New("negative amount")
 	}
-	return .Ok(newPaid(fmt.Sprintf("receipt-%d", amount)))
+	return newPaid(fmt.Sprintf("receipt-%d", amount)), nil
 }
 
 func paymentStatus(amount int) string {
-	payment := charge(amount) or reason {
-		return "failed: " + reason
+	payment := charge(amount) or err {
+		return "failed: " + err.Error()
 	}
 	return describePayment(payment)
 }
 
-// END README result
+// END README error-api
 
 // BEGIN README lambda
 func sortUsers(users []User) {
@@ -109,14 +108,12 @@ func userList(users []User, owner *User) string {
 // END README user-list
 
 // BEGIN README optional-port
-func parsePort(text string) (port Result[int?, error]) {
+func parsePort(text string) (port int?, err error) {
 	if text == "" {
-		return .Ok(nil)
+		return nil, nil
 	}
-	number := strconv.Atoi(text) or err {
-		return .Err(err)
-	}
-	return .Ok(number)
+	number := strconv.Atoi(text)!
+	return number, nil
 }
 
 func portLabel(text string) string {
@@ -148,14 +145,6 @@ func optionPropagation(present bool) string {
 	return excitedNickname(User{Nickname: "Ada", HasNickname: present}) ?? "guest"
 }
 
-func resultNilPreserved() bool {
-	value := Result[int, error].Err(nil)
-	return switch value {
-	case Result[int, error].Ok(_) => false
-	case Result[int, error].Err(problem) => problem == nil
-	}
-}
-
 func capturedValue() int {
 	offset := 2
 	var increment func(int) int = (value) => value + offset
@@ -166,3 +155,21 @@ func capturedValue() int {
 func lazyValue(condition bool) int {
 	return if condition { visit("yes", 1) } else { visit("no", 2) }
 }
+
+// BEGIN README additions
+func userSummary(users []User) string {
+	names := seq.Map(users, (user) => user.Name)
+	if seq.First(names) is first? && first != "" {
+		return $"${first}: ${len(names)} users"
+	}
+	return $"empty: ${len(names)} users"
+}
+
+func settled(payment Payment) bool {
+	return switch payment {
+	case Payment.Pending, Payment.Rejected(_) => false
+	case Payment.Paid{...} => true
+	}
+}
+
+// END README additions

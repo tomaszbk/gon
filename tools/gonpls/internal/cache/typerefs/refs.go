@@ -521,12 +521,16 @@ func visitExpr(expr ast.Expr, f refVisitor) {
 		visitExpr(n.X, f)
 	case *ast.SafeNavExpr:
 		visitExpr(n.X, f)
+	case *ast.PatternTestExpr:
+		visitExpr(n.X, f)
+	case *ast.InterpolatedStringExpr:
+		for _, part := range n.Parts {
+			if part.Expr != nil {
+				visitExpr(part.Expr, f)
+			}
+		}
 	case *ast.OptionalExpr:
 		visitExpr(n.X, f)
-	case *ast.ContextualVariantExpr:
-		for _, arg := range n.Args {
-			visitExpr(arg, f)
-		}
 	case *ast.EnumType:
 		for _, variant := range n.Variants {
 			if variant.Payload != nil {
@@ -541,8 +545,8 @@ func visitExpr(expr ast.Expr, f refVisitor) {
 		for _, arm := range n.Arms {
 			if arm.Value != nil {
 				bound := make(map[string]bool)
-				if arm.Pattern != nil {
-					for node := range ast.Preorder(arm.Pattern) {
+				for _, alternative := range arm.Patterns {
+					for node := range ast.Preorder(alternative) {
 						if pattern, ok := node.(*ast.MatchPattern); ok {
 							if id, ok := pattern.Value.(*ast.Ident); ok && id.Name != "_" && id.Name != "true" && id.Name != "false" && id.Name != "nil" {
 								bound[id.Name] = true

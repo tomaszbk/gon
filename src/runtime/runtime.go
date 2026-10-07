@@ -123,11 +123,6 @@ func syscall_Getpagesize() int { return int(physPageSize) }
 //go:linkname os_runtime_args os.runtime_args
 func os_runtime_args() []string { return append([]string{}, argslice...) }
 
-// errors_nilResult is pulled by package errors to define errors.ErrNilResult.
-//
-//go:linkname errors_nilResult errors.nilResult
-func errors_nilResult() error { return nilResult }
-
 //go:linkname syscall_Exit syscall.Exit
 //go:nosplit
 func syscall_Exit(code int) {

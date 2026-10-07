@@ -16,7 +16,6 @@ func TestGonAlternatives(t *testing.T) {
 type E[T any] enum { Value(T); default Empty; Record { Item T; Ready bool } }
 type Alias = E[int]
 type Maybe = int?
-type Outcome = Result[string,error]
 func Combine(first int, second string) {}
 var Constructor = E[int].Value
 `, parser.SkipObjectResolution)
@@ -37,7 +36,7 @@ var Constructor = E[int].Value
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"Alias", "Outcome"} {
+	for _, name := range []string{"Alias"} {
 		original, imported := types.EnumOf(p.Scope().Lookup(name).Type()), types.EnumOf(q.Scope().Lookup(name).Type())
 		if imported == nil || imported.NumVariants() != original.NumVariants() {
 			t.Fatalf("descriptor lost for %s", name)
@@ -57,8 +56,8 @@ var Constructor = E[int].Value
 			}
 		}
 	}
-	if !types.IsOptional(q.Scope().Lookup("Maybe").Type()) || !types.IsCanonicalResult(q.Scope().Lookup("Outcome").Type()) {
-		t.Fatal("canonical identities changed on cache import")
+	if !types.IsOptional(q.Scope().Lookup("Maybe").Type()) {
+		t.Fatal("optional identity changed on cache import")
 	}
 	if types.EnumOf(q.Scope().Lookup("Maybe").Type()) != nil || types.OptionalOf(q.Scope().Lookup("Maybe").Type()).Elem() != types.Typ[types.Int] {
 		t.Fatal("native optional export identity")
@@ -72,7 +71,6 @@ import "example/lib"
 var _ lib.Alias = lib.Alias.Record{Item:3}
 var _ = lib.Alias.Value(4)
 var _ lib.Maybe = 5
-var _ lib.Outcome = lib.Outcome.Err(nil)
 func F(v lib.Alias) int { lib.Combine(second:"s",first:1); return switch v { case lib.Alias.Empty => 0; case lib.Alias.Value(n) => n; case lib.Alias.Record{Item:n,...} => n } }
 `, parser.SkipObjectResolution)
 	if err != nil {
