@@ -42,8 +42,7 @@ issues. Nil propagation preserves partial tuples: a successful `(nil, nil)`
 return can still cause a real nil dereference and is covered by a positive test.
 
 Generated error-tree search helpers are modeled through their source subjects
-and payloads. Fatal/FailNow/Skip termination excludes the unreachable zero return
-generated for test propagation. Ordinary pointer-field nil guards apply to both
+and payloads. Explicit Fatal/FailNow/Skip calls terminate their failure paths. Ordinary pointer-field nil guards apply to both
 whole-struct and direct-field loads, and trusted error-return hooks retain the
 upstream protocol for failure-only partial results.
 
@@ -54,7 +53,7 @@ nodes exposed by the maintained CFG builder. All upstream tests remain present.
 
 `nilaway_gon_test.go` compares safe and genuinely unsafe Gon constructs with
 ordinary Go counterparts. Fixtures cover the accepted features, including named
-arguments, interpolation, `gon/seq`, optional propagation and test-file Fatal
+arguments, interpolation, `gon/seq`, optional propagation and test-file error returns with explicit Fatal
 handling. `nilaway_gon_memory_test.go` checks aliases, post-capture writes,
 missing map keys, helper parameters, interface calls, method receivers and
 imported generic optional identities. `test/nilanalysis.go` executes paired

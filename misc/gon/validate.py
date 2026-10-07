@@ -95,6 +95,7 @@ def checks(feature):
         ('benchmark-correctness', '.', [sys.executable, 'misc/gon/benchmark.py', '--correctness-only']),
         test('structural-tools', 'tools/x-tools', ['./go/ast/inspector', './go/ast/astutil', './go/ast/edge', './go/cfg', './refactor/satisfy', './internal/typesinternal', './go/types/objectpath'], 'TestGon|TestCond|TestError|TestInspectAllNodes|TestEnumPaths|TestStringEnum'),
         test('analyzers', 'tools/gonpls', ['./internal/settings'], '^TestGonAnalyzers$'),
+        test('tooling-docs', 'tools/gonpls', ['./internal/doc/generate'], '^TestGenerated$'),
         test('refactor-safety', 'tools/x-tools', ['./internal/refactor/inline'], '^(TestGon|TestCalleeEffects|TestBasics|TestPrecedenceParens)'),
         test('staticcheck-safety', 'tools/staticcheck', ['./analysis/code', './go/ast/astutil', './go/types/typeutil'], '^TestGon'),
         test('staticcheck-unused', 'tools/staticcheck', ['./unused'], '^TestGonUnused$'),
@@ -105,6 +106,9 @@ def checks(feature):
         test('gon-namespace-build', '.', ['go/build'], '^TestGonPackagePrecedence$'),
         test('gon-namespace-execution', '.', ['cmd/go'], '^TestGonNamespacePair$|^TestScript/gon_namespace$'),
         test('optional-inference', 'tools/gonpls', ['./internal/golang', './internal/golang/completion'], '^TestGonOptional'),
+        test('optional-hover', 'tools/gonpls', ['./internal/test/integration/misc'], '^TestGonOptionalHover$'),
+        test('enum-layout-types', '.', ['cmd/compile/internal/types2', 'go/types'], '^Test(EnumUnitLayout|Generate)$'),
+        test('error-return-types', '.', ['cmd/compile/internal/types2', 'go/types'], 'ErrorHandling|ErrorExpr|ErrorBridge'),
     ]
     if feature in ('matchalternatives', 'patterntest'):
         name = 'MatchAlternatives' if feature == 'matchalternatives' else 'PatternTest'
@@ -206,7 +210,7 @@ def checks(feature):
             test('syntax-fixes', 'tools/x-tools', ['./go/analysis/passes/gonmodernize']),
             ('fix-execution', '.', [sys.executable, 'misc/gon/test_fix.py']),
         ]
-    pattern = {'conditional': 'CondExpr|CondParen', 'errorhandling': 'ErrorHandling|ErrorExpr',
+    pattern = {'conditional': 'CondExpr|CondParen', 'errorhandling': 'ErrorHandling|ErrorExpr|ErrorBridge',
                'lambda': 'Lambda|NilSafety|NullSafety', 'nullsafety': 'Lambda|NilSafety|NullSafety',
                'namedarguments': 'NamedArguments', 'enums': 'Enum|Alternatives',
                'matching': 'Match|Alternatives', 'option': 'NativeOptional|OptionalOperators|OptionContext|Alternatives'}[feature]

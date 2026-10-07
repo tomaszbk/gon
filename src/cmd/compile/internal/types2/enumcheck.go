@@ -101,6 +101,7 @@ func (check *Checker) enumType(e *syntax.EnumType, def *TypeName) *Struct {
 		}
 	}
 	next := 1
+	st.fields[0].typ = enumTagType(desc.variants)
 	for i, v := range desc.variants {
 		if i == desc.defaultIndex {
 			v.tag = 0

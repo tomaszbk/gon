@@ -1,5 +1,4 @@
-// Postfix ! on Go error tuples, and the test-function rule
-// outside a _test.go file.
+// Postfix ! on Go error tuples has the same return protocol in every file.
 
 package errorbridge
 
@@ -25,11 +24,11 @@ func tupleOutside() int {
 	return one /* ERROR "error propagation requires an enclosing function" */ ()!
 }
 
-// The test-function rule needs a _test.go file.
+// A testing parameter cannot replace an error result.
 func Test(t *testing.T) {
-	only /* ERROR "a _test.go file" */ ()!
+	only /* ERROR "final result of type error" */ ()!
 }
 
 func (Plain) Helper(t *testing.T) {
-	only /* ERROR "a _test.go file" */ ()!
+	only /* ERROR "final result of type error" */ ()!
 }

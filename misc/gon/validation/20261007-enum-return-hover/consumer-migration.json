@@ -1,0 +1,70 @@
+{
+  "total": 25,
+  "changes": [
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/auth/auth_test.go",
+      "count": 1,
+      "beforeSHA256": "ac22be9b00941b685eec68696b0e027c993bd0169a4efce9dedb7ca99390eac2",
+      "afterSHA256": "3fa79b460224d913e9d873eb92c0cf0d24e6104e21d763980e3612925c2123c8"
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/domain/values_test.go",
+      "count": 2,
+      "beforeSHA256": "cfd6313e2b3308d603d116a7aea3289f9f78fcf7895c149b072d3f8ce687559c",
+      "afterSHA256": "536e210d114a8c0e79bee6a6d0c240d8b67226b409be1a8fa798259a003755df"
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/httpapi/agent_integration_test.go",
+      "count": 3,
+      "beforeSHA256": "1c9698e8d79557f407da6e75b062203543307cf1f2de07e2c2201929c92f930a",
+      "afterSHA256": "d2c709837b7c949826137975e5b59bc6590da9a7770b26d779c7d2a2cc11f946"
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/httpapi/integration_test.go",
+      "count": 5,
+      "beforeSHA256": "b5a1a738bb011be8a1cf506afd842a0023d4fa77c403c9e9be5552a7a396956d",
+      "afterSHA256": "139b96e08a0c52d00b9f402dba2d6d9f2c993f53cd54da8e05d679839f95d378"
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/httpapi/server_test.go",
+      "count": 1,
+      "beforeSHA256": "1b43a12d59e4a760d89f1bfdcf4742067056f1e69c6d5949536e2911b02f823a",
+      "afterSHA256": "136ac1cc5faeb49bcc1506d7b89e448686925fa57e72ea514a4c755da709f887"
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/httpapi/stdlib_integration_test.go",
+      "count": 7,
+      "beforeSHA256": "78819808fba732852c138ce3e4ea495b8cee7b7127e942dda1355995fb536440",
+      "afterSHA256": "bdb8fe5a337752395948be794033380c3c4576eb30f076b7423d9bc079890655"
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/llm/llm_test.go",
+      "count": 6,
+      "beforeSHA256": "3d2684710ea3928021b134fe6dd242436a9cd2f039c1354317d2bbe2818faf8a",
+      "afterSHA256": "90012da21aae8a810d656c07ce98029537563836268543c934c74ad0f519aa09"
+    }
+  ],
+  "validBangPreserved": [
+    "server_test.go original line33",
+    "server_test.go original line72"
+  ],
+  "priorWorkPreserved": true,
+  "remainingBang": [
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/httpapi/server_test.go",
+      "line": 33,
+      "source": "decodeJSON(response, request, &input)!"
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/httpapi/server_test.go",
+      "line": 72,
+      "source": "require(valid: data.Title != \"\", status: http.StatusUnprocessableEntity, code: \"invalid_title\", message: \"Titulo obligatorio\")!"
+    }
+  ],
+  "testResult": "PASS exit0 standard suite only",
+  "vetResult": "PASS exit0",
+  "platform": "darwin/arm64 native",
+  "integrationTestsRun": false,
+  "productionFilesChanged": false,
+  "dockerPinChanged": false
+}

@@ -23,7 +23,7 @@ func checkFile(t *testing.T, name, source string) []string {
 	return errs
 }
 
-// The postfix ! boundaries: test functions and Go error tuples.
+// Postfix ! always requires error last, including in test files.
 func TestErrorHandlingBoundaries(t *testing.T) {
 	const prelude = `package p
 import "testing"
@@ -39,32 +39,38 @@ type Named testing.T
 `
 	const test, plain = "x_test.go", "x.go"
 	for _, tt := range []struct{ name, file, body, want string }{
-		// Test functions: tuple operands.
-		{"test", test, `func TestX(t *testing.T) { n := one()!; _ = n; only()!; a, b := many()!; _, _ = a, b }`, ""},
-		{"benchmark", test, `func BenchmarkX(b *testing.B) { only()! }`, ""},
-		{"fuzz", test, `func FuzzX(f *testing.F) { f.Add(1); f.Fuzz(func(t *testing.T, b []byte) { only()! }) }`, ""},
-		{"tb helper", test, `func newDB(tb testing.TB) *int { return ptr()! }`, ""},
-		{"subtest", test, `func TestX(t *testing.T) { t.Run("x", func(u *testing.T) { only()!; u.Log() }); only()! }`, ""},
-		{"named results", test, `func helper(t *testing.T) (db *int, n int) { db = ptr()!; return }`, ""},
-		{"alias", test, `func f(t *TT) { only()! }`, ""},
-		{"method", test, `func (S) TestY(t *testing.T) { only()! }`, ""},
-		{"lambda", test, `func f(t *testing.T) { var g func(*testing.T) = (u) => { only()! }; g(t) }`, ""},
-		{"lambda arg", test, `func TestX(t *testing.T) { t.Run("x", (u) => { only()! }) }`, ""},
-		{"results other than error", test, `func f(t *testing.T) (int, string) { one()!; return 1, "" }`, ""},
+		// Testing parameters never authorize implicit Fatal.
+		{"test", test, `func TestX(t *testing.T) { n := one()!; _ = n; only()!; a, b := many()!; _, _ = a, b }`, "final result of type error"},
+		{"benchmark", test, `func BenchmarkX(b *testing.B) { only()! }`, "final result of type error"},
+		{"fuzz", test, `func FuzzX(f *testing.F) { f.Add(1); f.Fuzz(func(t *testing.T, b []byte) { only()! }) }`, "final result of type error"},
+		{"tb helper", test, `func newDB(tb testing.TB) *int { return ptr()! }`, "final result of type error"},
+		{"subtest", test, `func TestX(t *testing.T) { t.Run("x", func(u *testing.T) { only()!; u.Log() }); only()! }`, "final result of type error"},
+		{"named results", test, `func helper(t *testing.T) (db *int, n int) { db = ptr()!; return }`, "final result of type error"},
+		{"alias", test, `func f(t *TT) { only()! }`, "final result of type error"},
+		{"method", test, `func (S) TestY(t *testing.T) { only()! }`, "final result of type error"},
+		{"lambda", test, `func f(t *testing.T) { var g func(*testing.T) = (u) => { only()! }; g(t) }`, "final result of type error"},
+		{"lambda arg", test, `func TestX(t *testing.T) { t.Run("x", (u) => { only()! }) }`, "final result of type error"},
+		{"results other than error", test, `func f(t *testing.T) (int, string) { one()!; return 1, "" }`, "final result of type error"},
 		{"handler unaffected", test, `func f(t *testing.T) { n := one() or err { t.Fatal(err); return }; _ = n }`, ""},
-		// Outside the test-function rule.
-		{"not a test file", plain, `func TestX(t *testing.T) { only()! }`, "a _test.go file"},
-		{"blank first param", test, `func f(_ *testing.T) { only()! }`, "first named parameter"},
-		{"unnamed first param", test, `func f(*testing.T) { only()! }`, "first named parameter"},
-		{"second param", test, `func f(n int, t *testing.T) { only()! }`, "first named parameter"},
-		{"other type", test, `func f(t *S) { only()! }`, "first named parameter"},
-		{"value type", test, `func f(t testing.T) { only()! }`, "first named parameter"},
-		{"testing.M", test, `func f(m *testing.M) { only()! }`, "first named parameter"},
-		{"defined from T", test, `func f(t *Named) { only()! }`, "first named parameter"},
-		{"variadic", test, `func f(t ...*testing.T) { only()! }`, "first named parameter"},
-		{"no params", test, `func f() { only()! }`, "first named parameter"},
-		{"nested function without t", test, `func f(t *testing.T) { func() { only()! }() }`, "first named parameter"},
-		{"nested lambda without t", test, `func f(t *testing.T) { var g func() = () => { only()! }; g() }`, "first named parameter"},
+		// Other signatures reject propagation for the same reason.
+		{"not a test file", plain, `func TestX(t *testing.T) { only()! }`, "final result of type error"},
+		{"blank first param", test, `func f(_ *testing.T) { only()! }`, "final result of type error"},
+		{"unnamed first param", test, `func f(*testing.T) { only()! }`, "final result of type error"},
+		{"second param", test, `func f(n int, t *testing.T) { only()! }`, "final result of type error"},
+		{"other type", test, `func f(t *S) { only()! }`, "final result of type error"},
+		{"value type", test, `func f(t testing.T) { only()! }`, "final result of type error"},
+		{"testing.M", test, `func f(m *testing.M) { only()! }`, "final result of type error"},
+		{"defined from T", test, `func f(t *Named) { only()! }`, "final result of type error"},
+		{"variadic", test, `func f(t ...*testing.T) { only()! }`, "final result of type error"},
+		{"no params", test, `func f() { only()! }`, "final result of type error"},
+		{"nested function without t", test, `func f(t *testing.T) { func() { only()! }() }`, "final result of type error"},
+		{"nested lambda without t", test, `func f(t *testing.T) { var g func() = () => { only()! }; g() }`, "final result of type error"},
+		{"test error tuple", test, `func f(t *testing.T) (int,error) { return one()!,nil }`, ""},
+		{"tb error tuple", test, `func f(tb testing.TB) (int,string,error) { a,b:=many()!; return a,b,nil }`, ""},
+		{"context return", test, `func f(t *testing.T) error { only() or err => err; return nil }`, ""},
+		{"context test rejected", test, `func f(t *testing.T) { only() or err => err }`, "final result of type error"},
+		{"error lambda", test, `func f(t *testing.T) { var g func(*testing.T) error = (u) => { only()!; return nil }; _ = g(t) }`, ""},
+		{"nested error function", test, `func f(t *testing.T) { _ = func() error { only()!; return nil }() }`, ""},
 		// Ordinary tuple propagation is unchanged.
 		{"test returning error keeps error rule", test, `func f(t *testing.T) error { only()!; return nil }`, ""},
 		{"tuple to error", plain, `func f() (int, error) { n := one()!; return n, nil }`, ""},

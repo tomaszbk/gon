@@ -169,7 +169,6 @@ pkg reflect, func OptionalElement(Type) Type
 pkg reflect, func OptionalValuePresent(Value) bool
 pkg reflect, func OptionalValuePayload(Value) Value
 pkg reflect, func OptionalValueSetPayload(Value, Value)
-pkg go/types, func TestFatalParam(*Signature) *Var
 pkg gon/seq, func All[$0 interface{ ~[]$1 }, $1 interface{}]($0, func($1) bool) bool
 pkg gon/seq, func At[$0 interface{ ~[]$1 }, $1 interface{}]($0, int) $1?
 pkg gon/seq, func Count[$0 interface{ ~[]$1 }, $1 interface{}]($0, func($1) bool) int

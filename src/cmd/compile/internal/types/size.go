@@ -534,7 +534,18 @@ func CalcStructSize(t *Type) {
 	// add an extra byte of padding to the type. This padding ensures
 	// that taking the address of a zero-sized field can't manufacture a
 	// pointer to the next object in the heap. See issue 9401.
-	if size > 0 && fields[len(fields)-1].Type.width == 0 {
+	// Unit Gon enums retain empty fields only as private variant metadata.
+	// No source-level payload can expose their one-past-the-tag address.
+	unitEnum := t.IsEnum() && !t.IsOptional()
+	if unitEnum {
+		for _, field := range fields[1:] {
+			if field.Type.Kind() != TSTRUCT || field.Type.NumFields() != 0 {
+				unitEnum = false
+				break
+			}
+		}
+	}
+	if size > 0 && fields[len(fields)-1].Type.width == 0 && !unitEnum {
 		size++
 	}
 

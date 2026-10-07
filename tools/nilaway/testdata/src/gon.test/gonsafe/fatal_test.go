@@ -2,7 +2,7 @@ package main
 
 import "testing"
 
-func TestFatalPropagation(t *testing.T) {
+func safeTestReturns(t *testing.T) error {
 	value := raw()!
 	if value != nil {
 		_ = *value
@@ -14,5 +14,11 @@ func TestFatalPropagation(t *testing.T) {
 	contextual := nilTuple() or err => err
 	if contextual != nil {
 		_ = *contextual
+	}
+	return nil
+}
+func TestReturnPropagation(t *testing.T) {
+	if err := safeTestReturns(t); err != nil {
+		t.Fatal(err)
 	}
 }

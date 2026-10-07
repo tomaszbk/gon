@@ -1,0 +1,23 @@
+[
+  {
+    "cwd": "src",
+    "command": "GOROOT_BOOTSTRAP=/opt/homebrew/Cellar/go/1.27.1/libexec GOMAXPROCS=2 GOFLAGS=-p=2 ./make.bash",
+    "exitCode": 0,
+    "scope": "local native rebuild from unmodified Go1.27.1; no new isolated source-only snapshot"
+  },
+  {
+    "cwd": "tools/gonpls",
+    "command": "../../gon/bin/gon generate ./internal/doc",
+    "exitCode": 0
+  },
+  {
+    "cwd": "tools/gonpls",
+    "command": "../../gon/bin/gon test ./internal/doc/generate -run '^TestGenerated$' -count=1",
+    "exitCode": 0
+  },
+  {
+    "cwd": ".",
+    "command": "./gon/bin/gon test cmd/cgo/internal/testerrorhandling cmd/cover -run '^Test(PairedCgoErrorHandling|CgoErrorHandlingDiagnostics|ErrorFlowCoverage|ErrorHandlingRanges|LegacyInstrumentationUnchanged)$' -count=1",
+    "exitCode": 0
+  }
+]

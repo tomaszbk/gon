@@ -1483,10 +1483,9 @@ const (
 	// error handler uses an invalid operand, enclosing function, or handler.
 	//
 	// Postfix ! on a call whose last result is error needs an enclosing
-	// function that returns error last. In a _test.go file, a function that
-	// does not return error last and whose first parameter is a named
-	// *testing.T, *testing.B, *testing.F or testing.TB reports the failure
-	// with Fatal.
+	// function that returns error last, including in _test.go files.
+	// One-line or handlers have the same requirement. Test failures use
+	// explicit block handlers with Fatal and return.
 	//
 	// Example:
 	//  func f() int { return 1 }

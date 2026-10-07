@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 2,
+  "timestampUTC": "20261007T200354Z",
+  "repositoryHEAD": "4d86b34b0fe69112e7cd965260e69e215c12ee77",
+  "repositoryDirty": true,
+  "integratedUpstream": {
+    "repository": "https://go.googlesource.com/go",
+    "branch": "master",
+    "commit": "67c1d421161d3d1ae9f5fd005e84c29fd0d9f896",
+    "previousCommit": "59b9e2dc57fe7f10f5343879a33b1a55edb55742",
+    "integratedOn": "2026-10-02",
+    "commitsInUpdate": 96,
+    "method": "three-way source integration; upstream ancestry not merged",
+    "validation": "misc/gon/VALIDATION.md#upstream-integration"
+  },
+  "toolchains": {
+    "go": {
+      "executable": "/opt/homebrew/Cellar/go/1.27.1/libexec/bin/go",
+      "version": "go version go1.27.1 darwin/arm64",
+      "environment": {
+        "GOAMD64": "",
+        "GOARCH": "arm64",
+        "GOARM64": "v8.0",
+        "GOEXPERIMENT": "",
+        "GOOS": "darwin",
+        "GOROOT": "/opt/homebrew/Cellar/go/1.27.1/libexec",
+        "GOVERSION": "go1.27.1"
+      },
+      "compilerSHA256": "da10adfefec48f7681707909e213b24c423f5f5aa7efebfcede7eabb1c3b4156"
+    },
+    "gon": {
+      "executable": "/Users/tzbk/Documents/gon/gon/bin/gon",
+      "version": "go version go1.28-devel_4d86b34b0f Wed Oct 7 15:48:04 2026 -0300 darwin/arm64",
+      "environment": {
+        "GOAMD64": "",
+        "GOARCH": "arm64",
+        "GOARM64": "v8.0",
+        "GOEXPERIMENT": "",
+        "GOOS": "darwin",
+        "GOROOT": "/Users/tzbk/Documents/gon",
+        "GOVERSION": "go1.28-devel_4d86b34b0f Wed Oct 7 15:48:04 2026 -0300"
+      },
+      "compilerSHA256": "3f4f15d3afcf5ee4c382b4a3b80e49fb4e732550a0bd87dd8d28576dfcd094e7"
+    }
+  },
+  "machine": {
+    "system": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "cpu": "Apple M4",
+    "logicalCPUs": 10,
+    "memoryBytes": 17179869184
+  },
+  "fixtureSHA256": {
+    "common.go": "db8522782230b1d756be88d7c9bd2841915b034cc944f337edf5ea1144d8a3c1",
+    "common_test.go": "d59da31360ddcbce9536ebc80fe8798f5a590f7c194081409eb2e81bb522860c",
+    "legacy.go": "13a6af65c8d56ea546ce6d47fc78d398a4217edd05f52c319e94810307439f02",
+    "modern.go": "1eba07872b0a9ff3dcd4422c85649b46a26b364a85f36d28fe703e1853f43189"
+  },
+  "artifacts": {
+    "go-legacy": {
+      "appBytes": 3819122,
+      "testBytes": 4458050,
+      "implementationLines": 239,
+      "implementationBytes": 5234,
+      "sourceSHA256": {
+        "common.go": "db8522782230b1d756be88d7c9bd2841915b034cc944f337edf5ea1144d8a3c1",
+        "common_test.go": "d59da31360ddcbce9536ebc80fe8798f5a590f7c194081409eb2e81bb522860c",
+        "impl.go": "13a6af65c8d56ea546ce6d47fc78d398a4217edd05f52c319e94810307439f02",
+        "go.mod": "0636a96a55c59a75115dd2a682b300fd611890eda5e3d236ea5fac1259f6d2c9",
+        "nonce.go": "1549640b5b3e0909624c8aa45fdfd627d2b91cb08765c81f0c9808fc4a50ed1a"
+      }
+    },
+    "gon-legacy": {
+      "appBytes": 3752418,
+      "testBytes": 4248418,
+      "implementationLines": 239,
+      "implementationBytes": 5234,
+      "sourceSHA256": {
+        "common.go": "db8522782230b1d756be88d7c9bd2841915b034cc944f337edf5ea1144d8a3c1",
+        "common_test.go": "d59da31360ddcbce9536ebc80fe8798f5a590f7c194081409eb2e81bb522860c",
+        "impl.go": "13a6af65c8d56ea546ce6d47fc78d398a4217edd05f52c319e94810307439f02",
+        "go.mod": "0636a96a55c59a75115dd2a682b300fd611890eda5e3d236ea5fac1259f6d2c9",
+        "nonce.go": "1549640b5b3e0909624c8aa45fdfd627d2b91cb08765c81f0c9808fc4a50ed1a"
+      }
+    },
+    "gon-modern": {
+      "appBytes": 3752514,
+      "testBytes": 4248578,
+      "implementationLines": 174,
+      "implementationBytes": 4558,
+      "sourceSHA256": {
+        "common.go": "db8522782230b1d756be88d7c9bd2841915b034cc944f337edf5ea1144d8a3c1",
+        "common_test.go": "d59da31360ddcbce9536ebc80fe8798f5a590f7c194081409eb2e81bb522860c",
+        "impl.go": "1eba07872b0a9ff3dcd4422c85649b46a26b364a85f36d28fe703e1853f43189",
+        "go.mod": "0636a96a55c59a75115dd2a682b300fd611890eda5e3d236ea5fac1259f6d2c9",
+        "nonce.go": "1549640b5b3e0909624c8aa45fdfd627d2b91cb08765c81f0c9808fc4a50ed1a"
+      }
+    }
+  },
+  "correctness": {
+    "testsPerVariant": 16,
+    "stdout": "build=0 items_per_batch=64 checksum=46154 failures=176 effects={Reads:384 Validations:240 Defaults:212 Arguments:59 Locations:128 TrueBranches:80 FalseBranches:128 Constructions:64 Copies:64 MatchGuards:21 MatchBodies:128 OptionReads:128 OptionTransforms:64 OptionDefaults:96 Callees:64 NamedArguments:192 ArgumentTrace:6}\n"
+  },
+  "representation": {
+    "go-legacy": {
+      "sizesByShape": {
+        "(*int)?": 16,
+        "enum/record": 32,
+        "enum/unit": 8,
+        "int?": 16,
+        "struct{}?": 2
+      },
+      "retention": {
+        "count": 10000,
+        "checksum": 49995000,
+        "sliceBytes": 160000,
+        "heapDeltaBytes": 243824,
+        "gcCycles": 1
+      }
+    },
+    "gon-legacy": {
+      "sizesByShape": {
+        "(*int)?": 16,
+        "enum/record": 32,
+        "enum/unit": 8,
+        "int?": 16,
+        "struct{}?": 2
+      },
+      "retention": {
+        "count": 10000,
+        "checksum": 49995000,
+        "sliceBytes": 160000,
+        "heapDeltaBytes": 243824,
+        "gcCycles": 1
+      }
+    },
+    "gon-modern": {
+      "sizesByShape": {
+        "(*int)?": 16,
+        "enum/record": 32,
+        "enum/unit": 1,
+        "int?": 16,
+        "struct{}?": 16
+      },
+      "retention": {
+        "count": 10000,
+        "checksum": 49995000,
+        "sliceBytes": 160000,
+        "heapDeltaBytes": 243824,
+        "gcCycles": 1
+      }
+    }
+  },
+  "timedMeasurements": false
+}

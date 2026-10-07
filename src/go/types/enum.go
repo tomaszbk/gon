@@ -160,7 +160,7 @@ func NewEnum(variants []*EnumVariant, defaultIndex int) *Struct {
 		panic("invalid default enum variant")
 	}
 	e := &Enum{defaultIndex: defaultIndex}
-	st := &Struct{enum: e, fields: []*Var{NewField(nopos, nil, "$gonTag", Typ[Uint], false)}}
+	st := &Struct{enum: e, fields: []*Var{NewField(nopos, nil, "$gonTag", enumTagType(variants), false)}}
 	next := 1
 	for i, v := range variants {
 		copy := *v
@@ -180,6 +180,40 @@ func NewEnum(variants []*EnumVariant, defaultIndex int) *Struct {
 	}
 	st.markComplete()
 	return st
+}
+
+// enumTagType compacts enums with no payload fields. Payload-bearing enums,
+// including optional backing storage, keep their existing machine-word tag.
+func enumTagType(variants []*EnumVariant) *Basic {
+	for _, v := range variants {
+		if len(v.fields) != 0 {
+			return Typ[Uint]
+		}
+	}
+	switch n := uint64(len(variants)); {
+	case n <= 1<<8:
+		return Typ[Uint8]
+	case n <= 1<<16:
+		return Typ[Uint16]
+	case n <= 1<<32:
+		return Typ[Uint32]
+	default:
+		return Typ[Uint]
+	}
+}
+
+// unitEnumStorage reports whether all alternative fields are empty metadata
+// slots, rather than storage for any source-level payload (even a zero-size one).
+func unitEnumStorage(t *Struct) bool {
+	if t.enum == nil {
+		return false
+	}
+	for _, v := range t.enum.variants {
+		if len(v.fields) != 0 {
+			return false
+		}
+	}
+	return true
 }
 
 // NewStringEnum creates typed storage for a string enum descriptor.

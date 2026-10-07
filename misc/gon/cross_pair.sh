@@ -107,9 +107,9 @@ for feature in matchalternatives patterntest errorcontext interpolation seq; do
     fi
 done
 GON_PAIR_GOOS=$goos GON_PAIR_GOARCH=$goarch "$gon" run "$root/test/errortest.go"
-echo "ok: test-fatal legacy/modern on $goos/$goarch"
+echo "ok: explicit test handlers and error returns legacy/modern on $goos/$goarch"
 fixtures="$root/tools/nilaway/testdata/src/gon.test"
 pair nilanalysis-safe "$fixtures/gonlegacy/main.go" "$fixtures/gonsafe/main.go"
 pair nilanalysis-unsafe "$fixtures/gonunsafelegacy/main.go" "$fixtures/gonunsafe/main.go"
 GON_PAIR_GOOS=$goos GON_PAIR_GOARCH=$goarch "$gon" run "$root/test/nilanalysis.go"
-echo "ok: nilanalysis payloads and test-fatal legacy/modern on $goos/$goarch"
+echo "ok: nilanalysis payloads and explicit test handlers and error returns legacy/modern on $goos/$goarch"

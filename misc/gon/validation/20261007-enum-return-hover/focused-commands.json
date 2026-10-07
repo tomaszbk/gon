@@ -1,0 +1,110 @@
+{
+  "platform": "darwin/arm64 native",
+  "baseline": "/opt/homebrew/bin/go (Go1.27.1)",
+  "checks": [
+    {
+      "log": "focused/checkers.log.gz",
+      "cwd": ".",
+      "command": "GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test -json cmd/compile/internal/types2 go/types -run '^(TestErrorHandlingBoundaries|TestErrorHandling|TestErrorContext|TestCheck/errorbridge)' -count=1",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/checker-fixtures.log.gz",
+      "cwd": ".",
+      "command": "GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test -json cmd/compile/internal/types2 go/types -run '^TestCheck$/errorbridge' -count=1",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/pairs.log.gz",
+      "cwd": ".",
+      "command": "GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test -json cmd/internal/testdir -run 'Test/(errortest|errorcontext)\\.go$' -count=1",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/x-tools.log.gz",
+      "cwd": "tools/x-tools",
+      "command": "GON_BASELINE_GO=/opt/homebrew/bin/go ../../gon/bin/gon test -json ./go/ssa ./go/analysis/passes/gonmodernize ./go/analysis/passes/testinggoroutine -run '^(TestGonTestFunctionPropagation|TestErrors|TestGon|Test)$' -count=1",
+      "exitCode": 1,
+      "note": "SSA and modernizer passed; testinggoroutine had fixture expectation on closure line instead of Fatal line. Fixed fixture and reran separately."
+    },
+    {
+      "log": "focused/testinggoroutine.log.gz",
+      "cwd": "tools/x-tools",
+      "command": "GON_BASELINE_GO=/opt/homebrew/bin/go ../../gon/bin/gon test -json ./go/analysis/passes/testinggoroutine -run '^Test(Gon)?$' -count=1",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/ir.log.gz",
+      "cwd": "tools/staticcheck",
+      "command": "GON_BASELINE_GO=/opt/homebrew/bin/go ../../gon/bin/gon test -json ./go/ir -run '^TestGonTestFunctionPropagation$' -count=1",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/nilaway.log.gz",
+      "cwd": "tools/nilaway",
+      "command": "GON_BASELINE_GO=/opt/homebrew/bin/go ../../gon/bin/gon test -json . -run '^TestGon' -count=1",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/query.log.gz",
+      "cwd": "tools/gonpls",
+      "command": "GON_BASELINE_GO=/opt/homebrew/bin/go ../../gon/bin/gon test -json ./internal/cmd -run '^TestGon(TestPropagationQuery|TestFunctionPropagationCheck)$' -count=1",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/nilanalysis-pair.log.gz",
+      "cwd": ".",
+      "command": "GON_BASELINE_GO=/opt/homebrew/bin/go ./gon/bin/gon test -json cmd/internal/testdir -run 'Test/nilanalysis\\.go$' -count=1",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/cgo-coverage-final.log.gz",
+      "cwd": ".",
+      "command": "GON_BASELINE_GO=/opt/homebrew/bin/go GOMAXPROCS=2 ./gon/bin/gon test -json cmd/cgo/internal/testconditional cmd/cover -run '^Test(PairedCgo(Matching|StringEnums|ErrorContext)|CgoStringEnumDiagnostics|ErrorContextCoverage|CgoConditionalBootstrap)$' -count=1",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/llm-teacher-fmt.log.gz",
+      "cwd": "/Users/tzbk/Documents/llm_teacher/backend",
+      "command": "GOMAXPROCS=2 /Users/tzbk/Documents/gon/gon/bin/gon fmt internal/auth/auth_test.go internal/domain/values_test.go internal/llm/llm_test.go internal/httpapi/server_test.go internal/httpapi/agent_integration_test.go internal/httpapi/integration_test.go internal/httpapi/stdlib_integration_test.go",
+      "exitCode": 1,
+      "note": "gon fmt requires named files in one directory; corrected into four commands below."
+    },
+    {
+      "log": "focused/llm-teacher-fmt-auth.log.gz",
+      "cwd": "/Users/tzbk/Documents/llm_teacher/backend",
+      "command": "GOMAXPROCS=2 /Users/tzbk/Documents/gon/gon/bin/gon fmt internal/auth/auth_test.go",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/llm-teacher-fmt-domain.log.gz",
+      "cwd": "/Users/tzbk/Documents/llm_teacher/backend",
+      "command": "GOMAXPROCS=2 /Users/tzbk/Documents/gon/gon/bin/gon fmt internal/domain/values_test.go",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/llm-teacher-fmt-llm.log.gz",
+      "cwd": "/Users/tzbk/Documents/llm_teacher/backend",
+      "command": "GOMAXPROCS=2 /Users/tzbk/Documents/gon/gon/bin/gon fmt internal/llm/llm_test.go",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/llm-teacher-fmt-httpapi.log.gz",
+      "cwd": "/Users/tzbk/Documents/llm_teacher/backend",
+      "command": "GOMAXPROCS=2 /Users/tzbk/Documents/gon/gon/bin/gon fmt internal/httpapi/server_test.go internal/httpapi/agent_integration_test.go internal/httpapi/integration_test.go internal/httpapi/stdlib_integration_test.go",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/llm-teacher-test.log.gz",
+      "cwd": "/Users/tzbk/Documents/llm_teacher/backend",
+      "command": "GOMAXPROCS=2 /Users/tzbk/Documents/gon/gon/bin/gon test -json ./... -count=1",
+      "exitCode": 0
+    },
+    {
+      "log": "focused/llm-teacher-vet.log.gz",
+      "cwd": "/Users/tzbk/Documents/llm_teacher/backend",
+      "command": "GOMAXPROCS=2 /Users/tzbk/Documents/gon/gon/bin/gon vet ./...",
+      "exitCode": 0
+    }
+  ]
+}

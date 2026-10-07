@@ -1,0 +1,169 @@
+{
+  "scope": "/Users/tzbk/Documents/llm_teacher/backend",
+  "inspection": "Read-only source/signature inspection; no app execution or edits",
+  "totalBang": 27,
+  "rejectedBang": 25,
+  "allowedBang": 2,
+  "normalTestsRejected": 10,
+  "integrationTaggedRejected": 15,
+  "files": [
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/auth/auth_test.go",
+      "integrationTagged": false,
+      "occurrences": [
+        {
+          "line": 10,
+          "allowed": false
+        }
+      ],
+      "oneLineContexts": []
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/domain/values_test.go",
+      "integrationTagged": false,
+      "occurrences": [
+        {
+          "line": 43,
+          "allowed": false
+        },
+        {
+          "line": 67,
+          "allowed": false
+        }
+      ],
+      "oneLineContexts": []
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/httpapi/agent_integration_test.go",
+      "integrationTagged": true,
+      "occurrences": [
+        {
+          "line": 104,
+          "allowed": false
+        },
+        {
+          "line": 125,
+          "allowed": false
+        },
+        {
+          "line": 152,
+          "allowed": false
+        }
+      ],
+      "oneLineContexts": []
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/httpapi/integration_test.go",
+      "integrationTagged": true,
+      "occurrences": [
+        {
+          "line": 41,
+          "allowed": false
+        },
+        {
+          "line": 155,
+          "allowed": false
+        },
+        {
+          "line": 179,
+          "allowed": false
+        },
+        {
+          "line": 188,
+          "allowed": false
+        },
+        {
+          "line": 246,
+          "allowed": false
+        }
+      ],
+      "oneLineContexts": []
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/httpapi/server_test.go",
+      "integrationTagged": false,
+      "occurrences": [
+        {
+          "line": 33,
+          "allowed": true
+        },
+        {
+          "line": 72,
+          "allowed": true
+        },
+        {
+          "line": 86,
+          "allowed": false
+        }
+      ],
+      "oneLineContexts": []
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/httpapi/stdlib_integration_test.go",
+      "integrationTagged": true,
+      "occurrences": [
+        {
+          "line": 20,
+          "allowed": false
+        },
+        {
+          "line": 30,
+          "allowed": false
+        },
+        {
+          "line": 53,
+          "allowed": false
+        },
+        {
+          "line": 78,
+          "allowed": false
+        },
+        {
+          "line": 82,
+          "allowed": false
+        },
+        {
+          "line": 105,
+          "allowed": false
+        },
+        {
+          "line": 116,
+          "allowed": false
+        }
+      ],
+      "oneLineContexts": []
+    },
+    {
+      "path": "/Users/tzbk/Documents/llm_teacher/backend/internal/llm/llm_test.go",
+      "integrationTagged": false,
+      "occurrences": [
+        {
+          "line": 50,
+          "allowed": false
+        },
+        {
+          "line": 71,
+          "allowed": false
+        },
+        {
+          "line": 72,
+          "allowed": false
+        },
+        {
+          "line": 106,
+          "allowed": false
+        },
+        {
+          "line": 107,
+          "allowed": false
+        },
+        {
+          "line": 114,
+          "allowed": false
+        }
+      ],
+      "oneLineContexts": []
+    }
+  ],
+  "note": "The allowed expressions are nested inside handle error-returning function literal and handleJSON error-last contextual lambda. All rejected uses have nearest function without error-last; no one-line or contexts found."
+}

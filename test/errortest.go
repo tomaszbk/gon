@@ -2,16 +2,10 @@
 
 //go:build !js && !wasip1 && gc
 
-// Postfix ! in test functions: when the nearest function is not eligible for
-// ordinary propagation and its first parameter is a named *testing.T,
-// *testing.B, *testing.F or testing.TB in a _test.go file, a failure calls
-// Fatal with the original error at the line of the !.
-//
-// The legacy tests spell the same scenarios with if err != nil { t.Fatal(err) }
-// and run on the baseline toolchain too. GON_BASELINE_GO must name that
-// unmodified Go. Every line number reported by a failing test must be the
-// line of a MARK comment; the output is compared after replacing line numbers
-// by the marker names.
+// Postfix ! has one meaning in every file: return error from the nearest
+// error-last function. Tests use explicit block handlers for Fatal. Legacy and
+// modern versions execute on Gon; the legacy also executes on the baseline.
+// Failure report positions are compared using MARK comments.
 package main
 
 import (
@@ -50,7 +44,7 @@ func main() {
 		}
 		return data
 	}
-	write("go.mod", []byte("module errortest\n\ngo 1.23\n"))
+	write("go.mod", []byte("module errortest\n\ngo 1.27\n"))
 	write("common.go", read("common.go"))
 
 	// results[variant] holds the normalized output of each invocation.
@@ -123,6 +117,8 @@ func main() {
 	if out, err := cmd.CombinedOutput(); err != nil {
 		panic(fmt.Sprintf("go vet rejected the modern tests: %v\n%s", err, out))
 	}
+	checkInvalid(tool)
+
 }
 
 var (
@@ -144,7 +140,7 @@ func markerLines(source []byte) map[string]string {
 
 // normalize removes timings and replaces every reported line number by the
 // name of the marker on that line. A line without a marker is a bug: Fatal
-// must report the line of the failing call or !.
+// must report the line of the explicit Fatal handler.
 func normalize(name string, out []byte, markers map[string]string) []byte {
 	var lines []string
 	for _, line := range strings.Split(string(out), "\n") {
@@ -193,5 +189,48 @@ func checkContents(invocation int, got []byte) {
 	}
 	if strings.Contains(text, "@unreachable") || strings.Contains(text, "@never") {
 		panic(fmt.Sprintf("a test continued after a failure or reported a success as a failure:\n%s", got))
+	}
+}
+
+func checkInvalid(tool string) {
+	dir, err := os.MkdirTemp("", "gon-test-propagation-invalid-")
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(dir)
+	if err = os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module invalidtest\n\ngo 1.27\n"), 0600); err != nil {
+		panic(err)
+	}
+	const prefix = `package invalidtest
+import "testing"
+func only() error { return nil }
+type Alias = testing.T
+type Suite struct{}
+`
+	for _, body := range []string{
+		`func TestTuple(t *testing.T) { only()! }`,
+		`func BenchmarkTuple(b *testing.B) { only()! }`,
+		`func FuzzTuple(f *testing.F) { only()! }`,
+		`func helper(tb testing.TB) { only()! }`,
+		`func helper(t *Alias) { only()! }`,
+		`func (Suite) helper(t *testing.T) { only()! }`,
+		`func helper(t *testing.T) { only() or err => err }`,
+		`func helper(t *testing.T) error { func(){ only()! }(); return nil }`,
+		`func helper(t *testing.T) error { var f func(*testing.T) = (u) => { only()! }; _=f; return nil }`,
+		`func helper(t *testing.T) { t.Run("sub",(u) => { only() or err => err }) }`,
+	} {
+		if err = os.WriteFile(filepath.Join(dir, "x_test.go"), []byte(prefix+body), 0600); err != nil {
+			panic(err)
+		}
+		cmd := exec.Command(tool, "test", "-run=^$", "-vet=off", ".")
+		cmd.Dir = dir
+		cmd.Env = append(os.Environ(), "GOENV=off", "GOTOOLCHAIN=local", "GOWORK=off", "GOFLAGS=")
+		out, err := cmd.CombinedOutput()
+		if err == nil || !bytes.Contains(out, []byte("error propagation requires an enclosing function with a final result of type error")) {
+			panic(fmt.Sprintf("invalid test propagation accepted or wrong rejection: %s\n%s", body, out))
+		}
+		if bytes.Contains(out, []byte("internal compiler error")) || bytes.Contains(out, []byte("panic:")) {
+			panic(string(out))
+		}
 	}
 }

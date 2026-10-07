@@ -6,36 +6,23 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
-	"testing"
-
 	"honnef.co/go/tools/go/ir"
 	"honnef.co/go/tools/go/ir/irutil"
+	"testing"
 )
 
-// TestGonTestFunctionPropagation checks that postfix ! in a test function
-// lowers to a call of the first parameter's Fatal method followed by a return,
-// including promoted and interface methods.
+// TestGonTestFunctionPropagation verifies that error propagation returns the
+// failure in test files and never introduces a Fatal call. Explicit handlers
+// keep their ordinary testing method calls.
 func TestGonTestFunctionPropagation(t *testing.T) {
 	const src = `package p
-
 import "testing"
-
 func parse() (int, error) { return 1, nil }
-
-func helper(t *testing.T) int {
-	return parse()!
-}
-
-func generic(tb testing.TB) (int, string) {
-	n := parse()!
-	return n, ""
-}
-
-func lambda(t *testing.T) {
-	t.Run("x", (u) => { parse()! })
-}
-
-func helperContext(t *testing.T) int { return parse() or err => err }
+func helper(t *testing.T) (int,error) { return parse()!,nil }
+func generic(tb testing.TB) (int,string,error) { n:=parse()!; return n,"",nil }
+func lambda(t *testing.T) { var f func(*testing.T) error = (u) => { parse()!; return nil }; _ = f }
+func helperContext(t *testing.T) (int,error) { return parse() or err => err,nil }
+func explicit(t *testing.T) { n:=parse() or err { t.Fatal(err); return }; _ = n }
 `
 	fs := token.NewFileSet()
 	f, err := parser.ParseFile(fs, "p_test.go", src, parser.SkipObjectResolution)
@@ -47,49 +34,43 @@ func helperContext(t *testing.T) int { return parse() or err => err }
 	if err != nil {
 		t.Fatal(err)
 	}
-	fatalCalls := func(fn *ir.Function) (lines []int) {
-		for _, b := range fn.Blocks {
-			for _, instr := range b.Instrs {
-				call, ok := instr.(*ir.Call)
-				if !ok {
-					continue
-				}
-				c := call.Common()
-				name := ""
-				if c.IsInvoke() {
-					name = c.Method.Name()
-				} else if callee := c.StaticCallee(); callee != nil {
-					name = callee.Name()
-				}
-				if name == "Fatal" {
-					lines = append(lines, fs.Position(call.Source().Pos()).Line)
-				}
-			}
-		}
-		return
-	}
 	for _, test := range []struct {
-		fn   string
-		line int
-	}{{"helper", 8}, {"generic", 12}, {"lambda$1", 17}, {"helperContext", 20}} {
-		fn := pkg.Func(test.fn)
+		name   string
+		fatals int
+	}{{"helper", 0}, {"generic", 0}, {"lambda$1", 0}, {"helperContext", 0}, {"explicit", 1}} {
+		fn := pkg.Func(test.name)
 		if fn == nil {
 			for _, anon := range pkg.Func("lambda").AnonFuncs {
-				if anon.Name() == test.fn {
+				if anon.Name() == test.name {
 					fn = anon
 				}
 			}
 		}
 		if fn == nil {
-			t.Fatalf("missing function %s", test.fn)
+			t.Fatalf("missing function %s", test.name)
 		}
-		lines := fatalCalls(fn)
-		if len(lines) != 1 {
-			t.Errorf("%s: want one call of Fatal, got lines %v\n%s", test.fn, lines, fn)
-			continue
+		fatals, returns := 0, 0
+		for _, block := range fn.Blocks {
+			for _, instr := range block.Instrs {
+				if _, ok := instr.(*ir.Return); ok {
+					returns++
+				}
+				if call, ok := instr.(*ir.Call); ok {
+					common := call.Common()
+					name := ""
+					if common.IsInvoke() {
+						name = common.Method.Name()
+					} else if callee := common.StaticCallee(); callee != nil {
+						name = callee.Name()
+					}
+					if name == "Fatal" {
+						fatals++
+					}
+				}
+			}
 		}
-		if lines[0] != test.line {
-			t.Errorf("%s: Fatal is reported at line %d, want the line %d of the !", test.fn, lines[0], test.line)
+		if fatals != test.fatals || returns == 0 {
+			t.Errorf("%s: got %d Fatal calls and %d returns; want %d Fatal calls and a return", test.name, fatals, returns, test.fatals)
 		}
 	}
 }

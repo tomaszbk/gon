@@ -47,7 +47,7 @@ func enumFieldAddr(fn *Function, v Value, index int, source ast.Node) Value {
 func enumValue(fn *Function, typ types.Type, variant *types.EnumVariant, values []Value, source ast.Node) Value {
 	alloc := emitNew(fn, typ, source, "enum value")
 	tag := enumFieldAddr(fn, alloc, 0, source)
-	emitStore(fn, tag, emitConv(fn, intConst(int64(variant.Tag()), source), types.Typ[types.Uint], source), source)
+	emitStore(fn, tag, emitConv(fn, intConst(int64(variant.Tag()), source), alternativeStruct(typ).Field(0).Type(), source), source)
 	payload := enumFieldAddr(fn, alloc, variant.StorageIndex(), source)
 	for i, value := range values {
 		if value != nil {

@@ -2,23 +2,23 @@ package main
 
 import "testing"
 
-func fatalSuccessNil(t *testing.T) {
+func testSuccessNil(t *testing.T) error {
 	pointer, err := nilTuple()
 	if err != nil {
-		t.Fatal(err)
-		return
+		return err
 	}
 	_ = *pointer // want "dereferenced"
+	return nil
 }
-func contextFatalSuccessNil(t *testing.T) {
+func contextTestSuccessNil(t *testing.T) error {
 	pointer, err := nilTuple()
 	if err != nil {
-		t.Fatal(err)
-		return
+		return err
 	}
 	_ = *pointer // want "dereferenced"
+	return nil
 }
-func TestFatalSuccessNil(t *testing.T) {
-	expectPanic(func() { fatalSuccessNil(t) })
-	expectPanic(func() { contextFatalSuccessNil(t) })
+func TestReturnSuccessNil(t *testing.T) {
+	expectPanic(func() { _ = testSuccessNil(t) })
+	expectPanic(func() { _ = contextTestSuccessNil(t) })
 }

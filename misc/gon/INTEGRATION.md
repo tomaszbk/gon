@@ -113,7 +113,10 @@ changes; Git history records the maintained sources.
 The eight original features and accepted 2.27 additions share the native
 compiler and maintained tooling. Native optional values use `T?`, direct
 payloads, nil absence and presence patterns `P?`. Error handling uses Go tuples
-ending in error, including test Fatal and one-line contextual handlers.
+ending in error. `!` and one-line contextual handlers require the nearest
+function to return error last, including in test files; tests use explicit
+block handlers for Fatal. Unit-only enums use a compact tag without trailing
+empty-field padding; payload enums and ordinary Go structs retain their layouts.
 See [OPTIONALS.md](OPTIONALS.md) for the presence contract and
 [README.md](README.md#additions-for-227) for the added syntax and NilAway.
 
@@ -142,18 +145,18 @@ transformations, export readers, public distribution and vendor consistency.
 | Checklist area | Multiple patterns / is | One-line error context | Interpolation |
 | --- | --- | --- | --- |
 | Compiler/public syntax and formatting | MatchAlternatives / PatternTest tests in syntax and parser; public AST/API; contextual is compatibility and refill tests | ErrorContext syntax/parser/printer tests and public ErrorExpr Context/Arrow | Interpolation syntax/parser tests, nested scanner modes, invalid/newline cases, raw text/comment preservation and idempotent gofmt; public tokens/AST/API |
-| Both checkers and types.Info | MatchAlternatives / PatternTest + TestGenerate; shared Defs/Uses and if scope | ErrorContext checker tests, local error binding, error and test targets | Interpolation checker tests, explicit same-file fmt use, typed nonconstant result and Info.Interpolations lowering |
-| Native flow, export and inlining | test/matchalternatives.go and patterntest.go: baseline/legacy/modern/-l/-N, subject once, shared bindings, guards, export/import, invalid scopes | test/errorcontext.go: baseline/legacy/modern/-l, context laziness/order, named result zeros/defer, nil context, Fatal source lines, exports and invalid targets | test/interpolation.go: baseline/legacy/modern/-l/-N, ordered operands, nested calls, propagation/defer, formats and invalid programs |
+| Both checkers and types.Info | MatchAlternatives / PatternTest + TestGenerate; shared Defs/Uses and if scope | ErrorContext checker tests, local error binding, error-last targets and rejection of non-error-returning tests | Interpolation checker tests, explicit same-file fmt use, typed nonconstant result and Info.Interpolations lowering |
+| Native flow, export and inlining | test/matchalternatives.go and patterntest.go: baseline/legacy/modern/-l/-N, subject once, shared bindings, guards, export/import, invalid scopes | test/errorcontext.go: baseline/legacy/modern/-l, context laziness/order, named result zeros/defer, nil context, explicit test handlers, exports and invalid targets | test/interpolation.go: baseline/legacy/modern/-l/-N, ordered operands, nested calls, propagation/defer, formats and invalid programs |
 | CFG/SSA/IR and structural tooling | TestGonMatchAlternatives / TestGonPatternTest plus common structural gate | TestGonErrorContext and unreachable/modernizer diagnostics | TestGonInterpolation, metadata consumers, printf and import tests; implicit fmt call semantics |
 | cgo and coverage | TestPairedCgoMatching executes baseline and modern C scenarios, including coverage | TestPairedCgoErrorContext and TestErrorContextCoverage | TestPairedCgoInterpolation executes baseline/modern C calls and coverage |
-| Editor/CLI and incomplete source | Pattern-test binding completion in later && and then, exclusion from else, hover/rename; multi-pattern shared binding rename; type queries | Error context/Fatal query kinds, Explain, gonerrors conversion, correctly formatted inline-variable handler marker | Embedded expression hover/rename/tokens, multiline raw tokens, fmt-import quickfix, Explain and query kind |
+| Editor/CLI and incomplete source | Pattern-test binding completion in later && and then, exclusion from else, hover/rename; multi-pattern shared binding rename; type queries | Error context/propagation query kinds, Explain, gonerrors conversion, correctly formatted inline-variable handler marker | Embedded expression hover/rename/tokens, multiline raw tokens, fmt-import quickfix, Explain and query kind |
 | Runtime measurement | Matching/optional workloads exercise alternatives and is; paired correctness | Wrapping handler workload uses one-line context | InterpolationBatch plus matching legacy fmt.Sprintf workload |
 
 | Checklist area | gon/seq | NilAway |
 | --- | --- | --- |
 | Syntax/compiler/checkers/lowering | No new nodes or compiler syntax; generic standard package using native optional types | No new language syntax or mandatory diagnostics; uses maintained typed Gon SSA lowering |
 | Public API/dependencies | 18 functions in api/fork.txt; go/build TestDependencies; gon doc/vet; no chainable type | tools/nilaway/go.mod local x-tools replacement, UPSTREAM.json, Apache-2.0 LICENSE and NOTICE |
-| Executable contract | test/seq.go baseline/legacy/modern/-l; empty/nil inputs, named containers, ordering, optional zero/nil, invalid call types; package unit tests | test/nilanalysis.go safe/unsafe counterparts, actual recovered nil failures and paired testing Fatal scenarios |
+| Executable contract | test/seq.go baseline/legacy/modern/-l; empty/nil inputs, named containers, ordering, optional zero/nil, invalid call types; package unit tests | test/nilanalysis.go safe/unsafe counterparts, actual recovered nil failures and paired explicit testing handlers |
 | Semantic tooling and effects | Ordinary generic functions use existing call metadata, callbacks and optional results | Original upstream corpus plus TestGonNilAway, TestGonMemory and deep provenance fixtures; warning precision and visible internal errors |
 | cgo/coverage | No new rewriting or instrumentation construct; ordinary generic calls and existing optional boundary gate apply | Analyzer runs on typed source, not compiled runtime instrumentation; ordinary project cgo/coverage remain in tooling gate |
 | Editor/CLI | Generic completion, hover and named callbacks use existing services | Default-off/explicit setting tests, gon check --nilaway CLI test, registry corpus including all Gon constructs |

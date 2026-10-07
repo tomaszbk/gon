@@ -2,29 +2,32 @@ package main
 
 import "testing"
 
-func TestFatalPropagation(t *testing.T) {
+func safeTestReturns(t *testing.T) error {
 	value, err := raw()
 	if err != nil {
-		t.Fatal(err)
-		return
+		return err
 	}
 	if value != nil {
 		_ = *value
 	}
 	missing, err := nilTuple()
 	if err != nil {
-		t.Fatal(err)
-		return
+		return err
 	}
 	if missing != nil {
 		_ = *missing
 	}
 	contextual, err := nilTuple()
 	if err != nil {
-		t.Fatal(err)
-		return
+		return err
 	}
 	if contextual != nil {
 		_ = *contextual
+	}
+	return nil
+}
+func TestReturnPropagation(t *testing.T) {
+	if err := safeTestReturns(t); err != nil {
+		t.Fatal(err)
 	}
 }

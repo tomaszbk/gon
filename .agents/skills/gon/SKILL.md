@@ -37,18 +37,24 @@ data := os.ReadFile(path) or err {
 ```
 
 The call must return exactly `error` last (aliases allowed). `!` requires the
-nearest function to return `error` last or qualify as a test below; failure returns
+nearest function to return `error` last, including in `_test.go`; failure returns
 the original error and zeros for other results, including named results, before
 defers. Keep explicit handling for useful partial results. Propagation never
 uses panic/recover. `or` binds its error locally and must terminate when the
 call has success results; error-only handlers may fall through. No
 labels/goto/labeled jumps in handlers; no direct `go f()!` or `defer f()!`.
 
-In `_test.go`, when the nearest function does not return `error` last and its
-first parameter is a named `*testing.T/B/F` or `testing.TB`, a failing `!` calls
-`<param>.Fatal(err)` at that line and returns zeros. This includes tests,
-subtests, fuzz callbacks, benchmarks, helpers and lambdas. Receivers, `_` and
-variadic first parameters do not qualify. Block `or` and optional `?` keep
+Tests, subtests, benchmarks and fuzz callbacks report failures explicitly:
+
+```go
+data := os.ReadFile(path) or err {
+    t.Fatal(err)
+    return
+}
+```
+
+The operators have no filename- or testing-parameter-specific behavior.
+Error-returning helpers use `!` normally. Block `or` and optional `?` keep
 their existing contracts.
 
 ```go
@@ -57,7 +63,7 @@ data := os.ReadFile(path) or err => fmt.Errorf("read %q: %w", path, err)
 
 The one-line form evaluates its context only on failure and propagates that
 error, with zeros for other results before defers. It is valid wherever `!` is
-valid, including qualifying tests. Its binding is local to the context. Use a
+valid, requiring an error-last return. Its binding is local to the context. Use a
 block handler to recover, choose partial results or perform several statements.
 
 ## Conditional expressions and lambdas
@@ -97,7 +103,8 @@ config ??= defaults()
 ```
 
 `T?` zero/untyped nil means absence; payloads, even typed nil/zero/false, are
-present. Assignment/conversion preserves assignable optionals or lifts one
+present. Presence does not imply a non-nil payload; hover explains this
+distinction. Assignment/conversion preserves assignable optionals or lifts one
 immediate payload; no flattening. `(int?)(7)` is an explicit conversion.
 `[]int?` means optional elements; `([]int)?` means optional slice. Use aliases
 like `type Maybe[T any] = T?`; no predeclared Option/Some/None API. Postfix `?`
@@ -154,7 +161,10 @@ func parsePort(text string) (int, error) {
 
 Enums need one `default` zero variant and qualified constructors. Positional
 payloads use `Payment.Rejected("reason")`; records require labels, with Go zeros
-for omissions. Export spelling and payload comparability follow Go.
+for omissions. Export spelling and payload comparability follow Go. Enums with
+no payload fields in any variant use the smallest sufficient tag; up to 256
+variants occupy one byte. Declared `struct{}` payloads and optionals keep their
+existing layouts, and the private layout has no stable ABI.
 
 Matches are exhaustive: `=> expression` yields a value; `=> { ... }` is a
 statement arm. Evaluate the subject once, try arms in order. Qualify variants;

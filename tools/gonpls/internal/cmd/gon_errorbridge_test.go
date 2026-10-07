@@ -6,8 +6,7 @@ import (
 )
 
 // TestGonTestFunctionPropagationCheck runs the semantic checker on postfix !
-// in test functions: valid contexts are clean and
-// an ordinary file with a testing parameter reports the test-function rule.
+// in test files: error-last helpers are clean; test signatures cannot propagate.
 func TestGonTestFunctionPropagationCheck(t *testing.T) {
 	t.Parallel()
 	tree := writeTree(t, `
@@ -27,7 +26,7 @@ package bridge
 import "testing"
 
 func TestTuple(t *testing.T) {
-	n := parse("1")!
+	n := parse("1") or err { t.Fatal(err); return }
 	if n != 1 {
 		t.Fatal(n)
 	}
@@ -35,12 +34,12 @@ func TestTuple(t *testing.T) {
 		parse("2")!
 	})
 	t.Run("lambda", (u) => {
-		parse("3")!
+		parse("3") or err => err
 	})
 }
 
-func newValue(tb testing.TB) int {
-	return parse("4")!
+func newValue(tb testing.TB) (int,error) {
+	return parse("4")!,nil
 }
 
 func BenchmarkTuple(b *testing.B) { parse("5")! }
@@ -55,12 +54,12 @@ func Helper(t *testing.T) int {
 `)
 	var check gonCheck
 	gonJSON(t, tree, nil, &check, "check", "./bridge").checkCode(1)
-	if check.Summary.Errors != 1 || len(check.Diagnostics) != 1 {
+	if check.Summary.Errors != 4 || len(check.Diagnostics) != 4 {
 		t.Fatalf("diagnostics: %+v", check)
 	}
-	d := check.Diagnostics[0]
-	if d.Code != "InvalidErrorHandling" || !strings.HasSuffix(d.Location.Path, "bridge/helper.go") ||
-		!strings.Contains(d.Message, "in a _test.go file, a first named parameter of type *testing.T") {
-		t.Errorf("unexpected diagnostic: %+v", d)
+	for _, d := range check.Diagnostics {
+		if d.Code != "InvalidErrorHandling" || !strings.Contains(d.Message, "final result of type error") {
+			t.Errorf("unexpected diagnostic: %+v", d)
+		}
 	}
 }

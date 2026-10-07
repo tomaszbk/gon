@@ -69,17 +69,17 @@ func TestGonTestPropagationQuery(t *testing.T) {
 	const source = `package p
 import "testing"
 func parse() (int,error) { return 1,nil }
-func helper(t *testing.T) int { return parse()! }
+func helper(t *testing.T) (int,error) { return parse()!,nil }
 func returnsError(t *testing.T) (int,error) { return parse()!,nil }
 func nested(t *testing.T) { _ = func() error { parse()!; return nil } }
-func lambda(t *testing.T) { t.Run("sub", (u) => { parse()! }) }
+func lambda(t *testing.T) { var f func(*testing.T) error = (u) => { parse()!; return nil }; _ = f }
 `
 	tree := writeTree(t, "-- go.mod --\nmodule example.com/testpropagation\n\ngo 1.27\n-- p_test.go --\n"+source)
 	for _, test := range []struct{ function, kind string }{
-		{"helper", "test-error-propagation"},
+		{"helper", "error-propagation"},
 		{"returnsError", "error-propagation"},
 		{"nested", "error-propagation"},
-		{"lambda", "test-error-propagation"},
+		{"lambda", "error-propagation"},
 	} {
 		start := strings.Index(source, "func "+test.function)
 		offset := start + strings.Index(source[start:], "parse()!") + len("parse()")

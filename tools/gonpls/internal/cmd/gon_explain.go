@@ -59,13 +59,9 @@ var gonErrorHandlingCases = []gonCase{
 		"The called function's last result must have exactly type error (an alias is accepted). " +
 			"Named interfaces, concrete error types, type parameters and non-final errors do not qualify.",
 		"Keep the explicit form: v, err := f(); if err != nil { ... }."},
-	{"error propagation requires an enclosing function with a final result of type error or, in a _test.go file, a first named parameter of type *testing.T, *testing.B, *testing.F or testing.TB",
-		"Postfix ! on a Go error tuple returns from the nearest enclosing function literal, lambda or declaration. That function must return error last, " +
-			"or be a test function: in a _test.go file, a function that does not qualify otherwise and whose first parameter is named " +
-			"(not blank) with type *testing.T, *testing.B, *testing.F or testing.TB reports the failure with Fatal, at the line of the !, and then returns zero values. " +
-			"Method receivers are not parameters.",
-		"Handle the error locally with 'or err { ... }', or make the function a test function: name its first parameter and use the standard testing type. " +
-			"Adding an error result changes the function's contract; review its callers before choosing that design alternative."},
+	{"error propagation requires an enclosing function with a final result of type error",
+		"Postfix ! and one-line or error context return from the nearest enclosing function literal, lambda or declaration. That function must return error last, including in _test.go files. Failure returns zeros for all other results.",
+		"Handle the error locally with 'or err { ... }'. Tests can explicitly call t.Fatal(err) and return in a block handler. Adding an error result changes the function's contract; review its callers before choosing that alternative."},
 	{"error context requires an explicit error binding",
 		"A one-line error context names the error before transforming it. The transformation runs only on failure.",
 		"Write call() or err => expr, where expr is assignable to error; the enclosing function must permit postfix !."},

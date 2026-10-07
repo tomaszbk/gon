@@ -335,6 +335,7 @@ func hover(ctx context.Context, snapshot *cache.Snapshot, fh file.Handle, rng pr
 		r := &hoverResult{
 			Synopsis:          goastutil.NodeDescription(node),
 			FullDocumentation: types.TypeString(pkg.TypesInfo().TypeOf(node), qual),
+			footer:            optionalHoverNote(tv.Type),
 		}
 
 		highlight, err := pgf.NodeRange(node)
@@ -803,6 +804,12 @@ func hover(ctx context.Context, snapshot *cache.Snapshot, fh file.Handle, rng pr
 	if sym := StdSymbolOf(obj); sym != nil && sym.Version > 0 {
 		footer = fmt.Sprintf("Added in %v", sym.Version)
 	}
+	if note := optionalHoverNote(obj.Type()); note != "" {
+		if footer != "" {
+			footer += "\n\n"
+		}
+		footer += note
+	}
 
 	return *hoverRange, &hoverResult{
 		Synopsis:          doc.Synopsis(docText),
@@ -817,6 +824,32 @@ func hover(ctx context.Context, snapshot *cache.Snapshot, fh file.Handle, rng pr
 		promotedFields:    fields,
 		footer:            footer,
 	}, nil
+}
+
+// optionalHoverNote explains the distinction between optional presence and the
+// payload's value. In particular, extracting a present nilable payload does not
+// establish that it is non-nil.
+func optionalHoverNote(t types.Type) string {
+	optional := types.OptionalOf(t)
+	if optional == nil {
+		return ""
+	}
+	note := "Optional values distinguish absence from a present payload, including its zero value."
+	elem := types.Unalias(optional.Elem())
+	if _, ok := elem.(*types.TypeParam); ok {
+		return note + " For nilable payload types, presence does not imply a non-nil payload: a typed nil value is present."
+	}
+	switch elem := elem.Underlying().(type) {
+	case *types.Pointer, *types.Interface, *types.Slice, *types.Map, *types.Signature, *types.Chan:
+		return note + " Presence does not imply a non-nil payload: a typed nil value is present."
+	case *types.Basic:
+		if elem.Kind() == types.UnsafePointer {
+			return note + " Presence does not imply a non-nil payload: a typed nil value is present."
+		}
+	case *types.Optional:
+		return note + " Presence applies to the outer optional only; the inner optional may be absent."
+	}
+	return note
 }
 
 // typeDeclContent returns a well formatted type definition.

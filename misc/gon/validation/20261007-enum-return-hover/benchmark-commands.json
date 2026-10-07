@@ -1,0 +1,284 @@
+[
+  {
+    "label": "go-version",
+    "command": [
+      "/opt/homebrew/bin/go",
+      "version"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon",
+    "cache": null,
+    "exitCode": 0,
+    "wallSeconds": 0.013667999999597669
+  },
+  {
+    "label": "go-env",
+    "command": [
+      "/opt/homebrew/bin/go",
+      "env",
+      "-json",
+      "GOOS",
+      "GOARCH",
+      "GOARM64",
+      "GOAMD64",
+      "GOROOT",
+      "GOVERSION",
+      "GOEXPERIMENT"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon",
+    "cache": null,
+    "exitCode": 0,
+    "wallSeconds": 0.01241091697011143
+  },
+  {
+    "label": "go-gon-capabilities-probe",
+    "command": [
+      "/opt/homebrew/bin/go",
+      "capabilities",
+      "--json"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon",
+    "cache": null,
+    "exitCode": 2,
+    "wallSeconds": 0.013151249964721501
+  },
+  {
+    "label": "gon-version",
+    "command": [
+      "/Users/tzbk/Documents/gon/gon/bin/gon",
+      "version"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon",
+    "cache": null,
+    "exitCode": 0,
+    "wallSeconds": 0.017635249998420477
+  },
+  {
+    "label": "gon-env",
+    "command": [
+      "/Users/tzbk/Documents/gon/gon/bin/gon",
+      "env",
+      "-json",
+      "GOOS",
+      "GOARCH",
+      "GOARM64",
+      "GOAMD64",
+      "GOROOT",
+      "GOVERSION",
+      "GOEXPERIMENT"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon",
+    "cache": null,
+    "exitCode": 0,
+    "wallSeconds": 0.01650795800378546
+  },
+  {
+    "label": "go-legacy-test-build",
+    "command": [
+      "/opt/homebrew/bin/go",
+      "test",
+      "-c",
+      "-vet=off",
+      "-p=1",
+      "-trimpath",
+      "-buildvcs=false",
+      "-o",
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/go-legacy/bench.test",
+      "."
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/go-legacy",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-go",
+    "exitCode": 0,
+    "wallSeconds": 24.891058874956798
+  },
+  {
+    "label": "go-legacy-correctness",
+    "command": [
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/go-legacy/bench.test",
+      "-test.run=^Test",
+      "-test.v",
+      "-test.count=1"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/go-legacy",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-go",
+    "exitCode": 0,
+    "wallSeconds": 0.2361882079858333
+  },
+  {
+    "label": "go-legacy-app-warmup",
+    "command": [
+      "/opt/homebrew/bin/go",
+      "build",
+      "-p=1",
+      "-trimpath",
+      "-buildvcs=false",
+      "-o",
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/go-legacy/app",
+      "."
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/go-legacy",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-go",
+    "exitCode": 0,
+    "wallSeconds": 1.1166310410480946
+  },
+  {
+    "label": "go-legacy-app-output",
+    "command": [
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/go-legacy/app"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/go-legacy",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-go",
+    "exitCode": 0,
+    "wallSeconds": 0.26159287500195205
+  },
+  {
+    "label": "go-legacy-representation",
+    "command": [
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/go-legacy/app",
+      "--representation"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/go-legacy",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-go",
+    "exitCode": 0,
+    "wallSeconds": 0.008309957978781313
+  },
+  {
+    "label": "gon-legacy-test-build",
+    "command": [
+      "/Users/tzbk/Documents/gon/gon/bin/gon",
+      "test",
+      "-c",
+      "-vet=off",
+      "-p=1",
+      "-trimpath",
+      "-buildvcs=false",
+      "-o",
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-legacy/bench.test",
+      "."
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-legacy",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-gon",
+    "exitCode": 0,
+    "wallSeconds": 18.348029958026018
+  },
+  {
+    "label": "gon-legacy-correctness",
+    "command": [
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-legacy/bench.test",
+      "-test.run=^Test",
+      "-test.v",
+      "-test.count=1"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-legacy",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-gon",
+    "exitCode": 0,
+    "wallSeconds": 0.2237795409746468
+  },
+  {
+    "label": "gon-legacy-app-warmup",
+    "command": [
+      "/Users/tzbk/Documents/gon/gon/bin/gon",
+      "build",
+      "-p=1",
+      "-trimpath",
+      "-buildvcs=false",
+      "-o",
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-legacy/app",
+      "."
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-legacy",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-gon",
+    "exitCode": 0,
+    "wallSeconds": 0.5879608750110492
+  },
+  {
+    "label": "gon-legacy-app-output",
+    "command": [
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-legacy/app"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-legacy",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-gon",
+    "exitCode": 0,
+    "wallSeconds": 0.22269583295565099
+  },
+  {
+    "label": "gon-legacy-representation",
+    "command": [
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-legacy/app",
+      "--representation"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-legacy",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-gon",
+    "exitCode": 0,
+    "wallSeconds": 0.006953499978408217
+  },
+  {
+    "label": "gon-modern-test-build",
+    "command": [
+      "/Users/tzbk/Documents/gon/gon/bin/gon",
+      "test",
+      "-c",
+      "-vet=off",
+      "-p=1",
+      "-trimpath",
+      "-buildvcs=false",
+      "-o",
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-modern/bench.test",
+      "."
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-modern",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-gon",
+    "exitCode": 0,
+    "wallSeconds": 0.6819372499594465
+  },
+  {
+    "label": "gon-modern-correctness",
+    "command": [
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-modern/bench.test",
+      "-test.run=^Test",
+      "-test.v",
+      "-test.count=1"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-modern",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-gon",
+    "exitCode": 0,
+    "wallSeconds": 0.22220495797228068
+  },
+  {
+    "label": "gon-modern-app-warmup",
+    "command": [
+      "/Users/tzbk/Documents/gon/gon/bin/gon",
+      "build",
+      "-p=1",
+      "-trimpath",
+      "-buildvcs=false",
+      "-o",
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-modern/app",
+      "."
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-modern",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-gon",
+    "exitCode": 0,
+    "wallSeconds": 0.5449075409560464
+  },
+  {
+    "label": "gon-modern-app-output",
+    "command": [
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-modern/app"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-modern",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-gon",
+    "exitCode": 0,
+    "wallSeconds": 0.2342656669788994
+  },
+  {
+    "label": "gon-modern-representation",
+    "command": [
+      "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-modern/app",
+      "--representation"
+    ],
+    "cwd": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/gon-modern",
+    "cache": "/Users/tzbk/Documents/gon/pkg/gon-benchmarks/20261007T200354Z/cache-gon",
+    "exitCode": 0,
+    "wallSeconds": 0.009116457949858159
+  }
+]

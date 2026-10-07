@@ -2463,7 +2463,6 @@ pkg go/types, func RelativeTo(pkg *Package) Qualifier
 pkg go/types, func Satisfies(V Type, T *Interface) bool
 pkg go/types, func SelectionString(s *Selection, qf Qualifier) string
 pkg go/types, func SizesFor(compiler string, arch string) Sizes
-pkg go/types, func TestFatalParam(sig *Signature) *Var
 pkg go/types, func TypeString(typ Type, qf Qualifier) string
 pkg go/types, func Unalias(t Type) Type
 pkg go/types, func WriteExpr(buf *bytes.Buffer, x ast.Expr)

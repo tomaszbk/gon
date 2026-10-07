@@ -61,8 +61,9 @@ func loadConfig(path string) (Config, error) {
 
 `!` returns early on failure; `or err { ... }` lets you handle the error yourself.
 Both work with existing Go error-returning APIs. `or err => expression` adds
-context and propagates the resulting error. `!` also works in qualifying test
-functions, where it calls `t.Fatal(err)` at that line.
+context and propagates the resulting error. Both propagation forms require the
+nearest function to return `error` last, including in `_test.go` files. Tests
+can use a block `or` handler with an explicit `t.Fatal(err)` and `return`.
 
 ### Short callbacks, optional access and readable calls
 

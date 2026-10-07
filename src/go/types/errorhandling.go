@@ -51,15 +51,11 @@ func (check *Checker) errorExpr(x *operand, e *ast.ErrorExpr) exprKind {
 	success := results[:len(results)-1]
 	if e.Body == nil {
 		sig := check.sig
-		// Failure leaves the function through its final error or, in a test
-		// function, through Fatal.
 		problem := func() string {
-			switch check.propagationTarget(sig, e) {
-			case propagateToError, propagateToTest:
+			if check.propagationTarget(sig) == propagateToError {
 				return ""
-
 			}
-			return "error propagation requires an enclosing function with a final result of type error or, in a _test.go file, a first named parameter of type *testing.T, *testing.B, *testing.F or testing.TB"
+			return "error propagation requires an enclosing function with a final result of type error"
 		}
 		if check.inferLambdaSig == sig {
 			check.later(func() {

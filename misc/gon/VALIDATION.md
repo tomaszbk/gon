@@ -14,6 +14,74 @@ historical results in the recorded sections below describe those snapshots,
 not validation of the published commit or of later review fixes. Additional
 platform and Docker testing remains deferred by the user.
 
+## Compact enums, return-only propagation and optional hover
+
+The requested changes passed **75 complete tooling checks** on native
+**darwin/arm64**, with unmodified **Go 1.27.1** executing the legacy pairs.
+The final source fingerprint stayed unchanged throughout the run:
+
+`5d60cd943603f8a684815498a84d42401be6a0e186873eb347d9d6b46ae230f0`
+
+This identifies the edited local source, independently of the recorded Git
+HEAD `4d86b34b0fe69112e7cd965260e69e215c12ee77`. The
+[summary](validation/20261007-enum-return-hover/summary.json),
+[complete commands and results](validation/20261007-enum-return-hover/tooling.json)
+and [source manifest](validation/20261007-enum-return-hover/source-manifest.json.gz)
+retain the scope, tool hashes and compressed logs. All checks passed with no
+pending gates; the only skipped test is the upstream manual `TestErrorCodes`.
+
+Enums with no payload fields use a compact discriminator: one byte through
+256 variants, two through 65,536, and four thereafter within the uint32 range.
+Both checker APIs verify the width boundaries, alignment and dense arrays.
+Executable Go/Gon pairs cover single/default/reordered variants, generic enums
+and aliases, all 256/257-variant constructors, export/import, matching, hashing,
+reflection, formatting, copies and GC. Declared zero-size payloads and native
+optionals retain their prior layouts; ordinary Go structs retain trailing-field
+padding.
+
+Postfix `!` and one-line `or` require the nearest function to return exactly
+`error` last, including in tests. The checkers reject the retired testing
+exception. Paired tests cover success/failure, error wrapping, named-result
+zeros, defer, nested literals/lambdas and explicit `Fatal` handlers. Compiler
+lowering, SSA/IR, query/explain, modernization and analyzers share this rule.
+Gonpls optional hover states that presence does not imply a non-nil payload,
+including aliases, fields, parameters and expression hovers. Matching on
+`error` retains its existing `errors.AsType` contract.
+
+The [benchmark correctness snapshot](validation/20261007-enum-return-hover/benchmark-correctness.json)
+passed 16 tests per variant with identical program output. Its
+[representation record](validation/20261007-enum-return-hover/benchmark-representation.json)
+measures the same unit fixture at **one byte in Gon modern versus eight bytes
+in the Go/Gon legacy fixture**. Payload enum and optional sizes are unchanged.
+This run has no timed performance samples; the earlier measured report remains
+evidence for its historical source snapshot.
+
+The complete gate command was:
+
+```sh
+GON_BASELINE_GO=/opt/homebrew/bin/go GON_SQL_POSTGRES=0 GOMAXPROCS=2 \
+  python3 misc/gon/validate.py tooling
+```
+
+Additional focused checker, analyzer, semantic-query and cgo/coverage tests
+passed; [commands and logs](validation/20261007-enum-return-hover/focused-commands.json)
+also record the corrected diagnostic-comment fixture after its initial failure.
+The local native compiler rebuild using unmodified Go 1.27.1 passed; this is
+a local rebuild, without a new isolated source-only snapshot.
+[Local build/generation commands](validation/20261007-enum-return-hover/local-actions.json).
+The public tools were rebuilt, generated gonpls help matched its
+authoritative analyzer docs, and vendor consistency passed. Additional Linux,
+wasm, PostgreSQL and Docker execution remains deferred.
+
+The consumer migration changed 25 uses of the retired test exception in seven
+`llm_teacher/backend` test files into explicit block handlers, preserving the
+two error-returning endpoint callbacks that can still use `!`. Its native
+standard `gon test ./...` (five packages) and `gon vet ./...` passed. The fifteen
+uses in integration-tagged tests were migrated but those integrations were
+not executed. [Migration scope and hashes](validation/20261007-enum-return-hover/consumer-migration.json)
+and the focused command manifest retain these results; prior application work
+and its published source pin were preserved.
+
 ## Cleanup of prior Gon designs
 
 Gon's compatibility contract applies to Go 1.27+; earlier Gon designs have no
@@ -296,8 +364,10 @@ seven build samples, with compiler and fixture hashes unchanged during the run.
 [raw data](benchmarks/results/20261007T033706Z/summary.json) retain all 22 workloads,
 including regressions, build costs, allocation counts and representation sizes.
 All 22 workloads have identical heap bytes and allocation counts across the
-three variants. Native unit enums occupy 16 bytes versus 8 for the tagged Go
-fixture; `struct{}?` occupies 16 versus 2. Pointer and integer optionals occupy
+three variants. In that historical snapshot, native unit enums occupied 16
+bytes versus 8 for the tagged Go fixture; `struct{}?` occupied 16 versus 2.
+The [compact-enum validation](#compact-enums-return-only-propagation-and-optional-hover) records the new unit size separately.
+Pointer and integer optionals occupy
 16 bytes in all variants. Main-package rebuild medians are 0.249 seconds for
 Gon legacy and 0.251 for Gon modern. Measurements apply to this host/session,
 with no stable ABI or zero-overhead claim. See [method and workloads](benchmarks/README.md).

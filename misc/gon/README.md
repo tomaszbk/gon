@@ -53,7 +53,8 @@ binds tightly: `*T?` is a pointer to an optional, `(*T)?` is an optional pointer
 `([]T)?` is an optional slice, and `(T?)?` contains two distinct optional layers.
 Aliases preserve this protocol; separately defined types do not adopt it.
 `selected == nil` and `selected != nil` test absence/presence, including for
-noncomparable payloads; a present typed nil remains present.
+noncomparable payloads; a present typed nil remains present. Presence does not
+imply a non-nil payload; gonpls hover makes this distinction explicit.
 
 ```go
 func parsePort(text string) (port int?, err error) {
@@ -153,6 +154,11 @@ API bypasses `database/sql` and still needs its own scanner adapter or codec.
 No SQL methods or database dependency are added to the enum by the compiler.
 
 Representation uses a discriminant and separate typed storage for GC safety.
+Enums whose variants all have no payload fields use only the smallest tag
+width that can represent their variants: up to 256 variants occupy one byte.
+Private zero-size variant fields remain metadata and add no size or trailing
+padding. Enums with payload fields (including `struct{}` payloads) and optional
+values keep their existing layouts. Ordinary Go struct layout is unchanged.
 `reflect.IsEnum`, `reflect.EnumVariants`, `reflect.EnumValueVariant` and
 `reflect.EnumValuePayload` expose checked active metadata/payload copies without
 changing the existing reflect.Type interface. C calls use explicit adapters.
@@ -167,11 +173,14 @@ including native optional conversions whose target
 would change after extraction. These forms are not automatically rewritten by
 `gon fix`.
 
-## Error propagation in tests
+## Error propagation and tests
 
 ```go
 func TestLoad(t *testing.T) {
-    config := loadConfig("testdata/app.json")!
+    config := loadConfig("testdata/app.json") or err {
+        t.Fatal(err)
+        return
+    }
     if config.Name != "app" { t.Fatalf("name = %q", config.Name) }
 }
 
@@ -181,21 +190,19 @@ func load(path string) (Config, error) {
 }
 ```
 
-In a `_test.go` file, when the nearest function (declaration, literal or lambda)
-does not return `error` last, its first parameter can authorize test propagation:
-it must be named, not `_`, and have type `*testing.T`, `*testing.B`, `*testing.F`
-or `testing.TB` (aliases allowed). A receiver or variadic first parameter does
-not qualify. A failing `!` or one-line `or` calls `<param>.Fatal(err)` at the
-operator line and returns zero values without `Helper`. This covers tests,
-subtests, fuzz callbacks, benchmarks, helpers and lambdas. Block `or` and
-optional `?` retain their existing rules. `go/types.TestFatalParam` exposes the
-rule to tools.
+`!` and one-line `or` always propagate through the nearest function's return.
+That function (declaration, literal or lambda) must return exactly `error` last,
+including in `_test.go` files. Failure zeros all preceding results and sets the
+final result to the propagated error before defers run. A test's filename and
+testing parameter never authorize an implicit `Fatal` call. Standard test,
+subtest, benchmark and fuzz callbacks use an explicit block handler as above;
+error-returning helpers can use `!` or one-line `or` normally. Block `or` and
+optional `?` retain their existing rules.
 
-The gonerrors analyzer suggests `!` for equivalent zero-value error returns
-and exact testing Fatal handlers. It suggests `or err => expression` for a
-block handler that returns zeros and a contextual error. `testinggoroutine`
-models test propagation as an implicit Fatal. `gon explain InvalidErrorHandling`
-describes invalid contexts.
+The gonerrors analyzer suggests `!` for equivalent zero-value error returns.
+It suggests `or err => expression` for a block handler that returns zeros and
+a contextual error. Explicit testing Fatal handlers can remain block `or`
+handlers. `gon explain InvalidErrorHandling` describes invalid contexts.
 
 ## Matching interface and error subjects
 
@@ -601,7 +608,8 @@ and `or` handlers: `resp := client.Do(req)!` before `defer resp.Body.Close()` is
 clean, and `rows := db.Query(...)!` is analyzed like the tuple form, while
 genuine Go misuse is still reported. The `unreachable` analyzer also inspects
 block `or` handlers. Inline variable preserves valid formatting of handler
-initializers. `gon query type` identifies ordinary and test error propagation.
+initializers. `gon query type` identifies error propagation by return, with
+the same meaning in ordinary source and test files.
 
 The SSA and Staticcheck IR builders lower Gon error expressions to ordinary
 branches and returns, including named result resets, `defer`, typed-nil errors,

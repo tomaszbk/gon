@@ -85,6 +85,25 @@ func (r *reader) enumType(stringEnum bool) *types.Type {
 		}
 		fields = append(fields, field)
 	}
+	unitOnly := true
+	for _, field := range fields[1:] {
+		if field.Type.NumFields() != 0 {
+			unitOnly = false
+			break
+		}
+	}
+	if unitOnly {
+		kind := types.TUINT
+		switch count := uint64(n); {
+		case count <= 1<<8:
+			kind = types.TUINT8
+		case count <= 1<<16:
+			kind = types.TUINT16
+		case count <= 1<<32:
+			kind = types.TUINT32
+		}
+		fields[0].Type = types.Types[kind]
+	}
 	typ := types.NewStruct(fields)
 	typ.SetIsEnum(true)
 	return typ
@@ -229,7 +248,7 @@ func enumValue(pos src.XPos, typ *types.Type, tag, storage int, fields []int, va
 	// The default discriminant and omitted payload fields already have Go
 	// zeros. Avoid materializing explicit zero-valued storage initializers.
 	if tag != 0 {
-		tagValue := ir.NewBasicLit(pos, types.Types[types.TUINT], constant.MakeUint64(uint64(tag)))
+		tagValue := ir.NewBasicLit(pos, typ.Field(0).Type, constant.MakeUint64(uint64(tag)))
 		elements = append(elements, ir.NewStructKeyExpr(pos, typ.Field(0), tagValue))
 	}
 	if len(values) != 0 {

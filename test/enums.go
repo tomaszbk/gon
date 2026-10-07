@@ -33,6 +33,7 @@ func main() {
 	reflection := run(goTool, false, "run", common, filepath.Join(fixtures, "reflect_legacy.go"))
 	compare("reflection modern", reflection, run(goTool, false, "run", common, filepath.Join(fixtures, "reflect_modern.go")))
 	compare("reflection baseline", reflection, run(baseline, true, "run", common, filepath.Join(fixtures, "reflect_legacy.go")))
+	checkUnitLayout(goTool, baseline, fixtures)
 	serialization := filepath.Join(fixtures, "serialization_common.go")
 	serializationLegacy := filepath.Join(fixtures, "serialization_legacy.go")
 	serializationModern := filepath.Join(fixtures, "serialization_modern.go")
@@ -152,6 +153,136 @@ func checkExports(goTool, baseline, fixtures string) {
 	copy("export_modern.go", filepath.Join("lib", "lib.go"))
 	compare("exports modern", legacy, runAt(goTool, false, dir, "run", "."))
 	compare("exports modern without inlining", legacy, runAt(goTool, false, dir, "run", "-gcflags=-l", "."))
+}
+
+// checkUnitLayout also exercises compact unit discriminators through export data.
+// Generate the boundary enums rather than checking in hundreds of declarations.
+func checkUnitLayout(goTool, baseline, fixtures string) {
+	dir, err := os.MkdirTemp("", "gon-unit-enum-layout-")
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(dir)
+	if err := os.Mkdir(filepath.Join(dir, "lib"), 0700); err != nil {
+		panic(err)
+	}
+	write := func(name string, data []byte) {
+		if err := os.WriteFile(filepath.Join(dir, name), data, 0600); err != nil {
+			panic(err)
+		}
+	}
+	copyFixture := func(source, dest string) {
+		data, err := os.ReadFile(filepath.Join(fixtures, source))
+		if err != nil {
+			panic(err)
+		}
+		write(dest, data)
+	}
+	write("go.mod", []byte("module unitlayout\n\ngo 1.27\n"))
+	copyFixture("unitlayout_main.go", "main.go")
+	copyFixture("unitlayout_legacy.go", "lib/unit.go")
+	write("lib/boundary.go", unitLayoutBoundarySource(false))
+	write("imported.go", unitLayoutImportSource(false))
+	legacy := runAt(goTool, false, dir, "run", ".")
+	compare("compact units baseline", legacy, runAt(baseline, true, dir, "run", "."))
+	copyFixture("unitlayout_modern.go", "lib/unit.go")
+	write("lib/boundary.go", unitLayoutBoundarySource(true))
+	write("imported.go", unitLayoutImportSource(true))
+	compare("compact units modern", legacy, runAt(goTool, false, dir, "run", "."))
+	compare("compact units modern without inlining", legacy, runAt(goTool, false, dir, "run", "-gcflags=-l", "."))
+	compare("compact units modern unoptimized", legacy, runAt(goTool, false, dir, "run", "-gcflags=-N -l", "."))
+}
+
+func unitLayoutBoundarySource(modern bool) []byte {
+	var source strings.Builder
+	source.WriteString("package lib\nimport (\"fmt\"; \"reflect\")\n")
+	variant := func(count, index int) string {
+		separator := "V"
+		if modern {
+			separator = ".V"
+		}
+		return fmt.Sprintf("Wide%d%s%03d", count, separator, index)
+	}
+	for _, count := range []int{256, 257} {
+		if modern {
+			fmt.Fprintf(&source, "type Wide%d enum {\n", count)
+			for i := 0; i < count; i++ {
+				if i == count/2 {
+					source.WriteString("default ")
+				}
+				fmt.Fprintf(&source, "V%03d\n", i)
+			}
+			source.WriteString("}\n")
+		} else {
+			width := 8
+			if count > 256 {
+				width = 16
+			}
+			fmt.Fprintf(&source, "type Wide%d uint%d\nconst (\n", count, width)
+			for i := 0; i < count; i++ {
+				tag := i
+				if i < count/2 {
+					tag++
+				} else if i == count/2 {
+					tag = 0
+				}
+				fmt.Fprintf(&source, "%s Wide%d = %d\n", variant(count, i), count, tag)
+			}
+			source.WriteString(")\n")
+		}
+		fmt.Fprintf(&source, "func Last%d() Wide%d { return %s }\n", count, count, variant(count, count-1))
+		fmt.Fprintf(&source, "func Default%d() Wide%d { return %s }\n", count, count, variant(count, count/2))
+		fmt.Fprintf(&source, "func index%d(value Wide%d) int { switch value {\n", count, count)
+		for i := 0; i < count; i++ {
+			fmt.Fprintf(&source, "case %s: return %d\n", variant(count, i), i)
+		}
+		source.WriteString("}; panic(\"invalid boundary discriminator\") }\n")
+		if !modern {
+			fmt.Fprintf(&source, "func (value Wide%d) String() string { return fmt.Sprintf(\"lib.Wide%d.V%%03d\", index%d(value)) }\n", count, count, count)
+		}
+	}
+	source.WriteString("func BoundaryCheck() int { total := 0\n")
+	for _, count := range []int{256, 257} {
+		width := 1
+		if count > 256 {
+			width = 2
+		}
+		fmt.Fprintf(&source, "{ typ := reflect.TypeFor[Wide%d](); if typ.Size() != %d || typ.Align() != %d { panic(\"boundary reflection layout\") }; var zero Wide%d; if zero != Default%d() { panic(\"boundary default\") }\n", count, width, width, count, count)
+		if modern {
+			fmt.Fprintf(&source, "variants := reflect.EnumVariants(typ); if len(variants) != %d { panic(\"boundary metadata count\") }; for i, variant := range variants { if variant.Default != (i == %d) || len(variant.Fields) != 0 { panic(\"boundary metadata default/payload\") } }\n", count, count/2)
+		}
+		fmt.Fprintf(&source, "values := []Wide%d{\n", count)
+		for i := 0; i < count; i++ {
+			fmt.Fprintf(&source, "%s,\n", variant(count, i))
+		}
+		fmt.Fprintf(&source, "}; seen := make(map[Wide%d]bool); for i, value := range values { if index%d(value) != i || seen[value] { panic(\"boundary constructor/equality\") }; seen[value] = true; total += i; if fmt.Sprint(value) != fmt.Sprintf(\"lib.Wide%d.V%%03d\", i) { panic(\"boundary formatting\") }\n", count, count, count)
+		if modern {
+			source.WriteString("if reflect.EnumValueVariant(reflect.ValueOf(value)).Name != fmt.Sprintf(\"V%03d\", i) { panic(\"boundary discriminator reflection\") }\n")
+		}
+		fmt.Fprintf(&source, "}; if len(seen) != %d { panic(\"distinct boundary map keys\") } }\n", count)
+	}
+	source.WriteString("return total }\n")
+	return []byte(source.String())
+}
+
+func unitLayoutImportSource(modern bool) []byte {
+	defaultUnit, alternateUnit := "lib.Red", "lib.Green"
+	aliasUnit, generic, genericAlias := "lib.Green", "lib.Flag[[]byte](1)", "lib.FlagAlias[int](1)"
+	last256, last257 := "lib.Wide256V255", "lib.Wide257V256"
+	if modern {
+		defaultUnit, alternateUnit = "lib.Unit.Red", "lib.Unit.Green"
+		aliasUnit, generic, genericAlias = "lib.Alias.Green", "lib.Flag[[]byte].Ready", "lib.FlagAlias[int].Ready"
+		last256, last257 = "lib.Wide256.V255", "lib.Wide257.V256"
+	}
+	return []byte(fmt.Sprintf(`package main
+import "unitlayout/lib"
+func checkImportedUnitConstructors() {
+assert(%s == lib.UnitDefault() && %s == lib.UnitAlternate(), "imported unit constructors")
+assert(%s == lib.UnitAlternate(), "imported alias constructor")
+assert(%s == lib.ReadyFlag[[]byte]() && %s == lib.ReadyFlag[int](), "imported generic constructors")
+assert(%s == lib.Last256() && %s == lib.Last257(), "imported boundary constructors")
+}
+`, defaultUnit, alternateUnit, aliasUnit, generic, genericAlias, last256, last257))
 }
 
 func checkCgo(goTool, baseline, fixtures string) {

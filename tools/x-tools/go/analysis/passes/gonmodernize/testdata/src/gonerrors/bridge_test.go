@@ -3,17 +3,15 @@ package gonerrors
 import "testing"
 
 func TestFatal(t *testing.T) {
-	// want +1 "replace error check with Gon ! propagation"
 	x, err := read()
 	if err != nil {
 		t.Fatal(err)
 	}
 	_ = x
-	// want +1 "replace error check with Gon ! propagation"
+	// want +1 "replace error check with a Gon or handler"
 	if err := flush(); err != nil {
 		t.Fatal(err)
 	}
-	// want +1 "replace error check with Gon ! propagation"
 	a, s, problem := many()
 	if problem != nil {
 		t.Fatal(problem)
@@ -22,7 +20,6 @@ func TestFatal(t *testing.T) {
 }
 
 func newThing(tb testing.TB) int {
-	// want +1 "replace error check with Gon ! propagation"
 	x, err := read()
 	if err != nil {
 		tb.Fatal(err)
@@ -31,7 +28,7 @@ func newThing(tb testing.TB) int {
 }
 
 func BenchmarkFatal(b *testing.B) {
-	// want +1 "replace error check with Gon ! propagation"
+	// want +1 "replace error check with a Gon or handler"
 	if err := flush(); err != nil {
 		b.Fatal(err)
 	}
@@ -39,7 +36,7 @@ func BenchmarkFatal(b *testing.B) {
 
 func FuzzFatal(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data []byte) {
-		// want +1 "replace error check with Gon ! propagation"
+		// want +1 "replace error check with a Gon or handler"
 		if err := flush(); err != nil {
 			t.Fatal(err)
 		}
@@ -48,7 +45,6 @@ func FuzzFatal(f *testing.F) {
 
 func TestSubtest(t *testing.T) {
 	t.Run("x", func(u *testing.T) {
-		// want +1 "replace error check with Gon ! propagation"
 		x, err := read()
 		if err != nil {
 			u.Fatal(err)
@@ -119,7 +115,7 @@ func helperError(t *testing.T) error {
 	return nil
 }
 
-// An unnamed first parameter cannot report a failure.
+// Parameter spelling does not change the meaning of !.
 func blankFirst(_ *testing.T, t2 *testing.T) {
 	x, err := read()
 	if err != nil {
@@ -140,7 +136,7 @@ func (s suite) check() {
 }
 
 func ErrorOnlyInTest(t *testing.T) {
-	// want +1 "replace error check with Gon ! propagation"
+	// want +1 "replace error check with a Gon or handler"
 	if err := flush(); err != nil {
 		t.Fatal(err)
 	}

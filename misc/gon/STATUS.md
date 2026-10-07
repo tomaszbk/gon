@@ -36,15 +36,17 @@ inventories remain unrecorded while additional platform validation is deferred.
 
 Error handling uses ordinary Go tuples ending in `error`. `!` and
 `or err => expression` propagate errors and zero the other results before
-defers; a block `or` handler chooses its own behavior. Qualifying `_test.go`
-functions report failures through their first testing parameter's `Fatal` at
-the operator line. Existing tuples can still carry useful partial results for
+defers; a block `or` handler chooses its own behavior. Both propagation forms
+require the nearest function to return `error` last, also in `_test.go` files.
+Tests report failures explicitly with block handlers and `Fatal`; the operators
+have no testing-specific behavior. Existing tuples can still carry useful partial results for
 explicit handling. User-declared names retain ordinary Go semantics.
 
 Native `T?` uses untyped nil for absence and lifts one immediate payload for
 presence, including typed nil and zero. Nested layers never flatten. Match
 presence with `P?` and absence with nil. Optional equality against untyped nil
-checks presence even for noncomparable payloads. See [OPTIONALS.md](OPTIONALS.md).
+checks presence even for noncomparable payloads. Hover explains that presence
+does not imply a non-nil payload. See [OPTIONALS.md](OPTIONALS.md).
 
 `encoding/json` (v1/v2) and `database/sql` map optional absence to JSON null and
 SQL NULL. Failed decoding/scanning preserves the destination. Nested optionals,
@@ -72,7 +74,7 @@ supported.
 
 The unreachable analyzer inspects block `or` handlers. Inline variable formats
 handler initializers correctly, and type queries distinguish ordinary error
-propagation, test Fatal and one-line context. Source inlining/extraction decline
+propagation and one-line context. Source inlining/extraction decline
 unsupported movement across named arguments or lazy/function boundaries.
 
 NilAway is maintained at `tools/nilaway`, with upstream Apache-2.0 license,
@@ -85,7 +87,10 @@ regression coverage. Upstream field-assignment inference still has object-sensit
 limits: an imported constructor with an implicit nil field can lack a warning.
 A clean result does not establish absence of nil panics.
 
-Representation uses a discriminator and separate typed GC-safe storage. No
+Representation uses a discriminator and separate typed GC-safe storage. Enums
+whose variants all have no payload fields use the smallest sufficient tag:
+up to 256 variants occupy one byte, without trailing empty-field padding.
+Declared zero-size payloads and optionals retain their existing layouts. No
 stable ABI or zero-overhead claim is made. Reflection exposes checked package
 functions and detached payloads. C boundaries and serializers beyond the
 supported JSON/SQL interfaces need explicit adapters. Positional constructor

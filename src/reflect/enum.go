@@ -117,7 +117,20 @@ func (v Value) enumVariant() (EnumVariant, *abi.StructField) {
 	st := (*structType)(unsafe.Pointer(v.typ()))
 	// Enums always contain the discriminator and at least one payload struct,
 	// so they are stored indirectly in interfaces, including unit-only enums.
-	tag := *(*uint)(add(v.ptr, st.Fields[0].Offset, "enum discriminator"))
+	tagPointer := add(v.ptr, st.Fields[0].Offset, "enum discriminator")
+	var tag uint
+	switch Kind(st.Fields[0].Typ.Kind()) {
+	case Uint8:
+		tag = uint(*(*uint8)(tagPointer))
+	case Uint16:
+		tag = uint(*(*uint16)(tagPointer))
+	case Uint32:
+		tag = uint(*(*uint32)(tagPointer))
+	case Uint:
+		tag = *(*uint)(tagPointer)
+	default:
+		panic("reflect: invalid enum discriminator type")
+	}
 	for i := 1; i < len(st.Fields); i++ {
 		variant, expected := enumVariantMetadata(st.Fields[i])
 		if tag == expected {

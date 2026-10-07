@@ -10,7 +10,7 @@
   "errorhandling": {
     "pending": [],
     "limitations": [
-      "! in test functions applies only in _test.go files when the nearest function does not return error last and its first parameter is a named *testing.T, *testing.B, *testing.F or testing.TB; variadic first parameters and receivers do not qualify"
+      "! and one-line or require the nearest function to return exactly error last, including in _test.go; tests use explicit block handlers for Fatal"
     ]
   },
   "conditional": {
@@ -49,7 +49,7 @@
     "limitations": [
       "initial representation uses a discriminant and separate typed variant storage; no stable layout ABI is promised",
       "checked reflection uses package functions; reflect.Type and Value method sets remain unchanged",
-      "unit-only and zero-size payloads have measured size overhead",
+      "unit-only enums use the smallest sufficient tag (up to 256 variants: one byte); enums with payload fields, including zero-size payloads, retain their existing layouts and measured size overhead",
       "ordinary enums require explicit serialization adapters; opt-in string enums supply standard text interfaces, JSON and general database/sql conversions; SQL NULL uses sql.Null[T], pointers or a native optional; native pgx outside database/sql requires a codec; no stable storage ABI is provided",
       "synthesized first-class positional constructors, string parsers and generated string enum methods currently disable compiler inlining"
     ]
@@ -66,7 +66,7 @@
   "option": {
     "pending": [],
     "limitations": [
-      "Optional payload extraction is a value operation; a present nil payload keeps ordinary Go nil behavior",
+      "Optional payload extraction is a value operation; presence does not imply a non-nil payload, and a present nil payload keeps ordinary Go nil behavior (gonpls hover explains the distinction)",
       "Optional and legacy nil guards cannot be mixed within one chain; use an explicit payload boundary and preserve nested optionals without automatic flattening",
       "cgo pointer-check rewritten call arguments decline propagation across hidden function boundaries",
       "source inlining and extraction across propagation or lazy operators are conservatively declined",

@@ -22,10 +22,7 @@ var ErrorAnalyzer = &analysis.Analyzer{
 
 The analyzer recognizes fresh call-result declarations followed by an error
 check, and error-only declarations in an if initializer. It suggests postfix !
-when the handler returns the same error and zero values, or when a test
-function (in a _test.go file, with a first named *testing.T, *testing.B,
-*testing.F or testing.TB parameter, that does not return error last) only calls
-Fatal with the same error. Otherwise it suggests an or
+when the handler returns the same error and zero values. Otherwise it suggests an or
 handler to preserve wrapping or other behavior. Handlers must terminate when
 the call has success values; error-only handlers may fall through.
 
@@ -157,11 +154,9 @@ func errorFix(pass *analysis.Pass, file *ast.File, content []byte, sig *types.Si
 			}
 		}
 	}
-	// Postfix ! returns the error, or reports it with Fatal,
-	// exactly as such a handler does.
+	// Postfix ! returns the error exactly as such a handler does.
 	propagation := errorPropagation(pass, sig, check.Body, errObj)
-	fatal := errorFatalPropagation(pass, file, sig, check.Body, errObj)
-	if count > 1 && !errorTerminates(pass, check.Body) && !fatal || errorBranches(check.Body) {
+	if count > 1 && !errorTerminates(pass, check.Body) || errorBranches(check.Body) {
 		return false
 	}
 	// The RHS and handler are copied verbatim. Never discard comments in the
@@ -173,8 +168,7 @@ func errorFix(pass *analysis.Pass, file *ast.File, content []byte, sig *types.Si
 	source := func(n ast.Node) string { return string(content[tokFile.Offset(n.Pos()):tokFile.Offset(n.End())]) }
 	replacement := source(assign.Rhs[0])
 	message := "replace error check with a Gon or handler"
-	if propagation && !errorComments(file, check.Body.Pos(), check.Body.End()) && !errorImportedUse(pass, check.Body) ||
-		fatal && !errorComments(file, check.Body.Pos(), check.Body.End()) {
+	if propagation && !errorComments(file, check.Body.Pos(), check.Body.End()) && !errorImportedUse(pass, check.Body) {
 		replacement += "!"
 		message = "replace error check with Gon ! propagation"
 	} else {
@@ -233,34 +227,6 @@ func errorPropagation(pass *analysis.Pass, sig *types.Signature, body *ast.Block
 		}
 	}
 	return true
-}
-
-// errorFatalPropagation reports whether body is exactly "t.Fatal(err)" for the
-// first parameter t of a test function, which Gon's ! calls for the same error.
-// A function returning error last keeps its own
-// propagation, so its Fatal handler is not equivalent to !.
-func errorFatalPropagation(pass *analysis.Pass, file *ast.File, sig *types.Signature, body *ast.BlockStmt, errObj types.Object) bool {
-	if len(body.List) != 1 || !strings.HasSuffix(pass.Fset.PositionFor(file.Pos(), false).Filename, "_test.go") {
-		return false
-	}
-	param := types.TestFatalParam(sig)
-	if param == nil {
-		return false
-	}
-	stmt, ok := body.List[0].(*ast.ExprStmt)
-	if !ok {
-		return false
-	}
-	call, ok := ast.Unparen(stmt.X).(*ast.CallExpr)
-	if !ok || len(call.Args) != 1 || len(call.ArgNames) != 0 || call.Ellipsis != token.NoPos || !errorObject(pass, call.Args[0], errObj) {
-		return false
-	}
-	sel, ok := ast.Unparen(call.Fun).(*ast.SelectorExpr)
-	if !ok || sel.Sel.Name != "Fatal" || !errorObject(pass, sel.X, param) {
-		return false
-	}
-	method, ok := pass.TypesInfo.Uses[sel.Sel].(*types.Func)
-	return ok && method.Pkg() != nil && method.Pkg().Path() == "testing"
 }
 
 func errorZero(pass *analysis.Pass, expr ast.Expr, target types.Type) bool {

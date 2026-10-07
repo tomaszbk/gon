@@ -25,7 +25,9 @@ func describe(input int?) string {
 The zero value is absent. Assignments and explicit conversions preserve an
 already assignable optional, turn untyped nil into absence, or lift one
 compatible immediate payload. Typed nil, zero, false and empty strings remain
-present. There is no recursive lift or flattening. Aliases retain the protocol;
+present. Presence does not imply a non-nil payload; gonpls hover explains that
+the presence test and a Go nil test are different. There is no recursive lift
+or flattening. Aliases retain the protocol;
 a separately defined type does not. Use `type Maybe[T any] = T?` for an alias.
 
 The suffix binds tightly. `[]int?` is a slice of optional integers; `([]int)?`
@@ -68,8 +70,10 @@ coexist with an error: `func parse(text string) (int?, error)`. Successful
 absence is `nil, nil`; successful presence is a payload and nil; failure has
 an error. Existing APIs retain useful partial results for explicit handlers.
 Postfix `!` and `or err => expression` propagate errors and reset other result
-values before defers. In qualifying `_test.go` functions they call the named
-first testing parameter's `Fatal`. See [the error contract](README.md#error-propagation-in-tests).
+values before defers. Both forms require the nearest function to return
+`error` last, including in `_test.go` files. Tests can use an explicit block
+handler with `t.Fatal(err)` and `return`. See
+[the error contract](README.md#error-propagation-and-tests).
 
 ## Introspection and representation
 

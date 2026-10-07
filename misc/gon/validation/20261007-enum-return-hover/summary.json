@@ -1,0 +1,22 @@
+{
+  "command": "GON_BASELINE_GO=/opt/homebrew/bin/go GON_SQL_POSTGRES=0 GOMAXPROCS=2 python3 misc/gon/validate.py tooling",
+  "exitCode": 0,
+  "checks": 75,
+  "sourceSHA256": "5d60cd943603f8a684815498a84d42401be6a0e186873eb347d9d6b46ae230f0",
+  "sourceStable": true,
+  "platform": {
+    "sysplatform": "darwin",
+    "machine": "arm64"
+  },
+  "baseline": {
+    "path": "/opt/homebrew/bin/go",
+    "version": "go version go1.27.1 darwin/arm64"
+  },
+  "testsRun": 6850,
+  "skippedTests": {
+    "structural-tools": [
+      "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+    ]
+  },
+  "summary": "tooling.json"
+}

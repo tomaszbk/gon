@@ -158,7 +158,9 @@ func (s *gcSizes) Sizeof(T Type) int64 {
 		}
 		// gc: The last field of a non-zero-sized struct is not allowed to
 		// have size 0.
-		if offs > 0 && size == 0 {
+		// Unit enum slots only describe variants; they cannot be addressed or
+		// extracted as payloads, so they need no trailing-field safety padding.
+		if offs > 0 && size == 0 && !unitEnumStorage(t) {
 			size = 1
 		}
 		// gc: Size includes alignment padding.

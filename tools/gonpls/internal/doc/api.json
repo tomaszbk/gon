@@ -1516,7 +1516,7 @@
 						},
 						{
 							"Name": "\"gonerrors\"",
-							"Doc": "replace eligible error checks with Gon propagation or local handlers\n\nThe analyzer recognizes fresh call-result declarations followed by an error\ncheck, and error-only declarations in an if initializer. It suggests postfix !\nwhen the handler returns the same error and zero values, or when a test\nfunction (in a _test.go file, with a first named *testing.T, *testing.B,\n*testing.F or testing.TB parameter, that does not return error last) only calls\nFatal with the same error. Otherwise it suggests an or\nhandler to preserve wrapping or other behavior. Handlers must terminate when\nthe call has success values; error-only handlers may fall through.\n\nIt keeps checks that observe partial results, reuse bindings, use the error\nafter the check, or have unsupported control flow or comments that would be\nlost. Only calls with exactly error as their final result are eligible.",
+							"Doc": "replace eligible error checks with Gon propagation or local handlers\n\nThe analyzer recognizes fresh call-result declarations followed by an error\ncheck, and error-only declarations in an if initializer. It suggests postfix !\nwhen the handler returns the same error and zero values. Otherwise it suggests an or\nhandler to preserve wrapping or other behavior. Handlers must terminate when\nthe call has success values; error-only handlers may fall through.\n\nIt keeps checks that observe partial results, reuse bindings, use the error\nafter the check, or have unsupported control flow or comments that would be\nlost. Only calls with exactly error as their final result are eligible.",
 							"Default": "true",
 							"Status": ""
 						},
@@ -3593,7 +3593,7 @@
 		},
 		{
 			"Name": "gonerrors",
-			"Doc": "replace eligible error checks with Gon propagation or local handlers\n\nThe analyzer recognizes fresh call-result declarations followed by an error\ncheck, and error-only declarations in an if initializer. It suggests postfix !\nwhen the handler returns the same error and zero values, or when a test\nfunction (in a _test.go file, with a first named *testing.T, *testing.B,\n*testing.F or testing.TB parameter, that does not return error last) only calls\nFatal with the same error. Otherwise it suggests an or\nhandler to preserve wrapping or other behavior. Handlers must terminate when\nthe call has success values; error-only handlers may fall through.\n\nIt keeps checks that observe partial results, reuse bindings, use the error\nafter the check, or have unsupported control flow or comments that would be\nlost. Only calls with exactly error as their final result are eligible.",
+			"Doc": "replace eligible error checks with Gon propagation or local handlers\n\nThe analyzer recognizes fresh call-result declarations followed by an error\ncheck, and error-only declarations in an if initializer. It suggests postfix !\nwhen the handler returns the same error and zero values. Otherwise it suggests an or\nhandler to preserve wrapping or other behavior. Handlers must terminate when\nthe call has success values; error-only handlers may fall through.\n\nIt keeps checks that observe partial results, reuse bindings, use the error\nafter the check, or have unsupported control flow or comments that would be\nlost. Only calls with exactly error as their final result are eligible.",
 			"URL": "",
 			"Default": true
 		},

@@ -34,6 +34,12 @@ var payloadSink Payload
 var oldPayloadSink legacyPayload
 
 func TestAlternativeRepresentation(t *testing.T) {
+	if size := unsafe.Sizeof(Unit.Red); size != 1 {
+		t.Fatalf("unit enum size = %d, want 1 byte", size)
+	}
+	if size := unsafe.Sizeof([1000]Unit{}); size != 1000 {
+		t.Fatalf("unit enum array size = %d, want 1000 bytes", size)
+	}
 	t.Logf("sizes (bytes): int?=%d tagged=%d; Payload=%d tagged=%d; (*int)?=%d tagged=%d", unsafe.Sizeof(optionSink), unsafe.Sizeof(oldOptionSink), unsafe.Sizeof(payloadSink), unsafe.Sizeof(oldPayloadSink), unsafe.Sizeof(((*int)?)(nil)), unsafe.Sizeof(legacyOption[*int]{}))
 	t.Logf("unit and zero-size payload (bytes): Unit=%d tagged=%d; Option[struct{}]=%d tagged=%d", unsafe.Sizeof(Unit.Red), unsafe.Sizeof(legacyUnit{}), unsafe.Sizeof((struct{}?)(nil)), unsafe.Sizeof(legacyOption[struct{}]{}))
 	modern := testing.AllocsPerRun(1000, func() {

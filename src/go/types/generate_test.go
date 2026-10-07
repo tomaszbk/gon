@@ -96,9 +96,10 @@ func generate(t *testing.T, filename string, write bool) {
 type action func(in *ast.File)
 
 var filemap = map[string]action{
-	"enum.go":       fixTokenPos,
-	"stringenum.go": nil,
-	"optional.go":   nil,
+	"enum.go":             fixTokenPos,
+	"enum_layout_test.go": nil,
+	"stringenum.go":       nil,
+	"optional.go":         nil,
 	"optional_test.go": func(f *ast.File) {
 		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`, `"cmd/compile/internal/types2"->"go/types"`)
 		renameIdents(f, "types2->types", "syntax->ast")
