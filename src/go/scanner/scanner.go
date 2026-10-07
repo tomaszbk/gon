@@ -58,7 +58,14 @@ const (
 // For optimization, there is some overlap between this method and
 // s.scanIdentifier.
 func (s *Scanner) next() {
- if s.ch=='\n' {for _,f:=range s.interpolations {if f.quote=='"' {s.error(s.offset,"newline in interpolated string");break}}}
+	if s.ch == '\n' {
+		for _, f := range s.interpolations {
+			if f.quote == '"' {
+				s.error(s.offset, "newline in interpolated string")
+				break
+			}
+		}
+	}
 
 	if s.rdOffset < len(s.src) {
 		s.offset = s.rdOffset
@@ -726,6 +733,9 @@ func (s *Scanner) scanRawString() string {
 
 func (s *Scanner) skipWhitespace() {
 	for s.ch == ' ' || s.ch == '\t' || s.ch == '\n' && !s.insertSemi || s.ch == '\r' {
+		if s.ch == '\n' && len(s.interpolations) > 0 && s.interpolations[len(s.interpolations)-1].quote == '"' {
+			break // interpolationExprToken recovers at the line boundary
+		}
 		s.next()
 	}
 }
@@ -822,8 +832,12 @@ func (s *Scanner) End() token.Pos {
 func (s *Scanner) Scan() (pos token.Pos, tok token.Token, lit string) {
 scanAgain:
 	s.endPosValid = false
-	if pos,tok,lit,ok:=s.interpolationToken();ok { return pos,tok,lit }
-	if len(s.interpolations)>0 {s.insertSemi=false}
+	if pos, tok, lit, ok := s.interpolationToken(); ok {
+		return pos, tok, lit
+	}
+	if len(s.interpolations) > 0 {
+		s.insertSemi = false
+	}
 	if s.nlPos.IsValid() {
 		// Return artificial ';' token after /*...*/ comment
 		// containing newline, at position of first newline.
@@ -834,15 +848,14 @@ scanAgain:
 		return
 	}
 
-	if len(s.interpolations)>0 && s.interpolations[len(s.interpolations)-1].quote=='"' {
-		for i:=s.offset;i<len(s.src) && (s.src[i]==' ' || s.src[i]=='\t' || s.src[i]=='\r' || s.src[i]=='\n');i++ {if s.src[i]=='\n' {s.error(i,"newline in interpolated string")}}
-	}
 	s.skipWhitespace()
 
 	// current token start
 	pos = s.file.Pos(s.offset)
 
-	if tok,lit,ok:=s.interpolationExprToken();ok {return pos,tok,lit}
+	if tok, lit, ok := s.interpolationExprToken(); ok {
+		return pos, tok, lit
+	}
 
 	// determine token value
 	insertSemi := false
@@ -879,8 +892,16 @@ scanAgain:
 			s.insertSemi = false // newline consumed
 			return pos, token.SEMICOLON, "\n"
 		case '$':
-			if s.ch!='"' && s.ch!='`' {s.error(s.offset-1,"$ must immediately precede a string literal");tok=token.ILLEGAL;lit="$";break}
-			lit=string(s.ch);s.interpolations=append(s.interpolations,&interpolationFrame{quote:s.ch,text:true});s.next();tok=token.INTERPOLATION_START
+			if s.ch != '"' && s.ch != '`' {
+				s.error(s.offset-1, "$ must immediately precede a string literal")
+				tok = token.ILLEGAL
+				lit = "$"
+				break
+			}
+			lit = string(s.ch)
+			s.interpolations = append(s.interpolations, &interpolationFrame{quote: s.ch, text: true})
+			s.next()
+			tok = token.INTERPOLATION_START
 		case '"':
 			insertSemi = true
 			tok = token.STRING

@@ -5,7 +5,9 @@
 package printf_test
 
 import (
+	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"golang.org/x/tools/go/analysis/analysistest"
@@ -37,5 +39,21 @@ func TestNonConstantFmtString_Go124(t *testing.T) {
 }
 
 func TestGon(t *testing.T) {
-	analysistest.Run(t, analysistest.TestData(), printf.Analyzer, "gonfixture")
+	results := analysistest.Run(t, analysistest.TestData(), printf.Analyzer, "gonfixture")
+	for _, result := range results {
+		for _, diagnostic := range result.Diagnostics {
+			if !strings.HasPrefix(diagnostic.Message, "fmt.Sprintf format") {
+				continue
+			}
+			file := result.Pass.Fset.File(diagnostic.Pos)
+			source, err := os.ReadFile(file.Name())
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := string(source[file.Offset(diagnostic.Pos):file.Offset(diagnostic.End)])
+			if got != "%d" && got != "%s" {
+				t.Errorf("wrong interpolation diagnostic range %q at %s", got, result.Pass.Fset.Position(diagnostic.Pos))
+			}
+		}
+	}
 }

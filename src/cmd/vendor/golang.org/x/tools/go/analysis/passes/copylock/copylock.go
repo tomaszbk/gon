@@ -49,6 +49,7 @@ func run(pass *analysis.Pass) (any, error) {
 		(*ast.FuncDecl)(nil),
 		(*ast.FuncLit)(nil),
 		(*ast.LambdaExpr)(nil),
+		(*ast.InterpolatedStringExpr)(nil),
 		(*ast.GenDecl)(nil),
 		(*ast.RangeStmt)(nil),
 		(*ast.ReturnStmt)(nil),
@@ -79,6 +80,14 @@ func run(pass *analysis.Pass) (any, error) {
 			}
 		case *ast.CallExpr:
 			checkCopyLocksCallExpr(pass, node)
+		case *ast.InterpolatedStringExpr:
+			for _, part := range node.Parts {
+				if part.Expr != nil {
+					if path := lockPathRhs(pass, part.Expr); path != nil {
+						pass.ReportRangef(part.Expr, "string interpolation copies lock value: %v", path)
+					}
+				}
+			}
 		case *ast.AssignStmt:
 			checkCopyLocksAssign(pass, node, goversion, parent(stack))
 		case *ast.GenDecl:

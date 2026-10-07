@@ -129,6 +129,11 @@ func (a *Analyzer) Tags() []protocol.DiagnosticTag { return a.tags }
 func (a *Analyzer) String() string { return a.analyzer.String() }
 
 func initAnalyzers() (res []*Analyzer) {
+	// Diagnostics are protocol data. The UI and CLI render the severity and
+	// terminal styling; analyzer messages carry no ANSI escapes or error prefix.
+	if err := nilawayconfig.Analyzer.Flags.Set("pretty-print", "false"); err != nil {
+		panic(err)
+	}
 	// Public NilAway opt-in includes ordinary Go closure captures. Keep the
 	// upstream module's standalone configuration available to other clients.
 	if err := nilawayconfig.Analyzer.Flags.Set(nilawayconfig.ExperimentalAnonymousFunctionFlag, "true"); err != nil {

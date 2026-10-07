@@ -27,8 +27,7 @@ pending integration items; 1 means a check failed; 2 means an incomplete feature
 a partial selection, or a usage error. Per-check logs (Go tests use JSON events) and `summary.json` are in
 `pkg/gon-validation/<profile>/`. The summary records executed and skipped tests;
 a test command matching zero tests fails the gate. Setup failures leave dependent
-checks explicitly unexecuted. `GON_BASELINE_GO` is the public baseline setting;
-the runner supplies older test-specific aliases for compatibility. It requires
+checks explicitly unexecuted. `GON_BASELINE_GO` is the only baseline setting. It requires
 the baseline even for selected checks, so executable pairs cannot silently skip
 it. The tooling profile validates infrastructure and existing executable pairs;
 it does not declare unfinished language features complete.
@@ -130,7 +129,13 @@ in place; do not add handovers or superseded status narratives.
 The accepted rules are in the local, ignored design documents. Published
 contracts are in README.md and OPTIONALS.md. Each profile below is automated in
 validate.py and requires the unmodified Go baseline for its executable pair.
-The common tooling profile covers API inventory, ast.Children/Walk, inspector
+The runner fingerprints implementation, fixtures and API inventories before
+the first check and after each check, and fails if those inputs change. Its
+summaries record the working-tree fingerprint and Git HEAD separately.
+Documentation and retained run evidence are excluded from that fingerprint.
+
+The common tooling profile covers the host cmd/api inventory and recorded
+parameter labels, builds and execution with DWARF, ast.Children/Walk, inspector
 masks/edges/mutable slots, analyzer registry, effects and conservative source
 transformations, export readers, public distribution and vendor consistency.
 

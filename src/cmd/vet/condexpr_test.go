@@ -67,9 +67,6 @@ func TestCondExpr(t *testing.T) {
 
 	baseline := os.Getenv("GON_BASELINE_GO")
 	if baseline == "" {
-		baseline = os.Getenv("GO_CONDITIONAL_EXPRESSION_BASELINE") // historical alias
-	}
-	if baseline == "" {
 		t.Log("GON_BASELINE_GO is not set; the legacy scenarios were not vetted with an unmodified toolchain")
 		return
 	}

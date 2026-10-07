@@ -10,7 +10,7 @@ import (
 type unknownExpr struct{ ast.Expr }
 
 func TestGonTransformSafety(t *testing.T) {
-	for _, src := range []string{"int?", "if c { 1 } else { 2 }", "f()!", "f() or err { panic(err) }", "(x) => x", "() => { f() }", "p?.Field", "f?()", "Option[int].Some(1)?", "switch e { case E.A(x) => x; default => 0 }", "f(right: 1, left: 2)"} {
+	for _, src := range []string{"int?", "if c { 1 } else { 2 }", "f()!", "f() or err { panic(err) }", "(x) => x", "() => { f() }", "p?.Field", "f?()", "(int?)(1)?", "switch e { case E.A(x) => x; default => 0 }", "f(right: 1, left: 2)"} {
 		a, err := parser.ParseExpr(src)
 		if err != nil {
 			t.Fatal(err)

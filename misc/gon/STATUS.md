@@ -5,6 +5,8 @@ riscv64 and wasm subject to the accepted newline-after-prefix-`!` exception.
 Unmodified Go 1.27.1 is the baseline; the fork's Go 1.28 development version
 identifies provenance. Keep `.go`, `_test.go`, `go.mod` and `go.work` and select
 public `gon`/`gonpls` per project alongside ordinary Go.
+Compatibility guarantees cover Go 1.27+ source. Earlier Gon designs and syntax
+do not have a compatibility protocol.
 
 The eight original features are error propagation, native optional values,
 exhaustive pattern matching, enums, lambdas, nil-safety operators, conditional
@@ -16,13 +18,28 @@ share their contracts. [features.json](features.json) records open integration
 checks and supported limits; [VALIDATION.md](VALIDATION.md) records actual runs.
 A local pass does not establish execution on other targets.
 
+The review closure passed all sixteen complete profiles and a source-only
+Go 1.27.1 bootstrap on one unchanged local implementation fingerprint on
+darwin/arm64. The retained source manifest and per-check tool hashes identify
+that local tree independently of the published Git HEAD; other platform
+evidence remains historical and additional platform/Docker runs remain deferred.
+
+Subsequent cleanup removed obsolete design names and test-environment aliases.
+Its affected checks passed on darwin/arm64 with Go 1.27.1; the earlier complete
+review gate retains its own source fingerprint. See the cleanup record in
+[VALIDATION.md](VALIDATION.md#cleanup-of-prior-gon-designs).
+
+API checks include native optional signatures and a separate inventory of
+public parameter names, including nested signatures and reachable private
+types. The name inventory is recorded only for darwin/arm64; other platform
+inventories remain unrecorded while additional platform validation is deferred.
+
 Error handling uses ordinary Go tuples ending in `error`. `!` and
 `or err => expression` propagate errors and zero the other results before
 defers; a block `or` handler chooses its own behavior. Qualifying `_test.go`
 functions report failures through their first testing parameter's `Fatal` at
 the operator line. Existing tuples can still carry useful partial results for
-explicit handling. Result, leading-dot constructors and the optional migration
-command are retired. User-declared names retain ordinary semantics.
+explicit handling. User-declared names retain ordinary Go semantics.
 
 Native `T?` uses untyped nil for absence and lifts one immediate payload for
 presence, including typed nil and zero. Nested layers never flatten. Match
@@ -62,7 +79,11 @@ NilAway is maintained at `tools/nilaway`, with upstream Apache-2.0 license,
 NOTICE and provenance. Enable it with `gon check --nilaway` or editor
 `"gon.serverSettings": { "nilaway": true }`. Warnings are opt-in and ordinary Go nil
 semantics are unchanged. Upstream corpus and Gon safe/unsafe pairs validate its
-adaptation; internal analysis errors remain visible.
+adaptation; internal analysis errors remain visible. Safe Go-only functions in
+packages with Gon syntax and corresponding positive cases have precision
+regression coverage. Upstream field-assignment inference still has object-sensitivity
+limits: an imported constructor with an implicit nil field can lack a warning.
+A clean result does not establish absence of nil panics.
 
 Representation uses a discriminator and separate typed GC-safe storage. No
 stable ABI or zero-overhead claim is made. Reflection exposes checked package

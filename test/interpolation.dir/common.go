@@ -33,4 +33,7 @@ func main() {
 		fmt.Println(out, errors.Is(err, boom), trace)
 	}
 	fmt.Println(rawBlocks())
+	fmt.Println(ordered())
+	trace = ""
+	fmt.Println(safeCalls(), trace)
 }

@@ -81,6 +81,36 @@ func TestErrorHandling(t *testing.T) {
 	}
 }
 
+func TestErrorHandlingCgoErrno(t *testing.T) {
+	const declarations = `package p
+import "C"
+func _Cfunc_div(int, int) int { return 0 }
+`
+	for _, body := range []string{
+		`func f() (int, error) { n, err := C.div(6, 2); return n, err }`,
+		`func f() (int, error) { n := C.div(6, 2)!; return n, nil }`,
+		`func f() (int, error) { n := (C.div(6, 2))!; return n, nil }`,
+		`func f() (int, error) { n := C.div(6, 2) or err { return 0, err }; return n, nil }`,
+		`func f() (int, error) { n := C.div(6, 2) or err => err; return n, nil }`,
+	} {
+		info := &Info{Types: make(map[ast.Expr]TypeAndValue)}
+		conf := &Config{}
+		*boolFieldAddr(conf, "go115UsesCgo") = true
+		if _, err := typecheck(declarations+body, conf, info); err != nil {
+			t.Errorf("%s: %v", body, err)
+			continue
+		}
+		for expr, tv := range info.Types {
+			if call, ok := expr.(*ast.CallExpr); ok && ExprString(call.Fun) == "C.div" {
+				tuple, ok := tv.Type.(*Tuple)
+				if !ok || tuple.Len() != 2 || !Identical(tuple.At(1).Type(), Universe.Lookup("error").Type()) {
+					t.Errorf("errno call type = %s, want (int, error)", tv.Type)
+				}
+			}
+		}
+	}
+}
+
 func TestErrorHandlingEval(t *testing.T) {
 	const src = `package p
 func read() (int, error) { return 1, nil }
@@ -153,7 +183,9 @@ func (E) Error() string { return "" }
 		`func f() error { consume(one() or err => wrap(err), one() or other => wrap(other)); return nil }`,
 		`func f() error { one() or err => func() error { only() or nested => wrap(nested); return err }(); return nil }`,
 	} {
-		if _, err := typecheck(prelude+source, nil, nil); err != nil { t.Errorf("%s: %v", source, err) }
+		if _, err := typecheck(prelude+source, nil, nil); err != nil {
+			t.Errorf("%s: %v", source, err)
+		}
 	}
 	for _, tc := range []struct{ source, want string }{
 		{`func f() { one() or err => err }`, "enclosing function"},
@@ -163,6 +195,8 @@ func (E) Error() string { return "" }
 		{`func f() error { n := one() or err => wrap(n); return nil }`, "undefined: n"},
 		{`func f() error { _ = func() int { return one() or err => err }; return nil }`, "enclosing function"},
 	} {
-		if _, err := typecheck(prelude+tc.source, nil, nil); err == nil || !strings.Contains(err.Error(), tc.want) { t.Errorf("%s: got %v, want %s", tc.source, err, tc.want) }
+		if _, err := typecheck(prelude+tc.source, nil, nil); err == nil || !strings.Contains(err.Error(), tc.want) {
+			t.Errorf("%s: got %v, want %s", tc.source, err, tc.want)
+		}
 	}
 }

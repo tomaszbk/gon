@@ -18,6 +18,10 @@ func Test(t *testing.T) {
 	analysistest.Run(t, testdata, copylock.Analyzer, "a", "typeparams", "issue67787", "unfortunate")
 }
 
+func TestGonInterpolation(t *testing.T) {
+	analysistest.Run(t, analysistest.TestData(), copylock.Analyzer, "gonfixture")
+}
+
 func TestVersions22(t *testing.T) {
 	dir := testfiles.ExtractTxtarFileToTmp(t, filepath.Join(analysistest.TestData(), "src", "forstmt", "go22.txtar"))
 	analysistest.Run(t, dir, copylock.Analyzer, "golang.org/fake/forstmt")

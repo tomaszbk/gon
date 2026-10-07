@@ -837,7 +837,10 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 			p.print(value)
 			p.inInterpolationText = previous
 		}
-		text(x.Dollar, "$"+string(x.Quote))
+		// The opening token belongs to the surrounding Go layout. Only text
+		// inside the literal suppresses indentation at the start of a line.
+		p.setPos(x.Dollar)
+		p.print("$" + string(x.Quote))
 		for _, part := range x.Parts {
 			if part.Expr == nil {
 				text(part.Start, part.Text)
@@ -1085,8 +1088,15 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 			p.expr(x.Err)
 			p.print(blank)
 			p.setPos(x.Arrow)
-			p.print(token.FATARROW, blank)
-			p.expr(x.Context)
+			p.print(token.FATARROW)
+			if p.lineFor(x.Context.Pos()) > p.lineFor(x.Arrow) {
+				p.print(indent, newline)
+				p.expr(x.Context)
+				p.print(unindent)
+			} else {
+				p.print(blank)
+				p.expr(x.Context)
+			}
 		} else if x.Body == nil {
 			p.print(token.NOT)
 		} else {
@@ -1471,7 +1481,7 @@ func stripParens(x ast.Expr) ast.Expr {
 					strip = false // do not strip parentheses
 				}
 				return false
-			case *ast.CondExpr, *ast.LambdaExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.OptionalExpr:
+			case *ast.CondExpr, *ast.LambdaExpr, *ast.SafeNavExpr, *ast.MatchExpr, *ast.OptionalExpr, *ast.PatternTestExpr:
 				strip = false // do not strip parentheses
 				return false
 			}

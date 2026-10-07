@@ -41,13 +41,20 @@ func (s *Scanner) interpolationToken() (token.Pos, token.Token, string, bool) {
 			return s.file.Pos(start), token.INTERPOLATION_TEXT, string(s.src[start:s.offset]), true
 		case '\n':
 			if f.quote == '"' {
-				s.error(s.offset, "newline in interpolated string")
+				// Like an ordinary quoted string, recover at the line boundary
+				// so a missing quote does not consume the remaining declarations.
+				s.error(start, "interpolated string not terminated")
+				f.pending = token.INTERPOLATION_END
+				f.start, f.end = s.offset, s.offset
+				s.endPosValid = true
+				s.endPos = s.file.Pos(s.offset)
+				return s.file.Pos(start), token.INTERPOLATION_TEXT, string(s.src[start:s.offset]), true
 			}
 		case '\\':
 			if f.quote == '"' {
 				s.next()
 				if s.ch == '\n' {
-					s.error(s.offset, "newline in interpolated string")
+					continue // recover at the newline, including after a backslash
 				}
 				if s.ch >= 0 {
 					s.next()
@@ -88,6 +95,20 @@ func (s *Scanner) interpolationExprToken() (token.Token, string, bool) {
 		return 0, "", false
 	}
 	switch s.ch {
+	case '\n':
+		if f.quote == '"' {
+			s.error(s.offset, "newline in interpolated string")
+			f.text, f.pending = true, token.INTERPOLATION_END
+			f.start, f.end = s.offset, s.offset
+			s.endPosValid = true
+			s.endPos = s.file.Pos(s.offset)
+			return token.INTERPOLATION_CLOSE, "", true
+		}
+	case '?':
+		// SAFE_LPAREN consumes its '(' as part of one token.
+		if s.peek() == '(' {
+			f.depth++
+		}
 	case '(', '[', '{':
 		f.depth++
 	case ')', ']':
@@ -108,7 +129,7 @@ func (s *Scanner) interpolationExprToken() (token.Token, string, bool) {
 		start := s.offset
 		for s.ch >= 0 && s.ch != '}' {
 			if s.ch == '\n' && f.quote == '"' {
-				s.error(s.offset, "newline in interpolated string")
+				break // recover through a synthetic close on the next Scan
 			}
 			s.next()
 		}

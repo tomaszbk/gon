@@ -22,6 +22,10 @@ func TestGonFeatureExtraction(t *testing.T) {
 		{"match whole", `return switch true { case true => touch(1); case false => 0 }`, `switch true { case true => touch(1); case false => 0 }`, "target and evaluation order"},
 		{"match arm", `return switch true { case true => touch(1); case false => 0 }`, `touch(1)`, "match arm expression"},
 		{"option whole", `func() int? { n:=(int?)(1)?; return n }();return 0`, `(int?)(1)?`, "target and evaluation order"},
+		{"pattern test whole", `var o int? = 1; if o is n? { return n }; return 0`, `o is n?`, "target and evaluation order"},
+		{"pattern test operand", `var o int? = 1; if o is n? && touch(n) > 0 { return n }; return 0`, `touch(n)`, "pattern-test condition"},
+		{"pattern binding operand", `var o int? = 1; if o is n? && n > 0 { return n }; return 0`, `n > 0`, "pattern-test condition"},
+		{"pattern test body", `var o int? = 1; if o is n? { return touch(n) }; return 0`, `touch(n)`, ""},
 		{"ordinary code", `return touch(1)`, `touch(1)`, ""},
 	} {
 		t.Run(test.name, func(t *testing.T) {

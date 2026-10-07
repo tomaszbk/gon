@@ -30,3 +30,21 @@ func contextComments() (int, error) {
 	}
 	return value, nil
 }
+
+type wrappedValue struct{ Inner int }
+type wrappedError struct{ Inner error }
+
+func (w wrappedError) Error() string { return w.Inner.Error() }
+func readValue() (wrappedValue, error) { return wrappedValue{42}, nil }
+
+func contextSelector() (int, error) {
+	// want +1 "replace error handler with Gon error context"
+	value := readValue() or err { return 0, wrappedError{err} }.Inner
+	return value, nil
+}
+
+func contextBinary() (int, error) {
+	// want +1 "replace error handler with Gon error context"
+	value := read() or err { return 0, wrappedError{err} } + 1
+	return value, nil
+}

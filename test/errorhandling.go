@@ -3,7 +3,7 @@
 //go:build !js && !wasip1 && gc
 
 // Execute both spellings of the same scenarios and compare their checked traces.
-// Set GO_ERROR_HANDLING_BASELINE to a compatible unmodified go executable to
+// Set GON_BASELINE_GO to a compatible unmodified go executable to
 // additionally verify the legacy program against the upstream language.
 package main
 
@@ -30,7 +30,7 @@ func main() {
 		panic(fmt.Sprintf("legacy/modern behavior without inlining differs\nlegacy:\n%s\nmodern:\n%s", legacy, unoptimized))
 	}
 	run(goTool, false, "vet", filepath.Join(fixtures, "common.go"), filepath.Join(fixtures, "modern.go"))
-	if baseline := os.Getenv("GO_ERROR_HANDLING_BASELINE"); baseline != "" {
+	if baseline := os.Getenv("GON_BASELINE_GO"); baseline != "" {
 		upstream := run(baseline, true, "run", filepath.Join(fixtures, "common.go"), filepath.Join(fixtures, "legacy.go"))
 		if !bytes.Equal(legacy, upstream) {
 			panic(fmt.Sprintf("legacy baseline behavior differs\nfork:\n%s\nupstream:\n%s", legacy, upstream))
@@ -112,7 +112,7 @@ func checkExports(goTool, fixtures string) {
 	copyFixture("export_main.go", "main.go")
 	copyFixture("export_legacy.go", filepath.Join("lib", "lib.go"))
 	legacy := runAt(goTool, false, dir, "run", ".")
-	if baseline := os.Getenv("GO_ERROR_HANDLING_BASELINE"); baseline != "" {
+	if baseline := os.Getenv("GON_BASELINE_GO"); baseline != "" {
 		upstream := runAt(baseline, true, dir, "run", ".")
 		if !bytes.Equal(legacy, upstream) {
 			panic("cross-package legacy baseline behavior differs")

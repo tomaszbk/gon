@@ -2973,9 +2973,9 @@ func (p *parser) parseTypeSpec(doc *ast.CommentGroup, _ token.Token, _ int) ast.
 			// is not a concern because name <- x is a statement and
 			// not an expression.
 			var x ast.Expr = p.parseIdent()
-			// A following contextual identifier or may name the constraint.
-			// Leave it for the parameter parser rather than interpreting a handler.
-			if p.tok != token.LBRACK && !(p.tok == token.IDENT && p.lit == "or") {
+			// Contextual operator names may name the constraint here. Leave
+			// them for the parameter parser instead of parsing an expression.
+			if p.tok != token.LBRACK && !(p.tok == token.IDENT && (p.lit == "or" || p.lit == "is")) {
 				// To parse the expression starting with name, expand
 				// the call sequence we would get by passing in name
 				// to parser.expr, and pass in name to parsePrimaryExpr.

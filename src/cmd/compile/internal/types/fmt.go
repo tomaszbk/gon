@@ -363,7 +363,10 @@ func tconv2(b *bytes.Buffer, t *Type, verb rune, mode fmtMode, visited map[*Type
 
 	if t.IsOptional() && t.Sym() == nil {
 		elem := t.Field(2).Type.Field(0).Type
-		parens := elem.IsOptional() && elem.Sym() == nil
+		// Link identities must distinguish an optional of a shape (for
+		// example (go.shape.int)?) from the named shape of an optional
+		// (go.shape.(int)?). User-facing spelling need not show this detail.
+		parens := mode == fmtTypeID || elem.IsOptional() && elem.Sym() == nil
 		if elem.Sym() == nil {
 			switch elem.Kind() {
 			case TPTR, TARRAY, TSLICE, TMAP, TCHAN, TFUNC:

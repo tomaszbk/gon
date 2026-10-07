@@ -728,6 +728,16 @@ func (ctxt *Context) Import(path string, srcDir string, mode ImportMode) (*Packa
 			if !gorootFirst {
 				_, gorootFirst = ctxt.hasSubdir(ctxt.GOROOT, srcDir)
 			}
+			if strings.HasPrefix(path, "gon/") {
+				// New Gon standard packages must not take over a preexisting
+				// GOPATH package. Empty directories do not shadow the fallback.
+				for _, root := range gopath {
+					if hasGoFiles(ctxt, ctxt.joinPath(root, "src", path)) {
+						gorootFirst = false
+						break
+					}
+				}
+			}
 			if gorootFirst {
 				dir := ctxt.joinPath(ctxt.GOROOT, "src", path)
 				if ctxt.Compiler != "gccgo" {
@@ -1183,7 +1193,7 @@ func (ctxt *Context) importGo(p *Package, path, srcDir string, mode ImportMode) 
 	}
 
 	// For efficiency, if path is a standard library package, let the usual lookup code handle it.
-	if dir := ctxt.joinPath(ctxt.GOROOT, "src", path); ctxt.isDir(dir) {
+	if dir := ctxt.joinPath(ctxt.GOROOT, "src", path); ctxt.isDir(dir) && !strings.HasPrefix(path, "gon/") {
 		return errNoModules
 	}
 

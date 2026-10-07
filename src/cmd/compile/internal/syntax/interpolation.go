@@ -60,13 +60,19 @@ func (s *scanner) interpolationToken() bool {
 			return true
 		case '\n':
 			if f.quote == '"' {
-				s.errorf("newline in interpolated string")
+				// Stop at the line boundary, preserving the following declarations.
+				s.errorf("interpolated string not terminated")
+				f.pending = _InterpEnd
+				f.line, f.col = s.pos()
+				s.lit = string(s.segment())
+				s.tok = _InterpText
+				return true
 			}
 		case '\\':
 			if f.quote == '"' {
 				s.nextch()
 				if s.ch == '\n' {
-					s.errorf("newline in interpolated string")
+					continue // recover at the newline, including after a backslash
 				}
 				if s.ch >= 0 {
 					s.nextch()
@@ -109,6 +115,14 @@ func (s *scanner) interpolationExprToken() bool {
 		return false
 	}
 	switch s.ch {
+	case '\n':
+		if f.quote == '"' {
+			s.errorf("newline in interpolated string")
+			f.text, f.pending = true, _InterpEnd
+			f.line, f.col = s.pos()
+			s.tok = _InterpClose
+			return true
+		}
 	case '(':
 		f.depth++
 	case '[':
@@ -133,7 +147,7 @@ func (s *scanner) interpolationExprToken() bool {
 		s.nextch()
 		for s.ch >= 0 && s.ch != '}' {
 			if s.ch == '\n' && f.quote == '"' {
-				s.errorf("newline in interpolated string")
+				break // recover through a synthetic close on the next token
 			}
 			s.nextch()
 		}
@@ -170,7 +184,13 @@ func (p *parser) interpolatedString() Expr {
 				p.next()
 			}
 			part.End = p.pos()
-			p.want(_InterpClose)
+			if p.tok == _InterpEnd {
+				// Do not consume the outer terminator after an expression parser
+				// has already consumed a synthetic close during recovery.
+				p.syntaxError("expecting interpolation }")
+			} else {
+				p.want(_InterpClose)
+			}
 		default:
 			p.syntaxError("expecting interpolated string part")
 			p.next()

@@ -16,6 +16,7 @@ func TestInterpolationSyntax(t *testing.T) {
 		`$"${map[string]int{\"key\": 2}[\"key\"]} ${slice[1:3]} ${f(name: x)}"`,
 		"$`raw\n\t${if true { 1 } else { 2 }} ${\"${\"} ${$\"nested ${x}\"}`",
 		`$"\${literal} ${\"quoted\"} \\${x}"`,
+		`$"${f?(3) ?? 0:%03d}"`,
 	} {
 		source = strings.ReplaceAll(source, `\"`, `"`)
 		fset := token.NewFileSet()
@@ -57,6 +58,61 @@ func TestInterpolationSyntax(t *testing.T) {
 		if strings.Contains(source, "raw\n\t") && !strings.Contains(first.String(), "raw\n\t") {
 			t.Fatalf("raw text changed: %q", first.String())
 		}
+	}
+}
+
+func TestInterpolationFormattingLineStarts(t *testing.T) {
+	const want = `package p
+
+func f(x int) {
+	call(
+		$"${x}",
+		$` + "`raw\n${x}\ntext`" + `,
+	)
+	_ = "prefix" +
+		$"${x}"
+	_ = []string{
+		$"${x}",
+	}
+}
+`
+	first, err := format.Source([]byte(want))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(first) != want {
+		t.Fatalf("wrong interpolation indentation:\n%s\nwant:\n%s", first, want)
+	}
+	second, err := format.Source(first)
+	if err != nil || !bytes.Equal(first, second) {
+		t.Fatalf("non-idempotent interpolation formatting: %v\n%s", err, second)
+	}
+}
+
+func TestInterpolationUnterminatedRecovery(t *testing.T) {
+	for _, literal := range []string{`$"unterminated`, `$"unterminated\`, `$"${x`, `$"${(x`, `$"${x:%03d`} {
+		source := "package p\nvar bad = " + literal + "\nvar next = 1\nfunc retained() {}\n"
+		file, err := parser.ParseFile(token.NewFileSet(), "bad.go", source, parser.AllErrors)
+		if err == nil {
+			t.Fatal("accepted unterminated interpolation")
+		}
+		if file == nil || len(file.Decls) != 3 {
+			t.Fatalf("lost declarations after %q: %#v; %v", literal, file, err)
+		}
+		if declaration, ok := file.Decls[2].(*ast.FuncDecl); !ok || declaration.Name.Name != "retained" {
+			t.Fatalf("lost following function after %q: %#v", literal, file.Decls[2])
+		}
+	}
+}
+
+func TestErrorContextFormattingContinuation(t *testing.T) {
+	const want = "package p\n\nfunc f() (int, error) {\n\treturn call() or err =>\n\t\twrap(err), nil\n}\n"
+	formatted, err := format.Source([]byte(want))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(formatted) != want {
+		t.Fatalf("lost continuation after =>:\n%s", formatted)
 	}
 }
 

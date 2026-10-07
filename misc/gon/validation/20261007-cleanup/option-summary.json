@@ -1,0 +1,250 @@
+{
+  "feature": "option",
+  "partial": true,
+  "pending": [],
+  "results": [
+    {
+      "check": "optionals-execution",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/internal/testdir",
+        "-run",
+        "Test/optionals.go$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 7.401,
+      "log": "/Users/tzbk/Documents/gon/pkg/gon-validation/option/optionals-execution.log",
+      "tools": {
+        "bin/go": "87db53877843841042b9ea21bed8ab4f6c0ffd15b3770f25f882a38cce7acaf6",
+        "bin/gofmt": "9f0acfd97b1ae23282cd23a05997ada31cb4c2e0d99c21f88d58173a2124c45e",
+        "gon/bin/gon": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "gon/bin/gonpls": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "pkg/tool/darwin_arm64/compile": "15f3e80321986f033cb9600b87119798966ec1adce88d5b7dd8d132d893354ac",
+        "pkg/tool/darwin_arm64/link": "3c449a22d0fa9979b8e6351c71541baf841ff3aaa9bf57a83839860380e83403",
+        "pkg/tool/darwin_arm64/vet": "fe8ac82ff6b40043878fd8b1b4c97531920ae6cf02dc0d5bd6e177015cfbd37a",
+        "pkg/tool/darwin_arm64/fix": "dd587776d3a29d6388e07fe51fe17d1bf7340939d0c7c979650d4fb65c765170",
+        "pkg/tool/darwin_arm64/cover": "236d0f7737ebd1a19ff06bfbcfd95cf729b50a9e7fa7821da9c925ca4e88c285",
+        "pkg/tool/darwin_arm64/cgo": "d91b2e9a6eafa4c102cdf2ab93c5e6912fd74c0b31135a1db720751af45e51bd",
+        "pkg/tool/darwin_arm64/gonpls": "453449d365edefce0281e7005620feebe0a03fddb65a85668264e327f2c3f195"
+      },
+      "testsRun": 3,
+      "skippedTests": [],
+      "sourceSHA256": "9de8bda91bcfc7600339ab78dba2e65464a92929c0157cf1397af94ba16ed633"
+    },
+    {
+      "check": "optionsyntax-execution",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/internal/testdir",
+        "-run",
+        "Test/optionsyntax.go$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 10.318,
+      "log": "/Users/tzbk/Documents/gon/pkg/gon-validation/option/optionsyntax-execution.log",
+      "tools": {
+        "bin/go": "87db53877843841042b9ea21bed8ab4f6c0ffd15b3770f25f882a38cce7acaf6",
+        "bin/gofmt": "9f0acfd97b1ae23282cd23a05997ada31cb4c2e0d99c21f88d58173a2124c45e",
+        "gon/bin/gon": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "gon/bin/gonpls": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "pkg/tool/darwin_arm64/compile": "15f3e80321986f033cb9600b87119798966ec1adce88d5b7dd8d132d893354ac",
+        "pkg/tool/darwin_arm64/link": "3c449a22d0fa9979b8e6351c71541baf841ff3aaa9bf57a83839860380e83403",
+        "pkg/tool/darwin_arm64/vet": "fe8ac82ff6b40043878fd8b1b4c97531920ae6cf02dc0d5bd6e177015cfbd37a",
+        "pkg/tool/darwin_arm64/fix": "dd587776d3a29d6388e07fe51fe17d1bf7340939d0c7c979650d4fb65c765170",
+        "pkg/tool/darwin_arm64/cover": "236d0f7737ebd1a19ff06bfbcfd95cf729b50a9e7fa7821da9c925ca4e88c285",
+        "pkg/tool/darwin_arm64/cgo": "d91b2e9a6eafa4c102cdf2ab93c5e6912fd74c0b31135a1db720751af45e51bd",
+        "pkg/tool/darwin_arm64/gonpls": "453449d365edefce0281e7005620feebe0a03fddb65a85668264e327f2c3f195"
+      },
+      "testsRun": 3,
+      "skippedTests": [],
+      "sourceSHA256": "9de8bda91bcfc7600339ab78dba2e65464a92929c0157cf1397af94ba16ed633"
+    },
+    {
+      "check": "cgo-cover",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/cgo/internal/testconditional",
+        "-run",
+        "^TestPairedCgoOptional$",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 9.706,
+      "log": "/Users/tzbk/Documents/gon/pkg/gon-validation/option/cgo-cover.log",
+      "tools": {
+        "bin/go": "87db53877843841042b9ea21bed8ab4f6c0ffd15b3770f25f882a38cce7acaf6",
+        "bin/gofmt": "9f0acfd97b1ae23282cd23a05997ada31cb4c2e0d99c21f88d58173a2124c45e",
+        "gon/bin/gon": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "gon/bin/gonpls": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "pkg/tool/darwin_arm64/compile": "15f3e80321986f033cb9600b87119798966ec1adce88d5b7dd8d132d893354ac",
+        "pkg/tool/darwin_arm64/link": "3c449a22d0fa9979b8e6351c71541baf841ff3aaa9bf57a83839860380e83403",
+        "pkg/tool/darwin_arm64/vet": "fe8ac82ff6b40043878fd8b1b4c97531920ae6cf02dc0d5bd6e177015cfbd37a",
+        "pkg/tool/darwin_arm64/fix": "dd587776d3a29d6388e07fe51fe17d1bf7340939d0c7c979650d4fb65c765170",
+        "pkg/tool/darwin_arm64/cover": "236d0f7737ebd1a19ff06bfbcfd95cf729b50a9e7fa7821da9c925ca4e88c285",
+        "pkg/tool/darwin_arm64/cgo": "d91b2e9a6eafa4c102cdf2ab93c5e6912fd74c0b31135a1db720751af45e51bd",
+        "pkg/tool/darwin_arm64/gonpls": "453449d365edefce0281e7005620feebe0a03fddb65a85668264e327f2c3f195"
+      },
+      "testsRun": 1,
+      "skippedTests": [],
+      "sourceSHA256": "9de8bda91bcfc7600339ab78dba2e65464a92929c0157cf1397af94ba16ed633"
+    },
+    {
+      "check": "vet",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "vet",
+        "test/optionals.dir/common.go",
+        "test/optionals.dir/modern.go"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.114,
+      "log": "/Users/tzbk/Documents/gon/pkg/gon-validation/option/vet.log",
+      "tools": {
+        "bin/go": "87db53877843841042b9ea21bed8ab4f6c0ffd15b3770f25f882a38cce7acaf6",
+        "bin/gofmt": "9f0acfd97b1ae23282cd23a05997ada31cb4c2e0d99c21f88d58173a2124c45e",
+        "gon/bin/gon": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "gon/bin/gonpls": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "pkg/tool/darwin_arm64/compile": "15f3e80321986f033cb9600b87119798966ec1adce88d5b7dd8d132d893354ac",
+        "pkg/tool/darwin_arm64/link": "3c449a22d0fa9979b8e6351c71541baf841ff3aaa9bf57a83839860380e83403",
+        "pkg/tool/darwin_arm64/vet": "fe8ac82ff6b40043878fd8b1b4c97531920ae6cf02dc0d5bd6e177015cfbd37a",
+        "pkg/tool/darwin_arm64/fix": "dd587776d3a29d6388e07fe51fe17d1bf7340939d0c7c979650d4fb65c765170",
+        "pkg/tool/darwin_arm64/cover": "236d0f7737ebd1a19ff06bfbcfd95cf729b50a9e7fa7821da9c925ca4e88c285",
+        "pkg/tool/darwin_arm64/cgo": "d91b2e9a6eafa4c102cdf2ab93c5e6912fd74c0b31135a1db720751af45e51bd",
+        "pkg/tool/darwin_arm64/gonpls": "453449d365edefce0281e7005620feebe0a03fddb65a85668264e327f2c3f195"
+      },
+      "sourceSHA256": "9de8bda91bcfc7600339ab78dba2e65464a92929c0157cf1397af94ba16ed633"
+    },
+    {
+      "check": "explain",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/cmd",
+        "-run",
+        "^TestGon(Explain|FeatureExplain|AlternativesQuery)$",
+        "-count=1"
+      ],
+      "cwd": "tools/gonpls",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 5.062,
+      "log": "/Users/tzbk/Documents/gon/pkg/gon-validation/option/explain.log",
+      "tools": {
+        "bin/go": "87db53877843841042b9ea21bed8ab4f6c0ffd15b3770f25f882a38cce7acaf6",
+        "bin/gofmt": "9f0acfd97b1ae23282cd23a05997ada31cb4c2e0d99c21f88d58173a2124c45e",
+        "gon/bin/gon": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "gon/bin/gonpls": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "pkg/tool/darwin_arm64/compile": "15f3e80321986f033cb9600b87119798966ec1adce88d5b7dd8d132d893354ac",
+        "pkg/tool/darwin_arm64/link": "3c449a22d0fa9979b8e6351c71541baf841ff3aaa9bf57a83839860380e83403",
+        "pkg/tool/darwin_arm64/vet": "fe8ac82ff6b40043878fd8b1b4c97531920ae6cf02dc0d5bd6e177015cfbd37a",
+        "pkg/tool/darwin_arm64/fix": "dd587776d3a29d6388e07fe51fe17d1bf7340939d0c7c979650d4fb65c765170",
+        "pkg/tool/darwin_arm64/cover": "236d0f7737ebd1a19ff06bfbcfd95cf729b50a9e7fa7821da9c925ca4e88c285",
+        "pkg/tool/darwin_arm64/cgo": "d91b2e9a6eafa4c102cdf2ab93c5e6912fd74c0b31135a1db720751af45e51bd",
+        "pkg/tool/darwin_arm64/gonpls": "453449d365edefce0281e7005620feebe0a03fddb65a85668264e327f2c3f195"
+      },
+      "testsRun": 3,
+      "skippedTests": [],
+      "sourceSHA256": "9de8bda91bcfc7600339ab78dba2e65464a92929c0157cf1397af94ba16ed633"
+    },
+    {
+      "check": "syntax",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/compile/internal/syntax",
+        "go/parser",
+        "go/printer",
+        "go/format",
+        "cmd/gofmt",
+        "-run",
+        "NativeOptional|OptionalOperators|OptionContext|Alternatives",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 0.551,
+      "log": "/Users/tzbk/Documents/gon/pkg/gon-validation/option/syntax.log",
+      "tools": {
+        "bin/go": "87db53877843841042b9ea21bed8ab4f6c0ffd15b3770f25f882a38cce7acaf6",
+        "bin/gofmt": "9f0acfd97b1ae23282cd23a05997ada31cb4c2e0d99c21f88d58173a2124c45e",
+        "gon/bin/gon": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "gon/bin/gonpls": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "pkg/tool/darwin_arm64/compile": "15f3e80321986f033cb9600b87119798966ec1adce88d5b7dd8d132d893354ac",
+        "pkg/tool/darwin_arm64/link": "3c449a22d0fa9979b8e6351c71541baf841ff3aaa9bf57a83839860380e83403",
+        "pkg/tool/darwin_arm64/vet": "fe8ac82ff6b40043878fd8b1b4c97531920ae6cf02dc0d5bd6e177015cfbd37a",
+        "pkg/tool/darwin_arm64/fix": "dd587776d3a29d6388e07fe51fe17d1bf7340939d0c7c979650d4fb65c765170",
+        "pkg/tool/darwin_arm64/cover": "236d0f7737ebd1a19ff06bfbcfd95cf729b50a9e7fa7821da9c925ca4e88c285",
+        "pkg/tool/darwin_arm64/cgo": "d91b2e9a6eafa4c102cdf2ab93c5e6912fd74c0b31135a1db720751af45e51bd",
+        "pkg/tool/darwin_arm64/gonpls": "453449d365edefce0281e7005620feebe0a03fddb65a85668264e327f2c3f195"
+      },
+      "testsRun": 37,
+      "skippedTests": [],
+      "sourceSHA256": "9de8bda91bcfc7600339ab78dba2e65464a92929c0157cf1397af94ba16ed633"
+    },
+    {
+      "check": "types",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/compile/internal/types2",
+        "go/types",
+        "-run",
+        "NativeOptional|OptionalOperators|OptionContext|Alternatives|TestGenerate",
+        "-count=1"
+      ],
+      "cwd": ".",
+      "status": "pass",
+      "exitCode": 0,
+      "seconds": 1.251,
+      "log": "/Users/tzbk/Documents/gon/pkg/gon-validation/option/types.log",
+      "tools": {
+        "bin/go": "87db53877843841042b9ea21bed8ab4f6c0ffd15b3770f25f882a38cce7acaf6",
+        "bin/gofmt": "9f0acfd97b1ae23282cd23a05997ada31cb4c2e0d99c21f88d58173a2124c45e",
+        "gon/bin/gon": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "gon/bin/gonpls": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+        "pkg/tool/darwin_arm64/compile": "15f3e80321986f033cb9600b87119798966ec1adce88d5b7dd8d132d893354ac",
+        "pkg/tool/darwin_arm64/link": "3c449a22d0fa9979b8e6351c71541baf841ff3aaa9bf57a83839860380e83403",
+        "pkg/tool/darwin_arm64/vet": "fe8ac82ff6b40043878fd8b1b4c97531920ae6cf02dc0d5bd6e177015cfbd37a",
+        "pkg/tool/darwin_arm64/fix": "dd587776d3a29d6388e07fe51fe17d1bf7340939d0c7c979650d4fb65c765170",
+        "pkg/tool/darwin_arm64/cover": "236d0f7737ebd1a19ff06bfbcfd95cf729b50a9e7fa7821da9c925ca4e88c285",
+        "pkg/tool/darwin_arm64/cgo": "d91b2e9a6eafa4c102cdf2ab93c5e6912fd74c0b31135a1db720751af45e51bd",
+        "pkg/tool/darwin_arm64/gonpls": "453449d365edefce0281e7005620feebe0a03fddb65a85668264e327f2c3f195"
+      },
+      "testsRun": 95,
+      "skippedTests": [],
+      "sourceSHA256": "9de8bda91bcfc7600339ab78dba2e65464a92929c0157cf1397af94ba16ed633"
+    }
+  ],
+  "gitHEAD": "3356d44968dc7444011fffcef5d04f3431c0764a",
+  "platform": {
+    "sysplatform": "darwin",
+    "machine": "arm64"
+  },
+  "baseline": {
+    "path": "/opt/homebrew/bin/go",
+    "version": "go version go1.27.1 darwin/arm64"
+  },
+  "sourceSHA256": "9de8bda91bcfc7600339ab78dba2e65464a92929c0157cf1397af94ba16ed633",
+  "finalSourceSHA256": "9de8bda91bcfc7600339ab78dba2e65464a92929c0157cf1397af94ba16ed633",
+  "sourceStable": true
+}

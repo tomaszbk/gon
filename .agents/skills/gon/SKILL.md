@@ -9,6 +9,8 @@ Keep this skill at `.agents/skills/gon/SKILL.md` in every Gon project.
 Gon extends Go natively; keep `.go`, `_test.go`, `go.mod` and `go.work`.
 Go 1.27+ remains compatible, including ordinary errors and nullable types,
 except that a newline after `!` ends the statement. Keep prefix negation on one line.
+Compatibility guarantees cover Go 1.27+ source. Earlier Gon designs and syntax
+do not have a compatibility protocol.
 
 ## Tools and editor
 

@@ -685,6 +685,74 @@ func (g *graph) read(node ast.Node, by types.Object) {
 	case *ast.BasicLit:
 		// Nothing to do
 
+	case *ast.OptionalExpr:
+		g.read(node.X, by)
+
+	case *ast.EnumType:
+		// Every alternative belongs to the closed type, including payload
+		// fields that can be consumed by destructuring outside this package.
+		for _, variant := range node.Variants {
+			obj := g.info.Defs[variant.Name]
+			g.see(obj, by)
+			g.use(obj, by)
+			g.read(variant.Payload, obj)
+			g.read(variant.Value, obj)
+		}
+
+	case *ast.ErrorExpr:
+		g.read(node.X, by)
+		g.seeScope(node, by, nil)
+		g.read(node.Context, by)
+		g.block(node.Body, by)
+
+	case *ast.NilGuardExpr:
+		g.read(node.X, by)
+
+	case *ast.SafeNavExpr:
+		g.read(node.X, by)
+
+	case *ast.CondExpr:
+		g.read(node.Cond, by)
+		g.read(node.Then, by)
+		g.read(node.Else, by)
+
+	case *ast.LambdaExpr:
+		g.seeScope(node, by, nil)
+		fn := g.info.TypeOf(node).(*types.Signature)
+		for i := 0; i < fn.Params().Len(); i++ {
+			param := fn.Params().At(i)
+			g.see(param, by)
+			if g.opts.ParametersAreUsed || param.Name() == "" {
+				g.use(param, by)
+			}
+		}
+		g.read(node.Body, by)
+		g.block(node.Block, by)
+
+	case *ast.MatchExpr:
+		g.read(node.Tag, by)
+		for _, arm := range node.Arms {
+			g.seeScope(arm, by, nil)
+			for _, pattern := range arm.Patterns {
+				g.readPattern(pattern, by)
+			}
+			g.read(arm.Guard, by)
+			g.read(arm.Value, by)
+			g.block(arm.Body, by)
+		}
+
+	case *ast.PatternTestExpr:
+		g.read(node.X, by)
+		g.readPattern(node.Pattern, by)
+
+	case *ast.InterpolatedStringExpr:
+		if lowering := g.info.Interpolations[node]; lowering != nil {
+			g.read(lowering.Fun, by)
+		}
+		for _, part := range node.Parts {
+			g.read(part.Expr, by)
+		}
+
 	case *ast.SliceExpr:
 		g.read(node.X, by)
 		g.read(node.Low, by)
@@ -724,6 +792,14 @@ func (g *graph) read(node ast.Node, by types.Object) {
 
 	case *ast.CompositeLit:
 		g.read(node.Type, by)
+		if types.EnumOf(g.info.TypeOf(node)) != nil {
+			// Record constructors use the variant's payload fields, not the
+			// enum's private storage struct. Uses already identifies each key.
+			for _, elt := range node.Elts {
+				g.read(elt, by)
+			}
+			return
+		}
 		// We get the type of the node itself, not of node.Type, to handle nested composite literals of the kind
 		// T{{...}}
 		typ, isStruct := typeutil.CoreType(g.info.TypeOf(node)).(*types.Struct)
@@ -940,6 +1016,34 @@ func (g *graph) read(node ast.Node, by types.Object) {
 	default:
 		lint.ExhaustiveTypeSwitch(node)
 	}
+}
+
+// Patterns read constructor/field objects and declare payload bindings. They
+// are not executable expressions: wildcard identifiers have no object.
+func (g *graph) readPattern(pattern *ast.MatchPattern, by types.Object) {
+	if pattern == nil {
+		return
+	}
+	if id, ok := pattern.Value.(*ast.Ident); ok {
+		if obj := g.info.ObjectOf(id); obj != nil {
+			if g.info.Defs[id] != nil {
+				g.see(obj, by)
+			}
+			g.use(obj, by)
+		}
+	} else {
+		g.read(pattern.Value, by)
+	}
+	for _, arg := range pattern.Args {
+		g.readPattern(arg, by)
+	}
+	for _, field := range pattern.Fields {
+		if obj := g.info.Uses[field.Name]; obj != nil {
+			g.use(obj, by)
+		}
+		g.readPattern(field.Pattern, by)
+	}
+	g.readPattern(pattern.Inner, by)
 }
 
 func (g *graph) useAllFieldsRecursively(typ types.Type, by types.Object) {
@@ -1304,6 +1408,9 @@ func (g *graph) stmt(stmt ast.Stmt, by types.Object) {
 
 	case *ast.ExprStmt:
 		g.read(stmt.X, by)
+
+	case *ast.MatchStmt:
+		g.read(stmt.Match, by)
 
 	case *ast.ForStmt:
 		g.seeScope(stmt, by, nil)

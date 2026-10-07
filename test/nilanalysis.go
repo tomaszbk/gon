@@ -50,15 +50,24 @@ func main() {
 		}
 		return out
 	}
-	for _, scenario := range [][2]string{{legacy, modern}, {filepath.Join(fixtures, "gonunsafelegacy", "main.go"), filepath.Join(fixtures, "gonunsafe", "main.go")}} {
+	for _, scenario := range [][2]string{
+		{legacy, modern},
+		{filepath.Join(fixtures, "gonunsafelegacy", "main.go"), filepath.Join(fixtures, "gonunsafe", "main.go")},
+		{filepath.Join(fixtures, "gonprecisionlegacy", "main.go"), filepath.Join(fixtures, "gonprecision", "main.go")},
+		{filepath.Join(fixtures, "gonprecisionunsafelegacy", "main.go"), filepath.Join(fixtures, "gonprecisionunsafe", "main.go")},
+	} {
 		want := run(baseline, "run", scenario[0])
 		for _, args := range [][]string{{"run", scenario[0]}, {"run", scenario[1]}, {"run", "-gcflags=-l", scenario[1]}, {"run", "-gcflags=-N -l", scenario[1]}} {
 			if got := run(tool, args...); !bytes.Equal(want, got) {
 				panic(fmt.Sprintf("nil analysis executable examples differ\nwant %s\ngot %s", want, got))
 			}
 		}
-		run(baseline, "test", scenario[0], filepath.Join(filepath.Dir(scenario[0]), "fatal_test.go"))
-		run(tool, "test", scenario[0], filepath.Join(filepath.Dir(scenario[0]), "fatal_test.go"))
-		run(tool, "test", scenario[1], filepath.Join(filepath.Dir(scenario[1]), "fatal_test.go"))
+		if _, err := os.Stat(filepath.Join(filepath.Dir(scenario[0]), "fatal_test.go")); err == nil {
+			run(baseline, "test", scenario[0], filepath.Join(filepath.Dir(scenario[0]), "fatal_test.go"))
+			run(tool, "test", scenario[0], filepath.Join(filepath.Dir(scenario[0]), "fatal_test.go"))
+			run(tool, "test", scenario[1], filepath.Join(filepath.Dir(scenario[1]), "fatal_test.go"))
+		} else if !os.IsNotExist(err) {
+			panic(err)
+		}
 	}
 }

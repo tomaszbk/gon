@@ -542,8 +542,8 @@ func TestGonExplain(t *testing.T) {
 	// The explained messages are those of both type checkers.
 	gonJSON(t, tree, nil, &ex, "explain", "InvalidErrorHandling")
 	for _, files := range [][]string{
-		{"src/go/types/errorhandling.go", "src/go/types/optionresult.go"},
-		{"src/cmd/compile/internal/types2/errorexpr.go", "src/cmd/compile/internal/types2/optionresult.go"},
+		{"src/go/types/errorhandling.go", "src/go/types/optionalexpr.go"},
+		{"src/cmd/compile/internal/types2/errorexpr.go", "src/cmd/compile/internal/types2/optionalexpr.go"},
 	} {
 		var src strings.Builder
 		for _, file := range files {

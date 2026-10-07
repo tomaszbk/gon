@@ -5,6 +5,20 @@ import (
 	"iter"
 )
 
+func nestedLookup() {
+	if (seq.Lookup(map[string]int{"x": 1}, "x") ?? 0) != 1 {
+		panic("plain lookup")
+	}
+	values := map[string]int?{"x": nil, "y": 2}
+	outer := seq.Lookup(values, "x")
+	if outer == nil || (outer ?? nil) != nil {
+		panic("present absent payload")
+	}
+	if ((seq.Lookup(values, "y") ?? nil) ?? 0) != 2 {
+		panic("nested payload")
+	}
+}
+
 func transform(s ints, f func(int) string) []string        { return seq.Map(s, f) }
 func filter(s ints, f func(int) bool) ints                 { return seq.Filter(s, f) }
 func flatten(s ints, f func(int) []int) []int              { return seq.FlatMap(s, f) }

@@ -27,6 +27,27 @@ func shadowed() string  { alias := 5; return fmt.Sprintf("shadow:%v", alias) }
 func multiline() string { return fmt.Sprintf("raw\n\t{\"empty\": []} %v %v", "${", 3) }
 func empty() string     { return fmt.Sprintf("") }
 
+func ordered() string {
+	n := 1
+	values := []int{4}
+	mutate := func() int { n = 2; values[0] = 5; return 3 }
+	first, second := n, values[0]
+	third := mutate()
+	fourth, fifth := n, values[0]
+	return fmt.Sprintf("%v:%v:%v:%v:%v", first, second, third, fourth, fifth)
+}
+
+func safeCalls() string {
+	var callback func(int) int
+	first := 0
+	if callback != nil {
+		first = callback(mark("skip", 3))
+	}
+	callback = func(n int) int { return n + 1 }
+	second := callback(mark("safe", 3))
+	return fmt.Sprintf("%03d/%03d", first, second)
+}
+
 func blocks(fail bool) (string, error) {
 	choice := 1
 	if fail {

@@ -26,14 +26,76 @@ def run(*args, cwd, check=True):
     return proc
 
 
+def test_error_context_suffixes(baseline):
+    common = '''package main
+import "fmt"
+type failure string
+func (f failure) Error() string { return string(f) }
+var problem error = failure("failed")
+type value struct { Inner int }
+type wrapped struct { Inner error }
+func (w wrapped) Error() string { return "wrapped: " + w.Inner.Error() }
+func readValue(fail bool) (value, error) { if fail { return value{}, problem }; return value{41}, nil }
+func readNumber(fail bool) (int, error) { if fail { return 0, problem }; return 41, nil }
+func main() {
+    for _, f := range []func(bool) (int, error){selector, binary} {
+        n, err := f(false)
+        if n != 42 || err != nil { panic("success suffix") }
+        n, err = f(true)
+        if n != 0 || err.(wrapped).Inner != problem { panic("error context suffix") }
+    }
+    fmt.Println("PASS context suffixes")
+}
+'''
+    legacy = '''
+func selector(fail bool) (int, error) {
+    v, err := readValue(fail)
+    if err != nil { return 0, wrapped{err} }
+    return v.Inner + 1, nil
+}
+func binary(fail bool) (int, error) {
+    v, err := readNumber(fail)
+    if err != nil { return 0, wrapped{err} }
+    return v + 1, nil
+}
+'''
+    modern = '''
+func selector(fail bool) (int, error) {
+    v := readValue(fail) or err { return 0, wrapped{err} }.Inner
+    return v + 1, nil
+}
+func binary(fail bool) (int, error) {
+    v := readNumber(fail) or err { return 0, wrapped{err} } + 1
+    return v, nil
+}
+'''
+    expected = "PASS context suffixes\n"
+    with tempfile.TemporaryDirectory(prefix="gon-fix-context-") as temp:
+        folder = Path(temp)
+        path = folder / "main.go"
+        (folder / "go.mod").write_text("module example.com/contextfix\n\ngo 1.27\n")
+        path.write_text(common + legacy)
+        assert run(baseline, "run", ".", cwd=folder).stdout == expected
+        assert run(GON, "run", ".", cwd=folder).stdout == expected
+        path.write_text(common + modern)
+        assert run(GON, "run", ".", cwd=folder).stdout == expected
+        run(GON, "fix", "-gonerrors", ".", cwd=folder)
+        fixed = path.read_text()
+        assert "=> wrapped{err}).Inner" in fixed, fixed
+        assert "=> wrapped{err}) + 1" in fixed, fixed
+        assert run(GON, "run", ".", cwd=folder).stdout == expected
+        assert run(GON, "run", "-gcflags=all=-l", ".", cwd=folder).stdout == expected
+
+
 def main():
-    baseline = os.environ.get("GON_BASELINE_GO") or os.environ.get("GO_ERROR_HANDLING_BASELINE")
+    baseline = os.environ.get("GON_BASELINE_GO")
     if not baseline or not Path(baseline).is_absolute():
         raise SystemExit("Set GON_BASELINE_GO to an absolute unmodified Go 1.27+ executable")
     version = run(baseline, "version", cwd=ROOT).stdout.strip()
     match = re.search(r"\bgo1\.(\d+)\.(\d+)\b", version)
     assert match and int(match[1]) >= 27, version
     platform = run(GON, "env", "GOOS", "GOARCH", cwd=ROOT).stdout.split()
+    test_error_context_suffixes(baseline)
     with tempfile.TemporaryDirectory(prefix="gon-fix-") as temp:
         folder = Path(temp).resolve()
         path = folder / "main.go"

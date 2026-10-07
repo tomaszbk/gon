@@ -331,7 +331,7 @@ func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
 			if guard != nil {
 				// The guard runs once after the first successful alternative. Failure
 				// skips the whole arm instead of trying another overlapping alternative.
-				assign := typecheck.Stmt(ir.NewAssignStmt(armPos, condition, guard))
+				assign := typecheck.Stmt(ir.NewAssignStmt(armPos, condition, typecheck.Conv(guard, condition.Type())))
 				selection.Append(typecheck.Stmt(ir.NewIfStmt(armPos, condition, []ir.Node{assign}, nil)))
 			}
 			if !catchall {
@@ -389,6 +389,7 @@ func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
 
 func (r *reader) patternTestExpr() ir.Node {
 	pos := r.pos()
+	typ := r.typ()
 	var init, declarations ir.Nodes
 	input := r.tempCopy(pos, r.expr(), &init)
 	condition, bindings := r.matchPattern(pos, input, &declarations)
@@ -402,5 +403,11 @@ func (r *reader) patternTestExpr() ir.Node {
 	if len(bindings) > 0 {
 		init.Append(typecheck.Stmt(ir.NewIfStmt(pos, matched, bindings, nil)))
 	}
-	return nilInline(pos, init, matched)
+	// The checker treats a pattern test like a comparison: its untyped
+	// boolean result can acquire a named boolean type from its context.
+	result := typecheck.Expr(ir.NewBinaryExpr(pos, ir.OEQ, nilInline(pos, init, matched), ir.NewBool(pos, true)))
+	if typ.IsUntyped() {
+		return result
+	}
+	return typecheck.DefaultLit(result, typ)
 }

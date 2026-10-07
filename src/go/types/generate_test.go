@@ -256,7 +256,7 @@ var filemap = map[string]action{
 		renameIdents(f, "syntax->ast")
 		fixTokenPos(f)
 	},
-	"optionresult.go": func(f *ast.File) {
+	"optionalexpr.go": func(f *ast.File) {
 		renameImportPath(f, `"cmd/compile/internal/syntax"->"go/ast"`)
 		renameIdents(f, "syntax->ast")
 	},

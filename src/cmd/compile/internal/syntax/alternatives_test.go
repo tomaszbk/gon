@@ -14,7 +14,7 @@ func TestAlternativesSyntax(t *testing.T) {
 		{"stringvariants", `package p; type Role enum string { default Unknown(string); Teacher = "teach" + "er"; Student = text }; const text = "student"`},
 		{"expression", `package p; var label = switch payment { case Payment.Pending => "pending"; case Payment.Rejected(reason) if reason != "" => reason; case Payment.Paid{Receipt: receipt, ...} => receipt; default => "other" }`},
 		{"statement", `package p; func f() { switch payment { case Payment.Pending => {}; case Payment.Rejected(reason) => { println(reason) }; case Payment.Paid{Receipt: receipt, ...} => { println(receipt) } } }`},
-		{"nested", `package p; var x = switch value { case Option[Option[int]].Some(Option[int].Some(x)) => x; case Option[Option[int]].Some(Option[int].None) => 0; case Option[Option[int]].None => 0 }`},
+		{"nested", `package p; var x = switch value { case Container[Container[int]].Value(Container[int].Value(x)) => x; case Container[Container[int]].Value(Container[int].Empty) => 0; case Container[Container[int]].Empty => 0 }`},
 		{"legacy", `package p; type enum int; type X enum; var enumValue X; func f() { switch f() { case f() + 1: return; default: return }; switch x := f(); x { case []int{1}[0]: return }; switch x.(type) { case int: return } }`},
 	}
 	for _, tc := range cases {
@@ -231,5 +231,17 @@ func TestPatternTestSyntax(t *testing.T) {
 	large := "package p;func f(v bool)bool{if v is true {" + strings.Repeat(" ", 10000) + "return true};return false}"
 	if _, err := Parse(NewFileBase("large.go"), strings.NewReader(large), nil, nil, 0); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestPatternTestContextualConstraint(t *testing.T) {
+	for _, source := range []string{
+		`package p; type is interface{~int}; type T[P is] struct{}; type U[P, Q is] struct{}`,
+		`package p; import is "cmp"; type T[P is.Ordered] struct{}; type U[P, Q is.Ordered] struct{}`,
+		`package p; const is=3; type A[is]int; type B[is+1]int`,
+	} {
+		if _, err := Parse(NewFileBase("constraint.go"), strings.NewReader(source), nil, nil, 0); err != nil {
+			t.Fatal(err)
+		}
 	}
 }

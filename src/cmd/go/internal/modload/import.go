@@ -296,6 +296,14 @@ func importFromModules(ld *Loader, ctx context.Context, path string, rs *Require
 	// Check each module on the build list.
 	var dirs, roots []string
 	var mods []module.Version
+	// Gon adds packages under gon/, a prefix that existing Go modules may
+	// already provide. Those modules retain ownership of their packages; a
+	// Gon standard package is a fallback, not a second ambiguous provider.
+	preferGonModules := func() {
+		if strings.HasPrefix(path, "gon/") && len(mods) > 1 && mods[0] == (module.Version{}) && roots[0] == cfg.GOROOTsrc {
+			mods, roots, dirs = mods[1:], roots[1:], dirs[1:]
+		}
+	}
 
 	// Is the package in the standard library?
 	pathIsStd := search.IsStandardImportPath(path)
@@ -360,6 +368,7 @@ func importFromModules(ld *Loader, ctx context.Context, path string, rs *Require
 			}
 		}
 
+		preferGonModules()
 		if len(dirs) > 1 {
 			return module.Version{}, "", "", nil, &AmbiguousImportError{importPath: path, Dirs: dirs}
 		}
@@ -443,6 +452,7 @@ func importFromModules(ld *Loader, ctx context.Context, path string, rs *Require
 			}
 		}
 
+		preferGonModules()
 		if len(mods) > 1 {
 			// We produce the list of directories from longest to shortest candidate
 			// module path, but the AmbiguousImportError should report them from
@@ -466,6 +476,16 @@ func importFromModules(ld *Loader, ctx context.Context, path string, rs *Require
 				mods:       sumErrMods,
 				found:      len(mods) > 0,
 			}
+		}
+
+		if len(mods) == 1 && mods[0] == (module.Version{}) && strings.HasPrefix(path, "gon/") && mg == nil && rs.pruning == unpruned {
+			// Older, unpruned module graphs can supply a package from a
+			// transitive requirement without promoting it to a root.
+			mg, err = rs.Graph(ld, ctx)
+			if err != nil {
+				return module.Version{}, "", "", nil, err
+			}
+			continue
 		}
 
 		if len(mods) == 1 {

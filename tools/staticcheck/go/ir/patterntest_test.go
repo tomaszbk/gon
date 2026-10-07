@@ -2,6 +2,7 @@ package ir_test
 
 import (
 	"go/ast"
+	"go/importer"
 	"go/parser"
 	"go/token"
 	"go/types"
@@ -28,7 +29,7 @@ func TestGonPatternTest(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			pkg, _, err := irutil.BuildPackage(&types.Config{}, fs, types.NewPackage("main", "main"), []*ast.File{f}, ir.SanityCheckFunctions|ir.InstantiateGenerics|ir.GlobalDebug)
+			pkg, _, err := irutil.BuildPackage(&types.Config{Importer: importer.ForCompiler(fs, "source", nil)}, fs, types.NewPackage("main", "main"), []*ast.File{f}, ir.SanityCheckFunctions|ir.InstantiateGenerics|ir.GlobalDebug)
 			if err != nil {
 				t.Fatal(err)
 			}

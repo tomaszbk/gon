@@ -618,7 +618,7 @@ func (st *state) inlineCall() (*inlineCallResult, error) {
 	}
 	for n := range ast.Preorder(context) {
 		if e, ok := n.(ast.Expr); ok && (caller.Info.OptionalConversions[e] != nil || caller.Info.OptionalConversions == nil && types.IsOptional(caller.Info.TypeOf(e))) {
-			return nil, fmt.Errorf("cannot inline call containing Gon contextual Option conversion")
+			return nil, fmt.Errorf("cannot inline call containing Gon contextual optional conversion")
 		}
 		switch n := n.(type) {
 		case *ast.CallExpr:

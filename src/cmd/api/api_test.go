@@ -7,6 +7,7 @@ import (
 	"internal/testenv"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"sync"
@@ -14,6 +15,7 @@ import (
 )
 
 var flagCheck = flag.Bool("check", false, "run API checks")
+var flagHostOnly = flag.Bool("host", false, "check only the native host API")
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -329,4 +331,50 @@ func TestCheck(t *testing.T) {
 	}
 	testenv.MustHaveGoBuild(t)
 	Check(t)
+}
+
+// Parameter labels are part of Gon's callable API even though they do not
+// affect Go function identity. Keep the named signature inventory separate
+// from Go's historical API files so the upstream format stays unchanged.
+func TestGonParameterAPI(t *testing.T) {
+	testenv.MustHaveGoBuild(t)
+	w := NewWalker(&build.Default, filepath.Join(testenv.GOROOT(t), "src"))
+	w.parameterNames = true
+	for _, name := range w.stdPackages {
+		pkg, err := w.import_(name)
+		if _, nogo := err.(*build.NoGoError); nogo {
+			continue
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		w.export(pkg)
+	}
+	var signatures []string
+	for _, feature := range w.Features() {
+		if strings.Contains(feature, "(") {
+			signatures = append(signatures, feature)
+		}
+	}
+	path := filepath.Join(testenv.GOROOT(t), "api", "params", runtime.GOOS+"-"+runtime.GOARCH+".txt")
+	if *updateGolden {
+		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(strings.Join(signatures, "\n")+"\n"), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	data, err := os.ReadFile(path)
+	if os.IsNotExist(err) {
+		t.Fatalf("parameter inventory has not been recorded for %s/%s", runtime.GOOS, runtime.GOARCH)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := strings.TrimSuffix(string(data), "\n")
+	got := strings.Join(signatures, "\n")
+	if got != want {
+		t.Errorf("parameter API differs from %s; review the label change before updating the inventory", path)
+	}
 }

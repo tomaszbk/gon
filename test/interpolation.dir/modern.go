@@ -19,12 +19,38 @@ func multiline() string {
 }
 func empty() string { return $"" }
 
+func ordered() string {
+	n := 1
+	values := []int{4}
+	mutate := func() int { n = 2; values[0] = 5; return 3 }
+	return $"${n}:${values[0]}:${mutate()}:${n}:${values[0]}"
+}
+
+func safeCalls() string {
+	var callback func(int) int
+	first := $"${callback?(mark("skip", 3)) ?? 0:%03d}"
+	callback = func(n int) int { return n + 1 }
+	return first + $"/${callback?(mark("safe", 3)) ?? 0:%03d}"
+}
+
 func blocks(fail bool) (string, error) {
-	return $"${switch fail { case false => 1; case true => 2 }}:${source(fail) or err { return "", err }}:${func() int { var (n = 1; m = 2); type S struct { A int; B int }; _ = S{}; switch n { case 1: n += m; default: n = 0 }; return n }()}", nil
+	return $"${switch fail { case false => 1; case true => 2; }}:${source(fail) or err { return "", err; }}:${func() int { var ( n = 1; m = 2; ); type S struct { A int; B int; }; _ = S{}; switch n { case 1: n += m;; default: n = 0;; }; return n; }()}", nil
 }
 func rawBlocks() string {
 	return $`raw
-${switch true { case true => 1; case false => 2 }} ${func() int { n := 1; switch n { case 1: n++; default: n-- }; return n }()}
+${switch true {
+	case true => 1;
+	case false => 2;
+	}} ${func() int {
+		n := 1;
+		switch n {
+		case 1:
+			n++;;
+		default:
+			n--;;
+		};
+		return n;
+	}()}
 end`
 }
 

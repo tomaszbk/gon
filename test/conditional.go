@@ -3,9 +3,8 @@
 //go:build !js && !wasip1 && gc
 
 // Execute both spellings of the same conditional expression scenarios and
-// compare their checked traces. Set GON_BASELINE_GO (or, as for the error
-// handling test, GO_ERROR_HANDLING_BASELINE) to a compatible unmodified go
-// executable to additionally verify the legacy programs against the upstream
+// compare their checked traces. Set GON_BASELINE_GO to a compatible unmodified
+// go executable to additionally verify the legacy programs against the upstream
 // language.
 package main
 
@@ -40,10 +39,7 @@ func main() {
 }
 
 func baselineGo() string {
-	if baseline := os.Getenv("GON_BASELINE_GO"); baseline != "" {
-		return baseline
-	}
-	return os.Getenv("GO_ERROR_HANDLING_BASELINE")
+	return os.Getenv("GON_BASELINE_GO")
 }
 
 func compare(what string, want, got []byte) {

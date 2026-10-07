@@ -7,7 +7,7 @@
 // same scenarios with explicit error checks and with the new syntax. Both
 // programs, together with testdata/common.go and testdata/clib.c, must build and
 // pass their own assertions, and must print identical output. Set
-// GO_ERROR_HANDLING_BASELINE to an unmodified go command to additionally run
+// GON_BASELINE_GO to an unmodified go command to additionally run
 // the legacy program with it and compare the output with this toolchain.
 package testerrorhandling
 
@@ -100,9 +100,9 @@ func TestPairedCgoErrorHandling(t *testing.T) {
 		}
 	})
 
-	baseline := os.Getenv("GO_ERROR_HANDLING_BASELINE")
+	baseline := os.Getenv("GON_BASELINE_GO")
 	if baseline == "" {
-		t.Log("GO_ERROR_HANDLING_BASELINE is not set; the legacy program was not run with an unmodified toolchain")
+		t.Log("GON_BASELINE_GO is not set; the legacy program was not run with an unmodified toolchain")
 		return
 	}
 	upstream := runProgram(t, baseline, true, "legacy.go")

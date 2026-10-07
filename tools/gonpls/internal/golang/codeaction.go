@@ -1015,8 +1015,7 @@ func refactorRewriteImplementInterface(_ context.Context, req *codeActionsReques
 		return nil
 	}
 
-	// Methods cannot be declared on a predeclared type with no package,
-	// such as an alias of Gon's Result.
+	// Methods cannot be declared on a predeclared type with no package.
 	if named.Obj().Pkg() == nil {
 		return nil
 	}

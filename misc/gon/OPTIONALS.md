@@ -144,11 +144,10 @@ use `jsonb_agg`/`to_jsonb` in the query or a driver-specific adapter.
 Not covered: `encoding/xml`, `gob` and other encoders, and pgx's native API
 outside `database/sql`, which need their own codecs.
 
-## Retired syntax
+## Syntax and names
 
-The compiler and editor reject retired optional constructors. Use `T?`, direct
-payloads, untyped nil and `P?` patterns. `gon refactor optionals` is retired;
-ordinary semantic rename/apply refactoring remains available. Existing user
+Use `T?`, direct payloads, untyped nil and `P?` patterns.
+Ordinary semantic rename/apply refactoring remains available. Existing user
 declarations named `Option`, `Some`, `None` or `Result` remain ordinary names.
 
 See [STATUS](STATUS.md), [VALIDATION](VALIDATION.md) and the current

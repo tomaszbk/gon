@@ -66,7 +66,7 @@ func runErrors(pass *analysis.Pass) (any, error) {
 				labels = errorLabels(n.Block)
 			case *ast.ErrorExpr:
 				if sig != nil && !labels && errorContextFix(pass, file, content, sig, n) {
-					edits = append(edits, [2]token.Pos{n.Body.Pos(), n.Body.End()})
+					edits = append(edits, [2]token.Pos{n.Pos(), n.End()})
 				}
 			case *ast.BlockStmt:
 				if sig != nil && !labels {
@@ -371,11 +371,15 @@ func errorContextFix(pass *analysis.Pass, file *ast.File, content []byte, sig *t
 		}
 	}
 	tokFile := pass.Fset.File(file.Pos())
-	text := "=> " + string(content[tokFile.Offset(context.Pos()):tokFile.Offset(context.End())])
+	// An expression context consumes a complete expression, while a block
+	// handler ends at its closing brace. Keep operators and selectors after
+	// that brace attached to the success value when replacing the handler.
+	text := "(" + string(content[tokFile.Offset(e.Pos()):tokFile.Offset(e.Body.Pos())]) +
+		"=> " + string(content[tokFile.Offset(context.Pos()):tokFile.Offset(context.End())]) + ")"
 	pass.Report(analysis.Diagnostic{
 		Pos: e.Body.Pos(), End: e.Body.End(),
 		Message:        "replace error handler with Gon error context",
-		SuggestedFixes: []analysis.SuggestedFix{{Message: "Use or =>", TextEdits: []analysis.TextEdit{{Pos: e.Body.Pos(), End: e.Body.End(), NewText: []byte(text)}}}},
+		SuggestedFixes: []analysis.SuggestedFix{{Message: "Use or =>", TextEdits: []analysis.TextEdit{{Pos: e.Pos(), End: e.End(), NewText: []byte(text)}}}},
 	})
 	return true
 }

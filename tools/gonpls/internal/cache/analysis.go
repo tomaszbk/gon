@@ -863,6 +863,41 @@ func (act *action) String() string {
 	return fmt.Sprintf("%s@%s", act.a.Name, act.pkg.pkg.metadata.ID)
 }
 
+// nilawayDependencyURI resolves an export-data filename to a known dependency
+// source. Export readers may encode paths relative to that dependency's module.
+func (act *action) nilawayDependencyURI(filename string) protocol.DocumentURI {
+	seen := make(map[*analysisNode]bool)
+	var visit func(*analysisNode) protocol.DocumentURI
+	visit = func(node *analysisNode) protocol.DocumentURI {
+		if seen[node] {
+			return ""
+		}
+		seen[node] = true
+		mp := node.ph.mp
+		resolved := filepath.Clean(filename)
+		if !filepath.IsAbs(resolved) && mp.Module != nil {
+			resolved = filepath.Join(mp.Module.Dir, resolved)
+		}
+		for _, uri := range mp.CompiledGoFiles {
+			if filepath.Clean(uri.Path()) == resolved {
+				return uri
+			}
+		}
+		for _, dependency := range node.succs {
+			if uri := visit(dependency); uri != "" {
+				return uri
+			}
+		}
+		return ""
+	}
+	for _, dependency := range act.vdeps {
+		if uri := visit(dependency); uri != "" {
+			return uri
+		}
+	}
+	return ""
+}
+
 // execActions executes a set of action graph nodes in parallel.
 // Postcondition: each action.summary is set, even in case of error.
 func execActions(ctx context.Context, actions []*action) {
@@ -1027,6 +1062,25 @@ func (act *action) exec(ctx context.Context) (any, *actionSummary, error) {
 				event.Error(ctx, fmt.Sprintf("internal error converting diagnostic from analyzer %q", analyzer.Name), err)
 				return
 			}
+			if analyzer.Name == "nilaway" {
+				// Dependency facts use source byte columns. Translate them through
+				// the snapshot's source mapper, including non-ASCII text.
+				posn := apkg.pkg.FileSet().Position(d.Pos)
+				if uri := act.nilawayDependencyURI(posn.Filename); uri != "" {
+					if h, err := act.fsource.ReadFile(ctx, uri); err == nil {
+						if content, err := h.Content(); err == nil {
+							mapper := protocol.NewMapper(uri, content)
+							position, err := mapper.LineCol8Position(posn.Line, posn.Column)
+							if err != nil {
+								event.Error(ctx, "internal error converting NilAway dependency position", err)
+								diagnostic.Location.URI = uri
+							} else {
+								diagnostic.Location = protocol.Location{URI: uri, Range: protocol.Range{Start: position, End: position}}
+							}
+						}
+					}
+				}
+			}
 			diagnostics = append(diagnostics, diagnostic)
 		},
 		ImportObjectFact:  factset.ImportObjectFact,
@@ -1046,10 +1100,19 @@ func (act *action) exec(ctx context.Context) (any, *actionSummary, error) {
 		// hashing a potentially large number of mostly irrelevant
 		// files; or (b) some kind of dynamic dependency discovery
 		// system like used in Bazel for C++ headers. Neither entices.
+		uri := protocol.URIFromPath(filename)
 		if err := driverutil.CheckReadable(pass, filename); err != nil {
-			return nil, err
+			// NilAway reports consumers in dependencies from exported facts.
+			// Permit only source files present in the loaded dependency graph.
+			if !strings.HasPrefix(analyzer.Name, "nilaway") {
+				return nil, err
+			}
+			uri = act.nilawayDependencyURI(filename)
+			if uri == "" {
+				return nil, err
+			}
 		}
-		h, err := act.fsource.ReadFile(ctx, protocol.URIFromPath(filename))
+		h, err := act.fsource.ReadFile(ctx, uri)
 		if err != nil {
 			return nil, err
 		}
@@ -1246,7 +1309,9 @@ func toGobDiagnostic(pkg *Package, a *analysis.Analyzer, diag analysis.Diagnosti
 		})
 	}
 
-	loc, err := diagnosticPosToLocation(pkg, false, diag.Pos, diag.End)
+	// NilAway may infer a flow in this package with a consumer in a dependency.
+	// Preserve its location as we do for related information in dependencies.
+	loc, err := diagnosticPosToLocation(pkg, a.Name == "nilaway", diag.Pos, diag.End)
 	if err != nil {
 		return gobDiagnostic{}, err
 	}

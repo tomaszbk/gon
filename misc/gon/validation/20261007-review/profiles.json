@@ -1,0 +1,324 @@
+{
+  "startedAt": "2026-10-07T15:22:08.477895+00:00",
+  "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+  "profiles": [
+    {
+      "profile": "nilanalysis",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "nilanalysis"
+      ],
+      "exitCode": 0,
+      "seconds": 146.018,
+      "checks": 5,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "nilanalysis.json",
+      "log": "logs/nilanalysis.run.log.gz",
+      "testsRun": 5524,
+      "skippedTests": {}
+    },
+    {
+      "profile": "tooling",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "tooling"
+      ],
+      "exitCode": 0,
+      "seconds": 241.977,
+      "checks": 71,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "tooling.json",
+      "log": "logs/tooling.run.log.gz",
+      "testsRun": 6757,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      }
+    },
+    {
+      "profile": "errorhandling",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "errorhandling"
+      ],
+      "exitCode": 0,
+      "seconds": 145.048,
+      "checks": 34,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "errorhandling.json",
+      "log": "logs/errorhandling.run.log.gz",
+      "testsRun": 6135,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ],
+        "vet": [
+          "cmd/vet/TestVet/stdversion",
+          "cmd/vet/TestVet/loopclosure",
+          "cmd/vet/TestVet/stringintconv"
+        ]
+      }
+    },
+    {
+      "profile": "conditional",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "conditional"
+      ],
+      "exitCode": 0,
+      "seconds": 128.378,
+      "checks": 34,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "conditional.json",
+      "log": "logs/conditional.run.log.gz",
+      "testsRun": 6079,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      }
+    },
+    {
+      "profile": "lambda",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "lambda"
+      ],
+      "exitCode": 0,
+      "seconds": 132.312,
+      "checks": 37,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "lambda.json",
+      "log": "logs/lambda.run.log.gz",
+      "testsRun": 6130,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      }
+    },
+    {
+      "profile": "nullsafety",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "nullsafety"
+      ],
+      "exitCode": 0,
+      "seconds": 133.313,
+      "checks": 37,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "nullsafety.json",
+      "log": "logs/nullsafety.run.log.gz",
+      "testsRun": 6130,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      }
+    },
+    {
+      "profile": "namedarguments",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "namedarguments"
+      ],
+      "exitCode": 0,
+      "seconds": 126.634,
+      "checks": 34,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "namedarguments.json",
+      "log": "logs/namedarguments.run.log.gz",
+      "testsRun": 6038,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      }
+    },
+    {
+      "profile": "enums",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "enums"
+      ],
+      "exitCode": 0,
+      "seconds": 152.435,
+      "checks": 40,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "enums.json",
+      "log": "logs/enums.run.log.gz",
+      "testsRun": 6697,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      }
+    },
+    {
+      "profile": "matching",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "matching"
+      ],
+      "exitCode": 0,
+      "seconds": 127.876,
+      "checks": 38,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "matching.json",
+      "log": "logs/matching.run.log.gz",
+      "testsRun": 6056,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      }
+    },
+    {
+      "profile": "option",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "option"
+      ],
+      "exitCode": 0,
+      "seconds": 138.112,
+      "checks": 47,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "option.json",
+      "log": "logs/option.run.log.gz",
+      "testsRun": 6188,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      }
+    },
+    {
+      "profile": "seq",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "seq"
+      ],
+      "exitCode": 0,
+      "seconds": 30.367,
+      "checks": 7,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "seq.json",
+      "log": "logs/seq.run.log.gz",
+      "testsRun": 13,
+      "skippedTests": {}
+    },
+    {
+      "profile": "errorcontext",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "errorcontext"
+      ],
+      "exitCode": 0,
+      "seconds": 41.382,
+      "checks": 9,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "errorcontext.json",
+      "log": "logs/errorcontext.run.log.gz",
+      "testsRun": 52,
+      "skippedTests": {}
+    },
+    {
+      "profile": "matchalternatives",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "matchalternatives"
+      ],
+      "exitCode": 0,
+      "seconds": 44.912,
+      "checks": 7,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "matchalternatives.json",
+      "log": "logs/matchalternatives.run.log.gz",
+      "testsRun": 5334,
+      "skippedTests": {}
+    },
+    {
+      "profile": "patterntest",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "patterntest"
+      ],
+      "exitCode": 0,
+      "seconds": 43.795,
+      "checks": 7,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "patterntest.json",
+      "log": "logs/patterntest.run.log.gz",
+      "testsRun": 5315,
+      "skippedTests": {}
+    },
+    {
+      "profile": "interpolation",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "interpolation"
+      ],
+      "exitCode": 0,
+      "seconds": 49.295,
+      "checks": 11,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "interpolation.json",
+      "log": "logs/interpolation.run.log.gz",
+      "testsRun": 5354,
+      "skippedTests": {}
+    },
+    {
+      "profile": "modern",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "modern"
+      ],
+      "exitCode": 0,
+      "seconds": 325.254,
+      "checks": 112,
+      "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+      "sourceStable": true,
+      "summary": "modern.json",
+      "log": "logs/modern.run.log.gz",
+      "testsRun": 12781,
+      "skippedTests": {
+        "structural-tools": [
+          "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+        ]
+      }
+    }
+  ],
+  "finishedAt": "2026-10-07T16:17:52.295513+00:00"
+}

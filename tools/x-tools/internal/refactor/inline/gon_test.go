@@ -201,7 +201,7 @@ func TestGonOptionalCalleeWithoutMetadata(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = inline.AnalyzeCallee(t.Logf, fs, pkg, info, file.Decls[0].(*ast.FuncDecl), []byte(source))
-	if err == nil || !strings.Contains(err.Error(), "contextual Option conversion") {
+	if err == nil || !strings.Contains(err.Error(), "contextual optional conversion") {
 		t.Fatalf("unsafe inline without conversion metadata: %v", err)
 	}
 }

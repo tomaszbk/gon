@@ -106,9 +106,9 @@ def write_module(folder, store):
 
 
 def main():
-    baseline = os.environ.get("GO_ERROR_HANDLING_BASELINE")
+    baseline = os.environ.get("GON_BASELINE_GO")
     if not baseline:
-        raise SystemExit("Set GO_ERROR_HANDLING_BASELINE to an unmodified Go executable")
+        raise SystemExit("Set GON_BASELINE_GO to an unmodified Go executable")
     with tempfile.TemporaryDirectory(prefix="gon-cli-") as temp:
         temp = Path(temp).resolve()
         env = dict(os.environ)

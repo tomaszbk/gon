@@ -25,7 +25,10 @@ func selected(value Shape, guards *int) int {
 	}
 	panic("invalid shape")
 }
-func reject(counter *int) bool { *counter++; return false }
+
+type MyBool bool
+
+func reject(counter *int) MyBool { *counter++; return false }
 func captured(value Shape) func() int {
 	switch value.kind {
 	case Circle, Sphere, Record:
@@ -96,7 +99,7 @@ func forward(err error, guards *int) int {
 			matched, number = true, value.number
 		}
 	}
-	if matched && reject(guards) {
+	if matched && bool(reject(guards)) {
 		return number
 	}
 	return -1
@@ -111,7 +114,7 @@ func reversed(err error, guards *int) int {
 			matched, number = true, value.number
 		}
 	}
-	if matched && reject(guards) {
+	if matched && bool(reject(guards)) {
 		return number
 	}
 	return -1

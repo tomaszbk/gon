@@ -9,6 +9,8 @@ accepted newline-after-prefix-`!` exception. The user selected this support
 floor. Use stable Go 1.27.1 as the current
 unmodified baseline; the fork's Go 1.28 development version is not a released
 Go baseline. Module language directives retain their independent meaning.
+The compatibility contract covers Go source; earlier Gon designs and syntax
+do not have a compatibility protocol.
 
 `gon fix -diff ./...` previews opportunities to adopt Gon syntax; `gon fix
 ./...` applies the safe conversions. This includes error propagation/handlers,
@@ -161,7 +163,7 @@ standard JSON automatically; native optionals map to JSON `null`/payload and SQL
 NULL/payload natively. Neither exposes a stable storage ABI. No zero overhead is
 promised.
 The source inliner and extraction decline unsupported lazy/contextual changes,
-including contextual constructors and native optional conversions whose target
+including native optional conversions whose target
 would change after extraction. These forms are not automatically rewritten by
 `gon fix`.
 
@@ -307,10 +309,11 @@ PostgreSQL array text still needs a codec.
 ## Executable pairs and validation
 
 Executable legacy/modern pairs live in `test/{enums,stringenums,stringenums_sql,matching,matchinterface,
-namedarguments,errorbridge,errortest,optionresult,optionsyntax,optionaljson,optionalsql,sqlstruct}.go` and
+namedarguments,errorhandling,errortest,optionals,optionsyntax,optionaljson,optionalsql,sqlstruct,
+matchalternatives,patterntest,errorcontext,interpolation,seq,nilanalysis}.go` and
 their `.dir` folders. The `modern` profile runs the enum, matching (including
 `matchinterface`), optional (including `optionaljson` and `optionalsql`),
-and named-argument pairs; the `errorhandling` profile adds `errorbridge` and
+and named-argument pairs plus the accepted additions; the `errorhandling` profile adds `errorhandling` and
 `errortest`; the `tooling` profile also runs `sqlstruct`. Run the deduplicated
 focused gate:
 
@@ -617,8 +620,7 @@ complete compatibility with every gopls or third-party analysis feature.
 
 Use `GON_BASELINE_GO=/absolute/path/to/unmodified/go` with Go 1.27+ for current
 validation. Existing records retain the versions actually tested.
-Older test-specific environment names remain compatibility aliases. The
-conditional profile includes cgo/bootstrap adapters, coverage, editor query,
+The conditional profile includes cgo/bootstrap adapters, coverage, editor query,
 extraction and LSP checks; select only checks affected by a change with
 `validate.py conditional --only CHECK`. See [VALIDATION.md](VALIDATION.md) for
 the exact focused commands used to close integration. The `lambda` and
@@ -634,10 +636,10 @@ Intentional errors in error-checking fixtures remain visible as diagnostics.
 Run `python3 misc/gon/test_workspace.py` to check this behavior over real LSP.
 
 ```sh
-GO_ERROR_HANDLING_BASELINE=/path/to/official/go python3 misc/gon/test.py
-GO_ERROR_HANDLING_BASELINE=/path/to/official/go python3 misc/gon/test_cli.py
-GO_ERROR_HANDLING_BASELINE=/path/to/official/go python3 misc/gon/test_analysis.py
-GO_ERROR_HANDLING_BASELINE=/path/to/official/go \
+GON_BASELINE_GO=/path/to/official/go python3 misc/gon/test.py
+GON_BASELINE_GO=/path/to/official/go python3 misc/gon/test_cli.py
+GON_BASELINE_GO=/path/to/official/go python3 misc/gon/test_analysis.py
+GON_BASELINE_GO=/path/to/official/go \
   ./gon/bin/gon test cmd/internal/testdir -run='Test/errorhandling.go$' -count=1
 ```
 
@@ -683,6 +685,12 @@ KeyBy, Distinct, ToSet, Find, First, Last, At, Lookup, All, Count, Partition,
 MapSeq and FilterSeq. Find/First/Last/At/Lookup return native optionals. Slice
 results are never nil. These are functions, with ordinary Go callbacks or Gon
 lambdas, and support named slice/map types.
+
+The `gon/` standard-package prefix remains compatible with existing Go
+projects. When a selected module, workspace module or vendor tree supplies
+`gon/seq`, that package takes precedence. The Gon standard package is used
+when no module supplies that import path. Two module providers still produce
+the ordinary ambiguous-import error. GOPATH packages also retain precedence.
 
 NilAway is maintained at `tools/nilaway`, with Apache-2.0 license and upstream
 provenance. Enable it explicitly with `gon check --nilaway ./...` or editor

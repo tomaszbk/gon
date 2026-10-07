@@ -17,6 +17,7 @@ func equal(got, want any) {
 }
 
 func main() {
+	nestedLookup()
 	input := ints{3, 1, 2, 1}
 	var trace []int
 	record := func(n int) int {

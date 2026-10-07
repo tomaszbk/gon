@@ -16,7 +16,9 @@ func selected(value Shape, guards *int) int {
 	}
 }
 
-func reject(counter *int) bool { *counter++; return false }
+type MyBool bool
+
+func reject(counter *int) MyBool { *counter++; return false }
 
 func captured(value Shape) func() int {
 	return switch value {

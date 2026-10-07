@@ -11,9 +11,11 @@ import (
 	"go/constant"
 	"go/token"
 	"go/types"
+	"maps"
 	"reflect"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
@@ -629,7 +631,7 @@ func checkCalls(pass *analysis.Pass, res *Result) {
 
 		case *ast.InterpolatedStringExpr:
 			if call := pass.TypesInfo.Interpolations[n]; call != nil {
-				checkPrintf(pass, fileVersion, KindPrintf, call, "fmt.Sprintf")
+				checkInterpolation(pass, fileVersion, n, call)
 			}
 		case *ast.CallExpr:
 			if callee := typeutil.Callee(pass.TypesInfo, n); callee != nil {
@@ -643,6 +645,37 @@ func checkCalls(pass *analysis.Pass, res *Result) {
 			}
 		}
 	})
+}
+
+// A generated Sprintf format has no contiguous range in the original source.
+// Check each operand separately and report on its verb (or the operand when the
+// default verb is implicit), rather than projecting synthetic string offsets.
+func checkInterpolation(pass *analysis.Pass, version string, expr *ast.InterpolatedStringExpr, lowered *ast.CallExpr) {
+	local := *pass
+	info := *pass.TypesInfo
+	info.Types = maps.Clone(info.Types)
+	local.TypesInfo = &info
+	for _, part := range expr.Parts {
+		if part.Expr == nil {
+			continue
+		}
+		verb := part.Format
+		if verb == "" {
+			verb = "%v"
+		}
+		literal := &ast.BasicLit{ValuePos: part.Pos(), Kind: token.STRING, Value: strconv.Quote(verb)}
+		info.Types[literal] = types.TypeAndValue{Type: types.Typ[types.UntypedString], Value: constant.MakeString(verb)}
+		call := &ast.CallExpr{Fun: lowered.Fun, Lparen: part.Pos(), Args: []ast.Expr{literal, part.Expr}, Rparen: part.End() - 1}
+		local.Report = func(diagnostic analysis.Diagnostic) {
+			diagnostic.Pos, diagnostic.End = part.Expr.Pos(), part.Expr.End()
+			if part.Format != "" {
+				diagnostic.End = part.End() - 1
+				diagnostic.Pos = diagnostic.End - token.Pos(len(part.Format))
+			}
+			pass.Report(diagnostic)
+		}
+		checkPrintf(&local, version, KindPrintf, call, "fmt.Sprintf")
+	}
 }
 
 func fullname(obj types.Object) string {

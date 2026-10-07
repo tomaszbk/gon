@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Run focused Gon integration gates. A passing subset is not feature completion."""
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
+import platform
 import shlex
 import subprocess
 import sys
@@ -12,6 +14,50 @@ import time
 ROOT = Path(__file__).resolve().parents[2]
 GON = ROOT / 'gon/bin' / ('gon.exe' if os.name == 'nt' else 'gon')
 MODERN_FEATURES = ('namedarguments', 'enums', 'matching', 'option', 'seq', 'errorcontext', 'matchalternatives', 'patterntest', 'interpolation', 'nilanalysis')
+_source_hashes = {}
+
+
+def tool_snapshot(env):
+    target = subprocess.check_output([str(GON), 'env', 'GOOS', 'GOARCH'], env=env, text=True).split()
+    private = ROOT / 'pkg/tool' / '_'.join(target)
+    paths = [ROOT/'bin/go', ROOT/'bin/gofmt', GON, ROOT/'gon/bin/gonpls',
+             *[private/name for name in ('compile', 'link', 'vet', 'fix', 'cover', 'cgo', 'gonpls')]]
+    return {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in paths if path.is_file()}
+
+
+def source_snapshot():
+    """Fingerprint implementation, fixtures and API inventories, including edits.
+
+    Documentation and retained run evidence are excluded so recording a result
+    does not invalidate it. Ignored build outputs and local design notes are not
+    inputs. The file manifest makes an old run's exact scope inspectable.
+    """
+    paths = subprocess.check_output(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard'], cwd=ROOT).decode().split('\0')
+    files = {}
+    for name in sorted(set(paths) - {''}):
+        if name.endswith('.md') or name.startswith('misc/gon/benchmarks/results/') or name.startswith('misc/gon/validation/'):
+            continue
+        path = ROOT / name
+        try:
+            st = path.lstat()
+            stamp = (st.st_size, st.st_mtime_ns, st.st_ctime_ns, st.st_ino)
+        except FileNotFoundError:
+            stamp = None
+        cached = _source_hashes.get(name)
+        if cached is not None and cached[0] == stamp:
+            files[name] = cached[1]
+            continue
+        if path.is_symlink():
+            data = ('symlink:'+os.readlink(path)).encode()
+        elif path.is_file():
+            data = path.read_bytes()
+        else:
+            data = b'<deleted>'
+        files[name] = hashlib.sha256(data).hexdigest()
+        _source_hashes[name] = (stamp, files[name])
+    digest = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    return dict(sha256=digest, files=files)
 
 
 def checks(feature):
@@ -36,6 +82,7 @@ def checks(feature):
             args += ['-run', pattern]
         return name, cwd, args + ['-count=1']
     common = [
+        ('validation-snapshot', '.', [sys.executable, 'misc/gon/test_validate.py']),
         ('vendor', '.', [sys.executable, 'misc/gon/vendor.py', '--check']),
         ('install-tools', '.', [str(GON), 'install', 'cmd/vet', 'cmd/fix', 'cmd/gofmt', 'cmd/cover', 'cmd/cgo', 'cmd/export']),
         ('build-tooling', '.', [sys.executable, 'misc/gon/build.py']),
@@ -50,6 +97,13 @@ def checks(feature):
         test('analyzers', 'tools/gonpls', ['./internal/settings'], '^TestGonAnalyzers$'),
         test('refactor-safety', 'tools/x-tools', ['./internal/refactor/inline'], '^(TestGon|TestCalleeEffects|TestBasics|TestPrecedenceParens)'),
         test('staticcheck-safety', 'tools/staticcheck', ['./analysis/code', './go/ast/astutil', './go/types/typeutil'], '^TestGon'),
+        test('staticcheck-unused', 'tools/staticcheck', ['./unused'], '^TestGonUnused$'),
+        ('public-api-host', '.', [str(GON), 'test', '-json', 'cmd/api', '-run', '^(TestCheck|TestGonParameterAPI|TestGonNestedParameterNames|TestGonReachableParameterNames)$', '-count=1', '-args', '-check', '-host']),
+        test('optional-link-identity', '.', ['cmd/compile/internal/types'], '^TestGonOptionalShapeLinkIdentity$'),
+        test('optional-dwarf', '.', ['cmd/link/internal/ld'], '^TestGonOptionalShapeDWARF$'),
+        test('cgo-errno-check', 'tools/gonpls', ['./internal/cmd'], '^TestGonCgoErrorHandlingCheck$'),
+        test('gon-namespace-build', '.', ['go/build'], '^TestGonPackagePrecedence$'),
+        test('gon-namespace-execution', '.', ['cmd/go'], '^TestGonNamespacePair$|^TestScript/gon_namespace$'),
         test('optional-inference', 'tools/gonpls', ['./internal/golang', './internal/golang/completion'], '^TestGonOptional'),
     ]
     if feature in ('matchalternatives', 'patterntest'):
@@ -72,6 +126,7 @@ def checks(feature):
             test('interpolation-ssa', 'tools/x-tools', ['./go/ssa'], '^TestGonInterpolation'),
             test('interpolation-ir', 'tools/staticcheck', ['./go/ir'], '^TestGonInterpolation'),
             test('interpolation-printf', 'tools/x-tools', ['./go/analysis/passes/printf'], '^Test'),
+            test('interpolation-copylocks', 'tools/x-tools', ['./go/analysis/passes/copylock'], '^Test'),
             test('interpolation-imports', 'tools/x-tools', ['./internal/imports'], '^TestGonInterpolationImports$'),
             test('analyzers', 'tools/gonpls', ['./internal/settings'], '^TestGonAnalyzers$'),
             test('interpolation-editor', 'tools/gonpls', ['./internal/test/marker'], '^Test/quickfix/interpolation'),
@@ -93,12 +148,15 @@ def checks(feature):
             ('nilaway-corpus', 'tools/nilaway', [str(GON), 'test', '-json', '-p=1', '-parallel=2', './...', '-count=1']),
             test('nilaway-gon', 'tools/nilaway', ['.'], '^TestGon'),
             test('nilaway-settings', 'tools/gonpls', ['./internal/settings'], '^(TestNilAwayOptIn|TestGonAnalyzers)$'),
-            test('nilaway-cli', 'tools/gonpls', ['./internal/cmd'], '^TestGonNilAwayOptIn$'),
+            test('nilaway-cli', 'tools/gonpls', ['./internal/cmd'], '^TestGonNilAway'),
             test('nilanalysis-execution', '.', ['cmd/internal/testdir'], r'Test/nilanalysis\.go$'),
         ]
     if feature == 'seq':
         return [
             test('seq-unit', '.', ['gon/seq']),
+            ('seq-dwarf-binary', '.', [str(GON), 'test', '-c', 'gon/seq', '-o', str(ROOT/'pkg/gon-validation/seq/seq.test')]),
+            ('seq-dwarf-execution', '.', [str(ROOT/'pkg/gon-validation/seq/seq.test')]),
+            ('seq-api-host', '.', [str(GON), 'test', '-json', 'cmd/api', '-run', '^(TestCheck|TestGonParameterAPI)$', '-count=1', '-args', '-check', '-host']),
             test('seq-deps', '.', ['go/build'], '^TestDependencies$'),
             test('seq-execution', '.', ['cmd/internal/testdir'], r'Test/seq\.go$'),
             ('seq-vet', '.', [str(GON), 'vet', 'test/seq.dir/common.go', 'test/seq.dir/modern.go']),
@@ -108,7 +166,7 @@ def checks(feature):
         common.append(test('sql', '.', ['database/sql', 'database/sql/driver']))
         if os.environ.get('GON_SQL_POSTGRES') == '1':
             common.append(('stringenums-postgres', '.', [sys.executable, 'misc/gon/test_stringenums_postgres.py']))
-    features = ['errorhandling', 'errortest', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'stringenums', 'stringenums_sql', 'matching', 'matchinterface', 'optionresult', 'optionsyntax', 'seq', 'errorcontext', 'matchalternatives', 'patterntest', 'interpolation', 'nilanalysis'] if feature == 'tooling' else (['optionresult', 'optionsyntax'] if feature == 'option' else (['enums', 'stringenums', 'stringenums_sql'] if feature == 'enums' else (['matching', 'matchinterface'] if feature == 'matching' else (['errorhandling', 'errortest'] if feature == 'errorhandling' else [feature]))))
+    features = ['errorhandling', 'errortest', 'conditional', 'lambda', 'nullsafety', 'namedarguments', 'enums', 'stringenums', 'stringenums_sql', 'matching', 'matchinterface', 'optionals', 'optionsyntax', 'seq', 'errorcontext', 'matchalternatives', 'patterntest', 'interpolation', 'nilanalysis'] if feature == 'tooling' else (['optionals', 'optionsyntax'] if feature == 'option' else (['enums', 'stringenums', 'stringenums_sql'] if feature == 'enums' else (['matching', 'matchinterface'] if feature == 'matching' else (['errorhandling', 'errortest'] if feature == 'errorhandling' else [feature]))))
     if feature in ('option', 'tooling'):
         # Native optionals at the JSON, SQL and reflection boundaries. The v1
         # JSON implementation is checked separately: the v2 based one is the default.
@@ -184,8 +242,8 @@ def checks(feature):
         ]
     elif feature in ('namedarguments', 'enums', 'matching', 'option'):
         cgo_pattern = {'namedarguments': 'NamedArguments', 'enums': '(Matching|StringEnums)',
-                       'matching': 'Matching', 'option': 'OptionTuple'}[feature]
-        fixture = 'optionresult' if feature == 'option' else feature
+                       'matching': 'Matching', 'option': 'Optional'}[feature]
+        fixture = 'optionals' if feature == 'option' else feature
         extra = [
             test('lexical', '.', ['go/token', 'go/scanner'], '^Test(GonTokens|Scan|Semis|ScanErrors)$'),
             # Verify the adapted cgo source still builds against the baseline AST.
@@ -235,16 +293,19 @@ def main():
         for name, cwd, cmd in plan:
             print(f'{name}: (cd {cwd} && {shlex.join(cmd)})')
         return 0
-    baseline = os.environ.get('GON_BASELINE_GO') or os.environ.get('GO_ERROR_HANDLING_BASELINE')
+    baseline = os.environ.get('GON_BASELINE_GO')
     if not baseline or not Path(baseline).is_absolute() or not os.access(baseline, os.X_OK):
         parser.error('set GON_BASELINE_GO to an unmodified compatible Go executable (absolute path)')
     env = dict({k: v for k, v in os.environ.items() if k not in ('GOROOT', 'GOTOOLDIR')}, GON_ROOT=str(ROOT), GOWORK='off',
-               GOTOOLCHAIN='local', GOFLAGS='', GON_BASELINE_GO=baseline,
-               GO_ERROR_HANDLING_BASELINE=baseline, GO_CONDITIONAL_EXPRESSION_BASELINE=baseline)
+               GOTOOLCHAIN='local', GOFLAGS='', GON_BASELINE_GO=baseline)
     # Analysis loaders invoke "go"; select the private tool only in child processes.
     env['PATH'] = str(ROOT / 'bin') + os.pathsep + env.get('PATH', '')
     out = ROOT / 'pkg/gon-validation' / args.feature
     out.mkdir(parents=True, exist_ok=True)
+    snapshot = source_snapshot()
+    (out/'source-start.json').write_text(json.dumps(snapshot, indent=2)+'\n')
+    head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    baseline_version = subprocess.check_output([baseline, 'version'], env=env, text=True).strip()
     results = []
     for index, (name, cwd, cmd) in enumerate(plan):
         print(f'RUN {name}: {shlex.join(cmd)}', flush=True)
@@ -254,7 +315,9 @@ def main():
             proc = subprocess.run(cmd, cwd=ROOT/cwd, env=env, stdout=stream, stderr=subprocess.STDOUT)
         result = dict(check=name, command=cmd, cwd=cwd, status='pass' if proc.returncode == 0 else 'fail',
                       exitCode=proc.returncode, seconds=round(time.monotonic()-start, 3), log=str(log))
-        if len(cmd) > 1 and cmd[1] == 'test':
+        result['tools'] = tool_snapshot(env)
+        # A compile-only test command produces a binary, not test events.
+        if len(cmd) > 1 and cmd[1] == 'test' and '-c' not in cmd:
             events = []
             for line in log.read_text().splitlines():
                 try:
@@ -268,6 +331,15 @@ def main():
                 result['status'] = 'fail'
                 result['reason'] = 'no matching tests ran'
         results.append(result)
+        current = source_snapshot()
+        result['sourceSHA256'] = current['sha256']
+        if current['sha256'] != snapshot['sha256']:
+            result['status'] = 'fail'
+            result['reason'] = 'implementation changed during validation'
+            results.extend(dict(check=n, command=c, cwd=d, status='not-run', reason='source changed')
+                           for n, d, c in plan[index+1:])
+            print('FAIL: implementation changed during validation; rerun on a stable snapshot', flush=True)
+            break
         print(f'{result["status"].upper()} {name} ({result["seconds"]}s): {log}', flush=True)
         if result['status'] == 'fail':
             print(log.read_text()[-10000:], flush=True)
@@ -278,13 +350,19 @@ def main():
     inventory = json.loads((ROOT/'misc/gon/features.json').read_text())
     pending = ([name+': '+item for name in MODERN_FEATURES for item in inventory[name]['pending']]
                if args.feature == 'modern' else inventory[args.feature]['pending'])
-    summary = dict(feature=args.feature, partial=bool(args.only), pending=pending, results=results)
+    final_snapshot = source_snapshot()
+    (out/'source-end.json').write_text(json.dumps(final_snapshot, indent=2)+'\n')
+    summary = dict(feature=args.feature, partial=bool(args.only), pending=pending, results=results,
+                   gitHEAD=head, platform=dict(sysplatform=sys.platform, machine=platform.machine()),
+                   baseline=dict(path=baseline, version=baseline_version),
+                   sourceSHA256=snapshot['sha256'], finalSourceSHA256=final_snapshot['sha256'],
+                   sourceStable=snapshot['sha256'] == final_snapshot['sha256'])
     (out/'summary.json').write_text(json.dumps(summary, indent=2)+'\n')
     if pending:
         print('FEATURE STILL OPEN: ' + '; '.join(pending))
     if args.only:
         print('PARTIAL RUN: unselected checks were not executed')
-    if any(r['status']=='fail' for r in results):
+    if not summary['sourceStable'] or any(r['status']=='fail' for r in results):
         return 1
     print('PASS: selected checks' if args.only or pending else 'PASS: all integration gates')
     return 2 if pending or args.only else 0

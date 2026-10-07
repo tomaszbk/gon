@@ -124,7 +124,7 @@ func ImplementInterface(ctx context.Context, snapshot *cache.Snapshot, loc proto
 		}
 
 		if t.Obj().Pkg() == nil {
-			// Predeclared type with no package: an alias of Gon's Result.
+			// Predeclared types have no package.
 			return nil, fmt.Errorf("cannot declare methods on predeclared type %s", t.Obj().Name())
 		}
 

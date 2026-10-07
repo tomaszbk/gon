@@ -1,0 +1,125 @@
+# Gon standard packages must preserve packages already provided by Go modules.
+env GOWORK=off
+cd local
+go run .
+stdout '^\[2 4 6\] local$'
+go list -f '{{.Standard}} {{if .Module}}{{.Module.Path}}{{end}}' gon/seq
+stdout '^false gon$'
+go mod tidy
+go test ./...
+
+# Dependencies and vendor mode preserve the same provider and module metadata.
+cd ../consumer
+go run .
+stdout '^\[2 4 6\] local$'
+go list -f '{{.Standard}} {{.Module.Path}} {{.Module.Replace.Path}}' gon/seq
+stdout '^false gon ../local$'
+go mod vendor
+go run -mod=vendor .
+stdout '^\[2 4 6\] local$'
+go list -mod=vendor -f '{{.Standard}} {{.Module.Path}}' gon/seq
+stdout '^false gon$'
+
+# A module with no package at that import path still uses Gon's standard package.
+cd ../fallback
+go run .
+stdout '^\[2 4 6\]$'
+go list -f '{{.Standard}} {{if .Module}}{{.Module.Path}}{{end}}' gon/seq
+stdout '^true $'
+
+# Workspace providers retain their normal module identity.
+cd ..
+go work init local workspace
+env GOWORK=$WORK/gopath/src/go.work
+cd workspace
+go run .
+stdout '^\[2 4 6\] local$'
+env GOWORK=off
+
+# Multiple module providers remain ambiguous, rather than arbitrarily choosing.
+cd ../ambiguous
+! go list gon/seq
+stderr 'ambiguous import: found package gon/seq in multiple modules:'
+stderr 'gon v0.0.0'
+stderr 'gon/seq v0.0.0'
+! stderr 'GOROOT'
+
+# GOPATH packages also retain the behavior that predates Gon standard packages.
+env GO111MODULE=off
+env GOPATH=$WORK/gopath
+cd $GOPATH/src/example
+go run .
+stdout '^\[2 4 6\] local$'
+go list -f '{{.Standard}}' gon/seq
+stdout '^false$'
+
+-- local/go.mod --
+module gon
+go 1.27
+-- local/seq/seq.go --
+package seq
+func Map[T, U any](values []T, f func(T) U) []U {
+	result := make([]U, len(values))
+	for i, value := range values { result[i] = f(value) }
+	return result
+}
+func Origin() string { return "local" }
+-- local/main.go --
+package main
+import "fmt"
+import "gon/seq"
+func main() { fmt.Println(seq.Map([]int{1, 2, 3}, func(n int) int { return n*2 }), seq.Origin()) }
+-- consumer/go.mod --
+module example.com/consumer
+go 1.27
+require gon v0.0.0
+replace gon => ../local
+-- consumer/main.go --
+package main
+import "fmt"
+import "gon/seq"
+func main() { fmt.Println(seq.Map([]int{1, 2, 3}, func(n int) int { return n*2 }), seq.Origin()) }
+-- fallback/go.mod --
+module gon
+go 1.27
+-- fallback/main.go --
+package main
+import "fmt"
+import "gon/seq"
+func main() { fmt.Println(seq.Map([]int{1, 2, 3}, func(n int) int { return n*2 })) }
+-- workspace/go.mod --
+module example.com/workspace
+go 1.27
+-- workspace/main.go --
+package main
+import "fmt"
+import "gon/seq"
+func main() { fmt.Println(seq.Map([]int{1, 2, 3}, func(n int) int { return n*2 }), seq.Origin()) }
+-- ambiguous/go.mod --
+module example.com/ambiguous
+go 1.27
+require (
+	gon v0.0.0
+	gon/seq v0.0.0
+)
+replace gon => ../local
+replace gon/seq => ../leaf
+-- leaf/go.mod --
+module gon/seq
+go 1.27
+-- leaf/seq.go --
+package seq
+func Origin() string { return "leaf" }
+-- $WORK/gopath/src/gon/seq/seq.go --
+package seq
+func Map[T, U any](values []T, f func(T) U) []U {
+	result := make([]U, len(values))
+	for i, value := range values { result[i] = f(value) }
+	return result
+}
+func Origin() string { return "local" }
+-- $WORK/gopath/src/example/main.go --
+package main
+import "fmt"
+import "gon/seq"
+func main() { fmt.Println(seq.Map([]int{1, 2, 3}, func(n int) int { return n*2 }), seq.Origin()) }

@@ -1,0 +1,245 @@
+{
+  "startedAt": "2026-10-07T15:22:08.490264+00:00",
+  "sourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+  "sourceManifest": "source-manifest.json.gz",
+  "snapshot": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+  "baseline": "/opt/homebrew/bin/go",
+  "platform": "darwin/arm64",
+  "checks": [
+    {
+      "name": "bootstrap-make",
+      "command": [
+        "./make.bash"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/src",
+      "exitCode": 0,
+      "seconds": 126.032,
+      "log": "logs/bootstrap-make.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-errorhandling",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/errorhandling.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 7.574,
+      "log": "logs/bootstrap-errorhandling.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-errortest",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/errortest.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 5.791,
+      "log": "logs/bootstrap-errortest.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-conditional",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/conditional.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 7.106,
+      "log": "logs/bootstrap-conditional.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-lambda",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/lambda.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 9.021,
+      "log": "logs/bootstrap-lambda.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-nullsafety",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/nullsafety.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 6.158,
+      "log": "logs/bootstrap-nullsafety.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-namedarguments",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/namedarguments.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 3.768,
+      "log": "logs/bootstrap-namedarguments.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-enums",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/enums.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 10.604,
+      "log": "logs/bootstrap-enums.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-matching",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/matching.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 3.269,
+      "log": "logs/bootstrap-matching.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-optionresult",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/optionresult.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 2.449,
+      "log": "logs/bootstrap-optionresult.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-optionsyntax",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/optionsyntax.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 12.064,
+      "log": "logs/bootstrap-optionsyntax.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-matchalternatives",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/matchalternatives.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 3.812,
+      "log": "logs/bootstrap-matchalternatives.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-patterntest",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/patterntest.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 3.426,
+      "log": "logs/bootstrap-patterntest.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-errorcontext",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/errorcontext.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 4.618,
+      "log": "logs/bootstrap-errorcontext.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-interpolation",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/interpolation.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 2.716,
+      "log": "logs/bootstrap-interpolation.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-seq",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/seq.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 3.255,
+      "log": "logs/bootstrap-seq.log.gz",
+      "status": "pass"
+    },
+    {
+      "name": "bootstrap-nilanalysis",
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon/test/nilanalysis.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gon",
+      "exitCode": 0,
+      "seconds": 11.529,
+      "log": "logs/bootstrap-nilanalysis.log.gz",
+      "status": "pass"
+    }
+  ],
+  "sourceFilesCopied": 20814,
+  "version": "go1.28-devel_d67f72b731 Mon Oct 5 16:12:50 2026 -0300",
+  "versionSHA256": "8f99edc055f51c46765879d6544b9c174bd41ffdd49cd669863db1ab5c1ea6f6",
+  "freshGOCACHE": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-review-bootstrap-0vuwpcp8/gocache",
+  "baselineRoot": "/opt/homebrew/Cellar/go/1.27.1/libexec",
+  "baselineVersion": "go version go1.27.1 darwin/arm64",
+  "tools": {
+    "bin/go": "a7e69af6ecd032ca3217e38ae3feaa5ce4b2bfc6e149d5143cdc772e7bd58835",
+    "bin/gofmt": "2d4ad33452bde67e475de9a605f5c07da8a2efb056c89d69485f40a79f3fceac",
+    "pkg/tool/darwin_arm64/compile": "abf0f9e6cb340799cf7cc24c7f340edfabb1387898427c229584d3b0899904e2",
+    "pkg/tool/darwin_arm64/link": "be69d3e0426c3607031856ed8df141093a018b124c01e72b956e6e1f41f64308"
+  },
+  "finalSourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+  "status": "pass",
+  "temporarySnapshotRemoved": true,
+  "finishedAt": "2026-10-07T15:26:04.480881+00:00"
+}

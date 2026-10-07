@@ -1,5 +1,27 @@
 package main
 
+import is "cmp"
+
+type isConstraint interface{ ~int }
+type Generic[P isConstraint] struct{ value P }
+type Ordered[P is.Ordered] struct{ value P }
+type MyBool bool
+
+func contextualBool(o int?) MyBool { return o is 4? }
+func boolContexts(o int?) {
+	var mb MyBool = o is 4?
+	if mb != contextualBool(o) {
+		panic("named boolean")
+	}
+	println(mb, !(o is 4?), contextualBool(o))
+}
+
+func namedConstraint() {
+	type is interface{ ~int }
+	type T[P is] struct{ value P }
+	println(T[int]{5}.value)
+}
+
 type Status enum {
 	default Unknown
 	Score { Points int }
@@ -66,6 +88,11 @@ func errorCode(err error) int {
 	return 0
 }
 func main() {
+	namedConstraint()
+	println(Generic[int]{3}.value, Ordered[int]{4}.value)
+	for _, o := range []int?{nil, 4, 5} {
+		boolContexts(o)
+	}
 	for _, value := range []Status{Status.Unknown, Status.Score{Points: 7}, Status.Rejected("bad")} {
 		println(valid(value), score(value)())
 	}

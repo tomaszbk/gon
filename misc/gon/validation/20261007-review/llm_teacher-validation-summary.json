@@ -1,0 +1,92 @@
+{
+  "recordedAt": "2026-10-07T15:22:31.797732+00:00",
+  "workingDirectory": "/Users/tzbk/Documents/llm_teacher/backend",
+  "platform": "darwin/arm64",
+  "gonVersion": "go version go1.28-devel_d67f72b731 Mon Oct 5 16:12:50 2026 -0300 darwin/arm64",
+  "checks": {
+    "standard": {
+      "command": "/Users/tzbk/Documents/gon/gon/bin/gon check --json ./...",
+      "exitCode": 0,
+      "ok": true,
+      "analyzers": 164,
+      "summary": {
+        "errors": 0,
+        "warnings": 0,
+        "infos": 0,
+        "hints": 0
+      },
+      "total": 0,
+      "internalErrors": 0,
+      "terminalStyledMessages": 0,
+      "stderrBytes": 0
+    },
+    "nilaway": {
+      "command": "/Users/tzbk/Documents/gon/gon/bin/gon check --nilaway --json ./...",
+      "exitCode": 0,
+      "ok": true,
+      "analyzers": 165,
+      "summary": {
+        "errors": 0,
+        "warnings": 8,
+        "infos": 0,
+        "hints": 0
+      },
+      "total": 8,
+      "internalErrors": 0,
+      "terminalStyledMessages": 0,
+      "stderrBytes": 0
+    }
+  },
+  "tests": {
+    "command": "/Users/tzbk/Documents/gon/gon/bin/gon test ./...",
+    "exitCode": 0,
+    "log": "logs/llm_teacher-test.log.gz"
+  },
+  "vet": {
+    "command": "/Users/tzbk/Documents/gon/gon/bin/gon vet ./...",
+    "exitCode": 0,
+    "log": "logs/llm_teacher-vet.log.gz"
+  },
+  "captureProbes": {
+    "safe": {
+      "exitCode": 0,
+      "summary": {
+        "errors": 0,
+        "warnings": 0,
+        "infos": 0,
+        "hints": 0
+      },
+      "absoluteSourcePaths": true
+    },
+    "unsafe": {
+      "exitCode": 0,
+      "summary": {
+        "errors": 0,
+        "warnings": 2,
+        "infos": 0,
+        "hints": 0
+      },
+      "absoluteSourcePaths": true
+    },
+    "unsafe-cache-reuse": {
+      "exitCode": 0,
+      "summary": {
+        "errors": 0,
+        "warnings": 2,
+        "infos": 0,
+        "hints": 0
+      },
+      "absoluteSourcePaths": true
+    }
+  },
+  "testAndVetEvidenceRecordedAt": "2026-10-07T13:53:01.928223+00:00",
+  "gonSourceSHA256": "24aed67972198004e3b6f8fa35692e519e198c7e6d26cd372bc88bb3d54c2025",
+  "tools": {
+    "gon/bin/gon": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+    "gon/bin/gonpls": "1a3968510c3767c0bdad96de88b5da86aaad9ea5cb34214f4d8d5a2ff0705e58",
+    "pkg/tool/darwin_arm64/gonpls": "d03c4051ff5baf4d25fbb2c8e5ba92ecd7482adfc9b651ed6d77e1d78983ab66",
+    "bin/go": "87db53877843841042b9ea21bed8ab4f6c0ffd15b3770f25f882a38cce7acaf6",
+    "pkg/tool/darwin_arm64/compile": "15f3e80321986f033cb9600b87119798966ec1adce88d5b7dd8d132d893354ac",
+    "pkg/tool/darwin_arm64/link": "3c449a22d0fa9979b8e6351c71541baf841ff3aaa9bf57a83839860380e83403"
+  }
+}

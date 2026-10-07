@@ -17,6 +17,7 @@ import (
 	"internal/testenv"
 	"io"
 	"log"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -97,6 +98,9 @@ var internalPkg = regexp.MustCompile(`(^|/)internal($|/)`)
 var exitCode = 0
 
 func Check(t *testing.T) {
+	if *flagHostOnly {
+		contexts = []*build.Context{&build.Default}
+	}
 	checkFiles, err := filepath.Glob(filepath.Join(testenv.GOROOT(t), "api/go1*.txt"))
 	if err != nil {
 		t.Fatal(err)
@@ -184,6 +188,10 @@ func Check(t *testing.T) {
 	// approved by the upstream Go project.
 	required = append(required, fileFeatures(filepath.Join(testenv.GOROOT(t), "api/fork.txt"), false)...)
 	exception := fileFeatures(filepath.Join(testenv.GOROOT(t), "api/except.txt"), false)
+	if *flagHostOnly {
+		required = hostFeatures(required)
+		exception = hostFeatures(exception)
+	}
 
 	if exitCode == 1 {
 		t.Errorf("API database problems found")
@@ -193,6 +201,26 @@ func Check(t *testing.T) {
 	}
 }
 
+// hostFeatures selects the host's API records without claiming validation of
+// any other platform. The default check still compares every upstream context.
+func hostFeatures(features []string) []string {
+	selected := make(map[string]bool)
+	for _, feature := range features {
+		comma := strings.IndexByte(feature, ',')
+		pkg, context, found := strings.Cut(feature[:comma], " (")
+		if found {
+			name := strings.TrimSuffix(context, ")")
+			host := runtime.GOOS + "-" + runtime.GOARCH
+			if name != host && !(build.Default.CgoEnabled && name == host+"-cgo") {
+				continue
+			}
+			feature = pkg + feature[comma:]
+		}
+		selected[feature] = true
+	}
+	return slices.Sorted(maps.Keys(selected))
+}
+
 // export emits the exported package features.
 func (w *Walker) export(pkg *apiPackage) {
 	if verbose {
@@ -200,14 +228,81 @@ func (w *Walker) export(pkg *apiPackage) {
 	}
 	pop := w.pushScope("pkg " + pkg.Path())
 	w.current = pkg
+	w.parameterSeen = make(map[types.Type]bool)
 	w.collectDeprecated()
 	scope := pkg.Scope()
 	for _, name := range scope.Names() {
 		if token.IsExported(name) {
 			w.emitObj(scope.Lookup(name))
+			if w.parameterNames {
+				w.reachableParameterAPI(scope.Lookup(name).Type())
+			}
 		}
 	}
 	pop()
+}
+
+// A public value may expose methods or function fields on an unexported
+// named type. Those labels remain callable even when the type cannot be
+// spelled by the importing package.
+func (w *Walker) reachableParameterAPI(typ types.Type) {
+	if typ == nil {
+		return
+	}
+	typ = types.Unalias(typ)
+	if w.parameterSeen[typ] {
+		return
+	}
+	w.parameterSeen[typ] = true
+	switch typ := typ.(type) {
+	case *types.Named:
+		if !typ.Obj().Exported() {
+			if _, ok := typ.Underlying().(*types.Interface); ok {
+				w.emitf("reachable interface (%s) %s", w.typeString(typ), w.typeString(typ.Underlying()))
+			}
+			methods := types.NewMethodSet(types.NewPointer(typ))
+			for i := 0; i < methods.Len(); i++ {
+				method := methods.At(i)
+				if method.Obj().Exported() {
+					w.emitf("reachable method (*%s) %s%s", w.typeString(typ), method.Obj().Name(), w.signatureString(method.Type().(*types.Signature)))
+				}
+			}
+			if fields, ok := typ.Underlying().(*types.Struct); ok {
+				for i := 0; i < fields.NumFields(); i++ {
+					field := fields.Field(i)
+					if field.Exported() {
+						w.emitf("reachable field (%s) %s %s", w.typeString(typ), field.Name(), w.typeString(field.Type()))
+					}
+				}
+			}
+		}
+		w.reachableParameterAPI(typ.Underlying())
+		for i := 0; i < typ.NumMethods(); i++ {
+			w.reachableParameterAPI(typ.Method(i).Type())
+		}
+	case *types.Signature:
+		w.reachableParameterAPI(typ.Params())
+		w.reachableParameterAPI(typ.Results())
+	case *types.Tuple:
+		for i := 0; i < typ.Len(); i++ {
+			w.reachableParameterAPI(typ.At(i).Type())
+		}
+	case *types.Interface:
+		for i := 0; i < typ.NumMethods(); i++ {
+			w.reachableParameterAPI(typ.Method(i).Type())
+		}
+	case *types.Struct:
+		for i := 0; i < typ.NumFields(); i++ {
+			if typ.Field(i).Exported() || typ.Field(i).Embedded() {
+				w.reachableParameterAPI(typ.Field(i).Type())
+			}
+		}
+	case *types.Map:
+		w.reachableParameterAPI(typ.Key())
+		w.reachableParameterAPI(typ.Elem())
+	case interface{ Elem() types.Type }:
+		w.reachableParameterAPI(typ.Elem())
+	}
 }
 
 func set(items []string) map[string]bool {
@@ -358,16 +453,18 @@ func fileFeatures(filename string, needApproval bool) []string {
 var fset = token.NewFileSet()
 
 type Walker struct {
-	context     *build.Context
-	root        string
-	scope       []string
-	current     *apiPackage
-	deprecated  map[token.Pos]bool
-	features    map[string]bool              // set
-	imported    map[string]*apiPackage       // packages already imported
-	stdPackages []string                     // names, omitting "unsafe", internal, and vendored packages
-	importMap   map[string]map[string]string // importer dir -> import path -> canonical path
-	importDir   map[string]string            // canonical import path -> dir
+	parameterNames bool // separate Gon API inventory; upstream records remain unchanged
+	parameterSeen  map[types.Type]bool
+	context        *build.Context
+	root           string
+	scope          []string
+	current        *apiPackage
+	deprecated     map[token.Pos]bool
+	features       map[string]bool              // set
+	imported       map[string]*apiPackage       // packages already imported
+	stdPackages    []string                     // names, omitting "unsafe", internal, and vendored packages
+	importMap      map[string]map[string]string // importer dir -> import path -> canonical path
+	importDir      map[string]string            // canonical import path -> dir
 
 }
 
@@ -802,10 +899,35 @@ func (w *Walker) writeType(buf *bytes.Buffer, typ types.Type) {
 
 	case *types.Struct:
 		buf.WriteString("struct")
+		if w.parameterNames {
+			buf.WriteString("{ ")
+			for i := 0; i < typ.NumFields(); i++ {
+				if i > 0 {
+					buf.WriteString("; ")
+				}
+				buf.WriteString(typ.Field(i).Name())
+				buf.WriteByte(' ')
+				w.writeType(buf, typ.Field(i).Type())
+			}
+			buf.WriteString(" }")
+		}
 
 	case *types.Pointer:
 		buf.WriteByte('*')
 		w.writeType(buf, typ.Elem())
+
+	case *types.Optional:
+		// Parenthesize compound payloads so an optional container cannot
+		// be confused with a container of optional elements.
+		switch types.Unalias(typ.Elem()).(type) {
+		case *types.Basic, *types.Named, *types.TypeParam:
+			w.writeType(buf, typ.Elem())
+		default:
+			buf.WriteByte('(')
+			w.writeType(buf, typ.Elem())
+			buf.WriteByte(')')
+		}
+		buf.WriteByte('?')
 
 	case *types.Tuple:
 		panic("should never see a tuple type")
@@ -820,7 +942,18 @@ func (w *Walker) writeType(buf *bytes.Buffer, typ types.Type) {
 			buf.WriteByte(' ')
 		}
 		if typ.NumMethods() > 0 {
-			buf.WriteString(strings.Join(sortedMethodNames(typ), ", "))
+			if w.parameterNames {
+				for i := 0; i < typ.NumMethods(); i++ {
+					if i > 0 {
+						buf.WriteString(", ")
+					}
+					method := typ.Method(i)
+					buf.WriteString(method.Name())
+					w.writeSignature(buf, method.Signature())
+				}
+			} else {
+				buf.WriteString(strings.Join(sortedMethodNames(typ), ", "))
+			}
 		}
 		if typ.NumEmbeddeds() > 0 {
 			buf.WriteString(strings.Join(w.sortedEmbeddeds(typ), ", "))
@@ -886,7 +1019,7 @@ func (w *Walker) writeSignature(buf *bytes.Buffer, sig *types.Signature) {
 	if tparams := sig.TypeParams(); tparams != nil {
 		w.writeTypeParams(buf, tparams, true)
 	}
-	w.writeParams(buf, sig.Params(), sig.Variadic())
+	w.writeParams(buf, sig.Params(), sig.Variadic(), true)
 	switch res := sig.Results(); res.Len() {
 	case 0:
 		// nothing to do
@@ -895,7 +1028,7 @@ func (w *Walker) writeSignature(buf *bytes.Buffer, sig *types.Signature) {
 		w.writeType(buf, res.At(0).Type())
 	default:
 		buf.WriteByte(' ')
-		w.writeParams(buf, res, false)
+		w.writeParams(buf, res, false, false)
 	}
 }
 
@@ -916,13 +1049,22 @@ func (w *Walker) writeTypeParams(buf *bytes.Buffer, tparams *types.TypeParamList
 	buf.WriteByte(']')
 }
 
-func (w *Walker) writeParams(buf *bytes.Buffer, t *types.Tuple, variadic bool) {
+func (w *Walker) writeParams(buf *bytes.Buffer, t *types.Tuple, variadic, names bool) {
 	buf.WriteByte('(')
 	for i, n := 0, t.Len(); i < n; i++ {
 		if i > 0 {
 			buf.WriteString(", ")
 		}
 		typ := t.At(i).Type()
+		if w.parameterNames && names {
+			// Empty and blank parameters cannot be addressed by a label.
+			name := t.At(i).Name()
+			if name == "" {
+				name = "_"
+			}
+			buf.WriteString(name)
+			buf.WriteByte(' ')
+		}
 		if variadic && i+1 == n {
 			buf.WriteString("...")
 			typ = typ.(*types.Slice).Elem()

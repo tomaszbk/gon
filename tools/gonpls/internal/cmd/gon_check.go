@@ -241,10 +241,12 @@ func (r *gonRequest) check(ctx context.Context) (gonResult, error) {
 			uris[uri] = true
 		}
 		for uri := range uris {
-			if !wanted[uri] {
-				continue
-			}
 			for _, d := range golang.CombineDiagnostics(byFile[uri], analysis[uri]) {
+				// A selected package can establish a nil flow whose consumer is
+				// in a dependency outside the requested package patterns.
+				if !wanted[uri] && d.Source != "nilaway" {
+					continue
+				}
 				gd, err := r.convertDiagnostic(ctx, d, result.Revision)
 				if err != nil {
 					return nil, err

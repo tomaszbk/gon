@@ -690,7 +690,7 @@ func (b *builder) expr0(fn *Function, e ast.Expr, tv types.TypeAndValue) Value {
 	case *ast.InterpolatedStringExpr:
 		call := fn.info.Interpolations[e]
 		if call == nil {
-			panic("missing typed interpolation call")
+			return b.interpolation(fn, e)
 		}
 		return b.expr(fn, call)
 	case *ast.MatchExpr:

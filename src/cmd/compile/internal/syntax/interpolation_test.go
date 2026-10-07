@@ -9,6 +9,7 @@ func TestInterpolationSyntax(t *testing.T) {
 	for _, source := range []string{
 		`package p; var _ = $"{ } $ 50% ${x} ${price:%.2f}"`,
 		`package p; var _ = $"${map[string]int{\"x\":2}[\"x\"]} ${f(name: x)} ${x[1:3]}"`,
+		`package p; var _ = $"${f?(3) ?? 0:%03d}"`,
 		"package p; var _ = $`raw\n\t${if true { 1 } else { 2 }} ${\"${\"} ${$\"nested ${x}\"}`",
 	} {
 		source = strings.ReplaceAll(source, `\"`, `"`)
@@ -33,6 +34,23 @@ func TestInterpolationSyntax(t *testing.T) {
 		output := printed.String()
 		if _, err := Parse(NewFileBase("formatted.go"), strings.NewReader(output), nil, nil, 0); err != nil {
 			t.Fatalf("bad formatting %q: %v", output, err)
+		}
+	}
+}
+
+func TestInterpolationUnterminatedRecovery(t *testing.T) {
+	for _, literal := range []string{`$"unterminated`, `$"unterminated\`, `$"${x`, `$"${(x`, `$"${x:%03d`} {
+		source := "package p\nvar bad = " + literal + "\nvar next = 1\nfunc retained() {}\n"
+		var errors []error
+		file, _ := Parse(NewFileBase("bad.go"), strings.NewReader(source), func(err error) { errors = append(errors, err) }, nil, 0)
+		if len(errors) == 0 {
+			t.Fatal("accepted unterminated interpolation")
+		}
+		if file == nil || len(file.DeclList) != 3 {
+			t.Fatalf("lost following declarations after %q: %#v; %v", literal, file, errors)
+		}
+		if declaration, ok := file.DeclList[2].(*FuncDecl); !ok || declaration.Name.Value != "retained" {
+			t.Fatalf("lost following function after %q: %#v", literal, file.DeclList[2])
 		}
 	}
 }

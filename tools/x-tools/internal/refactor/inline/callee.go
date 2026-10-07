@@ -98,7 +98,7 @@ func AnalyzeCallee(logf func(string, ...any), fset *token.FileSet, pkg *types.Pa
 	checkInfoFields(info)
 	for n := range ast.Preorder(decl) {
 		if e, ok := n.(ast.Expr); ok && (info.OptionalConversions[e] != nil || info.OptionalConversions == nil && types.IsOptional(info.TypeOf(e))) {
-			return nil, fmt.Errorf("cannot inline function containing Gon contextual Option conversion")
+			return nil, fmt.Errorf("cannot inline function containing Gon contextual optional conversion")
 		}
 		switch n := n.(type) {
 		case *ast.CallExpr:

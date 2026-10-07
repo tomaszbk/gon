@@ -636,9 +636,9 @@ func (p *parser) typeDecl(group *Group) Decl {
 			// is not a concern because name <- x is a statement and
 			// not an expression.
 			var x Expr = p.name()
-			// A following contextual identifier or may name the constraint.
-			// Leave it for paramList rather than treating P or as a handler.
-			if p.tok != _Lbrack && !(p.tok == _Name && p.lit == "or") {
+			// Contextual operator names may name the constraint here. Leave
+			// them for paramList instead of parsing a handler or pattern test.
+			if p.tok != _Lbrack && !(p.tok == _Name && (p.lit == "or" || p.lit == "is")) {
 				// To parse the expression starting with name, expand
 				// the call sequence we would get by passing in name
 				// to parser.expr, and pass in name to parser.pexpr.

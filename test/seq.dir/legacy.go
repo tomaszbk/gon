@@ -2,6 +2,26 @@ package main
 
 import "iter"
 
+func nestedLookup() {
+	plain, ok := map[string]int{"x": 1}["x"]
+	if !ok || plain != 1 {
+		panic("plain lookup")
+	}
+	type optional struct {
+		present bool
+		value   int
+	}
+	values := map[string]optional{"x": {}, "y": {true, 2}}
+	inner, outer := values["x"]
+	if !outer || inner.present {
+		panic("present absent payload")
+	}
+	inner, outer = values["y"]
+	if !outer || !inner.present || inner.value != 2 {
+		panic("nested payload")
+	}
+}
+
 func transform(s ints, f func(int) string) []string {
 	result := make([]string, len(s))
 	for i, n := range s {

@@ -6,9 +6,9 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[2]
 GON = ROOT / 'gon/bin/gon'
 ENV = dict(os.environ, GON_ROOT=str(ROOT))
-baseline = ENV.get('GO_ERROR_HANDLING_BASELINE')
+baseline = ENV.get('GON_BASELINE_GO')
 if not baseline:
-    raise SystemExit('Set GO_ERROR_HANDLING_BASELINE to an unmodified Go toolchain')
+    raise SystemExit('Set GON_BASELINE_GO to an unmodified Go toolchain')
 def run(*args, cwd=ROOT):
     subprocess.run([str(a) for a in args], cwd=cwd, env=ENV, check=True)
 for tool, name in [(baseline, 'legacy'), (GON, 'legacy'), (GON, 'modern')]:

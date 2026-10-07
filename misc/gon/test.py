@@ -432,7 +432,7 @@ var parenthesized func(int) int = (func(parenParam int) int { return parenParam 
             assert "panic" not in logs.lower() and "failed to implement" not in logs, logs
 
 def main():
-    baseline = os.environ.get("GON_BASELINE_GO") or os.environ.get("GO_ERROR_HANDLING_BASELINE")
+    baseline = os.environ.get("GON_BASELINE_GO")
     if not baseline:
         raise SystemExit("Set GON_BASELINE_GO to an unmodified Go executable")
     if sys.argv[1:] == ["--features-only"]:

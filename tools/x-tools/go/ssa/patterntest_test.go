@@ -1,7 +1,6 @@
 package ssa_test
 
 import (
-	"go/ast"
 	"go/parser"
 	"go/token"
 	"go/types"
@@ -10,9 +9,9 @@ import (
 	"runtime"
 	"testing"
 
+	"golang.org/x/tools/go/loader"
 	"golang.org/x/tools/go/ssa"
 	"golang.org/x/tools/go/ssa/interp"
-	"golang.org/x/tools/go/ssa/ssautil"
 )
 
 // TestGonPatternTest checks the paired pattern-test contract through
@@ -30,10 +29,20 @@ func TestGonPatternTest(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			pkg, _, err := ssautil.BuildPackage(&types.Config{}, fs, types.NewPackage("main", "main"), []*ast.File{f}, ssa.SanityCheckFunctions|ssa.InstantiateGenerics|ssa.GlobalDebug)
+			conf := loader.Config{Fset: fs, ParserMode: parser.SkipObjectResolution}
+			conf.CreateFromFiles("main", f)
+			loaded, err := conf.Load()
 			if err != nil {
 				t.Fatal(err)
 			}
+			// Keep imported initializers executable, even when an import is
+			// currently used only as a generic constraint.
+			prog := ssa.NewProgram(fs, ssa.SanityCheckFunctions|ssa.InstantiateGenerics|ssa.GlobalDebug)
+			for _, info := range loaded.AllPackages {
+				prog.CreatePackage(info.Pkg, info.Files, &info.Info, info.Importable)
+			}
+			prog.Build()
+			pkg := prog.Package(loaded.Created[0].Pkg)
 			if code := interp.Interpret(pkg, 0, types.SizesFor("gc", runtime.GOARCH), "main", nil); code != 0 {
 				t.Fatalf("SSA execution failed: %d", code)
 			}

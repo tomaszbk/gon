@@ -18,7 +18,7 @@ func TestGonNoEffects(t *testing.T) {
 		{"if c { <-ch } else { 2 }", false},
 		{"if c { 1 } else { f() }", false},
 		{"f()!", false},
-		{"Option[int].Some(1)?", false},
+		{"(int?)(1)?", false},
 		{"switch v { case E.A => 1; default => f() }", false},
 		{"f() or err { panic(err) }", false},
 		{"func() { f() }", true},

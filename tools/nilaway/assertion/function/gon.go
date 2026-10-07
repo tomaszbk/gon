@@ -9,6 +9,8 @@ import (
 	"go/constant"
 	"go/token"
 	"go/types"
+	"path/filepath"
+	"runtime"
 	"slices"
 	"sort"
 
@@ -20,6 +22,7 @@ import (
 	"golang.org/x/exp/typeparams"
 	"golang.org/x/tools/go/ssa"
 	"golang.org/x/tools/go/ssa/ssautil"
+	"golang.org/x/tools/go/types/typeutil"
 )
 
 // Gon expressions can contain control flow, assignments, and early returns.
@@ -41,12 +44,24 @@ func usesGon(pass *analysishelper.EnhancedPass) bool {
 				*ast.LambdaExpr, *ast.CondExpr, *ast.NilGuardExpr, *ast.SafeNavExpr,
 				*ast.InterpolatedStringExpr:
 				found = true
+			case *ast.Ident:
+				if object, ok := pass.TypesInfo.Uses[n.(*ast.Ident)].(*types.Func); ok && object.Pkg() != pass.Pkg {
+					fact := new(gonPayloadFact)
+					found = pass.ImportObjectFact(object.Origin(), fact) && len(fact.InterfaceParameters) > 0
+				}
 			case *ast.BinaryExpr:
 				found = n.(*ast.BinaryExpr).Op == token.COALESCE
 			case *ast.AssignStmt:
 				found = n.(*ast.AssignStmt).Tok == token.COALESCE_ASSIGN
 			case *ast.CallExpr:
-				found = len(n.(*ast.CallExpr).ArgNames) != 0
+				call := n.(*ast.CallExpr)
+				found = len(call.ArgNames) != 0
+				if !found {
+					if object := typeutil.StaticCallee(pass.TypesInfo, call); object != nil && object.Pkg() != pass.Pkg {
+						fact := new(gonPayloadFact)
+						found = pass.ImportObjectFact(object.Origin(), fact) && len(fact.InterfaceParameters) > 0
+					}
+				}
 			}
 			return !found
 		})
@@ -176,6 +191,12 @@ func gonTriggers(pass *analysishelper.EnhancedPass) (triggers []annotation.FullT
 	})
 	flow.exportPayloadFacts()
 	for _, fn := range flow.functions {
+		// Method-expression thunks have a leading receiver parameter while
+		// their object has the declared method signature. Their source method
+		// is analyzed below; the thunk is only call-lowering machinery.
+		if fn.Synthetic != "" && fn.Syntax() == nil {
+			continue
+		}
 		flow.function(fn)
 	}
 	// SSA can expose several storage loads for one source dereference (notably
@@ -258,6 +279,12 @@ func (f *gonFlow) function(fn *ssa.Function) {
 				}
 			case *ssa.Store:
 				f.consume(ins.Addr, nil, point, context, &annotation.PtrLoad{ConsumeTriggerTautology: &annotation.ConsumeTriggerTautology{}}, ins.Pos())
+				if address, ok := ins.Addr.(*ssa.FieldAddr); ok {
+					_, field := gonProjection(address.X.Type().Underlying().(*types.Pointer).Elem(), []int{address.Field})
+					if field != nil && types.EnumStorageOf(address.X.Type().Underlying().(*types.Pointer).Elem()) == nil {
+						f.consume(ins.Val, nil, point, context, &annotation.FldAssign{TriggerIfNonNil: &annotation.TriggerIfNonNil{Ann: &annotation.FieldAnnotationKey{FieldDecl: field}}}, ins.Pos())
+					}
+				}
 			case *ssa.Call:
 				f.call(&ins.Call, point, context, ins.Pos())
 				if f.noReturn(&ins.Call) {
@@ -280,6 +307,9 @@ func (f *gonFlow) function(fn *ssa.Function) {
 					}
 					key := annotation.RetKeyFromRetNum(object, i)
 					f.consume(value, nil, point, context, &annotation.UseAsReturn{TriggerIfNonNil: &annotation.TriggerIfNonNil{Ann: key}, RetStmt: &ast.ReturnStmt{Return: ins.Pos()}}, ins.Pos())
+					if typeshelper.IsDeep(value.Type()) {
+						f.consumeElements(value, point, context, &annotation.UseAsReturnDeep{TriggerIfDeepNonNil: &annotation.TriggerIfDeepNonNil{Ann: key}, RetStmt: &ast.ReturnStmt{Return: ins.Pos()}}, ins.Pos())
+					}
 					for _, projection := range gonPayloads(value.Type(), nil) {
 						if !f.present(value, projection.path, point, context) {
 							continue
@@ -290,6 +320,13 @@ func (f *gonFlow) function(fn *ssa.Function) {
 				}
 			}
 		}
+	}
+}
+
+func (f *gonFlow) consumeElements(value ssa.Value, point gonPoint, context *gonContext, consumer annotation.ConsumingAnnotationTrigger, pos token.Pos) {
+	consumer.SetNeedsGuard(false)
+	for _, origin := range f.elementOrigins(value, nil, point, context) {
+		f.triggers = append(f.triggers, annotation.FullTrigger{Producer: &annotation.ProduceTrigger{Annotation: origin.annotation, Expr: origin.expr}, Consumer: &annotation.ConsumeTrigger{Annotation: consumer.Copy(), Expr: f.expr(value, pos), Guards: guard.NoGuards(), GuardMatched: true}})
 	}
 }
 
@@ -324,7 +361,7 @@ func (f *gonFlow) call(call *ssa.CallCommon, point gonPoint, context *gonContext
 	for i, value := range call.Args {
 		param := i
 		var key annotation.Key
-		if callee != nil && callee.Signature.Recv() != nil {
+		if callee != nil && object.Signature().Recv() != nil {
 			if i == 0 {
 				key = &annotation.RecvAnnotationKey{FuncDecl: object}
 				param = annotation.ReceiverParamIndex
@@ -340,12 +377,16 @@ func (f *gonFlow) call(call *ssa.CallCommon, point gonPoint, context *gonContext
 			consumer = &annotation.RecvPass{TriggerIfNonNil: &annotation.TriggerIfNonNil{Ann: key}}
 		}
 		f.consume(value, nil, point, context, consumer, pos)
+		if _, isInterface := value.Type().Underlying().(*types.Interface); isInterface {
+			deep := &annotation.ArgPassDeep{TriggerIfDeepNonNil: &annotation.TriggerIfDeepNonNil{Ann: key}}
+			deep.SetNeedsGuard(false)
+			for _, origin := range f.assertedOrigins(value, nil, point, context) {
+				f.triggers = append(f.triggers, annotation.FullTrigger{Producer: &annotation.ProduceTrigger{Annotation: origin.annotation, Expr: origin.expr}, Consumer: &annotation.ConsumeTrigger{Annotation: deep.Copy(), Expr: f.expr(value, pos), Guards: guard.NoGuards(), GuardMatched: true}})
+			}
+		}
 		if param != annotation.ReceiverParamIndex && typeshelper.IsDeep(value.Type()) {
 			consumer := &annotation.ArgPassDeep{TriggerIfDeepNonNil: &annotation.TriggerIfDeepNonNil{Ann: key}}
-			consumer.SetNeedsGuard(false)
-			for _, origin := range f.elementOrigins(value, nil, point, context) {
-				f.triggers = append(f.triggers, annotation.FullTrigger{Producer: &annotation.ProduceTrigger{Annotation: origin.annotation, Expr: origin.expr}, Consumer: &annotation.ConsumeTrigger{Annotation: consumer, Expr: f.expr(value, pos), Guards: guard.NoGuards(), GuardMatched: true}})
-			}
+			f.consumeElements(value, point, context, consumer, pos)
 		}
 		for _, projection := range gonPayloads(value.Type(), nil) {
 			if !f.present(value, projection.path, point, context) {
@@ -395,12 +436,16 @@ func (f *gonFlow) origins(value ssa.Value, path []int, point gonPoint, context *
 			return unknown()
 		}
 		index := slices.Index(v.Parent().Params, v)
-		if v.Parent().Signature.Recv() != nil {
+		if object.Signature().Recv() != nil {
 			index--
 		}
 		var ann annotation.ProducingAnnotationTrigger
 		if len(path) > 0 && field != nil {
-			ann = &annotation.ParamFldRead{TriggerIfNilable: &annotation.TriggerIfNilable{Ann: &annotation.ParamFieldAnnotationKey{FuncDecl: object, ParamNum: index, FieldDecl: field}}}
+			if types.EnumStorageOf(v.Type()) != nil {
+				ann = &annotation.ParamFldRead{TriggerIfNilable: &annotation.TriggerIfNilable{Ann: &annotation.ParamFieldAnnotationKey{FuncDecl: object, ParamNum: index, FieldDecl: field}}}
+			} else {
+				ann = &annotation.FldRead{TriggerIfNilable: &annotation.TriggerIfNilable{Ann: &annotation.FieldAnnotationKey{FieldDecl: field}}}
+			}
 		} else if index < 0 {
 			ann = &annotation.MethodRecv{TriggerIfNilable: &annotation.TriggerIfNilable{Ann: &annotation.RecvAnnotationKey{FuncDecl: object}}, VarDecl: object.Signature().Recv()}
 		} else {
@@ -455,7 +500,7 @@ func (f *gonFlow) origins(value ssa.Value, path []int, point gonPoint, context *
 			return f.load(v.X, path, gonPoint{v.Block(), instructionIndex(v)}, context)
 		}
 		if v.Op == token.ARROW {
-			return unknown()
+			return f.receiveOrigins(v, path, point, context)
 		}
 	case *ssa.Extract:
 		if call, ok := v.Tuple.(*ssa.Call); ok {
@@ -466,6 +511,14 @@ func (f *gonFlow) origins(value ssa.Value, path []int, point gonPoint, context *
 		}
 		if lookup, ok := v.Tuple.(*ssa.Lookup); ok && v.Index == 0 {
 			return f.lookupOrigins(lookup, path, point, context)
+		}
+		if next, ok := v.Tuple.(*ssa.Next); ok && v.Index == 2 {
+			if iter, ok := next.Iter.(*ssa.Range); ok {
+				return f.elementOrigins(iter.X, path, point, context)
+			}
+		}
+		if recv, ok := v.Tuple.(*ssa.UnOp); ok && recv.Op == token.ARROW && v.Index == 0 {
+			return f.receiveOrigins(recv, path, point, context)
 		}
 	case *ssa.Call:
 		return f.callOrigins(&v.Call, 0, path, point, context, v)
@@ -480,6 +533,235 @@ func (f *gonFlow) origins(value ssa.Value, path []int, point gonPoint, context *
 }
 
 func instructionIndex(ins ssa.Instruction) int { return slices.Index(ins.Block().Instrs, ins) }
+
+// A receive from a channel closed locally can yield the element's zero value.
+// A successful comma-ok receive excludes that zero while preserving nil values
+// that were explicitly sent to the channel.
+func (f *gonFlow) receiveOrigins(recv *ssa.UnOp, path []int, point gonPoint, context *gonContext) []gonOrigin {
+	out := f.elementOrigins(recv.X, path, point, context)
+	checked := false
+	if recv.CommaOk {
+		for block := point.block; block != nil; block = block.Idom() {
+			for _, pred := range block.Preds {
+				if !pred.Dominates(point.block) || len(pred.Instrs) == 0 {
+					continue
+				}
+				branch, ok := pred.Instrs[len(pred.Instrs)-1].(*ssa.If)
+				if !ok {
+					continue
+				}
+				if okValue, ok := branch.Cond.(*ssa.Extract); ok && okValue.Tuple == recv && okValue.Index == 1 && pred.Succs[0].Dominates(point.block) {
+					checked = true
+				}
+			}
+		}
+	}
+	read := gonPoint{recv.Block(), instructionIndex(recv)}
+	if !checked && f.closedBefore(recv.X, read, context) && !f.bufferedBefore(recv.X, read, context) {
+		out = append(out, gonOrigin{&annotation.ConstNil{ProduceTriggerTautology: &annotation.ProduceTriggerTautology{}}, f.expr(recv, recv.Pos())})
+	}
+	return out
+}
+
+func (f *gonFlow) closedBefore(channel ssa.Value, point gonPoint, context *gonContext) bool {
+	key := gonTraceKey{channel, "closed", point.block, point.index, context}
+	if f.active[key] {
+		return true
+	}
+	f.active[key] = true
+	defer delete(f.active, key)
+	if call, ok := channel.(*ssa.Call); ok {
+		callee := call.Call.StaticCallee()
+		if callee == nil || len(callee.Blocks) == 0 {
+			return true
+		}
+		child := f.callContext(&call.Call, gonPoint{call.Block(), instructionIndex(call)}, context)
+		for _, block := range callee.Blocks {
+			for i, ins := range block.Instrs {
+				if ret, ok := ins.(*ssa.Return); ok && len(ret.Results) > 0 && f.closedBefore(ret.Results[0], gonPoint{block, i}, child) {
+					return true
+				}
+			}
+		}
+	}
+	if param, ok := channel.(*ssa.Parameter); ok {
+		if _, bound := context.bindings[channel]; !bound {
+			for _, fn := range f.functions {
+				for _, block := range fn.Blocks {
+					for i, ins := range block.Instrs {
+						if call, ok := ins.(*ssa.Call); ok && call.Call.StaticCallee() == param.Parent() {
+							index := slices.Index(param.Parent().Params, param)
+							if index < len(call.Call.Args) && f.closedBefore(call.Call.Args[index], gonPoint{block, i}, context) {
+								return true
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	ancestors := make(map[*ssa.BasicBlock]bool)
+	work := []*ssa.BasicBlock{point.block}
+	for len(work) > 0 {
+		block := work[len(work)-1]
+		work = work[:len(work)-1]
+		if !ancestors[block] {
+			ancestors[block] = true
+			work = append(work, block.Preds...)
+		}
+	}
+	for _, block := range point.block.Parent().Blocks {
+		if !ancestors[block] {
+			continue
+		}
+		if !f.reachable(block, context) {
+			continue
+		}
+		for i, ins := range block.Instrs {
+			if block == point.block && i >= point.index {
+				break
+			}
+			if call, ok := ins.(*ssa.Call); ok {
+				if builtin, ok := call.Call.Value.(*ssa.Builtin); ok && builtin.Name() == "close" && len(call.Call.Args) == 1 && f.sameValue(call.Call.Args[0], channel, context) {
+					return true
+				}
+				if f.callMayClose(&call.Call, channel, gonPoint{block, i}, context, make(map[*ssa.Function]bool)) {
+					return true
+				}
+			}
+			switch ins := ins.(type) {
+			case *ssa.Go:
+				if f.channelPassed(&ins.Call, channel, context) {
+					return true
+				}
+			case *ssa.Store:
+				if ins.Val == channel {
+					if _, field := ins.Addr.(*ssa.FieldAddr); field {
+						return true
+					}
+					if _, global := ins.Addr.(*ssa.Global); global {
+						return true
+					}
+				}
+			}
+
+		}
+	}
+	if binding, ok := context.bindings[channel]; ok {
+		return f.closedBefore(binding.value, binding.point, binding.context)
+	}
+	return false
+}
+
+func (f *gonFlow) callMayClose(call *ssa.CallCommon, channel ssa.Value, point gonPoint, context *gonContext, seen map[*ssa.Function]bool) bool {
+	if !f.channelPassed(call, channel, context) {
+		return false
+	}
+	if builtin, ok := call.Value.(*ssa.Builtin); ok {
+		return builtin.Name() == "close"
+	}
+	callee := call.StaticCallee()
+	if callee == nil || len(callee.Blocks) == 0 || seen[callee] {
+		return true
+	}
+	seen[callee] = true
+	defer delete(seen, callee)
+	child := f.callContext(call, point, context)
+	for _, block := range callee.Blocks {
+		for i, ins := range block.Instrs {
+			if nested, ok := ins.(*ssa.Call); ok && f.callMayClose(&nested.Call, channel, gonPoint{block, i}, child, seen) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (f *gonFlow) channelPassed(call *ssa.CallCommon, channel ssa.Value, context *gonContext) bool {
+	args := slices.Clone(call.Args)
+	if closure, ok := call.Value.(*ssa.MakeClosure); ok {
+		args = append(args, closure.Bindings...)
+	}
+	for _, arg := range args {
+		if boxed, ok := arg.(*ssa.MakeInterface); ok {
+			arg = boxed.X
+		}
+		a, ap := f.address(arg, context)
+		b, bp := f.address(channel, context)
+		if a == b && slices.Equal(ap, bp) {
+			return true
+		}
+		if pointer, ok := arg.Type().Underlying().(*types.Pointer); ok {
+			if _, chanPointer := pointer.Elem().Underlying().(*types.Chan); chanPointer {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// In a straight-line local block, a buffered channel retains values sent before
+// close. The zero value cannot be received while that known queue is nonempty.
+func (f *gonFlow) bufferedBefore(channel ssa.Value, point gonPoint, context *gonContext) bool {
+	if binding, ok := context.bindings[channel]; ok {
+		_ = binding
+		return false // a callee may have already drained the caller's queue
+	}
+	made, ok := channel.(*ssa.MakeChan)
+	if !ok || made.Block() != point.block {
+		return false
+	}
+	capacity := f.scalar(made.Size, nil, point, context)
+	if capacity == nil || constant.Sign(capacity) <= 0 {
+		return false
+	}
+	count := 0
+	for _, ins := range point.block.Instrs[instructionIndex(made)+1 : point.index] {
+		switch ins := ins.(type) {
+		case *ssa.Send:
+			if ins.Chan == channel {
+				count++
+			}
+		case *ssa.UnOp:
+			if ins.Op == token.ARROW && ins.X == channel {
+				count--
+			}
+		case *ssa.Call:
+			if slices.Contains(ins.Call.Args, channel) {
+				if builtin, ok := ins.Call.Value.(*ssa.Builtin); !ok || builtin.Name() != "close" {
+					return false
+				}
+			}
+		case *ssa.Go:
+			if slices.Contains(ins.Call.Args, channel) {
+				return false
+			}
+		case *ssa.Defer:
+			if slices.Contains(ins.Call.Args, channel) {
+				return false
+			}
+		case *ssa.Select:
+			for _, state := range ins.States {
+				if state.Chan == channel {
+					return false
+				}
+			}
+		case *ssa.MakeClosure:
+			if slices.Contains(ins.Bindings, channel) {
+				return false
+			}
+		case *ssa.Store:
+			if ins.Val == channel {
+				return false
+			}
+		case *ssa.MakeInterface:
+			if ins.X == channel {
+				return false
+			}
+		}
+	}
+	return count > 0
+}
 
 // Pattern tests merge both a binding and a boolean result. The zero binding on
 // the false edge cannot reach a consumer dominated by the test's true branch.
@@ -554,7 +836,7 @@ func (f *gonFlow) callOrigins(call *ssa.CallCommon, result int, path []int, poin
 		}
 	}
 	if callee != nil && len(path) > 0 {
-		if object := f.object(callee); object != nil && object.Pkg() != nil && object.Pkg().Path() == "gon/seq" {
+		if object := f.object(callee); object != nil && object.Pkg() != nil && object.Pkg().Path() == "gon/seq" && filepath.Dir(f.pass.Fset.Position(object.Pos()).Filename) == filepath.Join(runtime.GOROOT(), "src", "gon", "seq") {
 			switch object.Name() {
 			case "Find", "First", "Last", "At", "Lookup":
 				return f.elementOrigins(call.Args[0], nil, point, context)
@@ -597,7 +879,11 @@ func (f *gonFlow) callOrigins(call *ssa.CallCommon, result int, path []int, poin
 			var ann annotation.ProducingAnnotationTrigger
 			_, field := gonProjection(value.Type(), path)
 			if len(path) > 0 && field != nil {
-				ann = &annotation.FldReturn{TriggerIfNilable: &annotation.TriggerIfNilable{Ann: &annotation.RetFieldAnnotationKey{FuncDecl: object, RetNum: result, FieldDecl: field}}}
+				if types.EnumStorageOf(value.Type()) != nil {
+					ann = &annotation.FldReturn{TriggerIfNilable: &annotation.TriggerIfNilable{Ann: &annotation.RetFieldAnnotationKey{FuncDecl: object, RetNum: result, FieldDecl: field}}}
+				} else {
+					ann = &annotation.FldRead{TriggerIfNilable: &annotation.TriggerIfNilable{Ann: &annotation.FieldAnnotationKey{FieldDecl: field}}}
+				}
 			} else {
 				ann = &annotation.FuncReturn{TriggerIfNilable: &annotation.TriggerIfNilable{Ann: annotation.RetKeyFromRetNum(object, result)}}
 			}
@@ -611,6 +897,9 @@ func (f *gonFlow) callOrigins(call *ssa.CallCommon, result int, path []int, poin
 }
 
 func (f *gonFlow) assertedOrigins(value ssa.Value, path []int, point gonPoint, context *gonContext) []gonOrigin {
+	if binding, ok := context.bindings[value]; ok {
+		return f.assertedOrigins(binding.value, path, binding.point, binding.context)
+	}
 	switch v := value.(type) {
 	case *ssa.MakeInterface:
 		return f.origins(v.X, path, point, context)
@@ -623,12 +912,77 @@ func (f *gonFlow) assertedOrigins(value ssa.Value, path []int, point gonPoint, c
 			out = append(out, f.assertedOrigins(e, path, gonPoint{pred, len(pred.Instrs)}, context)...)
 		}
 		return out
+	case *ssa.Parameter:
+		if object := f.object(v.Parent()); object != nil {
+			index := slices.Index(v.Parent().Params, v)
+			if object.Signature().Recv() != nil {
+				index--
+			}
+			if index >= 0 {
+				return []gonOrigin{{&annotation.FuncParamDeep{TriggerIfDeepNilable: &annotation.TriggerIfDeepNilable{Ann: annotation.ParamKeyFromArgNum(object, index)}}, f.expr(v, v.Pos())}}
+			}
+			return []gonOrigin{{&annotation.MethodRecvDeep{TriggerIfDeepNilable: &annotation.TriggerIfDeepNilable{Ann: &annotation.RecvAnnotationKey{FuncDecl: object}}, VarDecl: object.Signature().Recv()}, f.expr(v, v.Pos())}}
+		}
+	case *ssa.Const:
+		if v.IsNil() {
+			return nil // nil interfaces cannot satisfy a non-interface type assertion
+		}
+	}
+	return []gonOrigin{{&annotation.ProduceTriggerTautology{}, f.expr(value, value.Pos())}}
+}
+
+// Container results use deep return annotations across packages and retain
+// their actual element producers for local calls, including Go tuples consumed
+// by Gon error propagation.
+func (f *gonFlow) callElementOrigins(call *ssa.CallCommon, result int, path []int, point gonPoint, context *gonContext, value ssa.Value) []gonOrigin {
+	if concrete := f.concreteCall(call); concrete != nil {
+		call = concrete
+	}
+	callee := call.StaticCallee()
+	if callee != nil && f.callActive[callee] == 0 && len(callee.Blocks) > 0 && f.object(callee) != nil && f.object(callee).Pkg() == f.pass.Pkg {
+		f.callActive[callee]++
+		defer func() { f.callActive[callee]-- }()
+		child := f.callContext(call, point, context)
+		var out []gonOrigin
+		for _, block := range callee.Blocks {
+			if !f.reachable(block, child) {
+				continue
+			}
+			for i, ins := range block.Instrs {
+				if ret, ok := ins.(*ssa.Return); ok && result < len(ret.Results) {
+					if result < len(ret.Results)-1 && typeshelper.FuncIsErrReturning(callee.Signature) && f.callSucceeded(call, point) && f.definitelyNonNil(ret.Results[len(ret.Results)-1], gonPoint{block, i}, child) {
+						continue
+					}
+					out = append(out, f.elementOrigins(ret.Results[result], path, gonPoint{block, i}, child)...)
+				}
+			}
+		}
+		return out
+	}
+	object := call.Method
+	if callee != nil {
+		object = f.object(callee)
+	}
+	if object != nil {
+		return []gonOrigin{{annotation.DeepNilabilityOfFuncRet(object, result), f.expr(value, value.Pos())}}
 	}
 	return []gonOrigin{{&annotation.ProduceTriggerTautology{}, f.expr(value, value.Pos())}}
 }
 
 // Elements and projected payloads share NilAway's deep annotation protocol.
 func (f *gonFlow) elementOrigins(value ssa.Value, path []int, point gonPoint, context *gonContext) []gonOrigin {
+	if value == nil {
+		return nil
+	}
+	// Loop-carried slices (for example xs = append(xs, p)) contain cyclic
+	// SSA phis. Follow each producer once per use while retaining the other
+	// incoming edges, rather than recursively expanding the loop forever.
+	key := gonTraceKey{value, "elements:" + fmt.Sprint(path), point.block, point.index, context}
+	if f.active[key] {
+		return nil
+	}
+	f.active[key] = true
+	defer delete(f.active, key)
 	if binding, ok := context.bindings[value]; ok {
 		return f.elementOrigins(binding.value, path, binding.point, binding.context)
 	}
@@ -646,28 +1000,50 @@ func (f *gonFlow) elementOrigins(value ssa.Value, path []int, point gonPoint, co
 		return out
 	}
 	if call, ok := value.(*ssa.Call); ok {
-		if callee := call.Call.StaticCallee(); callee != nil {
-			if object := f.object(callee); object != nil {
-				return []gonOrigin{{annotation.DeepNilabilityOfFuncRet(object, 0), f.expr(value, value.Pos())}}
+		if builtin, ok := call.Call.Value.(*ssa.Builtin); ok && builtin.Name() == "append" {
+			var out []gonOrigin
+			for _, arg := range call.Call.Args {
+				out = append(out, f.elementOrigins(arg, path, point, context)...)
 			}
+			return out
+		}
+		return f.callElementOrigins(&call.Call, 0, path, point, context, value)
+	}
+	if extract, ok := value.(*ssa.Extract); ok {
+		if call, ok := extract.Tuple.(*ssa.Call); ok {
+			return f.callElementOrigins(&call.Call, extract.Index, path, point, context, value)
 		}
 	}
 	if loaded, ok := value.(*ssa.UnOp); ok && loaded.Op == token.MUL {
+		base, fieldPath := gonAddress(loaded.X)
+		if pointer, ok := base.Type().Underlying().(*types.Pointer); ok && len(fieldPath) > 0 && types.EnumStorageOf(pointer.Elem()) == nil {
+			_, field := gonProjection(pointer.Elem(), fieldPath)
+			if field != nil {
+				return []gonOrigin{{annotation.DeepNilabilityOfFld(field), f.expr(value, value.Pos())}}
+			}
+		}
 		if global, ok := loaded.X.(*ssa.Global); ok {
 			if object, ok := global.Object().(*types.Var); ok {
 				return []gonOrigin{{annotation.DeepNilabilityOfVar(nil, object), f.expr(value, value.Pos())}}
 			}
 		}
 	}
+	if field, ok := value.(*ssa.Field); ok && types.EnumStorageOf(field.X.Type()) == nil {
+		_, object := gonProjection(field.X.Type(), []int{field.Field})
+		if object != nil {
+			return []gonOrigin{{annotation.DeepNilabilityOfFld(object), f.expr(value, value.Pos())}}
+		}
+	}
 	if param, ok := value.(*ssa.Parameter); ok {
 		if object := f.object(param.Parent()); object != nil {
 			index := slices.Index(param.Parent().Params, param)
-			if param.Parent().Signature.Recv() != nil {
+			if object.Signature().Recv() != nil {
 				index--
 			}
 			if index >= 0 {
 				return []gonOrigin{{annotation.DeepNilabilityOfVar(object, object.Signature().Params().At(index)), f.expr(param, param.Pos())}}
 			}
+			return []gonOrigin{{annotation.DeepNilabilityOfVar(object, object.Signature().Recv()), f.expr(param, param.Pos())}}
 		}
 	}
 	// Locally created arrays/slices and maps retain their actual element
@@ -687,6 +1063,10 @@ func (f *gonFlow) elementOrigins(value ssa.Value, path []int, point gonPoint, co
 				break
 			}
 			switch ins := instruction.(type) {
+			case *ssa.Send:
+				if ins.Chan == value {
+					out = append(out, f.origins(ins.X, path, gonPoint{block, i}, context)...)
+				}
 			case *ssa.MapUpdate:
 				if ins.Map == value {
 					out = append(out, f.origins(ins.Value, path, gonPoint{block, i}, context)...)
@@ -706,6 +1086,9 @@ func (f *gonFlow) elementOrigins(value ssa.Value, path []int, point gonPoint, co
 		}
 	}
 	if _, ok := value.(*ssa.MakeMap); ok {
+		return out
+	}
+	if _, ok := value.(*ssa.MakeChan); ok {
 		return out
 	}
 	if alloc, ok := base.(*ssa.Alloc); ok {
@@ -900,6 +1283,11 @@ func (f *gonFlow) reaching(addr ssa.Value, path []int, point gonPoint, context *
 }
 
 func (f *gonFlow) load(addr ssa.Value, path []int, point gonPoint, context *gonContext) []gonOrigin {
+	if index, ok := addr.(*ssa.IndexAddr); ok {
+		if _, fixed := index.Index.(*ssa.Const); !fixed {
+			return f.elementOrigins(index.X, path, point, context)
+		}
+	}
 	var out []gonOrigin
 	for _, stored := range f.reaching(addr, path, point, context, make(map[*ssa.BasicBlock]bool)) {
 		if stored.unknown {
@@ -911,34 +1299,75 @@ func (f *gonFlow) load(addr ssa.Value, path []int, point gonPoint, context *gonC
 	if len(out) > 0 {
 		return out
 	}
+	if index, ok := addr.(*ssa.IndexAddr); ok {
+		return f.elementOrigins(index.X, path, point, context)
+	}
 	base, addressPath := gonAddress(addr)
 	if free, ok := base.(*ssa.FreeVar); ok {
 		for _, fn := range f.functions {
 			for _, block := range fn.Blocks {
-				for _, instruction := range block.Instrs {
+				for creationIndex, instruction := range block.Instrs {
 					closure, ok := instruction.(*ssa.MakeClosure)
 					if !ok || closure.Fn != free.Parent() {
 						continue
 					}
+					creation := gonPoint{block, creationIndex}
 					index := slices.Index(free.Parent().FreeVars, free)
+					capture := closure.Bindings[index]
+					projection := append(slices.Clone(addressPath), path...)
 					called := false
+					var lateAt []gonPoint
 					for _, callBlock := range fn.Blocks {
 						for i, callInstruction := range callBlock.Instrs {
-							call, ok := callInstruction.(*ssa.Call)
-							if !ok {
+							var call *ssa.CallCommon
+							concurrent := false
+							async := false
+							deferred := false
+							switch ins := callInstruction.(type) {
+							case *ssa.Call:
+								call = &ins.Call
+							case *ssa.Go:
+								call, concurrent, async = &ins.Call, true, true
+							case *ssa.Defer:
+								call, concurrent, deferred = &ins.Call, true, true
+							}
+							if call == nil || call.Value != closure && !slices.Contains(call.Args, ssa.Value(closure)) {
 								continue
 							}
-							if call.Call.Value == closure || slices.Contains(call.Call.Args, ssa.Value(closure)) {
-								called = true
-								out = append(out, f.load(closure.Bindings[index], append(slices.Clone(addressPath), path...), gonPoint{callBlock, i}, context)...)
+							invocation := gonPoint{callBlock, i}
+							if !f.afterPoint(invocation, creation) || !f.reachable(callBlock, context) {
+								continue
+							}
+							called = true
+							if concurrent {
+								lateAt = append(lateAt, invocation)
+							}
+							if !deferred {
+								out = append(out, f.load(capture, projection, invocation, context)...)
+							}
+							if async {
+								// A goroutine can observe an intermediate assignment even
+								// when the capture is restored before the caller returns.
+								out = append(out, f.futureCaptureWrites(capture, projection, invocation, context)...)
 							}
 						}
 					}
-					if !called {
+					if !called || len(lateAt) > 0 {
+						// Escaped, deferred and concurrent closures can observe later
+						// assignments. An earlier return never executed the creation.
 						for _, exit := range fn.Blocks {
 							for i, ins := range exit.Instrs {
-								if _, ok := ins.(*ssa.Return); ok {
-									out = append(out, f.load(closure.Bindings[index], append(slices.Clone(addressPath), path...), gonPoint{exit, i}, context)...)
+								point := gonPoint{exit, i}
+								isExit := false
+								switch ins.(type) {
+								case *ssa.Return, *ssa.Panic:
+									isExit = true
+								}
+								if !isExit || !f.afterPoint(point, creation) || !f.reachable(exit, context) {
+									continue
+								}
+								if !called || slices.ContainsFunc(lateAt, func(invocation gonPoint) bool { return f.afterPoint(point, invocation) }) {
+									out = append(out, f.load(capture, projection, point, context)...)
 								}
 							}
 						}
@@ -954,6 +1383,15 @@ func (f *gonFlow) load(addr ssa.Value, path []int, point gonPoint, context *gonC
 			return f.elementOrigins(param, path, point, context)
 		}
 	}
+	// Ordinary struct fields use the same field-site annotation as the Go
+	// backpropagator, including fields read from imported constructor returns.
+	// Missing a reaching local store does not prove that a field can be nil.
+	if pointer, ok := base.Type().Underlying().(*types.Pointer); ok && len(addressPath)+len(path) > 0 && types.EnumStorageOf(pointer.Elem()) == nil {
+		_, field := gonProjection(pointer.Elem(), append(slices.Clone(addressPath), path...))
+		if field != nil {
+			return []gonOrigin{{&annotation.FldRead{TriggerIfNilable: &annotation.TriggerIfNilable{Ann: &annotation.FieldAnnotationKey{FieldDecl: field}}}, f.expr(addr, addr.Pos())}}
+		}
+	}
 	if _, ok := base.(*ssa.Alloc); ok {
 		return nil
 	} // initialized nonnil origins
@@ -964,6 +1402,61 @@ func (f *gonFlow) load(addr ssa.Value, path []int, point gonPoint, context *gonC
 		}
 	}
 	return []gonOrigin{{&annotation.ProduceTriggerTautology{}, f.expr(addr, addr.Pos())}}
+}
+
+func (f *gonFlow) futureCaptureWrites(capture ssa.Value, path []int, invocation gonPoint, context *gonContext) []gonOrigin {
+	base, prefix := f.address(capture, context)
+	wanted := append(prefix, path...)
+	var out []gonOrigin
+	for _, block := range invocation.block.Parent().Blocks {
+		if !f.reachable(block, context) {
+			continue
+		}
+		for i, instruction := range block.Instrs {
+			point := gonPoint{block, i}
+			if !f.afterPoint(point, invocation) {
+				continue
+			}
+			if store, ok := instruction.(*ssa.Store); ok {
+				storedBase, storedPath := f.address(store.Addr, context)
+				if storedBase == base && len(storedPath) <= len(wanted) && slices.Equal(storedPath, wanted[:len(storedPath)]) {
+					out = append(out, f.origins(store.Val, wanted[len(storedPath):], point, context)...)
+				}
+			}
+			if call, ok := instruction.(*ssa.Call); ok {
+				for _, written := range f.callWrites(&call.Call, capture, path, point, context) {
+					if written.unknown {
+						out = append(out, gonOrigin{&annotation.ProduceTriggerTautology{}, f.expr(capture, capture.Pos())})
+					} else {
+						out = append(out, f.origins(written.value, written.path, written.point, written.context)...)
+					}
+				}
+			}
+		}
+	}
+	return out
+}
+
+// afterPoint reports whether execution can reach point after the earlier point.
+// In particular, error returns before a closure exists are not capture states.
+func (f *gonFlow) afterPoint(point, earlier gonPoint) bool {
+	if point.block == earlier.block && point.index > earlier.index {
+		return true
+	}
+	seen := make(map[*ssa.BasicBlock]bool)
+	work := slices.Clone(point.block.Preds)
+	for len(work) > 0 {
+		block := work[len(work)-1]
+		work = work[:len(work)-1]
+		if block == earlier.block {
+			return true
+		}
+		if !seen[block] {
+			seen[block] = true
+			work = append(work, block.Preds...)
+		}
+	}
+	return false
 }
 
 func (f *gonFlow) guarded(value ssa.Value, point gonPoint, context *gonContext) bool {

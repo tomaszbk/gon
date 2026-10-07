@@ -18,10 +18,10 @@ import (
 	"fmt"
 	"go/token"
 	"go/types"
+	"path/filepath"
 
 	"go.uber.org/nilaway/annotation"
 	"go.uber.org/nilaway/util/analysishelper"
-	"go.uber.org/nilaway/util/tokenhelper"
 	"golang.org/x/tools/go/types/objectpath"
 )
 
@@ -211,9 +211,8 @@ func (p *primitivizer) site(key annotation.Key, isDeep bool) primitiveSite {
 		}
 	}
 
-	// Default case (local objects or objects from skipped upstream packages), we can simply use
-	// their Object.Pos() and retrieve the position information. However, we must trim the possible
-	// build-system sandbox prefix from the filenames for cross-package references.
+	// Local objects and skipped upstream packages use their Object.Pos().
+	// Fact positions retain a stable source path across analysis processes.
 	if !position.IsValid() {
 		position = p.toPosition(key.Object().Pos())
 	}
@@ -276,19 +275,14 @@ func (p *primitivizer) toPosition(pos token.Pos) token.Position {
 	// Therefore, here we explicitly disable the adjustment.
 	position := p.pass.Fset.PositionFor(pos, false /* adjusted */)
 
-	// For build systems that employ sandboxing (e.g., bazel), the file names in the `Fset` may
-	// contain a random prefix. For example:
-	//   <SANDBOX_PREFIX>/<WORKSPACE_UUID>/src/mypkg/mysrc1.go
-	//   <SANDBOX_PREFIX>/<WORKSPACE_UUID>/src/mypkg/mysrc2.go
-	//   src/upstream/mysrc1.go
-	//   src/upstream/mysrc2.go
-	// Notice that the upstream files do not have this prefix, since this information is loaded
-	// from archive file (that stores the symbol information etc.), but not from the sandbox.
-	// So, we trim the `<SANDBOX_PREFIX>/<WORKSPACE_UUID>/` here, which is CWD set by bazel build.
-	// For other drivers (standard or golangci-lint), we won't even have this prefix prepended,
-	// since the file paths will always be in the form of the relative paths (e.g.,
-	// `src/mypkg/mysrc1.go`). Trimming the prefixes here for them is simply a no-op.
-	position.Filename = tokenhelper.RelToCwd(position.Filename)
+	// Facts are reused across projects and working directories. A CWD-relative
+	// filename changes meaning in a later process, including for standard-library
+	// facts. Keep source identity absolute; shorten paths only for display.
+	if position.IsValid() {
+		if filename, err := filepath.Abs(position.Filename); err == nil {
+			position.Filename = filename
+		}
+	}
 
 	return position
 }

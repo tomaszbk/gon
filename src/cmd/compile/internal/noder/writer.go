@@ -2038,6 +2038,7 @@ func (w *writer) expr(expr syntax.Expr) {
 	case *syntax.PatternTestExpr:
 		w.Code(exprPatternTest)
 		w.pos(expr)
+		w.typ(w.p.typeOf(expr))
 		w.expr(expr.X)
 		w.matchPattern(expr.Pattern, w.p.typeOf(expr.X))
 	case *syntax.MatchExpr:
@@ -2320,6 +2321,14 @@ func (w *writer) expr(expr syntax.Expr) {
 		var argumentOrder []int
 		if len(expr.ArgNames) != 0 {
 			argumentOrder = namedCallOrder(expr, sigType)
+			w.Code(exprNamedCall)
+		} else if expr.OrderedArgs {
+			// Reuse ordered call lowering without changing argument association.
+			// Ordinary Go calls retain Go's evaluation-order guarantees.
+			argumentOrder = make([]int, len(expr.ArgList))
+			for i := range argumentOrder {
+				argumentOrder[i] = i
+			}
 			w.Code(exprNamedCall)
 		} else {
 			w.Code(exprCall)

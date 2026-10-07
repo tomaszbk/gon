@@ -145,7 +145,7 @@ func matchTestFunc(fn *ast.FuncDecl, info *types.Info, nameRe *regexp.Regexp, pa
 	}
 	namedObj := named.Obj()
 	if namedObj.Pkg() == nil || namedObj.Pkg().Path() != "testing" {
-		return false // predeclared type (error, Gon's Result) or another package
+		return false // predeclared type or another package
 	}
 	return namedObj.Id() == paramID
 }

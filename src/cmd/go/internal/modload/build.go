@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"cmd/go/internal/base"
 	"cmd/go/internal/cfg"
@@ -47,7 +48,7 @@ func findStandardImportPath(path string) string {
 // standard library or if the package was not successfully loaded with
 // LoadPackages or ImportFromFiles, nil is returned.
 func PackageModuleInfo(ld *Loader, ctx context.Context, pkgpath string) *modinfo.ModulePublic {
-	if isStandardImportPath(pkgpath) || !ld.Enabled() {
+	if !ld.Enabled() || isStandardImportPath(pkgpath) && !strings.HasPrefix(pkgpath, "gon/") {
 		return nil
 	}
 	m, ok := findModule(ld.pkgLoader, pkgpath)
@@ -64,7 +65,7 @@ func PackageModuleInfo(ld *Loader, ctx context.Context, pkgpath string) *modinfo
 // standard library or if the package was not successfully loaded with
 // LoadPackages or ImportFromFiles, the empty string is returned.
 func PackageModRoot(ld *Loader, ctx context.Context, pkgpath string) string {
-	if isStandardImportPath(pkgpath) || !ld.Enabled() || cfg.BuildMod == "vendor" {
+	if !ld.Enabled() || cfg.BuildMod == "vendor" || isStandardImportPath(pkgpath) && !strings.HasPrefix(pkgpath, "gon/") {
 		return ""
 	}
 	m, ok := findModule(ld.pkgLoader, pkgpath)

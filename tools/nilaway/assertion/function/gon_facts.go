@@ -17,7 +17,13 @@ import (
 // and nonnil payloads; joining its return-field annotation would lose that
 // relationship. These facts describe only identities proved for every present
 // return, while other functions retain NilAway's annotation inference.
-type gonPayloadFact struct{ Identities []gonPayloadIdentity }
+type gonPayloadFact struct {
+	Identities []gonPayloadIdentity
+	// A Go caller needs the Gon SSA adapter when an interface's dynamic
+	// payload is inspected. Shallow interface nilness and a boxed typed nil
+	// must remain separate throughout the call across package boundaries.
+	InterfaceParameters []int
+}
 
 func (*gonPayloadFact) AFact() {}
 
@@ -32,11 +38,24 @@ func (f *gonFlow) exportPayloadFacts() {
 	f.payloadFacts = make(map[*types.Func]*gonPayloadFact)
 	for _, fn := range f.functions {
 		object := f.object(fn)
-		if object == nil || object.Pkg() != f.pass.Pkg || !object.Exported() || len(fn.TypeArgs()) > 0 {
+		if object == nil || object.Pkg() != f.pass.Pkg || len(fn.TypeArgs()) > 0 || fn.Synthetic != "" {
 			continue
 		}
 		fact := new(gonPayloadFact)
 		context := &gonContext{bindings: make(map[ssa.Value]gonBinding)}
+		for _, block := range fn.Blocks {
+			for index, ins := range block.Instrs {
+				if assertion, ok := ins.(*ssa.TypeAssert); ok && gonNilable(assertion.AssertedType) {
+					parameter, path, ok := f.parameterProjection(assertion.X, nil, gonPoint{block, index}, context, make(map[gonTraceKey]bool))
+					if ok && parameter.Parent() == fn && len(path) == 0 {
+						i := slices.Index(fn.Params, parameter)
+						if !slices.Contains(fact.InterfaceParameters, i) {
+							fact.InterfaceParameters = append(fact.InterfaceParameters, i)
+						}
+					}
+				}
+			}
+		}
 		for result := range fn.Signature.Results().Len() {
 			for _, payload := range gonPayloads(fn.Signature.Results().At(result).Type(), nil) {
 				var identity *gonPayloadIdentity
@@ -75,9 +94,11 @@ func (f *gonFlow) exportPayloadFacts() {
 				}
 			}
 		}
-		if len(fact.Identities) > 0 {
+		if len(fact.Identities)+len(fact.InterfaceParameters) > 0 {
 			f.payloadFacts[object] = fact
-			f.pass.ExportObjectFact(object, fact)
+			if object.Exported() {
+				f.pass.ExportObjectFact(object, fact)
+			}
 		}
 	}
 }
@@ -116,6 +137,8 @@ func (f *gonFlow) parameterProjection(value ssa.Value, path []int, point gonPoin
 	case *ssa.Field:
 		return recur(value.X, append([]int{value.Field}, path...))
 	case *ssa.ChangeType:
+		return recur(value.X, path)
+	case *ssa.ChangeInterface:
 		return recur(value.X, path)
 	case *ssa.Convert:
 		// Boxing into an interface changes typed-nil semantics. Identity facts

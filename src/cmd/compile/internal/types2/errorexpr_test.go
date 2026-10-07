@@ -62,6 +62,36 @@ func concrete() (int, E) { return 1, E{} }
 	}
 }
 
+func TestErrorHandlingCgoErrno(t *testing.T) {
+	const declarations = `package p
+import "C"
+func _Cfunc_div(int, int) int { return 0 }
+`
+	for _, body := range []string{
+		`func f() (int, error) { n, err := C.div(6, 2); return n, err }`,
+		`func f() (int, error) { n := C.div(6, 2)!; return n, nil }`,
+		`func f() (int, error) { n := (C.div(6, 2))!; return n, nil }`,
+		`func f() (int, error) { n := C.div(6, 2) or err { return 0, err }; return n, nil }`,
+		`func f() (int, error) { n := C.div(6, 2) or err => err; return n, nil }`,
+	} {
+		info := &Info{Types: make(map[syntax.Expr]TypeAndValue)}
+		conf := &Config{}
+		*boolFieldAddr(conf, "go115UsesCgo") = true
+		if _, err := typecheck(declarations+body, conf, info); err != nil {
+			t.Errorf("%s: %v", body, err)
+			continue
+		}
+		for expr, tv := range info.Types {
+			if call, ok := expr.(*syntax.CallExpr); ok && syntax.String(call.Fun) == "C.div" {
+				tuple, ok := tv.Type.(*Tuple)
+				if !ok || tuple.Len() != 2 || !Identical(tuple.At(1).Type(), Universe.Lookup("error").Type()) {
+					t.Errorf("errno call type = %s, want (int, error)", tv.Type)
+				}
+			}
+		}
+	}
+}
+
 func TestErrorHandlerBindingInfo(t *testing.T) {
 	info := &Info{Defs: make(map[*syntax.Name]Object), Uses: make(map[*syntax.Name]Object), Scopes: make(map[syntax.Node]*Scope)}
 	_, err := typecheck(`package p; func f() error { return nil }; func g() { f() or failure { _ = failure } }`, nil, info)

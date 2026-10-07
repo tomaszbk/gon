@@ -158,10 +158,7 @@ func errorFlowToolchains(t *testing.T) []errorFlowToolchain {
 }
 
 func coverageBaseline() string {
-	if baseline := os.Getenv("GON_BASELINE_GO"); baseline != "" {
-		return baseline
-	}
-	return os.Getenv("GO_ERROR_HANDLING_BASELINE")
+	return os.Getenv("GON_BASELINE_GO")
 }
 
 // command returns a command running the toolchain's go command in dir.
@@ -184,7 +181,7 @@ func (tc errorFlowToolchain) command(t *testing.T, dir string, args ...string) *
 // scenario: the same tests run against both and their coverage profiles must
 // report the same outcome for every statement, in all cover modes. The legacy
 // version is also run with the unmodified toolchain named by
-// GON_BASELINE_GO (or the older GO_ERROR_HANDLING_BASELINE), if set.
+// GON_BASELINE_GO, if set.
 func TestErrorFlowCoverage(t *testing.T) {
 	testenv.MustHaveGoBuild(t)
 	testenv.MustHaveExec(t)

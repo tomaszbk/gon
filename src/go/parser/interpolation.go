@@ -29,7 +29,13 @@ func (p *parser) parseInterpolatedString() ast.Expr {
 				p.next()
 			}
 			part.EndPos = p.end()
-			p.expect(token.INTERPOLATION_CLOSE)
+			if p.tok == token.INTERPOLATION_END {
+				// Expression recovery may have consumed a synthetic close while
+				// looking for a missing ')'. Keep the outer terminator available.
+				p.errorExpected(p.pos, "interpolation }")
+			} else {
+				p.expect(token.INTERPOLATION_CLOSE)
+			}
 		default:
 			p.errorExpected(p.pos, "interpolated string part")
 			p.next()

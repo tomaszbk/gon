@@ -187,7 +187,7 @@ pkg gon/seq, func Map[$0 interface{ ~[]$1 }, $1 interface{}, $2 interface{}]($0,
 pkg gon/seq, func MapSeq[$0 interface{}, $1 interface{}](iter.Seq[$0], func($0) $1) iter.Seq[$1]
 pkg gon/seq, func Partition[$0 interface{ ~[]$1 }, $1 interface{}]($0, func($1) bool) ($0, $0)
 pkg gon/seq, func Reduce[$0 interface{ ~[]$1 }, $1 interface{}, $2 interface{}]($0, $2, func($2, $1) $2) $2
-pkg gon/seq, func ToSet[$0 interface{ ~[]$1 }, $1 comparable]($0) map[$1]struct{}
+pkg gon/seq, func ToSet[$0 interface{ ~[]$1 }, $1 comparable]($0) map[$1]struct
 pkg go/ast, type ErrorExpr struct, Arrow token.Pos
 pkg go/ast, type ErrorExpr struct, Context Expr
 pkg go/ast, method (*PatternTestExpr) End() token.Pos
@@ -200,7 +200,7 @@ pkg go/ast, type InterpolatedStringExpr struct
 pkg go/ast, method (*InterpolatedStringExpr) Pos() token.Pos
 pkg go/ast, method (*InterpolatedStringExpr) End() token.Pos
 pkg go/ast, type InterpolatedStringExpr struct, Dollar token.Pos
-pkg go/ast, type InterpolatedStringExpr struct, Quote byte
+pkg go/ast, type InterpolatedStringExpr struct, Quote uint8
 pkg go/ast, type InterpolatedStringExpr struct, Parts []*InterpolationPart
 pkg go/ast, type InterpolatedStringExpr struct, Rquote token.Pos
 pkg go/ast, type InterpolationPart struct

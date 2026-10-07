@@ -44,6 +44,20 @@ func main() {
 	if string(want) != "PASS\n" {
 		panic(fmt.Sprintf("legacy scenario did not pass: %s", want))
 	}
+	// go run and ordinary go test omit DWARF. Compile and execute the same
+	// pair with normal debug information as well, including nested payloads.
+	dir, err := os.MkdirTemp("", "gon-seq-dwarf-")
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(dir)
+	for i, tc := range []struct{ command, fixture string }{{baseline, legacy}, {tool, legacy}, {tool, modern}} {
+		binary := filepath.Join(dir, fmt.Sprintf("pair%d", i))
+		run(tc.command, "build", "-o", binary, common, tc.fixture)
+		if got := run(binary); !bytes.Equal(want, got) {
+			panic(fmt.Sprintf("DWARF pair differs: %s", got))
+		}
+	}
 	for _, got := range [][]byte{
 		run(tool, "run", common, legacy),
 		run(tool, "run", common, modern),

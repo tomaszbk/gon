@@ -273,6 +273,9 @@ type (
 		ArgList  []Expr  // nil means no arguments
 		ArgNames []*Name // nil, or aligned argument labels; nil entries are positional
 		HasDots  bool    // last argument is followed by ...
+		// OrderedArgs forces complete evaluation of each argument in written
+		// order. It is set only on generated interpolation calls.
+		OrderedArgs bool
 		expr
 	}
 

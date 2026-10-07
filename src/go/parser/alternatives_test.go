@@ -74,9 +74,9 @@ func f(p Payment[int]) string {
 
 func TestAlternativesNestedPatterns(t *testing.T) {
 	x, err := parser.ParseExpr(`switch x {
-case Option[Option[int]].Some(Option[int].Some(value)) => value
-case Option[Option[int]].Some(Option[int].None) => 0
-case Option[Option[int]].None => -1
+case Container[Container[int]].Value(Container[int].Value(value)) => value
+case Container[Container[int]].Value(Container[int].Empty) => 0
+case Container[Container[int]].Empty => -1
 }`)
 	if err != nil {
 		t.Fatal(err)
@@ -463,5 +463,26 @@ func TestPatternTestSyntax(t *testing.T) {
 	again, err := format.Source(output.Bytes())
 	if err != nil || !bytes.Equal(output.Bytes(), again) {
 		t.Fatalf("round trip: %v\n%s\n%s", err, output.String(), again)
+	}
+}
+
+func TestPatternTestContextualConstraint(t *testing.T) {
+	for _, source := range []string{
+		`package p; type is interface{~int}; type T[P is] struct{}; type U[P, Q is] struct{}`,
+		`package p; import is "cmp"; type T[P is.Ordered] struct{}; type U[P, Q is.Ordered] struct{}`,
+		`package p; const is=3; type A[is]int; type B[is+1]int`,
+	} {
+		fset := token.NewFileSet()
+		file, err := parser.ParseFile(fset, "constraint.go", source, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var output bytes.Buffer
+		if err := format.Node(&output, fset, file); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := parser.ParseFile(fset, "formatted.go", output.Bytes(), 0); err != nil {
+			t.Fatalf("round trip: %v\n%s", err, output.String())
+		}
 	}
 }

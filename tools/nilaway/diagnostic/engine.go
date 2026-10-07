@@ -50,6 +50,10 @@ type Engine struct {
 
 // NewEngine creates a new diagnostic engine.
 func NewEngine(pass *analysishelper.EnhancedPass) *Engine {
+	owned := make(map[*token.File]bool)
+	for _, syntax := range pass.Files {
+		owned[pass.Fset.File(syntax.Pos())] = true
+	}
 	// Iterate all files within the Fset (which includes upstream and current-package files), and
 	// store the mapping between its file name (modulo the possible build-system prefix) and the
 	// token.File object. This is needed for converting correct upstream position back to local
@@ -61,21 +65,13 @@ func NewEngine(pass *analysishelper.EnhancedPass) *Engine {
 		// upstream files that do not have the build-system prefix), it simply returns the original.
 		name := tokenhelper.RelToCwd(file.Name())
 
-		// The file will be fake (conceptually "\n" * 65535) if it is imported from archive. So we
-		// check if there are any gaps between the line starts to determine if the file is fake.
-		isFake := true
-		prev := -1
-		for _, pos := range file.Lines() {
-			if prev != -1 && pos-prev > 1 {
-				isFake = false
-				break
-			}
-			prev = pos
-		}
-		files[name] = fileInfo{
-			file:   file,
-			isFake: isFake,
-		}
+		// Only files owned by the current package AST contain source offsets.
+		// Export readers may preserve columns using sparse synthetic offsets,
+		// so gaps between line starts do not establish a source file.
+		isFake := !owned[file]
+		info := fileInfo{file: file, isFake: isFake}
+		files[name] = info
+		files[file.Name()] = info
 		return true
 	})
 
@@ -91,7 +87,10 @@ func (e *Engine) Diagnostics(grouping bool) []analysis.Diagnostic {
 	// First sort the conflicts by position such that similar conflicts are grouped under the
 	// first diagnostic.
 	slices.SortFunc(e.conflicts, func(a, b conflict) int {
-		if n := cmp.Compare(a.position.Filename, b.position.Filename); n != 0 {
+		// Facts retain absolute source paths, while direct conflicts use paths
+		// relative to the analysis directory. Compare the same source identity
+		// so those representations do not reorder diagnostics within a file.
+		if n := cmp.Compare(tokenhelper.RelToCwd(a.position.Filename), tokenhelper.RelToCwd(b.position.Filename)); n != 0 {
 			return n
 		}
 		return cmp.Compare(a.position.Offset, b.position.Offset)
@@ -115,7 +114,7 @@ func (e *Engine) Diagnostics(grouping bool) []analysis.Diagnostic {
 	diagnostics := make([]analysis.Diagnostic, 0, len(conflicts))
 	for _, c := range conflicts {
 		if slices.ContainsFunc(nolintRanges, func(r Range) bool {
-			return c.position.Filename == r.Filename && c.position.Line >= r.From && c.position.Line <= r.To
+			return tokenhelper.RelToCwd(c.position.Filename) == r.Filename && c.position.Line >= r.From && c.position.Line <= r.To
 		}) {
 			continue
 		}
@@ -230,6 +229,19 @@ func (e *Engine) toPos(position token.Position) token.Pos {
 	}
 
 	if info.isFake {
+		// Facts preserve the actual source line and column. Reconstruct a real
+		// token file when source is available rather than treating archive
+		// offsets as byte offsets in the user's file.
+		if e.pass.ReadFile != nil {
+			if content, err := e.pass.ReadFile(info.file.Name()); err == nil {
+				file := e.pass.Fset.AddFile(info.file.Name(), -1, len(content))
+				file.SetLinesForContent(content)
+				info = fileInfo{file: file}
+				e.files[position.Filename] = info
+			}
+		}
+	}
+	if info.isFake {
 		// If the file is fake (imported from archive), it may not contain fake lines for unexported
 		// objects (as an "optimization", see [importer code]). However, NilAway may report errors
 		// on unexported objects due to multi-package inference. In such cases, we pad the file with
@@ -248,6 +260,9 @@ func (e *Engine) toPos(position token.Position) token.Pos {
 	}
 
 	// For non-fake files, the position is accurate.
+	if position.Line > 0 && position.Line <= info.file.LineCount() {
+		return info.file.LineStart(position.Line) + token.Pos(max(position.Column-1, 0))
+	}
 	return info.file.Pos(position.Offset)
 }
 

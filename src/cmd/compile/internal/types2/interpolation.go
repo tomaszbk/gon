@@ -108,7 +108,7 @@ func (check *Checker) interpolatedString(x *operand, e *syntax.InterpolatedStrin
 	literal := &syntax.BasicLit{Kind: syntax.StringLit, Value: strconv.Quote(format.String())}
 	literal.SetPos(e.Pos())
 	check.recordTypeAndValue(literal, constant_, Typ[UntypedString], constant.MakeString(format.String()))
-	call := &syntax.CallExpr{Fun: fun, ArgList: append([]syntax.Expr{literal}, args...)}
+	call := &syntax.CallExpr{Fun: fun, ArgList: append([]syntax.Expr{literal}, args...), OrderedArgs: true}
 	call.SetPos(e.Pos())
 	check.recordTypeAndValue(call, value, Typ[String], nil)
 	check.hasCallOrRecv = true

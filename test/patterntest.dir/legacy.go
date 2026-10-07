@@ -1,5 +1,27 @@
 package main
 
+import is "cmp"
+
+type isConstraint interface{ ~int }
+type Generic[P isConstraint] struct{ value P }
+type Ordered[P is.Ordered] struct{ value P }
+type MyBool bool
+
+func contextualBool(o Optional) MyBool { return MyBool(o.present && o.number == 4) }
+func boolContexts(o Optional) {
+	var mb MyBool = MyBool(o.present && o.number == 4)
+	if mb != contextualBool(o) {
+		panic("named boolean")
+	}
+	println(mb, !(o.present && o.number == 4), contextualBool(o))
+}
+
+func namedConstraint() {
+	type is interface{ ~int }
+	type T[P is] struct{ value P }
+	println(T[int]{5}.value)
+}
+
 type Status struct {
 	kind, points int
 	reason       string
@@ -92,6 +114,11 @@ func repeated(value Status) bool {
 	return false
 }
 func main() {
+	namedConstraint()
+	println(Generic[int]{3}.value, Ordered[int]{4}.value)
+	for _, o := range []Optional{{}, {true, 4}, {true, 5}} {
+		boolContexts(o)
+	}
 	for _, value := range []Status{{}, {kind: 1, points: 7}, {kind: 2, reason: "bad"}} {
 		println(valid(value), score(value)())
 	}

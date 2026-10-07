@@ -37,6 +37,11 @@ func (check *Checker) errorExpr(x *operand, e *ast.ErrorExpr) exprKind {
 	var results []*Var
 	if tuple, ok := x.typ().(*Tuple); ok {
 		results = tuple.vars
+	} else if x.mode() == commaerr {
+		// C calls expose their errno result only in a two-result context.
+		// Error handling explicitly requests that context, like v, err := C.f().
+		results = []*Var{NewVar(e.Pos(), check.pkg, "", x.typ()), NewVar(e.Pos(), check.pkg, "", errorType)}
+		check.recordCommaOkTypes(e.X, []*operand{{mode_: value, typ_: x.typ()}, {mode_: value, typ_: errorType}})
 	} else if x.mode() == value {
 		results = []*Var{NewVar(e.Pos(), check.pkg, "", x.typ())}
 	}

@@ -3,7 +3,8 @@
     "pending": [],
     "limitations": [
       "syntax modernization: only proven-safe error checks, simple value choices, nil guards/defaults and contextually typed function literals are suggested; arbitrary equivalent control flow is not recognized",
-      "database/sql ScanStruct/Collect/CollectOne: mapping is strict (unmapped, ambiguous or duplicate columns are errors), tag comma options are reserved errors, RawBytes fields and element types are rejected; native pgx outside database/sql is not covered"
+      "database/sql ScanStruct/Collect/CollectOne: mapping is strict (unmapped, ambiguous or duplicate columns are errors), tag comma options are reserved errors, RawBytes fields and element types are rejected; native pgx outside database/sql is not covered",
+      "parameter-label API inventory currently records darwin/arm64; other platform inventories remain unrecorded while additional platform validation is deferred"
     ]
   },
   "errorhandling": {
@@ -108,7 +109,8 @@
     "pending": [],
     "limitations": [
       "nil-flow analysis is opt-in in gon check and gonpls; it does not add non-null types or mandatory compiler diagnostics",
-      "conservative warnings can require external library or framework invariants that are not represented by NilAway facts"
+      "external contracts can remain unknown; safe and positive fixtures check specific flows, not general absence of nil panics",
+      "upstream NilAway suppresses FldAssign inference without object sensitivity (upstream issue 339); imported constructors with implicit nil fields can lack diagnostics"
     ]
   }
 }
