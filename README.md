@@ -10,7 +10,8 @@
   <a href="#see-the-difference">See the difference</a> ·
   <a href="doc/gon-examples.md">Examples</a> ·
   <a href="#try-gon">Try Gon</a> ·
-  <a href="misc/gon/README.md">Editor setup</a>
+  <a href="misc/gon/README.md">Editor setup</a> ·
+  <a href="#support-gon">Support Gon</a>
 </p>
 
 You know the operation you want to perform. Then come the error checks, nil
@@ -383,6 +384,13 @@ output. The current report includes every workload, heap allocations, storage
 sizes and build costs, including increases. Go/Gon base revisions differ;
 modern versus legacy Gon isolates syntax on the same toolchain.
 [Measurements, raw samples and limits →](misc/gon/benchmarks/results/20261007T033706Z/report.md)
+
+## Support Gon
+
+If Gon helps you, consider supporting its development through
+[GitHub Sponsors](https://github.com/sponsors/tomaszbk). One-time and monthly
+contributions help fund compiler work, editor tooling, documentation and
+compatibility testing.
 
 ## Upstream and license
 
