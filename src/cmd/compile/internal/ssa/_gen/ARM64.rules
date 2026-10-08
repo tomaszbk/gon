@@ -1891,10 +1891,13 @@
 (Store {t} ptr val mem) && t.Size() == 32 && t.IsSIMD() => (ZSTRstore ptr val mem)
 // SVE predicate (mask) load/store. A predicate is 8 bytes at the SSA level
 // (types.TypeMask); it cannot move to a GP/FP register, so masks that cross a
-// call or spill round-trip through memory via PLDR/PSTR.
+// call or spill round-trip through memory via PLDR/PSTR. PSTR writes only VL/8
+// bytes, so a store first zeroes the whole 8 bytes: the bits above the vector
+// length read as zero, which is what lets user code read a mask's bits as a
+// uint64.
 (ZeroSIMD <t>) && t.Size() == 8 && t.IsSIMD() => (PPFALSEB)
 (Load <t> ptr mem) && t.Size() == 8 && t.IsSIMD() => (PLDRload ptr mem)
-(Store {t} ptr val mem) && t.Size() == 8 && t.IsSIMD() => (PSTRstore ptr val mem)
+(Store {t} ptr val mem) && t.Size() == 8 && t.IsSIMD() => (PSTRstore ptr val (MOVDstore ptr (MOVDconst [0]) mem))
 (ScalableVectorLen) => (RDVL [1])
 
 // SVE byte-granular predicated scalable load/store (LoadTs/Store slice APIs).
@@ -1934,6 +1937,42 @@
 (ZDUPH (MOVDconst [c])) && c == int64(int8(c)) => (ZDUPHconst [int8(c)])
 (ZDUPS (MOVDconst [c])) && c == int64(int8(c)) => (ZDUPSconst [int8(c)])
 (ZDUPD (MOVDconst [c])) && c == int64(int8(c)) => (ZDUPDconst [int8(c)])
+
+// All-true predicate constructors: the same PWHILELT pattern the lowering
+// synthesizes for implicitly predicated operations, so the select-fold
+// peepholes recognize an explicit all-true mask and CSE dedups it with theirs.
+(Mask8sAllTrue) => (Select0 <types.TypeMask> (PWHILELTB (MOVDconst [0]) (MOVDconst [32])))
+(Mask16sAllTrue) => (Select0 <types.TypeMask> (PWHILELTH (MOVDconst [0]) (MOVDconst [16])))
+(Mask32sAllTrue) => (Select0 <types.TypeMask> (PWHILELTS (MOVDconst [0]) (MOVDconst [8])))
+(Mask64sAllTrue) => (Select0 <types.TypeMask> (PWHILELTD (MOVDconst [0]) (MOVDconst [4])))
+
+// The first active lane is the one that follows the last active lane of an
+// all-false mask.
+(Mask8sFirst m) => (PPNEXTB (PPFALSEB) m)
+(Mask16sFirst m) => (PPNEXTH (PPFALSEB) m)
+(Mask32sFirst m) => (PPNEXTS (PPFALSEB) m)
+(Mask64sFirst m) => (PPNEXTD (PPFALSEB) m)
+
+(Mask8sNext m) => (PPNEXTB m (Mask8sAllTrue <types.TypeMask>))
+(Mask16sNext m) => (PPNEXTH m (Mask16sAllTrue <types.TypeMask>))
+(Mask32sNext m) => (PPNEXTS m (Mask32sAllTrue <types.TypeMask>))
+(Mask64sNext m) => (PPNEXTD m (Mask64sAllTrue <types.TypeMask>))
+
+// Every lane is active when no lane survives all-true AND NOT m.
+(Mask8sAll m) => (Equal (Select1 <types.TypeFlags> (PBICSB t:(Mask8sAllTrue <types.TypeMask>) t m)))
+(Mask16sAll m) => (Equal (Select1 <types.TypeFlags> (PBICSB t:(Mask16sAllTrue <types.TypeMask>) t m)))
+(Mask32sAll m) => (Equal (Select1 <types.TypeFlags> (PBICSB t:(Mask32sAllTrue <types.TypeMask>) t m)))
+(Mask64sAll m) => (Equal (Select1 <types.TypeFlags> (PBICSB t:(Mask64sAllTrue <types.TypeMask>) t m)))
+
+(Mask8sNone m) => (Equal (PPTEST (Mask8sAllTrue <types.TypeMask>) m))
+(Mask16sNone m) => (Equal (PPTEST (Mask16sAllTrue <types.TypeMask>) m))
+(Mask32sNone m) => (Equal (PPTEST (Mask32sAllTrue <types.TypeMask>) m))
+(Mask64sNone m) => (Equal (PPTEST (Mask64sAllTrue <types.TypeMask>) m))
+
+(Mask8sAny m) => (NotEqual (PPTEST (Mask8sAllTrue <types.TypeMask>) m))
+(Mask16sAny m) => (NotEqual (PPTEST (Mask16sAllTrue <types.TypeMask>) m))
+(Mask32sAny m) => (NotEqual (PPTEST (Mask32sAllTrue <types.TypeMask>) m))
+(Mask64sAny m) => (NotEqual (PPTEST (Mask64sAllTrue <types.TypeMask>) m))
 
 (LoadMasked8 <t> ptr mask mem) && t.Size() == 32 => (ZLD1BPredload ptr mask mem)
 (StoreMasked8 {t} ptr mask val mem) && t.Size() == 32 => (ZST1BPredstore ptr val mask mem)

@@ -304,6 +304,24 @@ func concatAddPairsSlice[T number](a, b []T) []T {
 	return r
 }
 
+func concatMaxPairsSlice[T number](a, b []T) []T {
+	r := make([]T, len(a))
+	for i := range len(a) / 2 {
+		r[i] = max(a[2*i], a[2*i+1])
+		r[i+len(a)/2] = max(b[2*i], b[2*i+1])
+	}
+	return r
+}
+
+func concatMinPairsSlice[T number](a, b []T) []T {
+	r := make([]T, len(a))
+	for i := range len(a) / 2 {
+		r[i] = min(a[2*i], a[2*i+1])
+		r[i+len(a)/2] = min(b[2*i], b[2*i+1])
+	}
+	return r
+}
+
 func maxSlice[T number](x, y []T) []T {
 	return map2[T](max_)(x, y)
 }
@@ -396,6 +414,25 @@ func negSlice[T number](x []T) []T {
 
 func absSlice[T number](x []T) []T {
 	return map1[T](abs)(x)
+}
+
+// intDiv divides like SVE SDIV/UDIV, where Go's operator would panic:
+// division by zero yields zero, and the minimum signed value divided by -1
+// yields itself.
+func intDiv[T integer](x, y T) T {
+	if y == 0 {
+		return 0
+	}
+	if isSignedInt[T]() && y+1 == 0 {
+		// x / -1 is -x, and Go's negation already wraps the minimum value
+		// onto itself the way the instruction does.
+		return -x
+	}
+	return x / y
+}
+
+func intDivSlice[T integer](x, y []T) []T {
+	return map2[T](intDiv)(x, y)
 }
 
 // isSignedInt reports whether T is a signed integer type.

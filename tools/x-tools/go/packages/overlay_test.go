@@ -1189,9 +1189,10 @@ func TestOverlayInSecondGoWorkModule(t *testing.T) {
 	}
 
 	overlayFile := filepath.Join(moduleB, "newpkg", "new.go")
+	// Select this fixture's workspace even if the caller disables workspaces.
 	config := &packages.Config{
 		Dir:  workspace,
-		Env:  append(os.Environ(), "GOPACKAGESDRIVER=off"),
+		Env:  append(os.Environ(), "GOPACKAGESDRIVER=off", "GOWORK="+filepath.Join(workspace, "go.work")),
 		Mode: packages.LoadAllSyntax,
 		Overlay: map[string][]byte{
 			overlayFile: []byte("package newpkg\n"),

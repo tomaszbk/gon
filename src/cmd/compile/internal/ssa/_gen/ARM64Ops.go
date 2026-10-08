@@ -191,6 +191,9 @@ func init() {
 		gpcas          = regInfo{inputs: []regMask{gpspsbg, gpg.union(rz), gpg.union(rz)}, outputs: []regMask{gp}}
 		fp01           = regInfo{inputs: nil, outputs: []regMask{fp}}
 		pred01         = regInfo{inputs: nil, outputs: []regMask{pred}}
+		pred2pred      = regInfo{inputs: []regMask{pred, pred}, outputs: []regMask{pred}}
+		pred3pred      = regInfo{inputs: []regMask{pred, pred, pred}, outputs: []regMask{pred}}
+		pred2flags     = regInfo{inputs: []regMask{pred, pred}}
 		fp11           = regInfo{inputs: []regMask{fp}, outputs: []regMask{fp}}
 		fpgp           = regInfo{inputs: []regMask{fp}, outputs: []regMask{gp}}
 		fpgpfp         = regInfo{inputs: []regMask{fp, gp}, outputs: []regMask{fp}}
@@ -846,6 +849,19 @@ func init() {
 		{name: "PSTRstore", argLength: 3, reg: predstore, aux: "SymOff", asm: "PSTR", faultOnNilArg0: true, symEffect: "Write"},           // store predicate arg1 to arg0 + auxInt + aux.  arg2=mem.
 		// PPFALSEB sets every bit of a predicate false, it's the zero value of a predicate.
 		{name: "PPFALSEB", argLength: 0, reg: pred01, asm: "PPFALSE", typ: "Mask"},
+		// PPNEXT{B,H,S,D} set only the first active element of arg1 that follows
+		// the last active element of arg0 (or the first active element of arg1
+		// when arg0 has none), at the given element size.
+		{name: "PPNEXTB", argLength: 2, reg: pred2pred, asm: "PPNEXT", typ: "Mask", resultInArg0: true, clobberFlags: true}, // arg0=predicate, arg1=candidates
+		{name: "PPNEXTH", argLength: 2, reg: pred2pred, asm: "PPNEXT", typ: "Mask", resultInArg0: true, clobberFlags: true}, // arg0=predicate, arg1=candidates
+		{name: "PPNEXTS", argLength: 2, reg: pred2pred, asm: "PPNEXT", typ: "Mask", resultInArg0: true, clobberFlags: true}, // arg0=predicate, arg1=candidates
+		{name: "PPNEXTD", argLength: 2, reg: pred2pred, asm: "PPNEXT", typ: "Mask", resultInArg0: true, clobberFlags: true}, // arg0=predicate, arg1=candidates
+		// PBICSB computes arg1 AND NOT arg2 on the lanes of arg0 and sets the
+		// flags from the result: Z if no lane is set.
+		{name: "PBICSB", argLength: 3, reg: pred3pred, asm: "PBICS", typ: "(Mask,Flags)"}, // arg0=governing predicate, arg1, arg2
+		// PPTEST sets the flags from the lanes of arg1 that arg0 governs: Z if
+		// none is set.
+		{name: "PPTEST", argLength: 2, reg: pred2flags, asm: "PPTEST", typ: "Flags"}, // arg0=governing predicate, arg1
 		// ZDUPBconst broadcasts an 8-bit immediate to every byte lane; with [0] it
 		// zeroes a whole scalable vector, lowering ZeroSIMD for a 256-bit value.
 		{name: "ZDUPBconst", argLength: 0, aux: "Int8", reg: fp01, asm: "ZDUP", typ: "Vec256"},
@@ -916,7 +932,7 @@ func init() {
 		pkg:                "cmd/internal/obj/arm64",
 		genfile:            "../../arm64/ssa.go",
 		genSIMDfile:        "../../arm64/simdssa.go ../../arm64/simdssa_sve.go",
-		ops:                append(append(ops, simdARM64Ops(fp11, fp21, fp31, fpgp, fpgpfp, fp21)...), simdARM64SVEOps(fp11, fp21, fp1predfp, fp2predpred, fp2predfp, fp2predfp, fp3predfp)...),
+		ops:                append(append(ops, simdARM64Ops(fp11, fp21, fp31, fpgp, fpgpfp, fp21)...), simdARM64SVEOps(fp11, fp21, fp1predfp, fp2predpred, fp2predfp, fp2predfp, fp3predfp, fp3predfp)...),
 		blocks:             blocks,
 		regnames:           regNamesARM64,
 		ParamIntRegNames:   "R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15",
@@ -924,7 +940,7 @@ func init() {
 		gpregmask:          gp,
 		fpregmask:          fp,
 		simdregmask:        fp,
-		specialregmask:     pred,
+		simdmaskreg:        pred,
 		framepointerreg:    -1, // not used
 		linkreg:            int8(num["R30"]),
 	})

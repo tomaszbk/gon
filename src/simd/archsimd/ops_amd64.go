@@ -137,62 +137,62 @@ func (x Uint32x4) AESRoundKeyGenAssist(rconVal uint8) Uint32x4
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSB, CPU Feature: AVX
-func (x Int8x16) Abs() Int8x16
+func (x Int8x16) Abs() Uint8x16
 
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSB, CPU Feature: AVX2
-func (x Int8x32) Abs() Int8x32
+func (x Int8x32) Abs() Uint8x32
 
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSB, CPU Feature: AVX512
-func (x Int8x64) Abs() Int8x64
+func (x Int8x64) Abs() Uint8x64
 
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSW, CPU Feature: AVX
-func (x Int16x8) Abs() Int16x8
+func (x Int16x8) Abs() Uint16x8
 
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSW, CPU Feature: AVX2
-func (x Int16x16) Abs() Int16x16
+func (x Int16x16) Abs() Uint16x16
 
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSW, CPU Feature: AVX512
-func (x Int16x32) Abs() Int16x32
+func (x Int16x32) Abs() Uint16x32
 
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSD, CPU Feature: AVX
-func (x Int32x4) Abs() Int32x4
+func (x Int32x4) Abs() Uint32x4
 
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSD, CPU Feature: AVX2
-func (x Int32x8) Abs() Int32x8
+func (x Int32x8) Abs() Uint32x8
 
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSD, CPU Feature: AVX512
-func (x Int32x16) Abs() Int32x16
+func (x Int32x16) Abs() Uint32x16
 
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSQ, CPU Feature: AVX512
-func (x Int64x2) Abs() Int64x2
+func (x Int64x2) Abs() Uint64x2
 
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSQ, CPU Feature: AVX512
-func (x Int64x4) Abs() Int64x4
+func (x Int64x4) Abs() Uint64x4
 
 // Abs computes the absolute value of each element.
 //
 // Asm: VPABSQ, CPU Feature: AVX512
-func (x Int64x8) Abs() Int64x8
+func (x Int64x8) Abs() Uint64x8
 
 /* Add */
 
@@ -4994,36 +4994,6 @@ func (x Float64x8) ReciprocalSqrt() Float64x8
 // RotateLeft rotates each element in x to the left by the number of bits specified by y's corresponding elements.
 //
 // Asm: VPROLVD, CPU Feature: AVX512
-func (x Int32x4) RotateLeft(y Int32x4) Int32x4
-
-// RotateLeft rotates each element in x to the left by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPROLVD, CPU Feature: AVX512
-func (x Int32x8) RotateLeft(y Int32x8) Int32x8
-
-// RotateLeft rotates each element in x to the left by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPROLVD, CPU Feature: AVX512
-func (x Int32x16) RotateLeft(y Int32x16) Int32x16
-
-// RotateLeft rotates each element in x to the left by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPROLVQ, CPU Feature: AVX512
-func (x Int64x2) RotateLeft(y Int64x2) Int64x2
-
-// RotateLeft rotates each element in x to the left by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPROLVQ, CPU Feature: AVX512
-func (x Int64x4) RotateLeft(y Int64x4) Int64x4
-
-// RotateLeft rotates each element in x to the left by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPROLVQ, CPU Feature: AVX512
-func (x Int64x8) RotateLeft(y Int64x8) Int64x8
-
-// RotateLeft rotates each element in x to the left by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPROLVD, CPU Feature: AVX512
 func (x Uint32x4) RotateLeft(y Uint32x4) Uint32x4
 
 // RotateLeft rotates each element in x to the left by the number of bits specified by y's corresponding elements.
@@ -5052,36 +5022,6 @@ func (x Uint64x4) RotateLeft(y Uint64x4) Uint64x4
 func (x Uint64x8) RotateLeft(y Uint64x8) Uint64x8
 
 /* RotateRight */
-
-// RotateRight rotates each element in x to the right by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPRORVD, CPU Feature: AVX512
-func (x Int32x4) RotateRight(y Int32x4) Int32x4
-
-// RotateRight rotates each element in x to the right by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPRORVD, CPU Feature: AVX512
-func (x Int32x8) RotateRight(y Int32x8) Int32x8
-
-// RotateRight rotates each element in x to the right by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPRORVD, CPU Feature: AVX512
-func (x Int32x16) RotateRight(y Int32x16) Int32x16
-
-// RotateRight rotates each element in x to the right by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPRORVQ, CPU Feature: AVX512
-func (x Int64x2) RotateRight(y Int64x2) Int64x2
-
-// RotateRight rotates each element in x to the right by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPRORVQ, CPU Feature: AVX512
-func (x Int64x4) RotateRight(y Int64x4) Int64x4
-
-// RotateRight rotates each element in x to the right by the number of bits specified by y's corresponding elements.
-//
-// Asm: VPRORVQ, CPU Feature: AVX512
-func (x Int64x8) RotateRight(y Int64x8) Int64x8
 
 // RotateRight rotates each element in x to the right by the number of bits specified by y's corresponding elements.
 //

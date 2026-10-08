@@ -29,6 +29,18 @@ Its affected checks passed on darwin/arm64 with Go 1.27.1; the earlier complete
 review gate retains its own source fingerprint. See the cleanup record in
 [VALIDATION.md](VALIDATION.md#cleanup-of-prior-gon-designs).
 
+The current upstream integration incorporates 119 Go master commits through
+`a99091efdb38ba38e85970b726fb92c1882f8d97`. All six complete native darwin/arm64
+profiles passed: tooling, modern, errorhandling, conditional, lambda and
+nullsafety. A fresh source-only Go 1.27.1 bootstrap and all sixteen executable
+harnesses also passed; the compiler source remains identical to that snapshot.
+The recorded inventories distinguish the later tooling-fixture correction and
+parallel Sponsors metadata from compiler changes. See the commands, exact
+source scopes and retained attempts in
+[VALIDATION.md](VALIDATION.md#upstream-integration). Additional platform,
+PostgreSQL and Docker runs remain deferred, and timed benchmark evidence keeps
+its historical snapshot scope.
+
 API checks include native optional signatures and a separate inventory of
 public parameter names, including nested signatures and reachable private
 types. The name inventory is recorded only for darwin/arm64; other platform
@@ -100,7 +112,7 @@ See [benchmarks/README.md](benchmarks/README.md) for measured costs.
 Maintained modules are `tools/x-tools`, `tools/staticcheck`, `tools/gonpls` and
 `tools/nilaway`; vendor trees are generated. [INTEGRATION.md](INTEGRATION.md)
 defines the per-feature gate. [UPSTREAM.json](UPSTREAM.json) identifies integrated
-Go revision 67c1d421161d3d1ae9f5fd005e84c29fd0d9f896 for future three-way updates.
+Go revision a99091efdb38ba38e85970b726fb92c1882f8d97 for future three-way updates.
 Preserve licenses, module paths, upstream tests and provenance.
 
 Root AGENTS.md and design Markdown remain local and ignored. Gon 2.28 would

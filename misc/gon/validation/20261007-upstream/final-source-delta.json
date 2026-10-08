@@ -1,0 +1,10 @@
+{
+  "initialSourceSHA256": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+  "finalSourceSHA256": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c",
+  "changedPaths": [
+    "api/params/darwin-arm64.txt",
+    "tools/x-tools/go/packages/overlay_test.go",
+    "tools/x-tools/internal/gcimporter/gcimporter_test.go"
+  ],
+  "scope": "API parameter inventory and two test fixtures only; compiler/runtime/library implementation unchanged between focused source and final source"
+}

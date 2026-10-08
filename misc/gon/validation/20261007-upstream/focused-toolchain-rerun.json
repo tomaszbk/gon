@@ -1,0 +1,219 @@
+{
+  "platform": "darwin/arm64",
+  "startTime": "2026-10-07T23:39:07.467064+00:00",
+  "sourceSha256Before": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c",
+  "environment": {
+    "GOMAXPROCS": "2",
+    "GON_BASELINE_GO": "/opt/homebrew/bin/go",
+    "GON_SQL_POSTGRES": "0",
+    "GOWORK": "off",
+    "GOTOOLCHAIN": "local",
+    "GON_ROOT": "/Users/tzbk/Documents/gon",
+    "GOROOT": "/Users/tzbk/Documents/gon",
+    "GOFLAGS": ""
+  },
+  "changes": [
+    "Compiler archive fixture requests archive dependencies through subprocess-only TESTGO_EXPORT_ARCHIVE=1 and decodes private p/legacy u explicitly with UImportData; public importer behavior unchanged.",
+    "Compiler dependency paths bypass FindPkg/exportMap; no process-wide format override.",
+    "Overlay fixture explicitly selects its own go.work despite inherited GOWORK=off."
+  ],
+  "priorFailedAttempt": "focused-toolchain-fixture-attempt.json",
+  "checks": [
+    {
+      "name": "gcimporter-fixture",
+      "cwd": "/Users/tzbk/Documents/gon/tools/x-tools",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/gcimporter",
+        "-run",
+        "^TestImportTestdata$",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 3.544,
+      "log": "logs/toolchain-final-gcimporter-fixture.log.gz",
+      "testEvents": 1,
+      "testsRun": [
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestImportTestdata"
+        }
+      ],
+      "skips": [],
+      "failures": [],
+      "sourceSha256After": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "go-packages-fixture",
+      "cwd": "/Users/tzbk/Documents/gon/tools/x-tools",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./go/packages",
+        "-run",
+        "^TestOverlayInSecondGoWorkModule$",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.855,
+      "log": "logs/toolchain-final-go-packages-fixture.log.gz",
+      "testEvents": 1,
+      "testsRun": [
+        {
+          "package": "golang.org/x/tools/go/packages",
+          "test": "TestOverlayInSecondGoWorkModule"
+        }
+      ],
+      "skips": [],
+      "failures": [],
+      "sourceSha256After": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "gcimporter",
+      "cwd": "/Users/tzbk/Documents/gon/tools/x-tools",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/gcimporter",
+        "-run",
+        "^Test(Gon|ImportTestdata|ImportedTypes|ImportedConsts|GenericExport|VersionHandling|CorrectMethodPackage)",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 5.199,
+      "log": "logs/toolchain-final-gcimporter.log.gz",
+      "testEvents": 19,
+      "testsRun": [
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/baseline_legacy"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/Gon_legacy"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/Gon_modern"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/imported_bodies_without_inlining"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/unified"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/indexed"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/shallow"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/public_compiler_export"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/public_client_export"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/toolchain_importer"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternatives"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestImportTestdata"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestVersionHandling"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestImportedTypes"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestImportedConsts"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestCorrectMethodPackage"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGenericExport"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonStringEnums"
+        }
+      ],
+      "skips": [],
+      "failures": [],
+      "sourceSha256After": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "go-packages",
+      "cwd": "/Users/tzbk/Documents/gon/tools/x-tools",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./go/packages",
+        "-run",
+        "^Test(Gon|ExportFile|OverlaysInReplace|OverlayInSecondGoWorkModule)$",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.236,
+      "log": "logs/toolchain-final-go-packages.log.gz",
+      "testEvents": 3,
+      "testsRun": [
+        {
+          "package": "golang.org/x/tools/go/packages",
+          "test": "TestOverlaysInReplace"
+        },
+        {
+          "package": "golang.org/x/tools/go/packages",
+          "test": "TestOverlayInSecondGoWorkModule"
+        },
+        {
+          "package": "golang.org/x/tools/go/packages",
+          "test": "TestExportFile"
+        }
+      ],
+      "skips": [],
+      "failures": [],
+      "sourceSha256After": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c",
+      "sourceUnchanged": true,
+      "status": "passed"
+    }
+  ],
+  "sourceSha256After": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c",
+  "sourceUnchanged": true,
+  "status": "passed",
+  "endTime": "2026-10-07T23:39:20.944812+00:00"
+}

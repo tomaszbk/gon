@@ -2428,9 +2428,13 @@ func maybeDrainBody(r io.Reader) bool {
 	}
 }
 
-// errClosedEarly is an internal-only error used to indicate that a response body
-// was closed early prior to EOF.
-var errClosedEarly = errors.New("net/http: response body closed early")
+type bodyReadStatus uint8
+
+const (
+	bodyReadEOF bodyReadStatus = iota
+	bodyReadClosedEarly
+	bodyReadError
+)
 
 func (pc *persistConn) readLoop() {
 	closeErr := errReadLoopExiting // default value, if not changed below
@@ -2550,21 +2554,24 @@ func (pc *persistConn) readLoop() {
 			continue
 		}
 
-		waitForBodyRead := make(chan error, 1)
+		waitForBodyRead := make(chan bodyReadStatus, 1)
 		body := &bodyEOFSignal{
 			body: resp.Body,
 			earlyCloseFn: func() error {
-				waitForBodyRead <- errClosedEarly
+				waitForBodyRead <- bodyReadClosedEarly
 				<-eofc // will be closed by deferred call at the end of the function
 				return nil
 			},
 			fn: func(err error) error {
-				waitForBodyRead <- err
 				if err == io.EOF {
+					waitForBodyRead <- bodyReadEOF
 					<-eofc // see comment above eofc declaration
-				} else if err != nil {
-					if cerr := pc.canceled(); cerr != nil {
-						return cerr
+				} else {
+					waitForBodyRead <- bodyReadError
+					if err != nil {
+						if cerr := pc.canceled(); cerr != nil {
+							return cerr
+						}
 					}
 				}
 				return err
@@ -2590,18 +2597,18 @@ func (pc *persistConn) readLoop() {
 		// the bufio.Reader, wait for the caller goroutine to finish
 		// reading the response body. (or for cancellation or death)
 		select {
-		case err := <-waitForBodyRead:
+		case status := <-waitForBodyRead:
 			tryPutIdle := func() {
 				alive = alive &&
 					!pc.sawEOF &&
 					pc.wroteRequest() &&
 					tryPutIdleConn(rc.treq)
 			}
-			switch err {
-			case io.EOF:
+			switch status {
+			case bodyReadEOF:
 				tryPutIdle()
 				eofc <- struct{}{}
-			case errClosedEarly:
+			case bodyReadClosedEarly:
 				// Read resp before signaling eofc: the send lets the caller's
 				// Close return, and resp belongs to the caller after that.
 				tryDrain := alive && !pc.t.keepAlivesDisabled() && resp.ContentLength <= maxPostCloseReadBytes
@@ -2611,7 +2618,7 @@ func (pc *persistConn) readLoop() {
 				} else {
 					alive = false
 				}
-			default:
+			case bodyReadError:
 				alive = false
 			}
 		case <-rc.treq.ctx.Done():
@@ -2832,7 +2839,7 @@ func (pc *persistConn) writeLoop() {
 			pc.writeErrCh <- err // to the body reader, which might recycle us
 			wr.ch <- err         // to the roundTrip function
 			if err != nil {
-				pc.close(err)
+				// The conn will be closed by either roundTrip or readLoop.
 				return
 			}
 		case <-pc.closech:
@@ -2967,6 +2974,8 @@ func (pc *persistConn) waitForAvailability(ctx context.Context) error {
 	}
 }
 
+const postRequestWriteErrorWaitTime = 50 * time.Millisecond
+
 func (pc *persistConn) roundTrip(req *transportRequest) (resp *Response, err error) {
 	testHookEnterRoundTrip()
 
@@ -3060,6 +3069,7 @@ func (pc *persistConn) roundTrip(req *transportRequest) (resp *Response, err err
 		return re.res, nil
 	}
 
+	var writeErr error
 	var respHeaderTimer <-chan time.Time
 	ctxDoneChan := req.ctx.Done()
 	pcClosed := pc.closech
@@ -3070,16 +3080,33 @@ func (pc *persistConn) roundTrip(req *transportRequest) (resp *Response, err err
 			if debugRoundTrip {
 				req.logf("writeErrCh recv: %T/%#v", err, err)
 			}
+			timeout := pc.t.ResponseHeaderTimeout
 			if err != nil {
-				pc.close(fmt.Errorf("write error: %w", err))
-				return nil, pc.mapRoundTripError(req, startBytesWritten, err)
-			}
-			if d := pc.t.ResponseHeaderTimeout; d > 0 {
-				if debugRoundTrip {
-					req.logf("starting timer for %v", d)
+				// If this is something other than a network write error
+				// (presumably an error reading from the user-provided body),
+				// then return immediately.
+				//
+				// Otherwise, it's possible that the server sent a response
+				// and immediately closed the connection. Wait for a short
+				// time to see if a response shows up.
+				//
+				// See #11745.
+				if _, ok := errors.AsType[*net.OpError](err); !ok {
+					pc.close(fmt.Errorf("write error: %w", err))
+					return nil, pc.mapRoundTripError(req, startBytesWritten, err)
 				}
-				timer := time.NewTimer(d)
-				defer timer.Stop() // prevent leaks
+				writeErr = err
+				if timeout == 0 {
+					timeout = postRequestWriteErrorWaitTime
+				} else {
+					timeout = min(timeout, postRequestWriteErrorWaitTime)
+				}
+			}
+			if timeout > 0 {
+				if debugRoundTrip {
+					req.logf("starting timer for %v", timeout)
+				}
+				timer := time.NewTimer(timeout)
 				respHeaderTimer = timer.C
 			}
 		case <-pcClosed:
@@ -3098,6 +3125,12 @@ func (pc *persistConn) roundTrip(req *transportRequest) (resp *Response, err err
 		case <-respHeaderTimer:
 			if debugRoundTrip {
 				req.logf("timeout waiting for response headers.")
+			}
+			if writeErr != nil {
+				// Error writing request body, and we haven't read response
+				// headers within postRequestWriteErrorWaitTime.
+				pc.close(fmt.Errorf("write error: %w", writeErr))
+				return nil, pc.mapRoundTripError(req, startBytesWritten, writeErr)
 			}
 			pc.close(errTimeout)
 			return nil, errTimeout

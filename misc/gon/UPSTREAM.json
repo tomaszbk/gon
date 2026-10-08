@@ -1,10 +1,10 @@
 {
   "repository": "https://go.googlesource.com/go",
   "branch": "master",
-  "commit": "67c1d421161d3d1ae9f5fd005e84c29fd0d9f896",
-  "previousCommit": "59b9e2dc57fe7f10f5343879a33b1a55edb55742",
-  "integratedOn": "2026-10-02",
-  "commitsInUpdate": 96,
+  "commit": "a99091efdb38ba38e85970b726fb92c1882f8d97",
+  "previousCommit": "67c1d421161d3d1ae9f5fd005e84c29fd0d9f896",
+  "integratedOn": "2026-10-07",
+  "commitsInUpdate": 119,
   "method": "three-way source integration; upstream ancestry not merged",
   "validation": "misc/gon/VALIDATION.md#upstream-integration"
 }

@@ -1,0 +1,45 @@
+{
+  "startedAt": "2026-10-07T23:39:38.240873+00:00",
+  "sourceSHA256": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c",
+  "gitHEAD": "a0713d52d6e2c7f5e09a06916bf2c0c18c07cb51",
+  "platform": "darwin/arm64",
+  "baseline": "/opt/homebrew/bin/go",
+  "baselineVersion": "go version go1.27.1 darwin/arm64",
+  "profiles": [
+    {
+      "name": "tooling",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "tooling"
+      ],
+      "exitCode": 0,
+      "seconds": 298.961,
+      "summary": "tooling.json",
+      "log": "logs/profile-tooling.log.gz",
+      "checks": 75,
+      "passed": 75,
+      "sourceStable": true,
+      "sourceSHA256": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c"
+    },
+    {
+      "name": "modern",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "modern"
+      ],
+      "exitCode": 1,
+      "seconds": 520.41,
+      "summary": "modern-source-drift.json",
+      "log": "logs/profile-modern-source-drift.log.gz",
+      "checks": 116,
+      "passed": 112,
+      "sourceStable": false,
+      "sourceSHA256": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c"
+    }
+  ],
+  "status": "fail",
+  "finalSourceSHA256": "730bf061f44bd92b8f8871f928225247d4fff979e7eb07c57f7e751ecd8350ea",
+  "finishedAt": "2026-10-07T23:53:18.273950+00:00"
+}

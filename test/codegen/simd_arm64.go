@@ -187,16 +187,6 @@ func sveMaskedFoldsIntoMerging(x, y archsimd.Int8s, m archsimd.Mask8s) archsimd.
 //go:noinline
 func sinkInt8s(archsimd.Int8s) {}
 
-func sveIfElseMovprfx(x, y archsimd.Int8s, m archsimd.Mask8s) archsimd.Int8s {
-	// The else operand is a source, but x stays live so the destructive add
-	// cannot write it. The whole register is copied, not just the active lanes,
-	// so this prefix is the unpredicated MOVPRFX.
-	// arm64:`ZMOVPRFX` `ZADD.*P[0-9]+\.M` -`ZMOVPRFX.*P[0-9]+`
-	r := x.Add(y).IfElse(m, x)
-	sinkInt8s(x)
-	return r
-}
-
 // A non-commutative operation is more restricted. Its destructive operand is
 // fixed, so only an "else" operand that is already that one folds, and there is
 // no prefixed form to place any other.
@@ -262,4 +252,33 @@ func sveMulSVE2Gate(x, y archsimd.Int8s) archsimd.Int8s {
 		return x.Mul(y) // arm64:`ZMUL\s+Z[0-9]+\.B, Z[0-9]+\.B, Z[0-9]+\.B`
 	}
 	return x.Mul(y) // arm64:`PWHILELT` `ZMUL.*P[0-9]+\.M`
+}
+
+//go:noinline
+func forceArgSpill(a int8) int8 { return a + 1 }
+
+// Test spill area instructions around call to morestack.
+// arm64:`MOVB R0, 40\(RSP\)`
+// arm64:2`MOVD \$8\(RSP\), R27`
+// arm64:`ZSTR Z0, \(VL\*0\)\(R27\)`
+// arm64:2`MOVD \$48\(RSP\), R27`
+// arm64:`ZSTR Z1, \(VL\*0\)\(R27\)`
+// arm64:`ZLDR \(VL\*0\)\(R27\), Z1`
+// arm64:`ZLDR \(VL\*0\)\(R27\), Z0`
+// arm64:`FMOVS F2, 80\(RSP\)`
+func sveArgSpillMixed(v archsimd.Int8s, a int8, w archsimd.Uint16s, f float32) int8 {
+	return forceArgSpill(a)
+}
+
+// --- SVE destructive operations under an all-true predicate ---
+
+func sveMaxBothSourcesLive(x, y archsimd.Int8s) archsimd.Int8s {
+	// SMAX has only a predicated, destructive encoding. Both sources stay
+	// live, so the result goes to a third register through an unpredicated
+	// MOVPRFX: with every lane active, no lane of that register survives.
+	// arm64:`ZMOVPRFX` `ZSMAX.*P[0-9]+\.M` -`ZMOVPRFX.*P[0-9]+`
+	r := x.Max(y)
+	sinkInt8s(x)
+	sinkInt8s(y)
+	return r
 }

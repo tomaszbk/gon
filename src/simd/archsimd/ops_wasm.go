@@ -7,17 +7,17 @@ package archsimd
 // Abs returns the elementwise absolute value of x.
 //
 // Asm: I8x16Abs
-func (x Int8x16) Abs() Int8x16
+func (x Int8x16) Abs() Uint8x16
 
 // Abs returns the elementwise absolute value of x.
 //
 // Asm: I16x8Abs
-func (x Int16x8) Abs() Int16x8
+func (x Int16x8) Abs() Uint16x8
 
 // Abs returns the elementwise absolute value of x.
 //
 // Asm: I32x4Abs
-func (x Int32x4) Abs() Int32x4
+func (x Int32x4) Abs() Uint32x4
 
 // Abs returns the elementwise absolute value of x.
 //
@@ -27,7 +27,7 @@ func (x Float32x4) Abs() Float32x4
 // Abs returns the elementwise absolute value of x.
 //
 // Asm: I64x2Abs
-func (x Int64x2) Abs() Int64x2
+func (x Int64x2) Abs() Uint64x2
 
 // Abs returns the elementwise absolute value of x.
 //
@@ -1077,17 +1077,7 @@ func (x Mask64x2) Or(y Mask64x2) Mask64x2
 // RotateAllLeft
 //
 // Asm: I8x16RotateAllLeft
-func (x Int8x16) RotateAllLeft(shift uint64) Int8x16
-
-// RotateAllLeft
-//
-// Asm: I8x16RotateAllLeft
 func (x Uint8x16) RotateAllLeft(shift uint64) Uint8x16
-
-// RotateAllLeft
-//
-// Asm: I16x8RotateAllLeft
-func (x Int16x8) RotateAllLeft(shift uint64) Int16x8
 
 // RotateAllLeft
 //
@@ -1097,17 +1087,7 @@ func (x Uint16x8) RotateAllLeft(shift uint64) Uint16x8
 // RotateAllLeft
 //
 // Asm: I32x4RotateAllLeft
-func (x Int32x4) RotateAllLeft(shift uint64) Int32x4
-
-// RotateAllLeft
-//
-// Asm: I32x4RotateAllLeft
 func (x Uint32x4) RotateAllLeft(shift uint64) Uint32x4
-
-// RotateAllLeft
-//
-// Asm: I64x2RotateAllLeft
-func (x Int64x2) RotateAllLeft(shift uint64) Int64x2
 
 // RotateAllLeft
 //
@@ -1117,17 +1097,7 @@ func (x Uint64x2) RotateAllLeft(shift uint64) Uint64x2
 // RotateAllRight
 //
 // Asm: I8x16RotateAllRight
-func (x Int8x16) RotateAllRight(shift uint64) Int8x16
-
-// RotateAllRight
-//
-// Asm: I8x16RotateAllRight
 func (x Uint8x16) RotateAllRight(shift uint64) Uint8x16
-
-// RotateAllRight
-//
-// Asm: I16x8RotateAllRight
-func (x Int16x8) RotateAllRight(shift uint64) Int16x8
 
 // RotateAllRight
 //
@@ -1137,17 +1107,7 @@ func (x Uint16x8) RotateAllRight(shift uint64) Uint16x8
 // RotateAllRight
 //
 // Asm: I32x4RotateAllRight
-func (x Int32x4) RotateAllRight(shift uint64) Int32x4
-
-// RotateAllRight
-//
-// Asm: I32x4RotateAllRight
 func (x Uint32x4) RotateAllRight(shift uint64) Uint32x4
-
-// RotateAllRight
-//
-// Asm: I64x2RotateAllRight
-func (x Int64x2) RotateAllRight(shift uint64) Int64x2
 
 // RotateAllRight
 //

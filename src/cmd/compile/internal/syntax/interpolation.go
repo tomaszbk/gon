@@ -55,7 +55,7 @@ func (s *scanner) interpolationToken() bool {
 			s.errorf("interpolated string not terminated")
 			f.pending = _InterpEnd
 			f.line, f.col = s.pos()
-			s.lit = string(s.segment())
+			s.lit = s.segment()
 			s.tok = _InterpText
 			return true
 		case '\n':
@@ -64,7 +64,7 @@ func (s *scanner) interpolationToken() bool {
 				s.errorf("interpolated string not terminated")
 				f.pending = _InterpEnd
 				f.line, f.col = s.pos()
-				s.lit = string(s.segment())
+				s.lit = s.segment()
 				s.tok = _InterpText
 				return true
 			}
@@ -87,7 +87,7 @@ func (s *scanner) interpolationToken() bool {
 				f.pending = _InterpOpen
 				f.line, f.col = line, col
 				segment := s.segment()
-				s.lit = string(segment[:len(segment)-2])
+				s.lit = segment[:len(segment)-2]
 				s.tok = _InterpText
 				return true
 			}
@@ -98,7 +98,7 @@ func (s *scanner) interpolationToken() bool {
 			s.nextch()
 			f.pending = _InterpEnd
 			segment := s.segment()
-			s.lit = string(segment[:len(segment)-1])
+			s.lit = segment[:len(segment)-1]
 			s.tok = _InterpText
 			return true
 		}
@@ -152,7 +152,7 @@ func (s *scanner) interpolationExprToken() bool {
 			s.nextch()
 		}
 		s.tok = _InterpFormat
-		s.lit = string(s.segment())[1:]
+		s.lit = s.segment()[1:]
 		return true
 	}
 	return false

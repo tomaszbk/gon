@@ -1,0 +1,3754 @@
+{
+  "platform": "darwin/arm64",
+  "startTime": "2026-10-07T23:30:31.129044+00:00",
+  "sourceSha256Before": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+  "baseline": "go version go1.27.1 darwin/arm64",
+  "environment": {
+    "GOMAXPROCS": "2",
+    "GON_BASELINE_GO": "/opt/homebrew/bin/go",
+    "GON_SQL_POSTGRES": "0",
+    "GOWORK": "off",
+    "GOTOOLCHAIN": "local",
+    "GON_ROOT": "/Users/tzbk/Documents/gon",
+    "GOROOT": "/Users/tzbk/Documents/gon",
+    "GOFLAGS": ""
+  },
+  "checks": [
+    {
+      "name": "syntax",
+      "cwd": "/Users/tzbk/Documents/gon",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "-short",
+        "cmd/compile/internal/syntax",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.599,
+      "log": "logs/toolchain-syntax.log.gz",
+      "testEvents": 83,
+      "testsRun": [
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestAlternativesSyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestAlternativesSyntax/variants"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestAlternativesSyntax/stringvariants"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestAlternativesSyntax/expression"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestAlternativesSyntax/statement"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestAlternativesSyntax/nested"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestAlternativesSyntax/legacy"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestAlternativesSyntaxErrors"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestAlternativesGroupedRecord"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestSimplifiedAlternativesSyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestRetiredContextualConstructorSyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestMatchAlternativesSyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestPatternTestSyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestPatternTestContextualConstraint"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestCondExprSyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestCondExprStatement"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestCondExprShape"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestCondExprPos"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestCondExprString"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestCondExprErrors"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestCondExprRecovery"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestCondExprNegationNewline"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestDump"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestSyntaxErrors"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestErrorHandlingSyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNegationNewline"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestErrorHandlerBranchBoundary"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestGenericOrConstraintErrors"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestErrorContextSyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestInterpolationSyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestInterpolationUnterminatedRecovery"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestInterpolationInvalidSyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestInterpolationFormattingNestedBlocks"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestIssue67866"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLambdaSyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLambdaSyntax/var_f_=_()_=>_1"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLambdaSyntax/var_f_=_(x)_=>_x_+_1"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLambdaSyntax/var_f_=_(x,y,)_=>_{_return_x+y_}"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLambdaSyntax/var_f_=_(or,fn,_)_=>_if_or_{_fn_}_else_{_0_}"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLambdaSyntax/var_f_=_(x,__y,)_=>__x+y"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLambdaSyntax/var_f_=_(p)_=>_load(p)!"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLambdaSyntax/var_f_=_(p)_=>_load(p)_or_err_{_return_nil_}"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLambdaSyntax/var_f_=_(x)_=>_(y)_=>_x+y"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLambdaSyntax/func_f(){if_apply((x)=>{return_T{x}})_{}}"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_p?.A.B(f())[0]"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_p?.A?.B"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_(p?.A).B"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_f?(p?.A)"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_p?.Load()!?.Next"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_p?.Load()_or_err_{return_nil}"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_a_??_b_??_c"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_(p?.N_??_0)_+_1"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_*p_??_0"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_if_yes_{p}_else_{q}?.A"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_p_??_()_=>_1"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/var_x_=_p?._A_??_other?(_)"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNilSafetySyntax/func_f(){m[key()]_??=_value()}"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLambdaNilSafetyTokens"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestPos"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestParse"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestVerify"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestStdLib"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestIssue17697"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestParseFile"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLineDirectives"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestLineDirectivesWithDir"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestUnpackListExprAllocs"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestPrint"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestPrintError"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestPrintString"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestShortString"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestSmoke"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestTokens"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestScanner"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestEmbeddedTokens"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestComments"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestNumbers"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestScanErrors"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestDirectives"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestIssue21938"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestIssue33961"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestCommentMap"
+        }
+      ],
+      "skips": [
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestDump"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestStdLib"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestPrint"
+        },
+        {
+          "package": "cmd/compile/internal/syntax",
+          "test": "TestScanner"
+        }
+      ],
+      "failures": [],
+      "packages": [
+        "cmd/compile/internal/syntax"
+      ],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "public-scanner",
+      "cwd": "/Users/tzbk/Documents/gon",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "go/scanner",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.317,
+      "log": "logs/toolchain-public-scanner.log.gz",
+      "testEvents": 25,
+      "testsRun": [
+        {
+          "package": "go/scanner",
+          "test": "TestScan"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestStripCR"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestSemicolons"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestLineDirectives"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestInvalidLineDirectives"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestInit"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestStdErrorHandler"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScanErrors"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestUTF16"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestIssue10213"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestIssue28112"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestNumbers"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScanReuseSemiInNewlineComment"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScannerEnd"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScannerEnd/operators"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScannerEnd/braces"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScannerEnd/literals"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScannerEnd/missing_newline_at_the_end_of_file"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScannerEnd/newline_at_the_end_of_file"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScannerEnd/semicolon_at_the_end_of_file"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScannerEnd/semicolon_and_newline_at_the_end_of_file"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScannerEnd/newline_in_comment_acting_as_semicolon"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScannerEnd/BOM"
+        },
+        {
+          "package": "go/scanner",
+          "test": "TestScannerEndReuse"
+        },
+        {
+          "package": "go/scanner",
+          "test": "ExampleScanner_Scan"
+        }
+      ],
+      "skips": [],
+      "failures": [],
+      "packages": [
+        "go/scanner"
+      ],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "public-frontends",
+      "cwd": "/Users/tzbk/Documents/gon",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "-short",
+        "go/parser",
+        "go/printer",
+        "go/format",
+        "-run",
+        "Gon|Interpolation|CondExpr|Lambda|NullSafety|ErrorHandling|ErrorContext|Alternatives|PatternTest|NamedArguments|NativeOptional|TestErrors|TestIssue",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 2.209,
+      "log": "logs/toolchain-public-frontends.log.gz",
+      "testEvents": 110,
+      "testsRun": [
+        {
+          "package": "go/parser",
+          "test": "TestCondExprPositions"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestCondExprValid"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestCondExprStatement"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestCondExprParseExpr"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestCondExprErrors"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestCondExprBadOperands"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestCondExprResolution"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestCondExprDepth"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/chans.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/commas.src"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/complit.src"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/goversion"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/interface.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue11377.src"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue23434.src"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue3106.src"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue34946.src"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue42951"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue44504.src"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue49174.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue49175.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue49482.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue50427.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue64534.src"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/issue69506.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/linalg.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/map.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/metrics.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/resolution"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/set.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/slices.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/sort.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/tparams.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrors/typeset.go2"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrorHandling"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrorHandlingLegacySyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrorContext"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestLambdaSyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestLambdaInvalidSyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestNullSafetySyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestNullSafetyInvalidSyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestLambdaNullSafetyLegacySyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestIssue42951"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestIssue9979"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestIssue59180"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestIssue57490"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesSyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesNestedPatterns"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesLegacySyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_var_x_=_.Ok(1)"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_var_x_=_.Err(nil)"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_var_x_int?_=_.Some(1)"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_var_x_int?_=_.None"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_type_Box_enum_{_default_Empty;_Full(int)_};_var_x_Box_=_.Full(1)"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_type_E_enum;_{_default_V_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_type_E_=_enum_{_default_V_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V(x_int)_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_Embedded_}_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_*Embedded_}_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_type_E_enum_{_default_V_{_X_int_\"tag\"_}_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V_=>_1;_default:_2_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_func_f()_{_switch_y_{_case_E.V_=>_1_}_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X:_x,_...,_Y:_y}_=>_x_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_E.V{X}_=>_1_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_y_{_case_f()+g()_=>_1_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesInvalidSyntax/package_p;_var_x_=_switch_init();_y_{_default_=>_1_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestAlternativesGroupedRecord"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestSimplifiedAlternativesSyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestSimplifiedAlternativesSyntaxErrors"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestSimplifiedAlternativesMultiline"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestMatchAlternativesSyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestPatternTestSyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestPatternTestContextualConstraint"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationSyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingLineStarts"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationUnterminatedRecovery"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestErrorContextFormattingContinuation"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationInvalidSyntax"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationRawFormattingPreservesText"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingPreservesComments"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingPreservesFormatComments"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingNestedBlocks"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingNestedBlocks/\"switch_b_{_case_true_=>_1;_case_false_=>_2_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingNestedBlocks/\"call()_or_err_{___=_err;_return_\"\",_err_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingNestedBlocks/\"func()_int_{_n_:=_1;_switch_n_{_case_1:_n++;_default:_n--_};_return_n_}()"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingNestedBlocks/\"func()_int_{_var_(a_=_1;_b_=_2);_type_T_struct_{_a_int;_b_int_};_type_I_interface_{_A();_B()_};_type_E_enum_{_A;_B_};_return_a_+_b_}()"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingNestedBlocks/\"func()_int_{_if_b_{_return_1_}_else_{_return_2_}_}()"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingNestedBlocks/`switch_b_{_case_true_=>_1;_case_false_=>_2_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingNestedBlocks/`call()_or_err_{___=_err;_return_\"\",_err_}"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingNestedBlocks/`func()_int_{_n_:=_1;_switch_n_{_case_1:_n++;_default:_n--_};_return_n_}()"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingNestedBlocks/`func()_int_{_var_(a_=_1;_b_=_2);_type_T_struct_{_a_int;_b_int_};_type_I_interface_{_A();_B()_};_type_E_enum_{_A;_B_};_return_a_+_b_}()"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationFormattingNestedBlocks/`func()_int_{_if_b_{_return_1_}_else_{_return_2_}_}()"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestInterpolationRawExpressionContinuation"
+        },
+        {
+          "package": "go/parser",
+          "test": "TestNamedArguments"
+        },
+        {
+          "package": "go/printer",
+          "test": "TestIssue5945"
+        },
+        {
+          "package": "go/printer",
+          "test": "TestIssue52605"
+        },
+        {
+          "package": "go/printer",
+          "test": "TestIssue11151"
+        },
+        {
+          "package": "go/printer",
+          "test": "TestIssue32854"
+        },
+        {
+          "package": "go/printer",
+          "test": "TestIssue7195"
+        },
+        {
+          "package": "go/printer",
+          "test": "TestPatternTestControlParens"
+        },
+        {
+          "package": "go/format",
+          "test": "TestCondExpr"
+        },
+        {
+          "package": "go/format",
+          "test": "TestCondExprDecls"
+        },
+        {
+          "package": "go/format",
+          "test": "TestCondExprNode"
+        },
+        {
+          "package": "go/format",
+          "test": "TestCondExprNoParens"
+        },
+        {
+          "package": "go/format",
+          "test": "TestCondExprNoParensNode"
+        },
+        {
+          "package": "go/format",
+          "test": "TestCondExprInvalidNesting"
+        },
+        {
+          "package": "go/format",
+          "test": "TestErrorHandling"
+        },
+        {
+          "package": "go/format",
+          "test": "TestLambdaNullSafetyFormat"
+        }
+      ],
+      "skips": [
+        {
+          "package": "go/parser",
+          "test": "TestCondExprDepth"
+        }
+      ],
+      "failures": [],
+      "packages": [
+        "go/format",
+        "go/parser",
+        "go/printer"
+      ],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "type-checkers",
+      "cwd": "/Users/tzbk/Documents/gon",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "-short",
+        "cmd/compile/internal/types2",
+        "go/types",
+        "-run",
+        "^Test(Check|Generate|Spec|Gon|CondExpr|Lambda|NullSafety|ErrorHandling|ErrorContext|ErrorHandler|ErrorCalls|Alternatives|PatternTest|NamedArguments|NativeOptional|OptionalOperators|Match|Enum|StringEnum|Interpolation)",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 13.657,
+      "log": "logs/toolchain-type-checkers.log.gz",
+      "testEvents": 568,
+      "testsRun": [
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumUnitLayout"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumUnitLayout/1"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumUnitLayout/2"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumUnitLayout/256"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumUnitLayout/257"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumUnitLayout/65536"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumUnitLayout/65537"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/blank.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/builtins0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/builtins1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/chans.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/compliterals0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/compliterals1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/compliterals2.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/compliterals3.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/condexpr.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/const0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/const1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/constdecl.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/conversions0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/conversions1.27.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/conversions1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/cycles0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/cycles1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/cycles2.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/cycles3.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/cycles4.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/cycles5.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/cycles6.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/decls0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/decls1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/decls2"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/decls3.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/decls4.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/decls5.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/doubled_labels.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/errorbridge.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/errorbridge_test.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/errors.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/expr0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/expr1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/expr2.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumUnitLayout"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumUnitLayout/1"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumUnitLayout/2"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumUnitLayout/256"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumUnitLayout/257"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/expr3.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumUnitLayout/65536"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/funcinference.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumUnitLayout/65537"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/blank.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/builtins0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_12.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_13.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_16.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_19.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_19_20.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_20_19.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_21_19.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_21_22.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_22_21.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_25.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_8.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/go1_xx_19.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/gotos.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/importC.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/importdecl0"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/builtins1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/chans.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/importdecl1"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/init0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/init1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/init2.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/issue25008"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/issue70974.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/issues0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/issues1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/compliterals0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/compliterals1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/compliterals2.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/compliterals3.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/condexpr.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/labels.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/linalg.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/literals.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/lookup1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/lookup2.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/main0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/main1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/map0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/map1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/methodsets.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/shifts.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/slices.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/stmt0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/stmt1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/targetinference.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/typeinference.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/typeinst0.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/typeinst1.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/typeinstcycles.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/typeparams.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/unions.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCheck/vardecl.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/assignability.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/comparable.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/comparable1.19.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/comparisons.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/conversions.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/methods.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/range.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/range_int.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/receivers.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/structLits.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/typeAliases1.22.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/typeAliases1.23.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/typeAliases1.8.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestSpec/untyped_lit.go"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCondExprTypes"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCondExprConversions"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCondExprConstants"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestCondExprInitOrder"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumRecordRestrictedHead"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumRecordRestrictedHead/type_Alias_=_E.Record"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumRecordRestrictedHead/var_x_E.Record"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumRecordRestrictedHead/var___=_new(E.Record)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumRecordRestrictedHead/var___=_E.Record"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestEnumTypeString"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/test"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/benchmark"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/fuzz"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/tb_helper"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/subtest"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/named_results"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/alias"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/method"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/lambda"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/lambda_arg"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/results_other_than_error"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/handler_unaffected"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/not_a_test_file"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/blank_first_param"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/unnamed_first_param"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/second_param"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/other_type"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/value_type"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/testing.M"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/defined_from_T"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/variadic"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/no_params"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/nested_function_without_t"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/nested_lambda_without_t"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/test_error_tuple"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/tb_error_tuple"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/context_return"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/context_test_rejected"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/error_lambda"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/nested_error_function"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/test_returning_error_keeps_error_rule"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/tuple_to_error"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/tuple_outside"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingBoundaries/tuple_no_results"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorCalls"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingTypes"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlingCgoErrno"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorHandlerBindingInfo"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestErrorContextTypes"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestInterpolationTypes"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestInterpolationImportFile"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestInterpolationImportFile/same_file"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestInterpolationImportFile/different_file"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaTargetsAndInference"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var___=_(x)_=>_x"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var___any_=_()_=>_1"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var___func(int)int_=_((x)_=>_x)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var___func(int,int)int_=_(x)_=>_x"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var___func(int,int)int_=_(x,x)_=>_x"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var___func()_=_()_=>_1"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var___func()int_=_()_=>_{_return_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/func_Apply[T_any](func(T)T)T_{_panic(0)_};_var___=_Apply((x)_=>_x)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/func_Map[T,U_any]([]T,func(T)U)U_{_panic(0)_};_var___=_Map([]int{},(x)_=>_{return_x})"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{N_int};_var___=_p?.N"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{N_int};_var___=_&p?.N"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{N_int};_func_f(){p?.N=1}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{F_func()};func_f(){defer_p?.F()}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{F_func()};func_f(){go_p?.F()}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{N_int};var___=_p_??_0"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var___=_nil_??_new(int)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var___=_1_??_2"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var_a_any;var___=_a.(int)_??_0"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/var_a_int;func_f(){a_??=_1}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaAndNilSafetyInvalid/type_F_func();func(F)_M(){};var_f_F;func_g(){f?.M()}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestLambdaNilSafetyInfo"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesTypes"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(x),_E.D(y)_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(x),_E.C(x)_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(x),_E.D(_)_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(_),_E.D(x)_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case__,_E.A_=>_0_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.A,_E.A_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(_)_=>_0;_case_E.B(1),_E.D(_)_=>_1;_default_=>_2_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(_),_E.B(1)_if_true_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.A,_E.B(_)_=>_0_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(x),_E.D(x)_=>_x;_default_=>_x_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.Pair(x,x),_E.D(x)_=>_x;_default_=>_0_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchTypes"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchInvalid"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchPatternNames"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchInterfaceSubject"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestMatchInterfaceSubjectInvalid"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/f(b:_\"b\",_a:_1)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/f(1,_b:_\"b\")"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/v(prefix:_\"p\")"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/generic(second:_[]int{1},_first:_2)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/f(a:_1,_a:_2)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/f(a:_1)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/f(c:_1,_b:_\"b\")"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/f(a:_1,_\"b\")"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/v(prefix:_\"p\",_values:_1)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/f(s:_\"z\",_r:_'a',_n:_1<<3,_valid:_a_<_b)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/f(a_==_b,_s:_\"\",_r:_2,_n:_1)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/f(n:_1,_valid:_!(a_==_b)_&&_a_>_0_||_b_>_1,_s:_\"\",_r:_2)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/f(s:_\"a\"+\"b\",_r:_2,_valid:_1_==_1,_n:_1)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/fb(n:_1,_valid:_a_<_b)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/fa(w:_1<<3,_v:_a_<_b)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/fa(w:_1.5,_v:_'a')"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/fa(w:_\"s\",_v:_1<<x)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/fa(w:_nil,_v:_nil)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/fp(e:_nil,_p:_nil)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/generic(v:_1,_ok:_a_<_b)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/generic(v:_a_<_b,_ok:_a_<_b)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/generic(v:_'a',_ok:_a_<_b)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/sum(b:_2.5,_a:_1)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/variadic(ok:_a_<_b,_rest:_[]int{1}...)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/variadic(ok:_a_<_b)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/call(fn:_func(int)_bool_{_return_a_<_b_},_ok:_a_<_b)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/T{}.M(n:_1,_ok:_a_<_b)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/i.M(n:_1,_ok:_a_<_b)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNamedArgumentsRecordedTypes/T.M(n:_1,_ok:_a_<_b,_t:_T{})"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNativeOptionalIdentity"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNativeOptionalPatterns"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestNativeOptionalInvalid"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};type_Node_struct{User_User?};func_f(x_*Node)string{return_x?.User?.Name_??_\"none\"}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};type_Node_struct{User_*User};func_f(x_Node?)string{return_x?.User?.Name_??_\"none\"}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};func_f(x_(*User)?)string{return_(x_??_nil)?.Name_??_\"none\"}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};type_Node_struct{User_User?};func_f(x_*Node)string{var_value_User?;if_x!=nil{value=x.User};return_value?.Name_??_\"none\"}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/func_f(x_int?)_string?_{_n:=x?;_return_(string?)((string)(string(rune(n))))_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/func_f(x_int?)_int_{return_x_??_3}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/func_f(){var_x_int?;x_??=_3}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/func_f(m_map[string]int?)_{m[\"key\"]_??=_3}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/func_makeOption()_int?_{return_(int?)(nil)};func_f(){makeOption()_??=_3}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/func_f(){var_x_int?;x_??=_(int?)((int)(3))}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};func_f(x_User?)_string{return_x?.Name_??_\"none\"}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};func_f(x_User?)_any{return_x?.Name}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/type_Counter_struct{};func(c_*Counter)Increment(){};func_f(x_Counter?){x?.Increment()}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/type_Counter_struct{};func(c_*Counter)Increment(){};func_f(x_(*Counter)?){x?.Increment()}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/func_f(x_int?)_int_{return_x?}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestOptionalOperators/type_Option[T_any]_struct{value_T};func_f(x_Option[int])_Option[int]_{__=_x?;return_x}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestPatternTestTypes"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestPatternTestInvalid"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumMetadata"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown;_A_=_\"a\"_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(int);_A_=_\"a\"_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string,_string);_A_=_\"a\"_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown_{_Text_string_};_A_=_\"a\"_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string)_=_\"unknown\";_A_=_\"a\"_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A(int)_=_\"a\"_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A{}_=_\"a\"_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_1_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_text_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_\"a\";_B_=_\"a\"_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_Parse_=_\"parse\"_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_{_default_Unknown;_A_=_\"a\"_}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_\"a\"_};_func_(Role)_Parse()_{}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_\"a\"_};_type_Ordinary_enum_{_default_Unknown(string);_A_};_var___=_Role(Ordinary.A)"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_\"a\"_};_type_Derived_Role;_func_(Derived)_Parse()_{}"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumDeclarationCycles"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumContextualMarker"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumMalformedParse"
+        },
+        {
+          "package": "cmd/compile/internal/types2",
+          "test": "TestStringEnumDerivedParserPackage"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/const0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/const1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/constdecl.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/conversions0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/conversions1.27.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/conversions1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/cycles0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/cycles1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/cycles2.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/cycles3.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/cycles4.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/cycles5.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/cycles6.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/decls0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/decls1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/decls2"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/decls3.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/decls4.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/decls5.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/doubled_labels.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/errorbridge.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/errorbridge_test.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/errors.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/expr0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/expr1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/expr2.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/expr3.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/funcinference.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_12.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_13.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_16.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_19.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_19_20.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_20_19.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_21_19.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_21_22.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_22_21.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_25.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_8.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/go1_xx_19.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/gotos.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/importC.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/importdecl0"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/importdecl1"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/init0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/init1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/init2.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/issue25008"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/issue70974.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/issues0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/issues1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/labels.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/linalg.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/literals.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/lookup1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/lookup2.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/main0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/main1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/map0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/map1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/methodsets.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/shifts.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/slices.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/stmt0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/stmt1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/targetinference.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/typeinference.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/typeinst0.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/typeinst1.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/typeinstcycles.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/typeparams.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/unions.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheck/vardecl.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/assignability.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/comparable.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/comparable1.19.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/comparisons.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/conversions.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/methods.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/range.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/range_int.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/receivers.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/structLits.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/typeAliases1.22.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/typeAliases1.23.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/typeAliases1.8.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestSpec/untyped_lit.go"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCondExprTypes"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCondExprConversions"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCondExprConstants"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCondExprInitOrder"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCondExprEval"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumRecordRestrictedHead"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumRecordRestrictedHead/type_Alias_=_E.Record"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumRecordRestrictedHead/var_x_E.Record"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumRecordRestrictedHead/var___=_new(E.Record)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumRecordRestrictedHead/var___=_E.Record(E.Empty)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumRecordRestrictedHead/var___=_E.Record"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumConstructorMetadata"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumRetiredNamesAreOrdinary"
+        },
+        {
+          "package": "go/types",
+          "test": "TestEnumTypeString"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/test"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/benchmark"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/fuzz"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/tb_helper"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/subtest"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/named_results"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/alias"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/method"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/lambda"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/lambda_arg"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/results_other_than_error"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/handler_unaffected"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/not_a_test_file"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/blank_first_param"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/unnamed_first_param"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/second_param"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/other_type"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/value_type"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/testing.M"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/defined_from_T"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/variadic"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/no_params"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/nested_function_without_t"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/nested_lambda_without_t"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/test_error_tuple"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/tb_error_tuple"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/context_return"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/context_test_rejected"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/error_lambda"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/nested_error_function"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/test_returning_error_keeps_error_rule"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/tuple_to_error"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/tuple_outside"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingBoundaries/tuple_no_results"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorCalls"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandling"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingCgoErrno"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorHandlingEval"
+        },
+        {
+          "package": "go/types",
+          "test": "TestErrorContextTypes"
+        },
+        {
+          "package": "go/types",
+          "test": "TestCheckExpr"
+        },
+        {
+          "package": "go/types",
+          "test": "TestGenerate"
+        },
+        {
+          "package": "go/types",
+          "test": "TestInterpolationTypes"
+        },
+        {
+          "package": "go/types",
+          "test": "TestInterpolationImportFile"
+        },
+        {
+          "package": "go/types",
+          "test": "TestInterpolationImportFile/same_file"
+        },
+        {
+          "package": "go/types",
+          "test": "TestInterpolationImportFile/different_file"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaTargetsAndInference"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var___=_(x)_=>_x"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var___any_=_()_=>_1"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var___func(int)int_=_((x)_=>_x)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var___func(int,int)int_=_(x)_=>_x"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var___func(int,int)int_=_(x,x)_=>_x"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var___func()_=_()_=>_1"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var___func()int_=_()_=>_{_return_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/func_Apply[T_any](func(T)T)T_{_panic(0)_};_var___=_Apply((x)_=>_x)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/func_Map[T,U_any]([]T,func(T)U)U_{_panic(0)_};_var___=_Map([]int{},(x)_=>_{return_x})"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{N_int};_var___=_p?.N"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{N_int};_var___=_&p?.N"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{N_int};_func_f(){p?.N=1}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{F_func()};func_f(){defer_p?.F()}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{F_func()};func_f(){go_p?.F()}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var_p_*struct{N_int};var___=_p_??_0"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var___=_nil_??_new(int)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var___=_1_??_2"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var_a_any;var___=_a.(int)_??_0"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/var_a_int;func_f(){a_??=_1}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaAndNilSafetyInvalid/type_F_func();func(F)_M(){};var_f_F;func_g(){f?.M()}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestLambdaNilSafetyInfo"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesTypes"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(x),_E.D(y)_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(x),_E.C(x)_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(x),_E.D(_)_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(_),_E.D(x)_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case__,_E.A_=>_0_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.A,_E.A_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(_)_=>_0;_case_E.B(1),_E.D(_)_=>_1;_default_=>_2_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(_),_E.B(1)_if_true_=>_0;_default_=>_1_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.A,_E.B(_)_=>_0_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.B(x),_E.D(x)_=>_x;_default_=>_x_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchAlternativesInvalid/var___=_switch_value_{_case_E.Pair(x,x),_E.D(x)_=>_x;_default_=>_0_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchTypes"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchInvalid"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchPatternNames"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchInterfaceSubject"
+        },
+        {
+          "package": "go/types",
+          "test": "TestMatchInterfaceSubjectInvalid"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/f(b:_\"b\",_a:_1)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/f(1,_b:_\"b\")"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/v(prefix:_\"p\",_values:_[]int{1}...)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/v(prefix:_\"p\")"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/generic(second:_[]int{1},_first:_2)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/f(a:_1,_a:_2)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/f(a:_1)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/f(c:_1,_b:_\"b\")"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/f(a:_1,_\"b\")"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/v(prefix:_\"p\",_values:_1)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/int(value:_1)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/len(value:_\"x\")"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/var_x_func(int,_string)_=_f;_x(a:_1,_b:_\"b\")"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/func(a_int,_b_string)_{}(b:_\"b\",_a:_1)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArguments/f(a:_func()_(int,_int)_{_return_1,_2_}(),_b:_\"b\")"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/f(s:_\"z\",_r:_'a',_n:_1<<3,_valid:_a_<_b)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/f(a_==_b,_s:_\"\",_r:_2,_n:_1)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/f(n:_1,_valid:_!(a_==_b)_&&_a_>_0_||_b_>_1,_s:_\"\",_r:_2)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/f(s:_\"a\"+\"b\",_r:_2,_valid:_1_==_1,_n:_1)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/fb(n:_1,_valid:_a_<_b)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/fa(w:_1<<3,_v:_a_<_b)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/fa(w:_1.5,_v:_'a')"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/fa(w:_\"s\",_v:_1<<x)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/fa(w:_nil,_v:_nil)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/fp(e:_nil,_p:_nil)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/generic(v:_1,_ok:_a_<_b)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/generic(v:_a_<_b,_ok:_a_<_b)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/generic(v:_'a',_ok:_a_<_b)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/sum(b:_2.5,_a:_1)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/variadic(ok:_a_<_b,_rest:_[]int{1}...)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/variadic(ok:_a_<_b)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/call(fn:_func(int)_bool_{_return_a_<_b_},_ok:_a_<_b)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/T{}.M(n:_1,_ok:_a_<_b)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/i.M(n:_1,_ok:_a_<_b)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNamedArgumentsRecordedTypes/T.M(n:_1,_ok:_a_<_b,_t:_T{})"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNativeOptionalIdentity"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNativeOptionalPatterns"
+        },
+        {
+          "package": "go/types",
+          "test": "TestNativeOptionalInvalid"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};type_Node_struct{User_User?};func_f(x_*Node)string{return_x?.User?.Name_??_\"none\"}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};type_Node_struct{User_*User};func_f(x_Node?)string{return_x?.User?.Name_??_\"none\"}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};func_f(x_(*User)?)string{return_(x_??_nil)?.Name_??_\"none\"}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};type_Node_struct{User_User?};func_f(x_*Node)string{var_value_User?;if_x!=nil{value=x.User};return_value?.Name_??_\"none\"}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/func_f(x_int?)_string?_{_n:=x?;_return_(string?)((string)(string(rune(n))))_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/func_f(x_int?)_int_{return_x_??_3}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/func_f(){var_x_int?;x_??=_3}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/func_f(m_map[string]int?)_{m[\"key\"]_??=_3}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/func_makeOption()_int?_{return_(int?)(nil)};func_f(){makeOption()_??=_3}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/func_f(){var_x_int?;x_??=_(int?)((int)(3))}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};func_f(x_User?)_string{return_x?.Name_??_\"none\"}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/type_User_struct{Name_string};func_f(x_User?)_any{return_x?.Name}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/type_Counter_struct{};func(c_*Counter)Increment(){};func_f(x_Counter?){x?.Increment()}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/type_Counter_struct{};func(c_*Counter)Increment(){};func_f(x_(*Counter)?){x?.Increment()}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/func_f(x_int?)_int_{return_x?}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestOptionalOperators/type_Option[T_any]_struct{value_T};func_f(x_Option[int])_Option[int]_{__=_x?;return_x}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestPatternTestTypes"
+        },
+        {
+          "package": "go/types",
+          "test": "TestPatternTestInvalid"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumMetadata"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown;_A_=_\"a\"_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(int);_A_=_\"a\"_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string,_string);_A_=_\"a\"_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown_{_Text_string_};_A_=_\"a\"_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string)_=_\"unknown\";_A_=_\"a\"_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A(int)_=_\"a\"_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A{}_=_\"a\"_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_1_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_text_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_\"a\";_B_=_\"a\"_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_Parse_=_\"parse\"_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_{_default_Unknown;_A_=_\"a\"_}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_\"a\"_};_func_(Role)_Parse()_{}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_\"a\"_};_type_Ordinary_enum_{_default_Unknown(string);_A_};_var___=_Role(Ordinary.A)"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumInvalidDeclarations/enum_string_{_default_Unknown(string);_A_=_\"a\"_};_type_Derived_Role;_func_(Derived)_Parse()_{}"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumDeclarationCycles"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumContextualMarker"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumMalformedParse"
+        },
+        {
+          "package": "go/types",
+          "test": "TestStringEnumDerivedParserPackage"
+        }
+      ],
+      "skips": [],
+      "failures": [],
+      "packages": [
+        "cmd/compile/internal/types2",
+        "go/types"
+      ],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "compiler-upstream",
+      "cwd": "/Users/tzbk/Documents/gon",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/compile/internal/test",
+        "-run",
+        "^Test(ReproducibleBuilds|BinarySearchFuncInlinable|IntendedInlining|ConstantMultiplies)$",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 11.951,
+      "log": "logs/toolchain-compiler-upstream.log.gz",
+      "testEvents": 8,
+      "testsRun": [
+        {
+          "package": "cmd/compile/internal/test",
+          "test": "TestIntendedInlining"
+        },
+        {
+          "package": "cmd/compile/internal/test",
+          "test": "TestBinarySearchFuncInlinable"
+        },
+        {
+          "package": "cmd/compile/internal/test",
+          "test": "TestConstantMultiplies"
+        },
+        {
+          "package": "cmd/compile/internal/test",
+          "test": "TestReproducibleBuilds"
+        },
+        {
+          "package": "cmd/compile/internal/test",
+          "test": "TestReproducibleBuilds/issue20272.go"
+        },
+        {
+          "package": "cmd/compile/internal/test",
+          "test": "TestReproducibleBuilds/issue27013.go"
+        },
+        {
+          "package": "cmd/compile/internal/test",
+          "test": "TestReproducibleBuilds/issue30202.go"
+        },
+        {
+          "package": "cmd/compile/internal/test",
+          "test": "TestReproducibleBuilds/issue82043.go"
+        }
+      ],
+      "skips": [],
+      "failures": [],
+      "packages": [
+        "cmd/compile/internal/test"
+      ],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "reflectdata",
+      "cwd": "/Users/tzbk/Documents/gon",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/compile/internal/reflectdata",
+        "-run",
+        "^TestTypesStrCmpNoalg$",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.561,
+      "log": "logs/toolchain-reflectdata.log.gz",
+      "testEvents": 1,
+      "testsRun": [
+        {
+          "package": "cmd/compile/internal/reflectdata",
+          "test": "TestTypesStrCmpNoalg"
+        }
+      ],
+      "skips": [],
+      "failures": [],
+      "packages": [
+        "cmd/compile/internal/reflectdata"
+      ],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "asm-arm64",
+      "cwd": "/Users/tzbk/Documents/gon",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/asm/internal/asm",
+        "-run",
+        "^TestARM64",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.469,
+      "log": "logs/toolchain-asm-arm64.log.gz",
+      "testEvents": 6,
+      "testsRun": [
+        {
+          "package": "cmd/asm/internal/asm",
+          "test": "TestARM64EndToEnd"
+        },
+        {
+          "package": "cmd/asm/internal/asm",
+          "test": "TestARM64Encoder"
+        },
+        {
+          "package": "cmd/asm/internal/asm",
+          "test": "TestARM64SVEEncoder"
+        },
+        {
+          "package": "cmd/asm/internal/asm",
+          "test": "TestARM64SVEErrors"
+        },
+        {
+          "package": "cmd/asm/internal/asm",
+          "test": "TestARM64Errors"
+        },
+        {
+          "package": "cmd/asm/internal/asm",
+          "test": "TestARM64OperandParser"
+        }
+      ],
+      "skips": [
+        {
+          "package": "cmd/asm/internal/asm",
+          "test": "TestARM64SVEEncoder"
+        },
+        {
+          "package": "cmd/asm/internal/asm",
+          "test": "TestARM64SVEErrors"
+        }
+      ],
+      "failures": [],
+      "packages": [
+        "cmd/asm/internal/asm"
+      ],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "cmd-go-scripts",
+      "cwd": "/Users/tzbk/Documents/gon",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/go",
+        "-run",
+        "^TestScript$/(list_export_test|toolexec|test_cache_repeated_inputs)$",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 22.283,
+      "log": "logs/toolchain-cmd-go-scripts.log.gz",
+      "testEvents": 4,
+      "testsRun": [
+        {
+          "package": "cmd/go",
+          "test": "TestScript"
+        },
+        {
+          "package": "cmd/go",
+          "test": "TestScript/list_export_test"
+        },
+        {
+          "package": "cmd/go",
+          "test": "TestScript/test_cache_repeated_inputs"
+        },
+        {
+          "package": "cmd/go",
+          "test": "TestScript/toolexec"
+        }
+      ],
+      "skips": [],
+      "failures": [],
+      "packages": [
+        "cmd/go"
+      ],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "cmd-export-version",
+      "cwd": "/Users/tzbk/Documents/gon",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "tool",
+        "export",
+        "-V=full"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.221,
+      "log": "logs/toolchain-cmd-export-version.log.gz",
+      "testEvents": 0,
+      "testsRun": [],
+      "skips": [],
+      "failures": [],
+      "packages": [],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "gcimporter",
+      "cwd": "/Users/tzbk/Documents/gon/tools/x-tools",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./internal/gcimporter",
+        "-run",
+        "^Test(Gon|ImportTestdata|ImportedTypes|ImportedConsts|GenericExport|VersionHandling|CorrectMethodPackage)",
+        "-count=1"
+      ],
+      "exitCode": 1,
+      "elapsedSeconds": 10.029,
+      "log": "logs/toolchain-gcimporter.log.gz",
+      "testEvents": 19,
+      "testsRun": [
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/baseline_legacy"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/Gon_legacy"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/Gon_modern"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/imported_bodies_without_inlining"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/unified"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/indexed"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/shallow"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/public_compiler_export"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/public_client_export"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternativesSimplification/toolchain_importer"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonAlternatives"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestImportTestdata"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestVersionHandling"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestImportedTypes"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestImportedConsts"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestCorrectMethodPackage"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGenericExport"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestGonStringEnums"
+        }
+      ],
+      "skips": [],
+      "failures": [
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": "TestImportTestdata"
+        },
+        {
+          "package": "golang.org/x/tools/internal/gcimporter",
+          "test": null
+        }
+      ],
+      "packages": [
+        "golang.org/x/tools/internal/gcimporter"
+      ],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "failed"
+    },
+    {
+      "name": "gcexportdata",
+      "cwd": "/Users/tzbk/Documents/gon/tools/x-tools",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./go/gcexportdata",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 4.095,
+      "log": "logs/toolchain-gcexportdata.log.gz",
+      "testEvents": 3,
+      "testsRun": [
+        {
+          "package": "golang.org/x/tools/go/gcexportdata",
+          "test": "TestDeps"
+        },
+        {
+          "package": "golang.org/x/tools/go/gcexportdata",
+          "test": "ExampleRead"
+        },
+        {
+          "package": "golang.org/x/tools/go/gcexportdata",
+          "test": "ExampleNewImporter"
+        }
+      ],
+      "skips": [],
+      "failures": [],
+      "packages": [
+        "golang.org/x/tools/go/gcexportdata"
+      ],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "passed"
+    },
+    {
+      "name": "go-packages",
+      "cwd": "/Users/tzbk/Documents/gon/tools/x-tools",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "./go/packages",
+        "-run",
+        "^Test(Gon|ExportFile|OverlaysInReplace|OverlayInSecondGoWorkModule)$",
+        "-count=1"
+      ],
+      "exitCode": 1,
+      "elapsedSeconds": 3.838,
+      "log": "logs/toolchain-go-packages.log.gz",
+      "testEvents": 3,
+      "testsRun": [
+        {
+          "package": "golang.org/x/tools/go/packages",
+          "test": "TestOverlaysInReplace"
+        },
+        {
+          "package": "golang.org/x/tools/go/packages",
+          "test": "TestOverlayInSecondGoWorkModule"
+        },
+        {
+          "package": "golang.org/x/tools/go/packages",
+          "test": "TestExportFile"
+        }
+      ],
+      "skips": [],
+      "failures": [
+        {
+          "package": "golang.org/x/tools/go/packages",
+          "test": "TestOverlayInSecondGoWorkModule"
+        },
+        {
+          "package": "golang.org/x/tools/go/packages",
+          "test": null
+        }
+      ],
+      "packages": [
+        "golang.org/x/tools/go/packages"
+      ],
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "failed"
+    },
+    {
+      "name": "asm-arm64-simd",
+      "cwd": "/Users/tzbk/Documents/gon",
+      "command": [
+        "/Users/tzbk/Documents/gon/gon/bin/gon",
+        "test",
+        "-json",
+        "cmd/asm/internal/asm",
+        "-run",
+        "^TestARM64SVE(Encoder|Errors)$",
+        "-count=1"
+      ],
+      "environmentOverride": {
+        "GOEXPERIMENT": "simd"
+      },
+      "scope": "Native arm64 fixture parsing/encoding only; no execution of SVE instructions",
+      "exitCode": 0,
+      "elapsedSeconds": 11.194,
+      "log": "logs/toolchain-asm-arm64-simd.log.gz",
+      "testEvents": 2,
+      "testsRun": [
+        {
+          "package": "cmd/asm/internal/asm",
+          "test": "TestARM64SVEEncoder"
+        },
+        {
+          "package": "cmd/asm/internal/asm",
+          "test": "TestARM64SVEErrors"
+        }
+      ],
+      "skips": [],
+      "failures": [],
+      "sourceSha256Before": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+      "sourceUnchanged": true,
+      "status": "passed"
+    }
+  ],
+  "notes": [
+    "Native macOS arm64 only; no Docker, PostgreSQL, non-macOS or cross compilation.",
+    "src/go/internal/gcimporter TestMain omits m.Run; not run or counted as importer validation.",
+    "cmd/export has no package tests; its integration is exercised by cmd/go list_export_test and maintained export readers."
+  ],
+  "sourceSha256After": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+  "sourceUnchanged": true,
+  "endTime": "2026-10-07T23:33:16.418002+00:00",
+  "status": "failed"
+}

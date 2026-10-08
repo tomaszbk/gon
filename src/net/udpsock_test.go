@@ -788,3 +788,30 @@ func TestReadWriteMsgUDPAddrPortEmptyCmsg(t *testing.T) {
 		t.Errorf("ReadMsgUDPAddrPort read %d cmsg bytes; want 0", cmsgn)
 	}
 }
+
+// TestDualStackUDPBroadcast verifies that a dual-stack UDP socket can send
+// a broadcast message to an IPv4 broadcast address.
+func TestDualStackUDPBroadcast(t *testing.T) {
+	switch runtime.GOOS {
+	case "plan9":
+		t.Skipf("not supported on %s", runtime.GOOS)
+	}
+	if !supportsIPv4map() {
+		t.Skip("dual-stack IPv6 sockets not supported")
+	}
+	mustHaveExternalNetwork(t)
+
+	conn, err := ListenUDP("udp", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+
+	addr := netip.AddrPortFrom(netip.MustParseAddr("255.255.255.255"), 12345)
+	if _, err := conn.WriteToUDPAddrPort([]byte{0}, addr); err != nil {
+		if isUnreachableError(err) {
+			t.Skipf("broadcast route not available: %v", err)
+		}
+		t.Errorf("WriteToUDPAddrPort failed: %v", err)
+	}
+}

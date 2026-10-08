@@ -69,11 +69,11 @@ func (r *reader) condExpr() ir.Node {
 	// defining assignment (Defn): its value is not static.
 	tmp := r.temp(pos, typ)
 	assign := func(x ir.Node) []ir.Node {
-		return []ir.Node{typecheck.Stmt(ir.NewAssignStmt(x.Pos(), tmp, x))}
+		return []ir.Node{typecheck.Stmt(r.curfn, ir.NewAssignStmt(x.Pos(), tmp, x))}
 	}
 	body := []ir.Node{
-		typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, tmp)),
-		typecheck.Stmt(ir.NewIfStmt(pos, cond, assign(then), assign(els))),
+		typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, tmp)),
+		typecheck.Stmt(r.curfn, ir.NewIfStmt(pos, cond, assign(then), assign(els))),
 	}
 	res := ir.NewInlinedCallExpr(pos, body, []ir.Node{tmp})
 	res.SetType(typ)

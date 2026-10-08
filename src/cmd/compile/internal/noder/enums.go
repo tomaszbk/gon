@@ -240,10 +240,10 @@ func (r *reader) enumConstruct() ir.Node {
 		fields[i] = r.Len()
 		values[i] = r.expr()
 	}
-	return enumValue(pos, typ, tag, storage, fields, values)
+	return enumValue(r.curfn, pos, typ, tag, storage, fields, values)
 }
 
-func enumValue(pos src.XPos, typ *types.Type, tag, storage int, fields []int, values []ir.Node) ir.Node {
+func enumValue(curfunc *ir.Func, pos src.XPos, typ *types.Type, tag, storage int, fields []int, values []ir.Node) ir.Node {
 	var elements []ir.Node
 	// The default discriminant and omitted payload fields already have Go
 	// zeros. Avoid materializing explicit zero-valued storage initializers.
@@ -259,11 +259,11 @@ func enumValue(pos src.XPos, typ *types.Type, tag, storage int, fields []int, va
 		}
 		payloadValue := ir.NewCompLitExpr(pos, ir.OCOMPLIT, payload, data)
 		payloadValue.GonEnumStorage = true
-		storageValue := ir.NewStructKeyExpr(pos, typ.Field(storage), typecheck.Expr(payloadValue))
+		storageValue := ir.NewStructKeyExpr(pos, typ.Field(storage), typecheck.Expr(curfunc, payloadValue))
 		storageValue.GonEnumStorage = true
 		elements = append(elements, storageValue)
 	}
-	return typecheck.Expr(ir.NewCompLitExpr(pos, ir.OCOMPLIT, typ, elements))
+	return typecheck.Expr(curfunc, ir.NewCompLitExpr(pos, ir.OCOMPLIT, typ, elements))
 }
 
 func (r *reader) enumConstructor() ir.Node {
@@ -276,15 +276,13 @@ func (r *reader) enumConstructor() ir.Node {
 	// function-body reader of its own. Calls remain ordinary Go function calls.
 	fn.Pragma |= ir.Noinline
 	fn.DeclareParams(true)
-	ir.WithFunc(fn, func() {
-		fields := make([]int, sig.NumParams())
-		values := make([]ir.Node, len(fields))
-		for i := range values {
-			fields[i] = i
-			values[i] = sig.Param(i).Nname.(*ir.Name)
-		}
-		fn.Body = []ir.Node{ir.NewReturnStmt(pos, []ir.Node{enumValue(pos, typ, tag, storage, fields, values)})}
-		typecheck.Stmts(fn.Body)
-	})
+	fields := make([]int, sig.NumParams())
+	values := make([]ir.Node, len(fields))
+	for i := range values {
+		fields[i] = i
+		values[i] = sig.Param(i).Nname.(*ir.Name)
+	}
+	fn.Body = []ir.Node{ir.NewReturnStmt(pos, []ir.Node{enumValue(fn, pos, typ, tag, storage, fields, values)})}
+	typecheck.Stmts(fn, fn.Body)
 	return fn.OClosure
 }

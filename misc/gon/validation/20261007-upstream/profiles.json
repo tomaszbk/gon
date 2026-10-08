@@ -1,0 +1,174 @@
+{
+  "startedAt": "2026-10-07T23:56:46.381781+00:00",
+  "sourceSHA256": "730bf061f44bd92b8f8871f928225247d4fff979e7eb07c57f7e751ecd8350ea",
+  "gitHEAD": "a0713d52d6e2c7f5e09a06916bf2c0c18c07cb51",
+  "platform": "darwin/arm64",
+  "baseline": "/opt/homebrew/bin/go",
+  "baselineVersion": "go version go1.27.1 darwin/arm64",
+  "profiles": [
+    {
+      "name": "tooling",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "tooling"
+      ],
+      "exitCode": 0,
+      "seconds": 298.961,
+      "summary": "tooling.json",
+      "log": "logs/profile-tooling.log.gz",
+      "checks": 75,
+      "passed": 75,
+      "sourceStable": true,
+      "sourceSHA256": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c"
+    },
+    {
+      "name": "modern",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "modern"
+      ],
+      "exitCode": 0,
+      "seconds": 587.404,
+      "summary": "modern.json",
+      "log": "logs/profile-modern.log.gz",
+      "checks": 116,
+      "passed": 116,
+      "sourceStable": true,
+      "sourceSHA256": "730bf061f44bd92b8f8871f928225247d4fff979e7eb07c57f7e751ecd8350ea"
+    },
+    {
+      "name": "errorhandling",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "errorhandling"
+      ],
+      "exitCode": 0,
+      "seconds": 175.092,
+      "summary": "errorhandling.json",
+      "log": "logs/profile-errorhandling.log.gz",
+      "checks": 38,
+      "passed": 38,
+      "sourceStable": true,
+      "sourceSHA256": "730bf061f44bd92b8f8871f928225247d4fff979e7eb07c57f7e751ecd8350ea"
+    },
+    {
+      "name": "conditional",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "conditional"
+      ],
+      "exitCode": 0,
+      "seconds": 164.631,
+      "summary": "conditional.json",
+      "log": "logs/profile-conditional.log.gz",
+      "checks": 38,
+      "passed": 38,
+      "sourceStable": true,
+      "sourceSHA256": "730bf061f44bd92b8f8871f928225247d4fff979e7eb07c57f7e751ecd8350ea"
+    },
+    {
+      "name": "lambda",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "lambda"
+      ],
+      "exitCode": 0,
+      "seconds": 149.791,
+      "summary": "lambda.json",
+      "log": "logs/profile-lambda.log.gz",
+      "checks": 41,
+      "passed": 41,
+      "sourceStable": true,
+      "sourceSHA256": "730bf061f44bd92b8f8871f928225247d4fff979e7eb07c57f7e751ecd8350ea"
+    },
+    {
+      "name": "nullsafety",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "nullsafety"
+      ],
+      "exitCode": 0,
+      "seconds": 149.253,
+      "summary": "nullsafety.json",
+      "log": "logs/profile-nullsafety.log.gz",
+      "checks": 41,
+      "passed": 41,
+      "sourceStable": true,
+      "sourceSHA256": "730bf061f44bd92b8f8871f928225247d4fff979e7eb07c57f7e751ecd8350ea"
+    }
+  ],
+  "status": "pass",
+  "metadataOnlyDelta": "source-drift.json",
+  "finalSourceSHA256": "730bf061f44bd92b8f8871f928225247d4fff979e7eb07c57f7e751ecd8350ea",
+  "finishedAt": "2026-10-08T00:17:15.315878+00:00",
+  "environment": {
+    "GON_BASELINE_GO": "/opt/homebrew/bin/go",
+    "GON_SQL_POSTGRES": "0",
+    "GOMAXPROCS": "2",
+    "GOWORK": "off",
+    "GOTOOLCHAIN": "local"
+  },
+  "sourceManifests": {
+    "tooling": "tooling-source-manifest.json.gz",
+    "modern/errorhandling/conditional/lambda/nullsafety": "final-source-manifest.json.gz"
+  },
+  "implementationAndTestInventoryStableAcrossProfiles": true,
+  "sourceInventoryStableAcrossProfiles": false,
+  "scope": "All six complete profiles passed; each run had a stable inventory. Between tooling and the remaining profiles only parallel GitHub Sponsors metadata was added. No additional non-macOS, PostgreSQL or Docker execution, and no timed benchmarks.",
+  "totalProfileChecks": 349,
+  "totalProfileChecksScope": "Includes repeated common gates; not a distinct-test count.",
+  "skippedTestEvents": [
+    {
+      "profile": "tooling",
+      "check": "structural-tools",
+      "test": "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+    },
+    {
+      "profile": "modern",
+      "check": "structural-tools",
+      "test": "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+    },
+    {
+      "profile": "errorhandling",
+      "check": "structural-tools",
+      "test": "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+    },
+    {
+      "profile": "errorhandling",
+      "check": "vet",
+      "test": "cmd/vet/TestVet/stringintconv"
+    },
+    {
+      "profile": "errorhandling",
+      "check": "vet",
+      "test": "cmd/vet/TestVet/stdversion"
+    },
+    {
+      "profile": "errorhandling",
+      "check": "vet",
+      "test": "cmd/vet/TestVet/loopclosure"
+    },
+    {
+      "profile": "conditional",
+      "check": "structural-tools",
+      "test": "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+    },
+    {
+      "profile": "lambda",
+      "check": "structural-tools",
+      "test": "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+    },
+    {
+      "profile": "nullsafety",
+      "check": "structural-tools",
+      "test": "golang.org/x/tools/internal/typesinternal/TestErrorCodes"
+    }
+  ],
+  "uniqueSkippedTestCount": 4
+}

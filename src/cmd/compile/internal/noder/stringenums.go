@@ -109,11 +109,9 @@ func (r *reader) stringEnumParse() ir.Node {
 	// Like positional constructors, this function has typed, synthesized IR.
 	fn.Pragma |= ir.Noinline
 	fn.DeclareParams(true)
-	ir.WithFunc(fn, func() {
-		text := sig.Param(0).Nname.(*ir.Name)
-		fn.Body = stringEnumParseBody(pos, typ, text, fallback, variants, nil)
-		typecheck.Stmts(fn.Body)
-	})
+	text := sig.Param(0).Nname.(*ir.Name)
+	fn.Body = stringEnumParseBody(fn, pos, typ, text, fallback, variants, nil)
+	typecheck.Stmts(fn, fn.Body)
 	return fn.OClosure
 }
 
@@ -122,8 +120,8 @@ func (r *reader) stringEnumParse() ir.Node {
 // A byte-slice input is converted separately at each use: comparisons can use
 // the existing non-copying string conversion, while the fallback copies the
 // bytes into its retained string payload.
-func stringEnumParseBody(pos src.XPos, typ *types.Type, text ir.Node, fallback int, variants []stringEnumVariant, destination ir.Node) ir.Nodes {
-	asString := func() ir.Node { return typecheck.Conv(text, types.Types[types.TSTRING]) }
+func stringEnumParseBody(curfunc *ir.Func, pos src.XPos, typ *types.Type, text ir.Node, fallback int, variants []stringEnumVariant, destination ir.Node) ir.Nodes {
+	asString := func() ir.Node { return typecheck.Conv(curfunc, text, types.Types[types.TSTRING]) }
 	finish := func(value ir.Node) ir.Nodes {
 		if destination == nil {
 			return ir.Nodes{ir.NewReturnStmt(pos, []ir.Node{value})}
@@ -133,10 +131,10 @@ func stringEnumParseBody(pos src.XPos, typ *types.Type, text ir.Node, fallback i
 	var body ir.Nodes
 	for _, v := range variants {
 		condition := ir.NewBinaryExpr(pos, ir.OEQ, asString(), ir.NewString(pos, v.text))
-		value := enumValue(pos, typ, v.tag, v.storage, nil, nil)
+		value := enumValue(curfunc, pos, typ, v.tag, v.storage, nil, nil)
 		body.Append(ir.NewIfStmt(pos, condition, finish(value), nil))
 	}
-	body.Append(finish(enumValue(pos, typ, 0, fallback, []int{0}, []ir.Node{asString()}))...)
+	body.Append(finish(enumValue(curfunc, pos, typ, 0, fallback, []int{0}, []ir.Node{asString()}))...)
 	return body
 }
 
@@ -148,19 +146,19 @@ func (r *reader) stringEnumMethodBody() ir.Node {
 	if method == "UnmarshalText" {
 		typ := recv.Type().Elem()
 		input := sig.Param(sig.NumParams() - 1).Nname.(*ir.Name)
-		body := stringEnumParseBody(pos, typ, input, fallback, variants, typecheck.Expr(ir.NewStarExpr(pos, recv)))
+		body := stringEnumParseBody(r.curfn, pos, typ, input, fallback, variants, typecheck.Expr(r.curfn, ir.NewStarExpr(pos, recv)))
 		return ir.NewBlockStmt(pos, body)
 	}
 	finish := func(text ir.Node) ir.Nodes {
 		results := []ir.Node{text}
 		if method == "MarshalText" {
-			results = []ir.Node{typecheck.Conv(text, sig.Result(0).Type), typecheck.NodNil()}
+			results = []ir.Node{typecheck.Conv(r.curfn, text, sig.Result(0).Type), typecheck.NodNil()}
 		}
 		return ir.Nodes{ir.NewReturnStmt(pos, results)}
 	}
 	var body ir.Nodes
 	for _, v := range variants {
-		body.Append(ir.NewIfStmt(pos, enumTagTest(pos, recv, v.tag, ir.OEQ), finish(ir.NewString(pos, v.text)), nil))
+		body.Append(ir.NewIfStmt(pos, enumTagTest(r.curfn, pos, recv, v.tag, ir.OEQ), finish(ir.NewString(pos, v.text)), nil))
 	}
 	body.Append(finish(enumPayload(pos, recv, fallback, 0))...)
 	return ir.NewBlockStmt(pos, body)

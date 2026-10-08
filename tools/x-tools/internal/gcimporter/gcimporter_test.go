@@ -16,6 +16,7 @@ import (
 	goparser "go/parser"
 	"go/token"
 	"go/types"
+	"io"
 	"os"
 	"os/exec"
 	"path"
@@ -27,6 +28,7 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/tools/go/gcexportdata"
 	"golang.org/x/tools/internal/gcimporter"
 	"golang.org/x/tools/internal/goroot"
 	"golang.org/x/tools/internal/testenv"
@@ -127,33 +129,62 @@ func TestImportTestdata(t *testing.T) {
 
 	packageFiles := map[string]string{}
 	for _, pkg := range []string{"go/ast", "go/token"} {
-		export, _, err := gcimporter.FindPkg(pkg, "testdata")
+		// The compiler's importcfg requires archives, while go list -export
+		// may return standalone indexed data for source-based readers. Query
+		// directly so this override cannot affect FindPkg's cached paths.
+		cmd := exec.Command("go", "list", "-export", "-f", "{{.Export}}", pkg)
+		cmd.Env = append(os.Environ(), "TESTGO_EXPORT_ARCHIVE=1")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatalf("no archive found for %s: %v\n%s", pkg, err, out)
+		}
+		export := strings.TrimSpace(string(out))
 		if export == "" {
-			t.Fatalf("no export data found for %s: %s", pkg, err)
+			t.Fatalf("no archive found for %s", pkg)
 		}
 		packageFiles[pkg] = export
 	}
 
-	compile(t, "testdata", testfile, filepath.Join(tmpdir, "testdata"), packageFiles)
-
-	// filename should end with ".go"
-	filename := testfile[:len(testfile)-3]
-	if pkg := testPath(t, "./testdata/"+filename, tmpdir); pkg != nil {
-		// The package's Imports list must include all packages
-		// explicitly imported by testfile, plus all packages
-		// referenced indirectly via exported objects in testfile.
-		// With the textual export format (when run against Go1.6),
-		// the list may also include additional packages that are
-		// not strictly required for import processing alone (they
-		// are exported to err "on the safe side").
-		// For now, we just test the presence of a few packages
-		// that we know are there for sure.
-		got := fmt.Sprint(pkg.Imports())
-		wants := []string{"go/ast", "go/token", "go/ast"}
-		for _, want := range wants {
-			if !strings.Contains(got, want) {
-				t.Errorf(`Package("exports").Imports() = %s, does not contain %s`, got, want)
-			}
+	filename := compile(t, "testdata", testfile, filepath.Join(tmpdir, "testdata"), packageFiles)
+	f, err := os.Open(filename)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	reader, err := gcexportdata.NewReader(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data) == 0 || data[0] != 'p' && data[0] != 'u' {
+		t.Fatalf("unexpected compiler archive format %q", data[:min(len(data), 1)])
+	}
+	// This fixture reads the compiler's archive, including private 'p' data.
+	// Decode it explicitly; public importers keep their standalone export format.
+	_, pkg, err := gcimporter.UImportData(token.NewFileSet(), make(map[string]*types.Package), data[1:], "p")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if pkg == nil {
+		t.Fatal("compiler archive decoded without a package")
+	}
+	// The package's Imports list must include all packages
+	// explicitly imported by testfile, plus all packages
+	// referenced indirectly via exported objects in testfile.
+	// With the textual export format (when run against Go1.6),
+	// the list may also include additional packages that are
+	// not strictly required for import processing alone (they
+	// are exported to err "on the safe side").
+	// For now, we just test the presence of a few packages
+	// that we know are there for sure.
+	got := fmt.Sprint(pkg.Imports())
+	wants := []string{"go/ast", "go/token", "go/ast"}
+	for _, want := range wants {
+		if !strings.Contains(got, want) {
+			t.Errorf(`Package("exports").Imports() = %s, does not contain %s`, got, want)
 		}
 	}
 }

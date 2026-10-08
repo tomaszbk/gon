@@ -199,21 +199,21 @@ func (r *reader) matchPattern(pos src.XPos, input ir.Node, declarations *ir.Node
 			// Every path that reaches a later case body has an SSA definition.
 			// The zero is private to a failed pattern; only a successful pattern
 			// exposes the copied payload to its guard and selected arm.
-			declarations.Append(typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, name)), typecheck.Stmt(ir.NewAssignStmt(pos, name, ir.NewZero(pos, name.Type()))))
+			declarations.Append(typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, name)), typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, name, ir.NewZero(pos, name.Type()))))
 		}
-		return ir.NewBool(pos, true), ir.Nodes{typecheck.Stmt(ir.NewAssignStmt(pos, bound, input))}
+		return ir.NewBool(pos, true), ir.Nodes{typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, bound, input))}
 	case matchValue:
-		return typecheck.DefaultLit(typecheck.Expr(ir.NewBinaryExpr(pos, ir.OEQ, input, r.expr())), types.Types[types.TBOOL]), nil
+		return typecheck.DefaultLit(typecheck.Expr(r.curfn, ir.NewBinaryExpr(pos, ir.OEQ, input, r.expr())), types.Types[types.TBOOL]), nil
 	case matchInterface:
 		return r.matchInterface(input, declarations)
 	case matchVariant:
 		tag, storage := r.Len(), r.Len()
-		condition := enumTagTest(pos, input, tag, ir.OEQ)
+		condition := enumTagTest(r.curfn, pos, input, tag, ir.OEQ)
 		var bindings ir.Nodes
 		for n := r.Len(); n > 0; n-- {
 			field := r.Len()
 			child, init := r.matchPattern(pos, enumPayload(pos, input, storage, field), declarations)
-			condition = typecheck.DefaultLit(typecheck.Expr(ir.NewLogicalExpr(pos, ir.OANDAND, condition, child)), types.Types[types.TBOOL])
+			condition = typecheck.DefaultLit(typecheck.Expr(r.curfn, ir.NewLogicalExpr(pos, ir.OANDAND, condition, child)), types.Types[types.TBOOL])
 			bindings.Append(init...)
 		}
 		return condition, bindings
@@ -238,8 +238,8 @@ func (r *reader) matchInterface(input ir.Node, declarations *ir.Nodes) (ir.Node,
 	pos := r.pos()
 	matched := r.temp(pos, types.Types[types.TBOOL])
 	body := ir.Nodes{
-		typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, matched)),
-		typecheck.Stmt(ir.NewAssignStmt(pos, matched, ir.NewBool(pos, false))),
+		typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, matched)),
+		typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, matched, ir.NewBool(pos, false))),
 	}
 	var head ir.Nodes // computes the value and its presence
 	var value *ir.Name
@@ -248,14 +248,14 @@ func (r *reader) matchInterface(input ir.Node, declarations *ir.Nodes) (ir.Node,
 		typ, rtype := r.rtype0(pos)
 		_, ptrRType := r.rtype0(pos)
 		pointer := r.temp(pos, types.Types[types.TUNSAFEPTR])
-		head.Append(typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, pointer)))
-		call := typecheck.Call(pos, typecheck.LookupRuntime("matchErrorAs"), []ir.Node{input, rtype, ptrRType}, false)
-		head.Append(typecheck.Stmt(ir.NewAssignStmt(pos, pointer, call)))
+		head.Append(typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, pointer)))
+		call := typecheck.Call(r.curfn, pos, typecheck.LookupRuntime("matchErrorAs"), []ir.Node{input, rtype, ptrRType}, false)
+		head.Append(typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, pointer, call)))
 		value = r.temp(pos, typ)
-		present = nilTest(pos, pointer, ir.ONE)
+		present = nilTest(r.curfn, pos, pointer, ir.ONE)
 		// The helper reports a pointer to an immutable enum value.
-		copied := typecheck.Expr(ir.NewStarExpr(pos, typecheck.Expr(ir.NewConvExpr(pos, ir.OCONVNOP, types.NewPtr(typ), pointer))))
-		head.Append(typecheck.Stmt(ir.NewIfStmt(pos, nilTest(pos, pointer, ir.ONE), []ir.Node{typecheck.Stmt(ir.NewAssignStmt(pos, value, copied))}, nil)))
+		copied := typecheck.Expr(r.curfn, ir.NewStarExpr(pos, typecheck.Expr(r.curfn, ir.NewConvExpr(pos, ir.OCONVNOP, types.NewPtr(typ), pointer))))
+		head.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(pos, nilTest(r.curfn, pos, pointer, ir.ONE), []ir.Node{typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, value, copied))}, nil)))
 	} else {
 		target := r.exprType()
 		srcRType := r.rtype(pos)
@@ -266,23 +266,23 @@ func (r *reader) matchInterface(input ir.Node, declarations *ir.Nodes) (ir.Node,
 			x.ITab = dt.ITab
 			assert = typed(dt.Type(), x)
 		} else {
-			assert = typecheck.Expr(ir.NewTypeAssertExpr(pos, input, target.Type()))
+			assert = typecheck.Expr(r.curfn, ir.NewTypeAssertExpr(pos, input, target.Type()))
 		}
 		value = r.temp(pos, assert.Type())
 		ok := r.temp(pos, types.Types[types.TBOOL])
-		head.Append(typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, ok)))
-		head.Append(typecheck.Stmt(ir.NewAssignListStmt(pos, ir.OAS2, []ir.Node{value, ok}, []ir.Node{assert})))
+		head.Append(typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, ok)))
+		head.Append(typecheck.Stmt(r.curfn, ir.NewAssignListStmt(pos, ir.OAS2, []ir.Node{value, ok}, []ir.Node{assert})))
 		present = ok
 	}
 	child, bindings := r.matchPattern(pos, value, declarations)
-	declare := ir.Nodes{typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, value)), typecheck.Stmt(ir.NewAssignStmt(pos, value, ir.NewZero(pos, value.Type())))}
+	declare := ir.Nodes{typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, value)), typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, value, ir.NewZero(pos, value.Type())))}
 	if len(bindings) > 0 {
 		declarations.Append(declare...)
 	} else {
 		body.Append(declare...)
 	}
 	body.Append(head...)
-	body.Append(typecheck.Stmt(ir.NewIfStmt(pos, present, []ir.Node{typecheck.Stmt(ir.NewAssignStmt(pos, matched, child))}, nil)))
+	body.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(pos, present, []ir.Node{typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, matched, child))}, nil)))
 	return nilInline(pos, body, matched), bindings
 }
 
@@ -292,7 +292,7 @@ func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
 	var init ir.Nodes
 	if !statement {
 		result = r.temp(pos, r.typ())
-		init.Append(typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, result)))
+		init.Append(typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, result)))
 	}
 	input := r.tempCopy(pos, r.expr(), &init)
 	cases := make([]*ir.CaseClause, r.Len())
@@ -311,14 +311,14 @@ func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
 			var attempts ir.Nodes
 			for range count {
 				test, init := r.matchPattern(armPos, input, &declarations)
-				pending := typecheck.Expr(ir.NewUnaryExpr(armPos, ir.ONOT, matched))
-				test = typecheck.Expr(ir.NewLogicalExpr(armPos, ir.OANDAND, pending, test))
-				init.Append(typecheck.Stmt(ir.NewAssignStmt(armPos, matched, ir.NewBool(armPos, true))))
-				attempts.Append(typecheck.Stmt(ir.NewIfStmt(armPos, test, init, nil)))
+				pending := typecheck.Expr(r.curfn, ir.NewUnaryExpr(armPos, ir.ONOT, matched))
+				test = typecheck.Expr(r.curfn, ir.NewLogicalExpr(armPos, ir.OANDAND, pending, test))
+				init.Append(typecheck.Stmt(r.curfn, ir.NewAssignStmt(armPos, matched, ir.NewBool(armPos, true))))
+				attempts.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(armPos, test, init, nil)))
 			}
 			selection = append(declarations, ir.Nodes{
-				typecheck.Stmt(ir.NewDecl(armPos, ir.ODCL, matched)),
-				typecheck.Stmt(ir.NewAssignStmt(armPos, matched, ir.NewBool(armPos, false))),
+				typecheck.Stmt(r.curfn, ir.NewDecl(armPos, ir.ODCL, matched)),
+				typecheck.Stmt(r.curfn, ir.NewAssignStmt(armPos, matched, ir.NewBool(armPos, false))),
 			}...)
 			selection.Append(attempts...)
 			condition = matched
@@ -331,8 +331,8 @@ func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
 			if guard != nil {
 				// The guard runs once after the first successful alternative. Failure
 				// skips the whole arm instead of trying another overlapping alternative.
-				assign := typecheck.Stmt(ir.NewAssignStmt(armPos, condition, typecheck.Conv(guard, condition.Type())))
-				selection.Append(typecheck.Stmt(ir.NewIfStmt(armPos, condition, []ir.Node{assign}, nil)))
+				assign := typecheck.Stmt(r.curfn, ir.NewAssignStmt(armPos, condition, typecheck.Conv(r.curfn, guard, condition.Type())))
+				selection.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(armPos, condition, []ir.Node{assign}, nil)))
 			}
 			if !catchall {
 				condition = nilInline(armPos, selection, condition.(*ir.Name))
@@ -340,16 +340,16 @@ func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
 		} else if !catchall && (len(bindings) > 0 || guard != nil) {
 			matched := r.temp(armPos, types.Types[types.TBOOL])
 			body := append(declarations, ir.Nodes{
-				typecheck.Stmt(ir.NewDecl(armPos, ir.ODCL, matched)),
-				typecheck.Stmt(ir.NewAssignStmt(armPos, matched, ir.NewBool(armPos, false))),
+				typecheck.Stmt(r.curfn, ir.NewDecl(armPos, ir.ODCL, matched)),
+				typecheck.Stmt(r.curfn, ir.NewAssignStmt(armPos, matched, ir.NewBool(armPos, false))),
 			}...)
-			set := []ir.Node{typecheck.Stmt(ir.NewAssignStmt(armPos, matched, ir.NewBool(armPos, true)))}
+			set := []ir.Node{typecheck.Stmt(r.curfn, ir.NewAssignStmt(armPos, matched, ir.NewBool(armPos, true)))}
 			if guard != nil {
-				bindings.Append(typecheck.Stmt(ir.NewIfStmt(armPos, guard, set, nil)))
+				bindings.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(armPos, guard, set, nil)))
 			} else {
 				bindings.Append(set...)
 			}
-			body.Append(typecheck.Stmt(ir.NewIfStmt(armPos, condition, bindings, nil)))
+			body.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(armPos, condition, bindings, nil)))
 			condition = nilInline(armPos, body, matched)
 		}
 		var body ir.Nodes
@@ -368,7 +368,7 @@ func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
 		if statement {
 			body.Append(r.blockStmt()...)
 		} else {
-			body.Append(typecheck.Stmt(ir.NewAssignStmt(armPos, result, r.expr())))
+			body.Append(typecheck.Stmt(r.curfn, ir.NewAssignStmt(armPos, result, r.expr())))
 		}
 		var tests []ir.Node
 		if !catchall {
@@ -383,7 +383,7 @@ func (r *reader) matchExpr(statement bool, label *types.Sym) ir.Node {
 		match.SetInit(init)
 		return match
 	}
-	init.Append(typecheck.Stmt(match))
+	init.Append(typecheck.Stmt(r.curfn, match))
 	return nilInline(pos, init, result)
 }
 
@@ -399,13 +399,13 @@ func (r *reader) patternTestExpr() ir.Node {
 	} else {
 		init.Append(declarations...)
 	}
-	init.Append(typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, matched)), typecheck.Stmt(ir.NewAssignStmt(pos, matched, condition)))
+	init.Append(typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, matched)), typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, matched, condition)))
 	if len(bindings) > 0 {
-		init.Append(typecheck.Stmt(ir.NewIfStmt(pos, matched, bindings, nil)))
+		init.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(pos, matched, bindings, nil)))
 	}
 	// The checker treats a pattern test like a comparison: its untyped
 	// boolean result can acquire a named boolean type from its context.
-	result := typecheck.Expr(ir.NewBinaryExpr(pos, ir.OEQ, nilInline(pos, init, matched), ir.NewBool(pos, true)))
+	result := typecheck.Expr(r.curfn, ir.NewBinaryExpr(pos, ir.OEQ, nilInline(pos, init, matched), ir.NewBool(pos, true)))
 	if typ.IsUntyped() {
 		return result
 	}

@@ -16,7 +16,7 @@ func LoadInt8sPart([]int8) (Int8s, int)
 func BroadcastInt8s(int8) Int8s
 
 // Abs returns the element-wise absolute value of x.
-func (x Int8s) Abs() Int8s
+func (x Int8s) Abs() Uint8s
 
 // Add returns the element-wise sum of x and y.
 func (x Int8s) Add(y Int8s) Int8s
@@ -118,7 +118,7 @@ func LoadInt16sPart([]int16) (Int16s, int)
 func BroadcastInt16s(int16) Int16s
 
 // Abs returns the element-wise absolute value of x.
-func (x Int16s) Abs() Int16s
+func (x Int16s) Abs() Uint16s
 
 // Add returns the element-wise sum of x and y.
 func (x Int16s) Add(y Int16s) Int16s
@@ -183,12 +183,6 @@ func (x Int16s) Or(y Int16s) Int16s
 // ReduceSum returns the scalar sum of the elements of x.
 func (x Int16s) ReduceSum() int16
 
-// RotatesAllLeft rotates all elements left by y bits.
-func (x Int16s) RotateAllLeft(dist uint64) Int16s
-
-// RotatesAllRight rotates all elements right by y bits.
-func (x Int16s) RotateAllRight(dist uint64) Int16s
-
 // ShiftAllLeft shifts all elements left by y bits.
 func (x Int16s) ShiftAllLeft(shift uint64) Int16s
 
@@ -229,7 +223,7 @@ func LoadInt32sPart([]int32) (Int32s, int)
 func BroadcastInt32s(int32) Int32s
 
 // Abs returns the element-wise absolute value of x.
-func (x Int32s) Abs() Int32s
+func (x Int32s) Abs() Uint32s
 
 // Add returns the element-wise sum of x and y.
 func (x Int32s) Add(y Int32s) Int32s
@@ -293,12 +287,6 @@ func (x Int32s) Or(y Int32s) Int32s
 
 // ReduceSum returns the scalar sum of the elements of x.
 func (x Int32s) ReduceSum() int32
-
-// RotatesAllLeft rotates all elements left by y bits.
-func (x Int32s) RotateAllLeft(dist uint64) Int32s
-
-// RotatesAllRight rotates all elements right by y bits.
-func (x Int32s) RotateAllRight(dist uint64) Int32s
 
 // ShiftAllLeft shifts all elements left by y bits.
 func (x Int32s) ShiftAllLeft(shift uint64) Int32s
@@ -383,12 +371,6 @@ func (x Int64s) NotEqual(y Int64s) Mask64s
 
 // Or returns the bitwise OR of x and y.
 func (x Int64s) Or(y Int64s) Int64s
-
-// RotatesAllLeft rotates all elements left by y bits.
-func (x Int64s) RotateAllLeft(dist uint64) Int64s
-
-// RotatesAllRight rotates all elements right by y bits.
-func (x Int64s) RotateAllRight(dist uint64) Int64s
 
 // ShiftAllLeft shifts all elements left by y bits.
 func (x Int64s) ShiftAllLeft(shift uint64) Int64s

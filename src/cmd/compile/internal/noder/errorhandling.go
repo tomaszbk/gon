@@ -79,7 +79,7 @@ func (r *reader) errorExpr() ir.Node {
 			as.Lhs.Append(tmp)
 			values = append(values, tmp)
 		}
-		body.Append(typecheck.Stmt(as))
+		body.Append(typecheck.Stmt(r.curfn, as))
 	} else {
 		values = []ir.Node{r.tempCopy(pos, call, &body)}
 	}
@@ -97,14 +97,14 @@ func (r *reader) errorExpr() ir.Node {
 		decl.GonBinding = true
 		assign.PtrInit().Append(decl)
 	}
-	handler := []ir.Node{typecheck.Stmt(assign)}
+	handler := []ir.Node{typecheck.Stmt(r.curfn, assign)}
 	handler = append(handler, r.blockStmt()...)
 	if synthesized {
 		markPropagationTemporaries(handler)
 	}
 	r.closeScope()
 	cond := ir.NewBinaryExpr(pos, ir.ONE, err, ir.NewNilExpr(pos, err.Type()))
-	body.Append(typecheck.Stmt(ir.NewIfStmt(pos, cond, handler, nil)))
+	body.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(pos, cond, handler, nil)))
 	res := ir.NewInlinedCallExpr(pos, body, values)
 	res.GonLowering = true
 	switch len(values) {

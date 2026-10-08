@@ -38,6 +38,16 @@ const (
 	modeLinkerObj
 )
 
+func dumpexport() {
+	if base.Flag.LinkObj == "" {
+		return
+	}
+	dumpobj1(base.Flag.LowerO, modeCompilerObj)
+	if base.Flag.ExportFD > 0 {
+		notifyExport()
+	}
+}
+
 func notifyExport() {
 	f := os.NewFile(uintptr(base.Flag.ExportFD), "exportfd")
 	if _, err := f.Write([]byte{'\n'}); err != nil {
@@ -56,10 +66,6 @@ func dumpobj() {
 	if base.Flag.LinkObj == "" {
 		dumpobj1(base.Flag.LowerO, modeCompilerObj|modeLinkerObj)
 		return
-	}
-	dumpobj1(base.Flag.LowerO, modeCompilerObj)
-	if base.Flag.ExportFD > 0 {
-		notifyExport()
 	}
 	dumpobj1(base.Flag.LinkObj, modeLinkerObj)
 }

@@ -144,8 +144,8 @@ func BroadcastUint64x2(x uint64) Uint64x2 {
 	return Uint64x2(archsimd.BroadcastUint64x2(x))
 }
 
-func (x Int8x16) Abs() Int8x16 {
-	return Int8x16((archsimd.Int8x16(x)).Abs())
+func (x Int8x16) Abs() Uint8x16 {
+	return Uint8x16((archsimd.Int8x16(x)).Abs())
 }
 
 func (x Int8x16) Add(y Int8x16) Int8x16 {
@@ -268,8 +268,8 @@ func (x Int8x16) Xor(y Int8x16) Int8x16 {
 	return Int8x16((archsimd.Int8x16(x)).Xor(archsimd.Int8x16(y)))
 }
 
-func (x Int16x8) Abs() Int16x8 {
-	return Int16x8((archsimd.Int16x8(x)).Abs())
+func (x Int16x8) Abs() Uint16x8 {
+	return Uint16x8((archsimd.Int16x8(x)).Abs())
 }
 
 func (x Int16x8) Add(y Int16x8) Int16x8 {
@@ -356,14 +356,6 @@ func (x Int16x8) ReduceSum() int16 {
 	return (archsimd.Int16x8(x)).ReduceSum()
 }
 
-func (x Int16x8) RotateAllLeft(shift uint64) Int16x8 {
-	return Int16x8((archsimd.Int16x8(x)).RotateAllLeft(shift))
-}
-
-func (x Int16x8) RotateAllRight(shift uint64) Int16x8 {
-	return Int16x8((archsimd.Int16x8(x)).RotateAllRight(shift))
-}
-
 func (x Int16x8) ShiftAllLeft(y uint64) Int16x8 {
 	return Int16x8((archsimd.Int16x8(x)).ShiftAllLeft(y))
 }
@@ -404,8 +396,8 @@ func (x Int16x8) Xor(y Int16x8) Int16x8 {
 	return Int16x8((archsimd.Int16x8(x)).Xor(archsimd.Int16x8(y)))
 }
 
-func (x Int32x4) Abs() Int32x4 {
-	return Int32x4((archsimd.Int32x4(x)).Abs())
+func (x Int32x4) Abs() Uint32x4 {
+	return Uint32x4((archsimd.Int32x4(x)).Abs())
 }
 
 func (x Int32x4) Add(y Int32x4) Int32x4 {
@@ -490,14 +482,6 @@ func (x Int32x4) Or(y Int32x4) Int32x4 {
 
 func (x Int32x4) ReduceSum() int32 {
 	return (archsimd.Int32x4(x)).ReduceSum()
-}
-
-func (x Int32x4) RotateAllLeft(shift uint64) Int32x4 {
-	return Int32x4((archsimd.Int32x4(x)).RotateAllLeft(shift))
-}
-
-func (x Int32x4) RotateAllRight(shift uint64) Int32x4 {
-	return Int32x4((archsimd.Int32x4(x)).RotateAllRight(shift))
 }
 
 func (x Int32x4) ShiftAllLeft(y uint64) Int32x4 {
@@ -598,14 +582,6 @@ func (x Int64x2) NotEqual(y Int64x2) Mask64x2 {
 
 func (x Int64x2) Or(y Int64x2) Int64x2 {
 	return Int64x2((archsimd.Int64x2(x)).Or(archsimd.Int64x2(y)))
-}
-
-func (x Int64x2) RotateAllLeft(shift uint64) Int64x2 {
-	return Int64x2((archsimd.Int64x2(x)).RotateAllLeft(shift))
-}
-
-func (x Int64x2) RotateAllRight(shift uint64) Int64x2 {
-	return Int64x2((archsimd.Int64x2(x)).RotateAllRight(shift))
 }
 
 func (x Int64x2) ShiftAllLeft(y uint64) Int64x2 {

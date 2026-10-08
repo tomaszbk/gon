@@ -1,0 +1,45 @@
+{
+  "sourceSHA256": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+  "gitHEAD": "a0713d52d6e2c7f5e09a06916bf2c0c18c07cb51",
+  "platform": "darwin/arm64",
+  "baselineVersion": "go1.27.1",
+  "results": [
+    {
+      "name": "make",
+      "command": [
+        "./make.bash"
+      ],
+      "cwd": "src",
+      "environment": {
+        "GOROOT_BOOTSTRAP": "/opt/homebrew/Cellar/go/1.27.1/libexec",
+        "GOTOOLCHAIN": "local",
+        "GOMAXPROCS": "4"
+      },
+      "exitCode": 0,
+      "status": "pass",
+      "log": "logs/local-make.log.gz"
+    },
+    {
+      "name": "build-tools",
+      "command": [
+        "python3",
+        "misc/gon/build.py"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "status": "pass",
+      "log": "logs/local-build-tools.log.gz"
+    },
+    {
+      "name": "vendor",
+      "command": [
+        "python3",
+        "misc/gon/vendor.py"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "status": "pass",
+      "log": "logs/local-vendor.log.gz"
+    }
+  ]
+}

@@ -464,7 +464,7 @@ func analyze(fn *ir.Func) {
 		if i.capUsed {
 			move.PreserveCapacity = true
 		}
-		move.RType = reflectdata.AppendElemRType(i.transition.Pos(), i.appends[0])
+		move.RType = reflectdata.AppendElemRType(fn, i.transition.Pos(), i.appends[0])
 		move.SetType(i.s.Type())
 		move.SetTypecheck(1)
 		as := ir.NewAssignStmt(i.transition.Pos(), i.s, move)

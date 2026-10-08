@@ -96,7 +96,7 @@
 	VXORV	out, t1, out		/* out ^= xtime(...) */
 
 // func ctrBlocks1Asm(nr int, xk *[60]uint32, dst, src *[BlockSize]byte, ivlo, ivhi uint64)
-TEXT ·ctrBlocks1Asm(SB), NOSPLIT, $16-48
+TEXT ·ctrBlocks1Asm(SB), NOSPLIT, $0-48
 	MOVV	nr+0(FP), R4
 	MOVV	xk+8(FP), R5
 	MOVV	dst+16(FP), R6
@@ -104,12 +104,11 @@ TEXT ·ctrBlocks1Asm(SB), NOSPLIT, $16-48
 	MOVV	ivlo+32(FP), R8
 	MOVV	ivhi+40(FP), R9
 
-	// Construct a 128-bit counter block onto the stack, big endian [ivhi][ivlo]
+	// Construct a 128-bit counter block directly in V0, big endian [ivhi][ivlo]
 	REVBV	R9, R10		// ivhi little -> big
 	REVBV	R8, R11		// ivlo little -> big
-	MOVV	R10, 0(R3)
-	MOVV	R11, 8(R3)
-	VMOVQ	(R3), V0	// V0 = counter block
+	VMOVQ	R10, V0.V[0]	// V0 = counter block
+	VMOVQ	R11, V0.V[1]
 
 	MOVV	$shiftRows(SB), R12
 	VMOVQ	(R12), V7
@@ -163,7 +162,7 @@ Lenc_loop:
 	RET
 
 // func ctrBlocks2Asm(nr int, xk *[60]uint32, dst, src *[2*BlockSize]byte, ivlo, ivhi uint64)
-TEXT ·ctrBlocks2Asm(SB), NOSPLIT, $32-48
+TEXT ·ctrBlocks2Asm(SB), NOSPLIT, $0-48
 	MOVV	nr+0(FP), R4
 	MOVV	xk+8(FP), R5
 	MOVV	dst+16(FP), R6
@@ -174,9 +173,8 @@ TEXT ·ctrBlocks2Asm(SB), NOSPLIT, $32-48
 	// Build counter 0 = (ivlo, ivhi)
 	REVBV	R9, R10
 	REVBV	R8, R11
-	MOVV	R10, 0(R3)
-	MOVV	R11, 8(R3)
-	VMOVQ	(R3), V0
+	VMOVQ	R10, V0.V[0]
+	VMOVQ	R11, V0.V[1]
 
 	// Build counter 1 = (ivlo+1, ivhi + carry)
 	MOVV	R8, R16
@@ -185,9 +183,8 @@ TEXT ·ctrBlocks2Asm(SB), NOSPLIT, $32-48
 	ADDV	R9, R18, R19	// R19 = ivhi + carry
 	REVBV	R19, R10
 	REVBV	R17, R11
-	MOVV	R10, 16(R3)
-	MOVV	R11, 24(R3)
-	VMOVQ	16(R3), V1
+	VMOVQ	R10, V1.V[0]
+	VMOVQ	R11, V1.V[1]
 
 	// Load persistent constant tables (same as ctrBlocks1Asm)
 	MOVV	$shiftRows(SB), R12
@@ -256,7 +253,7 @@ Lenc2_loop:
 	RET
 
 // func ctrBlocks4Asm(nr int, xk *[60]uint32, dst, src *[4*BlockSize]byte, ivlo, ivhi uint64)
-TEXT ·ctrBlocks4Asm(SB), NOSPLIT, $16-48
+TEXT ·ctrBlocks4Asm(SB), NOSPLIT, $0-48
 	MOVV	nr+0(FP), R4
 	MOVV	xk+8(FP), R5
 	MOVV	dst+16(FP), R6
@@ -267,9 +264,8 @@ TEXT ·ctrBlocks4Asm(SB), NOSPLIT, $16-48
 	// Construct 4 consecutive counter blocks in sequence (big endian), ivlo+1 needs to process carry between blocks
 	REVBV	R9, R10
 	REVBV	R8, R11
-	MOVV	R10, 0(R3)
-	MOVV	R11, 8(R3)
-	VMOVQ	(R3), V0	// block 0
+	VMOVQ	R10, V0.V[0]	// block 0
+	VMOVQ	R11, V0.V[1]
 
 	ADDV	$1, R8, R16	// R16 = ivlo+1
 	SGTU	R16, R8, R17	// R17 = 1 if not overflow (R16 > R8); if overflow R17=0
@@ -277,9 +273,8 @@ TEXT ·ctrBlocks4Asm(SB), NOSPLIT, $16-48
 	ADDV	R17, R9, R18	// R18 = ivhi + carry
 	REVBV	R18, R10
 	REVBV	R16, R11
-	MOVV	R10, 0(R3)
-	MOVV	R11, 8(R3)
-	VMOVQ	(R3), V1	// block 1
+	VMOVQ	R10, V1.V[0]	// block 1
+	VMOVQ	R11, V1.V[1]
 
 	ADDV	$1, R16, R23
 	SGTU	R23, R16, R17
@@ -287,9 +282,8 @@ TEXT ·ctrBlocks4Asm(SB), NOSPLIT, $16-48
 	ADDV	R17, R18, R24
 	REVBV	R24, R10
 	REVBV	R23, R11
-	MOVV	R10, 0(R3)
-	MOVV	R11, 8(R3)
-	VMOVQ	(R3), V3	// block 2
+	VMOVQ	R10, V3.V[0]	// block 2
+	VMOVQ	R11, V3.V[1]
 
 	ADDV	$1, R23, R25
 	SGTU	R25, R23, R17
@@ -297,9 +291,8 @@ TEXT ·ctrBlocks4Asm(SB), NOSPLIT, $16-48
 	ADDV	R17, R24, R26
 	REVBV	R26, R10
 	REVBV	R25, R11
-	MOVV	R10, 0(R3)
-	MOVV	R11, 8(R3)
-	VMOVQ	(R3), V4	// block 3
+	VMOVQ	R10, V4.V[0]	// block 3
+	VMOVQ	R11, V4.V[1]
 
 	MOVV	$shiftRows(SB), R12
 	VMOVQ	(R12), V7
@@ -389,7 +382,7 @@ Lenc4_loop:
 	RET
 
 // func ctrBlocks8Asm(nr int, xk *[60]uint32, dst, src *[8*BlockSize]byte, ivlo, ivhi uint64)
-TEXT ·ctrBlocks8Asm(SB), NOSPLIT, $32-48
+TEXT ·ctrBlocks8Asm(SB), NOSPLIT, $0-48
 	MOVV	nr+0(FP), R4
 	MOVV	xk+8(FP), R5
 	MOVV	dst+16(FP), R6
@@ -399,9 +392,8 @@ TEXT ·ctrBlocks8Asm(SB), NOSPLIT, $32-48
 
 	REVBV	R9, R10
 	REVBV	R8, R11
-	MOVV	R10, 0(R3)
-	MOVV	R11, 8(R3)
-	VMOVQ	(R3), V0
+	VMOVQ	R10, V0.V[0]
+	VMOVQ	R11, V0.V[1]
 
 	ADDV	$1, R8, R16
 	SGTU	R8, R16, R17
@@ -410,9 +402,8 @@ TEXT ·ctrBlocks8Asm(SB), NOSPLIT, $32-48
 	MOVV	R17, R9
 	REVBV	R9, R10
 	REVBV	R8, R11
-	MOVV	R10, 16(R3)
-	MOVV	R11, 24(R3)
-	VMOVQ	16(R3), V1
+	VMOVQ	R10, V1.V[0]
+	VMOVQ	R11, V1.V[1]
 
 	ADDV	$1, R8, R16
 	SGTU	R8, R16, R17
@@ -421,9 +412,8 @@ TEXT ·ctrBlocks8Asm(SB), NOSPLIT, $32-48
 	MOVV	R17, R9
 	REVBV	R9, R10
 	REVBV	R8, R11
-	MOVV	R10, 0(R3)
-	MOVV	R11, 8(R3)
-	VMOVQ	(R3), V3
+	VMOVQ	R10, V3.V[0]
+	VMOVQ	R11, V3.V[1]
 
 	ADDV	$1, R8, R16
 	SGTU	R8, R16, R17
@@ -432,9 +422,8 @@ TEXT ·ctrBlocks8Asm(SB), NOSPLIT, $32-48
 	MOVV	R17, R9
 	REVBV	R9, R10
 	REVBV	R8, R11
-	MOVV	R10, 16(R3)
-	MOVV	R11, 24(R3)
-	VMOVQ	16(R3), V4
+	VMOVQ	R10, V4.V[0]
+	VMOVQ	R11, V4.V[1]
 
 	ADDV	$1, R8, R16
 	SGTU	R8, R16, R17
@@ -443,9 +432,8 @@ TEXT ·ctrBlocks8Asm(SB), NOSPLIT, $32-48
 	MOVV	R17, R9
 	REVBV	R9, R10
 	REVBV	R8, R11
-	MOVV	R10, 0(R3)
-	MOVV	R11, 8(R3)
-	VMOVQ	(R3), V5
+	VMOVQ	R10, V5.V[0]
+	VMOVQ	R11, V5.V[1]
 
 	ADDV	$1, R8, R16
 	SGTU	R8, R16, R17
@@ -454,9 +442,8 @@ TEXT ·ctrBlocks8Asm(SB), NOSPLIT, $32-48
 	MOVV	R17, R9
 	REVBV	R9, R10
 	REVBV	R8, R11
-	MOVV	R10, 16(R3)
-	MOVV	R11, 24(R3)
-	VMOVQ	16(R3), V6
+	VMOVQ	R10, V6.V[0]
+	VMOVQ	R11, V6.V[1]
 
 	ADDV	$1, R8, R16
 	SGTU	R8, R16, R17
@@ -465,9 +452,8 @@ TEXT ·ctrBlocks8Asm(SB), NOSPLIT, $32-48
 	MOVV	R17, R9
 	REVBV	R9, R10
 	REVBV	R8, R11
-	MOVV	R10, 0(R3)
-	MOVV	R11, 8(R3)
-	VMOVQ	(R3), V8
+	VMOVQ	R10, V8.V[0]
+	VMOVQ	R11, V8.V[1]
 
 	ADDV	$1, R8, R16
 	SGTU	R8, R16, R17
@@ -476,9 +462,8 @@ TEXT ·ctrBlocks8Asm(SB), NOSPLIT, $32-48
 	MOVV	R17, R9
 	REVBV	R9, R10
 	REVBV	R8, R11
-	MOVV	R10, 16(R3)
-	MOVV	R11, 24(R3)
-	VMOVQ	16(R3), V9
+	VMOVQ	R10, V9.V[0]
+	VMOVQ	R11, V9.V[1]
 
 	MOVV	$shiftRows(SB), R12
 	VMOVQ	(R12), V7

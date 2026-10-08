@@ -854,7 +854,7 @@ func (x *Float) Float32() (float32, Accuracy) {
 		)
 
 		// Float mantissa m is 0.5 <= m < 1.0; compute exponent e for float32 mantissa.
-		e := x.exp - 1 // exponent for normal mantissa m with 1.0 <= m < 2.0
+		e := int64(x.exp) - 1 // exponent for normal mantissa m with 1.0 <= m < 2.0 (use int64 to avoid overflow).
 
 		// Compute precision p for float32 mantissa.
 		// If the exponent is too small, we have a denormal number before
@@ -895,7 +895,7 @@ func (x *Float) Float32() (float32, Accuracy) {
 		var r Float
 		r.prec = uint32(p)
 		r.Set(x)
-		e = r.exp - 1
+		e = int64(r.exp) - 1
 
 		// Rounding may have caused r to overflow to ±Inf
 		// (rounding never causes underflows to 0).
@@ -974,7 +974,7 @@ func (x *Float) Float64() (float64, Accuracy) {
 		)
 
 		// Float mantissa m is 0.5 <= m < 1.0; compute exponent e for float64 mantissa.
-		e := x.exp - 1 // exponent for normal mantissa m with 1.0 <= m < 2.0
+		e := int64(x.exp) - 1 // exponent for normal mantissa m with 1.0 <= m < 2.0; (use int64 to avoid overflow).
 
 		// Compute precision p for float64 mantissa.
 		// If the exponent is too small, we have a denormal number before
@@ -1015,7 +1015,7 @@ func (x *Float) Float64() (float64, Accuracy) {
 		var r Float
 		r.prec = uint32(p)
 		r.Set(x)
-		e = r.exp - 1
+		e = int64(r.exp) - 1
 
 		// Rounding may have caused r to overflow to ±Inf
 		// (rounding never causes underflows to 0).

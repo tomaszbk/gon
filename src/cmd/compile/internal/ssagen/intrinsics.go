@@ -929,6 +929,52 @@ func initIntrinsics(cfg *intrinsicBuildConfig) {
 		makeRoundLoong64(ssaop.OpTrunc),
 		sys.Loong64)
 
+	makeRoundRISCV64 := func(op ssaop.Op) func(s *state, n *ir.CallExpr, args []*ssa.Value) *ssa.Value {
+		return func(s *state, n *ir.CallExpr, args []*ssa.Value) *ssa.Value {
+			// FCVT.L.D only gives the right result while the rounded value fits
+			// in int64. For larger finite values, infinities, and NaNs, these
+			// operations return x unchanged.
+			abs := s.newValue1(ssaop.OpAbs, types.Types[types.TFLOAT64], args[0])
+			limit := s.constFloat64(types.Types[types.TFLOAT64], float64(1<<52))
+			inRange := s.newValue2(ssaop.OpLess64F, types.Types[types.TBOOL], abs, limit)
+			b := s.endBlock()
+			b.Kind = block.BlockIf
+			b.SetControl(inRange)
+			bTrue := s.f.NewBlock(block.BlockPlain)
+			bFalse := s.f.NewBlock(block.BlockPlain)
+			bEnd := s.f.NewBlock(block.BlockPlain)
+			b.AddEdgeTo(bTrue)
+			b.AddEdgeTo(bFalse)
+			b.Likely = ssa.BranchLikely
+
+			s.startBlock(bTrue)
+			s.vars[n] = s.newValue1(op, types.Types[types.TFLOAT64], args[0])
+			s.endBlock().AddEdgeTo(bEnd)
+
+			s.startBlock(bFalse)
+			s.vars[n] = args[0]
+			s.endBlock().AddEdgeTo(bEnd)
+
+			s.startBlock(bEnd)
+			return s.variable(n, types.Types[types.TFLOAT64])
+		}
+	}
+	addF("math", "RoundToEven",
+		makeRoundRISCV64(ssaop.OpRISCV64LoweredRoundToEvenD),
+		sys.RISCV64)
+	addF("math", "Round",
+		makeRoundRISCV64(ssaop.OpRISCV64LoweredRoundD),
+		sys.RISCV64)
+	addF("math", "Floor",
+		makeRoundRISCV64(ssaop.OpRISCV64LoweredFloorD),
+		sys.RISCV64)
+	addF("math", "Ceil",
+		makeRoundRISCV64(ssaop.OpRISCV64LoweredCeilD),
+		sys.RISCV64)
+	addF("math", "Trunc",
+		makeRoundRISCV64(ssaop.OpRISCV64LoweredTruncD),
+		sys.RISCV64)
+
 	/******** math/bits ********/
 	addF("math/bits", "TrailingZeros64",
 		func(s *state, n *ir.CallExpr, args []*ssa.Value) *ssa.Value {
@@ -2463,9 +2509,8 @@ func slicePtrLen(s *state, slice *ssa.Value) (ptr, length *ssa.Value) {
 	return
 }
 
-// sveLoadWhole builds a raw whole-register load loadT(s) / loadMask*s(bits): a
-// generic Load of the return type from the slice's data pointer, lowered to ZLDR
-// (a 32-byte scalable vector) or PLDR (an 8-byte predicate). The exported wrapper
+// sveLoadWhole builds a raw whole-register load loadT(s): a generic Load of the
+// return type from the slice's data pointer, lowered to ZLDR. The exported wrapper
 // (generated Go) bounds-checks the slice — and panics if it is too short — so
 // this raw intrinsic never reads past it. args are (s).
 func sveLoadWhole() intrinsicBuilder {
@@ -2475,8 +2520,8 @@ func sveLoadWhole() intrinsicBuilder {
 	}
 }
 
-// sveStoreWhole is the store counterpart of sveLoadWhole: x.store(s) /
-// m.store(bits). args are (x, s).
+// sveStoreWhole is the store counterpart of sveLoadWhole: x.store(s).
+// args are (x, s).
 func sveStoreWhole() intrinsicBuilder {
 	return func(s *state, n *ir.CallExpr, args []*ssa.Value) *ssa.Value {
 		ptr, _ := slicePtrLen(s, args[1])
@@ -2574,10 +2619,6 @@ func IsIntrinsicSym(sym *types.Sym) bool {
 // directly generate code for it. So we just fill in the body with a call
 // to fn.
 func GenIntrinsicBody(fn *ir.Func) {
-	if ir.CurFunc != nil {
-		base.FatalfAt(fn.Pos(), "enqueueFunc %v inside %v", fn, ir.CurFunc)
-	}
-
 	if base.Flag.LowerR != 0 {
 		fmt.Println("generate intrinsic for", ir.FuncName(fn))
 	}
@@ -2596,7 +2637,7 @@ func GenIntrinsicBody(fn *ir.Func) {
 	call := ir.NewCallExpr(pos, ir.OCALLFUNC, fn.Nname, nil)
 	call.Args = ir.RecvParamNames(ft)
 	call.IsDDD = ft.IsVariadic()
-	typecheck.Exprs(call.Args)
+	typecheck.Exprs(fn, call.Args)
 	call.SetTypecheck(1)
 	call.SetWalked(true)
 	ret = call
@@ -2616,7 +2657,5 @@ func GenIntrinsicBody(fn *ir.Func) {
 		ir.DumpList("generate intrinsic body", fn.Body)
 	}
 
-	ir.CurFunc = fn
-	typecheck.Stmts(fn.Body)
-	ir.CurFunc = nil // we know CurFunc is nil at entry
+	typecheck.Stmts(fn, fn.Body)
 }

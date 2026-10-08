@@ -252,6 +252,9 @@ func parseAI(der cryptobyte.String) (pkix.AlgorithmIdentifier, error) {
 	}
 	ai.Parameters.Tag = int(tag)
 	ai.Parameters.FullBytes = params
+	if !der.Empty() {
+		return ai, errors.New("x509: trailing data after AlgorithmIdentifier parameters")
+	}
 	return ai, nil
 }
 
@@ -317,14 +320,21 @@ func parsePublicKey(keyData *publicKeyInfo) (any, error) {
 
 		der := cryptobyte.String(data)
 		p := &pkcs1PublicKey{N: new(big.Int)}
-		if !der.ReadASN1(&der, cryptobyte_asn1.SEQUENCE) {
+		var seq cryptobyte.String
+		if !der.ReadASN1(&seq, cryptobyte_asn1.SEQUENCE) {
 			return nil, errors.New("x509: invalid RSA public key")
 		}
-		if !der.ReadASN1Integer(p.N) {
+		if !der.Empty() {
+			return nil, errors.New("x509: trailing data after RSA public key")
+		}
+		if !seq.ReadASN1Integer(p.N) {
 			return nil, errors.New("x509: invalid RSA modulus")
 		}
-		if !der.ReadASN1Integer(&p.E) {
+		if !seq.ReadASN1Integer(&p.E) {
 			return nil, errors.New("x509: invalid RSA public exponent")
+		}
+		if !seq.Empty() {
+			return nil, errors.New("x509: trailing data after RSA public exponent")
 		}
 
 		if p.N.Sign() <= 0 {
@@ -344,6 +354,9 @@ func parsePublicKey(keyData *publicKeyInfo) (any, error) {
 		namedCurveOID := new(asn1.ObjectIdentifier)
 		if !paramsDer.ReadASN1ObjectIdentifier(namedCurveOID) {
 			return nil, errors.New("x509: invalid ECDSA parameters")
+		}
+		if !paramsDer.Empty() {
+			return nil, errors.New("x509: trailing data after ECDSA parameters")
 		}
 		namedCurve := namedCurveFromOID(*namedCurveOID)
 		if namedCurve == nil {
@@ -425,6 +438,9 @@ func parseKeyUsageExtension(der cryptobyte.String) (KeyUsage, error) {
 	if !der.ReadASN1BitString(&usageBits) {
 		return 0, errors.New("x509: invalid key usage")
 	}
+	if !der.Empty() {
+		return 0, errors.New("x509: trailing data after key usage")
+	}
 
 	var usage int
 	for i := 0; i < 9; i++ {
@@ -437,19 +453,23 @@ func parseKeyUsageExtension(der cryptobyte.String) (KeyUsage, error) {
 
 func parseBasicConstraintsExtension(der cryptobyte.String) (bool, int, error) {
 	var isCA bool
-	if !der.ReadASN1(&der, cryptobyte_asn1.SEQUENCE) {
+	var seq cryptobyte.String
+	if !der.ReadASN1(&seq, cryptobyte_asn1.SEQUENCE) {
 		return false, 0, errors.New("x509: invalid basic constraints")
 	}
-	if der.PeekASN1Tag(cryptobyte_asn1.BOOLEAN) {
-		if !der.ReadASN1Boolean(&isCA) {
+	if !der.Empty() {
+		return false, 0, errors.New("x509: trailing data after basic constraints")
+	}
+	if seq.PeekASN1Tag(cryptobyte_asn1.BOOLEAN) {
+		if !seq.ReadASN1Boolean(&isCA) {
 			return false, 0, errors.New("x509: invalid basic constraints")
 		}
 	}
 
 	maxPathLen := -1
-	if der.PeekASN1Tag(cryptobyte_asn1.INTEGER) {
+	if seq.PeekASN1Tag(cryptobyte_asn1.INTEGER) {
 		var mpl uint
-		if !der.ReadASN1Integer(&mpl) || mpl > math.MaxInt {
+		if !seq.ReadASN1Integer(&mpl) || mpl > math.MaxInt {
 			return false, 0, errors.New("x509: invalid basic constraints")
 		}
 		maxPathLen = int(mpl)
@@ -459,13 +479,17 @@ func parseBasicConstraintsExtension(der cryptobyte.String) (bool, int, error) {
 }
 
 func forEachSAN(der cryptobyte.String, callback func(tag int, data []byte) error) error {
-	if !der.ReadASN1(&der, cryptobyte_asn1.SEQUENCE) {
+	var seq cryptobyte.String
+	if !der.ReadASN1(&seq, cryptobyte_asn1.SEQUENCE) {
 		return errors.New("x509: invalid subject alternative names")
 	}
-	for !der.Empty() {
+	if !der.Empty() {
+		return errors.New("x509: trailing data after subject alternative names")
+	}
+	for !seq.Empty() {
 		var san cryptobyte.String
 		var tag cryptobyte_asn1.Tag
-		if !der.ReadAnyASN1(&san, &tag) {
+		if !seq.ReadAnyASN1(&san, &tag) {
 			return errors.New("x509: invalid subject alternative name")
 		}
 		if err := callback(int(tag^0x80), san); err != nil {
@@ -547,12 +571,16 @@ func parseAuthorityKeyIdentifier(e pkix.Extension) ([]byte, error) {
 func parseExtKeyUsageExtension(der cryptobyte.String) ([]ExtKeyUsage, []asn1.ObjectIdentifier, error) {
 	var extKeyUsages []ExtKeyUsage
 	var unknownUsages []asn1.ObjectIdentifier
-	if !der.ReadASN1(&der, cryptobyte_asn1.SEQUENCE) {
+	var seq cryptobyte.String
+	if !der.ReadASN1(&seq, cryptobyte_asn1.SEQUENCE) {
 		return nil, nil, errors.New("x509: invalid extended key usages")
 	}
-	for !der.Empty() {
+	if !der.Empty() {
+		return nil, nil, errors.New("x509: trailing data after extended key usages")
+	}
+	for !seq.Empty() {
 		var eku asn1.ObjectIdentifier
-		if !der.ReadASN1ObjectIdentifier(&eku) {
+		if !seq.ReadASN1ObjectIdentifier(&eku) {
 			return nil, nil, errors.New("x509: invalid extended key usages")
 		}
 		if extKeyUsage, ok := extKeyUsageFromOID(eku); ok {
@@ -567,13 +595,17 @@ func parseExtKeyUsageExtension(der cryptobyte.String) ([]ExtKeyUsage, []asn1.Obj
 func parseCertificatePoliciesExtension(der cryptobyte.String) ([]OID, error) {
 	var oids []OID
 	seenOIDs := map[string]bool{}
-	if !der.ReadASN1(&der, cryptobyte_asn1.SEQUENCE) {
+	var seq cryptobyte.String
+	if !der.ReadASN1(&seq, cryptobyte_asn1.SEQUENCE) {
 		return nil, errors.New("x509: invalid certificate policies")
 	}
-	for !der.Empty() {
+	if !der.Empty() {
+		return nil, errors.New("x509: trailing data after certificate policies")
+	}
+	for !seq.Empty() {
 		var cp cryptobyte.String
 		var OIDBytes cryptobyte.String
-		if !der.ReadASN1(&cp, cryptobyte_asn1.SEQUENCE) || !cp.ReadASN1(&OIDBytes, cryptobyte_asn1.OBJECT_IDENTIFIER) {
+		if !seq.ReadASN1(&cp, cryptobyte_asn1.SEQUENCE) || !cp.ReadASN1(&OIDBytes, cryptobyte_asn1.OBJECT_IDENTIFIER) {
 			return nil, errors.New("x509: invalid certificate policies")
 		}
 		if seenOIDs[string(OIDBytes)] {

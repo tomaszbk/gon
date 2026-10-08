@@ -5179,6 +5179,14 @@ pkg regexp, func MatchString(pattern string, s string) (bool, error)
 pkg regexp, func MustCompile(str string) *Regexp
 pkg regexp, func MustCompilePOSIX(str string) *Regexp
 pkg regexp, func QuoteMeta(s string) string
+pkg regexp, method (*Regexp) All(b []uint8) iter.Seq[[]uint8]
+pkg regexp, method (*Regexp) AllIndex(b []uint8) iter.Seq[[]int]
+pkg regexp, method (*Regexp) AllString(s string) iter.Seq[string]
+pkg regexp, method (*Regexp) AllStringIndex(s string) iter.Seq[[]int]
+pkg regexp, method (*Regexp) AllStringSubmatch(s string) iter.Seq[[]string]
+pkg regexp, method (*Regexp) AllStringSubmatchIndex(s string) iter.Seq[[]int]
+pkg regexp, method (*Regexp) AllSubmatch(b []uint8) iter.Seq[[][]uint8]
+pkg regexp, method (*Regexp) AllSubmatchIndex(b []uint8) iter.Seq[[]int]
 pkg regexp, method (*Regexp) AppendText(b []uint8) ([]uint8, error)
 pkg regexp, method (*Regexp) Copy //deprecated
 pkg regexp, method (*Regexp) Copy() *Regexp
@@ -5216,6 +5224,7 @@ pkg regexp, method (*Regexp) ReplaceAllLiteralString(src string, repl string) st
 pkg regexp, method (*Regexp) ReplaceAllString(src string, repl string) string
 pkg regexp, method (*Regexp) ReplaceAllStringFunc(src string, repl func(_ string) string) string
 pkg regexp, method (*Regexp) Split(s string, n int) []string
+pkg regexp, method (*Regexp) SplitSeq(s string) iter.Seq[string]
 pkg regexp, method (*Regexp) String() string
 pkg regexp, method (*Regexp) SubexpIndex(name string) int
 pkg regexp, method (*Regexp) SubexpNames() []string

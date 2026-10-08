@@ -14,6 +14,111 @@ historical results in the recorded sections below describe those snapshots,
 not validation of the published commit or of later review fixes. Additional
 platform and Docker testing remains deferred by the user.
 
+## Upstream integration
+
+On 2026-10-07, integrated **119 commits** from Go master, from
+`67c1d421161d3d1ae9f5fd005e84c29fd0d9f896` through
+`a99091efdb38ba38e85970b726fb92c1882f8d97`. This is a three-way source
+integration against the recorded pristine revision, without merging upstream
+ancestry. [Integration record](validation/20261007-upstream/integration.json).
+Gon remains the **2.27** target with unmodified **Go 1.27.1** as the compatibility
+baseline; the upstream development version continues to identify provenance.
+The maintained module versions and std/cmd module requirements did not change.
+Vendor regeneration changed zero files and the vendor check passed.
+
+Go removed the compiler's global current-function state. Gon lowering now passes
+the reader's function explicitly, while synthesized enum constructors and
+string-enum Parse functions pass their own function. Named argument evaluation
+order, error/absence returns, nested function boundaries and lazy paths retain
+their existing behavior. Interpolation uses the scanner's new string segments.
+The upstream deterministic type-order fix replaces the equivalent Gon fix,
+retaining its regression test. The darwin/arm64 parameter inventory gains exactly
+the nine new regexp iterator methods; no existing labels changed.
+[Read-only adaptation review](validation/20261007-upstream/review.json).
+
+Native **darwin/arm64** focused checks passed both syntax/type-checker families,
+the new `untyped_lit.go` checker fixture, NUL refill diagnostics, deterministic
+compiler builds, inlining, export readers and cmd/go scripts. ARM64/SVE assembler
+fixtures also passed with `GOEXPERIMENT=simd`; these assemble instructions and do
+not execute SVE. The initial toolchain check found two fixture failures:
+compiler archives need explicit private-data decoding, and the overlay fixture
+must select its own go.work even when its caller has `GOWORK=off`. Both fixtures
+were corrected without changing production readers, then all **24 test events**
+in the four rerun checks passed with zero skips.
+[Initial focused results](validation/20261007-upstream/focused-toolchain.json),
+[corrected fixture rerun](validation/20261007-upstream/focused-toolchain-rerun.json).
+The standard-library checks passed **10 commands / 21 named packages**, with
+**3,745 test events and nine documented skips**, including the full net/http
+suite. [Standard-library results](validation/20261007-upstream/focused-stdlib.json).
+Those initial focused checks used source fingerprint `3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88`;
+the subsequent implementation/test delta contains only the parameter inventory
+and two tooling fixtures.
+[Exact source delta](validation/20261007-upstream/final-source-delta.json).
+
+A parallel Sponsors change later added `.github/FUNDING.yml` and edited README
+Markdown. The YAML addition changed the validation inventory fingerprint from
+`5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c` to
+`730bf061f44bd92b8f8871f928225247d4fff979e7eb07c57f7e751ecd8350ea`;
+compiler, library, tooling, tests and API inventories are identical. The first
+modern run stopped at the source-change guard and is retained as an interrupted
+attempt, not a complete pass. Tooling had already passed 75/75 on an unchanged
+inventory before this metadata addition. [Exact metadata delta and scope](validation/20261007-upstream/source-drift.json),
+[interrupted attempt](validation/20261007-upstream/profiles-source-drift.json).
+
+An isolated source-only bootstrap from unmodified Go 1.27.1 and all **16
+legacy/modern executable harnesses passed** (17 checks total), with a fresh
+cache on native darwin/arm64. Its snapshot fingerprint was
+`756b18424579aea7cca37ae1fbea1fcf03dc070a11514c0dd44b01afa4c9b921`.
+The final gcimporter fixture correction occurred afterward; the bootstrap
+record identifies that single test-file implementation delta and verifies that the complete
+compiler source inventory is identical to the final checkout. This is bootstrap
+evidence for that snapshot and unchanged compiler, rather than a claim that its
+full fingerprint equals the final one.
+[Bootstrap commands, tool hashes and scope](validation/20261007-upstream/bootstrap.json),
+[local rebuild/public-tool/vendor actions](validation/20261007-upstream/local-actions.json).
+
+All six complete profiles passed on native **darwin/arm64**, with no partial
+selection or pending gates:
+
+| Profile | Passed checks | Record |
+| --- | ---: | --- |
+| tooling | 75/75 | [tooling.json](validation/20261007-upstream/tooling.json) |
+| modern | 116/116 | [modern.json](validation/20261007-upstream/modern.json) |
+| errorhandling | 38/38 | [errorhandling.json](validation/20261007-upstream/errorhandling.json) |
+| conditional | 38/38 | [conditional.json](validation/20261007-upstream/conditional.json) |
+| lambda | 41/41 | [lambda.json](validation/20261007-upstream/lambda.json) |
+| nullsafety | 41/41 | [nullsafety.json](validation/20261007-upstream/nullsafety.json) |
+
+The 349 profile checks include repeated common gates; this is not a count of
+distinct tests. Every profile's inventory stayed unchanged during its run.
+Tooling used `5d250904...`; the other five used `730bf061...`, whose only
+difference is the Sponsors metadata described above. Skips comprise the upstream
+manual `TestErrorCodes` in each profile and three cmd/vet cases:
+`TestVet/stringintconv`, `TestVet/loopclosure` (marked no longer needed upstream)
+and `TestVet/stdversion` (its own test is separate). The nine skip events represent
+four distinct test names. The benchmark correctness gates passed; no timed
+benchmark samples were collected.
+[Combined commands, results and tool hashes](validation/20261007-upstream/profiles.json),
+[tooling inventory](validation/20261007-upstream/tooling-source-manifest.json.gz),
+[remaining profiles' inventory](validation/20261007-upstream/final-source-manifest.json.gz).
+
+The complete commands were run from the repository root, each with
+`GON_BASELINE_GO=/opt/homebrew/bin/go GON_SQL_POSTGRES=0 GOMAXPROCS=2`
+and `GOWORK=off GOTOOLCHAIN=local`:
+
+```sh
+python3 misc/gon/validate.py tooling
+python3 misc/gon/validate.py modern
+python3 misc/gon/validate.py errorhandling
+python3 misc/gon/validate.py conditional
+python3 misc/gon/validate.py lambda
+python3 misc/gon/validate.py nullsafety
+```
+
+Additional Linux, wasm, PostgreSQL and Docker execution remains deferred;
+none was started by this update. Timed benchmark and earlier platform evidence
+retains its historical source scope.
+
 ## Compact enums, return-only propagation and optional hover
 
 The requested changes passed **75 complete tooling checks** on native

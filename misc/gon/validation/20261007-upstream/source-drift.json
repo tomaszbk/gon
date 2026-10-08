@@ -1,0 +1,15 @@
+{
+  "beforeSourceSHA256": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c",
+  "afterSourceSHA256": "730bf061f44bd92b8f8871f928225247d4fff979e7eb07c57f7e751ecd8350ea",
+  "changedPaths": [
+    {
+      "path": ".github/FUNDING.yml",
+      "before": null,
+      "after": "7fd6329e62bf61d729d5e7146b97c75bc6aa3b90b04c0d55e4a3a519b7d99844"
+    }
+  ],
+  "scope": "Parallel GitHub Sponsors metadata addition; compiler, standard library, tools, tests and API inventory unchanged. README Markdown edits are excluded from implementation fingerprints. The interrupted modern run is preserved, not counted as a complete pass.",
+  "beforeManifest": "tooling-source-manifest.json.gz",
+  "afterManifest": "final-source-manifest.json.gz",
+  "implementationAndTestInventoryIdentical": true
+}

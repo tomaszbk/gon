@@ -561,8 +561,8 @@ func setTypeInfo(lsym *obj.LSym, t *types.Type) {
 
 // TypePtrAt returns an expression that evaluates to the
 // *runtime._type value for t.
-func TypePtrAt(pos src.XPos, t *types.Type) *ir.AddrExpr {
-	return typecheck.LinksymAddr(pos, TypeLinksym(t), types.Types[types.TUINT8])
+func TypePtrAt(curfunc *ir.Func, pos src.XPos, t *types.Type) *ir.AddrExpr {
+	return typecheck.LinksymAddr(curfunc, pos, TypeLinksym(t), types.Types[types.TUINT8])
 }
 
 // ITabLsym returns the LSym representing the itab for concrete type typ implementing
@@ -595,9 +595,9 @@ func itabLsym(typ, iface *types.Type, allowNonImplement bool) *obj.LSym {
 // ITabAddrAt returns an expression that evaluates to the
 // *runtime.itab value for concrete type typ implementing interface
 // iface.
-func ITabAddrAt(pos src.XPos, typ, iface *types.Type) *ir.AddrExpr {
+func ITabAddrAt(curfunc *ir.Func, pos src.XPos, typ, iface *types.Type) *ir.AddrExpr {
 	lsym := itabLsym(typ, iface, false)
-	return typecheck.LinksymAddr(pos, lsym, types.Types[types.TUINT8])
+	return typecheck.LinksymAddr(curfunc, pos, lsym, types.Types[types.TUINT8])
 }
 
 // needkeyupdate reports whether map updates with t as a key
@@ -928,12 +928,8 @@ func writeType(t *types.Type) *obj.LSym {
 		dextratype(lsym, B, t, dataAdd)
 	}
 
-	// Note: DUPOK is required to ensure that we don't end up with more
-	// than one type descriptor for a given type, if the type descriptor
-	// can be defined in multiple packages, that is, unnamed types,
-	// instantiated types and shape types.
 	dupok := 0
-	if tbase.Sym() == nil || tbase.IsFullyInstantiated() || tbase.HasShape() {
+	if TypeCanBeDupok(tbase) {
 		dupok = obj.DUPOK
 	}
 
@@ -999,6 +995,16 @@ func NeedRuntimeType(t *types.Type) {
 	}
 }
 
+// ForEachRuntimeType calls fn for each type for which a runtime type descriptor
+// has been requested. This is used by the code that indexes symbols early, so
+// we can recursively index the symbols WriteRuntimeTypes numbers using the
+// recursive writeType function.
+func ForEachRuntimeType(fn func(*types.Type)) {
+	for _, ts := range signatslice {
+		fn(ts.t)
+	}
+}
+
 func WriteRuntimeTypes() {
 	// Process signatslice. Use a loop, as writeType adds
 	// entries to signatslice while it is being processed.
@@ -1033,10 +1039,10 @@ func WriteGCSymbols() {
 // allowNonImplement is true, allow the case where typ does not implement iface, and just
 // create a dummy itab with zeroed-out method entries.
 func writeITab(lsym *obj.LSym, typ, iface *types.Type, allowNonImplement bool) {
-	// TODO(mdempsky): Fix methodWrapper, geneq, and genhash (and maybe
-	// others) to stop clobbering these.
-	oldpos, oldfn := base.Pos, ir.CurFunc
-	defer func() { base.Pos, ir.CurFunc = oldpos, oldfn }()
+	// TODO(mdempsky): Fix geneq and genhash (and maybe others) to stop
+	// clobbering base.Pos.
+	oldpos := base.Pos
+	defer func() { base.Pos = oldpos }()
 
 	if typ == nil || (typ.IsPtr() && typ.Elem() == nil) || typ.IsUntyped() || iface == nil || !iface.IsInterface() || iface.IsEmptyInterface() {
 		base.Fatalf("writeITab(%v, %v)", typ, iface)
@@ -1226,6 +1232,15 @@ func typesStrCmp(a, b typeAndStr) int {
 	if r := strings.Compare(a.regular, b.regular); r != 0 {
 		return r
 	}
+	// A type and the noalg version of it share a name, so nothing above
+	// tells them apart. Order the one that has the algorithms first: its
+	// descriptor is the one that has to survive. See #82043.
+	if an, bn := types.TypeHasNoAlg(a.t), types.TypeHasNoAlg(b.t); an != bn {
+		if bn {
+			return -1
+		}
+		return +1
+	}
 	// Identical anonymous interfaces defined in different locations
 	// will be equal for the above checks, but different in DWARF output.
 	// Sort by source position to ensure deterministic order.
@@ -1235,19 +1250,6 @@ func typesStrCmp(a, b typeAndStr) int {
 			return -1
 		}
 		return +1
-	}
-	// A noalg type, such as the array that backs a slice literal, has the same
-	// strings as the regular type of the same shape, and a package can need a
-	// descriptor for both. The two share one symbol, and which of them is
-	// written first decides where the equality closure and the other symbols
-	// written along with the descriptor land in the object file. The backend
-	// registers them in no particular order, so order them here: the type
-	// with algorithms comes first.
-	if an, bn := types.TypeHasNoAlg(a.t), types.TypeHasNoAlg(b.t); an != bn {
-		if an {
-			return +1
-		}
-		return -1
 	}
 	return 0
 }
@@ -1342,7 +1344,7 @@ func dgcptrmaskOnDemand(t *types.Type, write bool) *obj.LSym {
 
 // ZeroAddr returns the address of a symbol with at least
 // size bytes of zeros.
-func ZeroAddr(size int64) ir.Node {
+func ZeroAddr(curfunc *ir.Func, size int64) ir.Node {
 	if size >= 1<<31 {
 		base.Fatalf("map elem too big %d", size)
 	}
@@ -1351,7 +1353,13 @@ func ZeroAddr(size int64) ir.Node {
 	}
 	lsym := base.PkgLinksym("go:map", "zero", obj.ABI0)
 	x := ir.NewLinksymExpr(base.Pos, lsym, types.Types[types.TUINT8])
-	return typecheck.Expr(typecheck.NodAddr(x))
+	return typecheck.Expr(curfunc, typecheck.NodAddr(curfunc, x))
+}
+
+// TypeCanBeDupok reports whether the type descriptor can be defined in multiple packages:
+// that is, unnamed types, instantiated types and shape types.
+func TypeCanBeDupok(t *types.Type) bool {
+	return t.Sym() == nil || t.IsFullyInstantiated() || t.HasShape()
 }
 
 // NeedEmit reports whether typ is a type that we need to emit code
@@ -1462,9 +1470,9 @@ func MarkTypeSymUsedInInterface(tsym *obj.LSym, from *obj.LSym) {
 
 // MarkUsedIfaceMethod marks that an interface method is used in the current
 // function. n is OCALLINTER node.
-func MarkUsedIfaceMethod(n *ir.CallExpr) {
+func MarkUsedIfaceMethod(curfunc *ir.Func, n *ir.CallExpr) {
 	// skip unnamed functions (func _())
-	if ir.CurFunc.LSym == nil {
+	if curfunc.LSym == nil {
 		return
 	}
 	dot := n.Fun.(*ir.SelectorExpr)
@@ -1489,7 +1497,7 @@ func MarkUsedIfaceMethod(n *ir.CallExpr) {
 		// type, and the linker could do more complicated matching using
 		// some sort of fuzzy shape matching. For now, only use the name
 		// of the method for matching.
-		ir.CurFunc.LSym.AddRel(base.Ctxt, obj.Reloc{
+		curfunc.LSym.AddRel(base.Ctxt, obj.Reloc{
 			Type: objabi.R_USENAMEDMETHOD,
 			Sym:  staticdata.StringSymNoCommon(dot.Sel.Name),
 		})
@@ -1498,7 +1506,7 @@ func MarkUsedIfaceMethod(n *ir.CallExpr) {
 
 	// dot.Offset() is the method index * PtrSize (the offset of code pointer in itab).
 	midx := dot.Offset() / int64(types.PtrSize)
-	ir.CurFunc.LSym.AddRel(base.Ctxt, obj.Reloc{
+	curfunc.LSym.AddRel(base.Ctxt, obj.Reloc{
 		Type: objabi.R_USEIFACEMETHOD,
 		Sym:  TypeLinksym(ityp),
 		Add:  InterfaceMethodOffset(ityp, midx),

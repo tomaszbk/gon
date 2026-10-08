@@ -1023,22 +1023,22 @@ func (re *Regexp) allStringSubmatchIndex(s string, n int) iter.Seq[[]int] {
 }
 
 // All returns all the matches for re in b.
-func (re *Regexp) _All(b []byte) iter.Seq[[]byte] {
+func (re *Regexp) All(b []byte) iter.Seq[[]byte] {
 	return re.all(b, -1)
 }
 
 // AllString returns all the matches for re in s.
-func (re *Regexp) _AllString(s string) iter.Seq[string] {
+func (re *Regexp) AllString(s string) iter.Seq[string] {
 	return re.allString(s, -1)
 }
 
 // AllIndex returns the locations of all matches for re in b.
-func (re *Regexp) _AllIndex(b []byte) iter.Seq[[]int] {
+func (re *Regexp) AllIndex(b []byte) iter.Seq[[]int] {
 	return re.allIndex(b, -1)
 }
 
 // AllStringIndex returns the locations of all matches for re in s.
-func (re *Regexp) _AllStringIndex(s string) iter.Seq[[]int] {
+func (re *Regexp) AllStringIndex(s string) iter.Seq[[]int] {
 	return re.allStringIndex(s, -1)
 }
 
@@ -1046,7 +1046,7 @@ func (re *Regexp) _AllStringIndex(s string) iter.Seq[[]int] {
 // including submatch locations.
 // In each returned match m, the overall match is m[0],
 // the first submatch is m[1], and so on.
-func (re *Regexp) _AllSubmatch(b []byte) iter.Seq[[][]byte] {
+func (re *Regexp) AllSubmatch(b []byte) iter.Seq[[][]byte] {
 	return re.allSubmatch(b, -1)
 }
 
@@ -1054,7 +1054,7 @@ func (re *Regexp) _AllSubmatch(b []byte) iter.Seq[[][]byte] {
 // including submatch locations.
 // In each returned match m, m[0] is the overall match,
 // m[1] is the first submatch, and so on.
-func (re *Regexp) _AllStringSubmatch(s string) iter.Seq[[]string] {
+func (re *Regexp) AllStringSubmatch(s string) iter.Seq[[]string] {
 	return re.allStringSubmatch(s, -1)
 }
 
@@ -1062,7 +1062,7 @@ func (re *Regexp) _AllStringSubmatch(s string) iter.Seq[[]string] {
 // including submatch locations.
 // In each returned match m, the overall match is b[m[0]:m[1]],
 // the first submatch is b[m[2]:m[3]], and so on.
-func (re *Regexp) _AllSubmatchIndex(b []byte) iter.Seq[[]int] {
+func (re *Regexp) AllSubmatchIndex(b []byte) iter.Seq[[]int] {
 	return re.allSubmatchIndex(b, -1)
 }
 
@@ -1070,7 +1070,7 @@ func (re *Regexp) _AllSubmatchIndex(b []byte) iter.Seq[[]int] {
 // including submatch locations.
 // In each returned match m, the overall match is s[m[0]:m[1]],
 // the first submatch is s[m[2]:m[3]], and so on.
-func (re *Regexp) _AllStringSubmatchIndex(s string) iter.Seq[[]int] {
+func (re *Regexp) AllStringSubmatchIndex(s string) iter.Seq[[]int] {
 	return re.allStringSubmatchIndex(s, -1)
 }
 
@@ -1078,28 +1078,28 @@ func (re *Regexp) _AllStringSubmatchIndex(s string) iter.Seq[[]int] {
 // If n >= 0, FindAll returns no more than n matches.
 // See [Regexp.All] for the equivalent iterator form.
 func (re *Regexp) FindAll(b []byte, n int) [][]byte {
-	return slices.Collect(re.all(b, n))
+	return collect(re.all(b, n), n)
 }
 
 // FindAllString returns all the matches for re in s.
 // If n >= 0, FindAllString returns no more than n matches.
 // See [Regexp.AllString] for the equivalent iterator form.
 func (re *Regexp) FindAllString(s string, n int) []string {
-	return slices.Collect(re.allString(s, n))
+	return collect(re.allString(s, n), n)
 }
 
 // FindAllIndex returns the locations of all matches for re in b.
 // If n >= 0, FindAllIndex returns no more than n matches.
 // See [Regexp.AllIndex] for the equivalent iterator form.
 func (re *Regexp) FindAllIndex(b []byte, n int) [][]int {
-	return slices.Collect(re.allIndex(b, n))
+	return collect(re.allIndex(b, n), n)
 }
 
 // FindAllStringIndex returns the locations of all matches for re in s.
 // If n >= 0, FindAllStringIndex returns no more than n matches.
 // See [Regexp.AllStringIndex] for the equivalent iterator form.
 func (re *Regexp) FindAllStringIndex(s string, n int) [][]int {
-	return slices.Collect(re.allStringIndex(s, n))
+	return collect(re.allStringIndex(s, n), n)
 }
 
 // FindAllSubmatch returns the locations of all matches for re in b,
@@ -1109,7 +1109,7 @@ func (re *Regexp) FindAllStringIndex(s string, n int) [][]int {
 // If n >= 0, FindAllSubmatch returns no more than n matches.
 // See [Regexp.AllSubmatch] for the equivalent iterator form.
 func (re *Regexp) FindAllSubmatch(b []byte, n int) [][][]byte {
-	return slices.Collect(re.allSubmatch(b, n))
+	return collect(re.allSubmatch(b, n), n)
 }
 
 // FindAllStringSubmatch returns the locations of all matches for re in s,
@@ -1119,7 +1119,7 @@ func (re *Regexp) FindAllSubmatch(b []byte, n int) [][][]byte {
 // If n >= 0, FindAllStringSubmatch returns no more than n matches.
 // See [Regexp.AllStringSubmatch] for the equivalent iterator form.
 func (re *Regexp) FindAllStringSubmatch(s string, n int) [][]string {
-	return slices.Collect(re.allStringSubmatch(s, n))
+	return collect(re.allStringSubmatch(s, n), n)
 }
 
 // FindAllSubmatchIndex returns the locations of all matches for re in b,
@@ -1129,7 +1129,7 @@ func (re *Regexp) FindAllStringSubmatch(s string, n int) [][]string {
 // If n >= 0, FindAllSubmatchIndex returns no more than n matches.
 // See [Regexp.AllSubmatchIndex] for the equivalent iterator form.
 func (re *Regexp) FindAllSubmatchIndex(b []byte, n int) [][]int {
-	return slices.Collect(re.allSubmatchIndex(b, n))
+	return collect(re.allSubmatchIndex(b, n), n)
 }
 
 // FindAllStringSubmatchIndex returns the locations of all matches for re in s,
@@ -1139,7 +1139,7 @@ func (re *Regexp) FindAllSubmatchIndex(b []byte, n int) [][]int {
 // If n >= 0, FindAllStringSubmatchIndex returns no more than n matches.
 // See [Regexp.AllStringSubmatchIndex] for the equivalent iterator form.
 func (re *Regexp) FindAllStringSubmatchIndex(s string, n int) [][]int {
-	return slices.Collect(re.allStringSubmatchIndex(s, n))
+	return collect(re.allStringSubmatchIndex(s, n), n)
 }
 
 // Expand appends template to dst and returns the result; during the
@@ -1268,6 +1268,34 @@ func extract(str string) (name string, num int, rest string, ok bool) {
 	return
 }
 
+func (re Regexp) splitSeq(s string, n int) iter.Seq[string] {
+	return func(yield func(string) bool) {
+		if len(re.expr) > 0 && len(s) == 0 {
+			yield("")
+			return
+		}
+
+		var beg, end int
+		for match := range re.allStringIndex(s, n-1) {
+			end = match[0]
+			if match[1] != 0 {
+				if !yield(s[beg:end]) {
+					return
+				}
+			}
+			beg = match[1]
+		}
+		if end != len(s) {
+			yield(s[beg:])
+		}
+	}
+}
+
+// SplitSeq returns an iterator over substrings of s separated by the expression.
+func (re *Regexp) SplitSeq(s string) iter.Seq[string] {
+	return re.splitSeq(s, -1)
+}
+
 // Split slices s into substrings separated by the expression and returns a slice of
 // the substrings between those expression matches.
 //
@@ -1288,32 +1316,21 @@ func (re *Regexp) Split(s string, n int) []string {
 	if n == 0 {
 		return nil
 	}
-	if len(re.expr) > 0 && len(s) == 0 {
-		return []string{""}
+	return collect(re.splitSeq(s, n), n)
+}
+
+func collect[T any](seq iter.Seq[T], n int) []T {
+	if n < 0 {
+		n = 8
+	} else if n > 256 {
+		n = 256
 	}
-
-	matches := re.FindAllStringIndex(s, n)
-	strings := make([]string, 0, len(matches))
-
-	beg := 0
-	end := 0
-	for _, match := range matches {
-		if n > 0 && len(strings) >= n-1 {
-			break
-		}
-
-		end = match[0]
-		if match[1] != 0 {
-			strings = append(strings, s[beg:end])
-		}
-		beg = match[1]
+	s := make([]T, 0, n)
+	s = slices.AppendSeq(s, seq)
+	if len(s) == 0 {
+		return nil
 	}
-
-	if end != len(s) {
-		strings = append(strings, s[beg:])
-	}
-
-	return strings
+	return s
 }
 
 // AppendText implements [encoding.TextAppender]. The output

@@ -2,6 +2,8 @@ package net
 
 import "os/exec"
 
+func isUnreachableError(error) bool { return false }
+
 func installTestHooks() {}
 
 func uninstallTestHooks() {}

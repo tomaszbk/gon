@@ -1,0 +1,326 @@
+{
+  "baseline": "/opt/homebrew/bin/go",
+  "baselineRoot": "/opt/homebrew/Cellar/go/1.27.1/libexec",
+  "baselineToolSHA256": "548608a910c46de32c65a3934f461b1787acf6ddd371044826068d8503b8509b",
+  "baselineVersion": "go version go1.27.1 darwin/arm64",
+  "builtToolchainVersion": "go version go1.28-devel_a0713d52d6 Wed Oct 7 17:22:58 2026 -0300 darwin/arm64",
+  "changedLiveSourcePaths": [
+    "api/params/darwin-arm64.txt",
+    "tools/x-tools/go/packages/overlay_test.go",
+    "tools/x-tools/internal/gcimporter/gcimporter_test.go"
+  ],
+  "checks": [
+    {
+      "command": [
+        "./make.bash"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/src",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:32:53.264467+00:00",
+      "log": "logs/bootstrap-initial-make.log.gz",
+      "name": "bootstrap-make",
+      "seconds": 141.88,
+      "startedAt": "2026-10-07T23:30:31.384192+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/errorhandling.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:33:06.113237+00:00",
+      "log": "logs/bootstrap-initial-errorhandling.log.gz",
+      "name": "bootstrap-errorhandling",
+      "seconds": 12.768,
+      "startedAt": "2026-10-07T23:32:53.345016+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/errortest.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:33:20.144314+00:00",
+      "log": "logs/bootstrap-initial-errortest.log.gz",
+      "name": "bootstrap-errortest",
+      "seconds": 14.03,
+      "startedAt": "2026-10-07T23:33:06.114258+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/conditional.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:33:29.119788+00:00",
+      "log": "logs/bootstrap-initial-conditional.log.gz",
+      "name": "bootstrap-conditional",
+      "seconds": 8.975,
+      "startedAt": "2026-10-07T23:33:20.145070+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/lambda.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:33:38.569886+00:00",
+      "log": "logs/bootstrap-initial-lambda.log.gz",
+      "name": "bootstrap-lambda",
+      "seconds": 9.449,
+      "startedAt": "2026-10-07T23:33:29.120415+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/nullsafety.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:33:44.599847+00:00",
+      "log": "logs/bootstrap-initial-nullsafety.log.gz",
+      "name": "bootstrap-nullsafety",
+      "seconds": 6.03,
+      "startedAt": "2026-10-07T23:33:38.570208+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/namedarguments.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:33:48.509325+00:00",
+      "log": "logs/bootstrap-initial-namedarguments.log.gz",
+      "name": "bootstrap-namedarguments",
+      "seconds": 3.909,
+      "startedAt": "2026-10-07T23:33:44.600151+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/enums.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:34:05.885247+00:00",
+      "log": "logs/bootstrap-initial-enums.log.gz",
+      "name": "bootstrap-enums",
+      "seconds": 17.375,
+      "startedAt": "2026-10-07T23:33:48.509827+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/matching.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:34:09.344961+00:00",
+      "log": "logs/bootstrap-initial-matching.log.gz",
+      "name": "bootstrap-matching",
+      "seconds": 3.459,
+      "startedAt": "2026-10-07T23:34:05.885822+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/optionals.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:34:11.910379+00:00",
+      "log": "logs/bootstrap-initial-optionals.log.gz",
+      "name": "bootstrap-optionals",
+      "seconds": 2.565,
+      "startedAt": "2026-10-07T23:34:09.345426+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/optionsyntax.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:34:24.709842+00:00",
+      "log": "logs/bootstrap-initial-optionsyntax.log.gz",
+      "name": "bootstrap-optionsyntax",
+      "seconds": 12.799,
+      "startedAt": "2026-10-07T23:34:11.910843+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/matchalternatives.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:34:28.060906+00:00",
+      "log": "logs/bootstrap-initial-matchalternatives.log.gz",
+      "name": "bootstrap-matchalternatives",
+      "seconds": 3.351,
+      "startedAt": "2026-10-07T23:34:24.710337+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/patterntest.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:34:31.444237+00:00",
+      "log": "logs/bootstrap-initial-patterntest.log.gz",
+      "name": "bootstrap-patterntest",
+      "seconds": 3.383,
+      "startedAt": "2026-10-07T23:34:28.061282+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/errorcontext.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:34:36.218799+00:00",
+      "log": "logs/bootstrap-initial-errorcontext.log.gz",
+      "name": "bootstrap-errorcontext",
+      "seconds": 4.774,
+      "startedAt": "2026-10-07T23:34:31.444617+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/interpolation.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:34:38.856913+00:00",
+      "log": "logs/bootstrap-initial-interpolation.log.gz",
+      "name": "bootstrap-interpolation",
+      "seconds": 2.638,
+      "startedAt": "2026-10-07T23:34:36.219288+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/seq.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:34:42.143189+00:00",
+      "log": "logs/bootstrap-initial-seq.log.gz",
+      "name": "bootstrap-seq",
+      "seconds": 3.286,
+      "startedAt": "2026-10-07T23:34:38.857363+00:00",
+      "status": "pass"
+    },
+    {
+      "command": [
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/bin/go",
+        "run",
+        "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon/test/nilanalysis.go"
+      ],
+      "cwd": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T23:34:52.799937+00:00",
+      "log": "logs/bootstrap-initial-nilanalysis.log.gz",
+      "name": "bootstrap-nilanalysis",
+      "seconds": 10.656,
+      "startedAt": "2026-10-07T23:34:42.143599+00:00",
+      "status": "pass"
+    }
+  ],
+  "checksStatus": "pass",
+  "environment": {
+    "GOCACHE": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gocache",
+    "GOENV": "off",
+    "GOMAXPROCS": "2",
+    "GON_BASELINE_GO": "/opt/homebrew/bin/go",
+    "GON_SQL_POSTGRES": "0",
+    "GOROOT_BOOTSTRAP": "/opt/homebrew/Cellar/go/1.27.1/libexec",
+    "GOTOOLCHAIN": "local",
+    "GOWORK": "off"
+  },
+  "execution": "native",
+  "finalSourceSHA256": "1b783cafa5e9bffe6281cf49b8066045e00e2af91ea302dfe446a634f6b21a68",
+  "finishedAt": "2026-10-07T23:34:55.109130+00:00",
+  "freshGOCACHE": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gocache",
+  "host": {
+    "macOS": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434",
+    "machine": "arm64",
+    "system": "Darwin"
+  },
+  "liveSourceStable": false,
+  "platform": "darwin/arm64",
+  "publishedHEAD": "a0713d52d6e2c7f5e09a06916bf2c0c18c07cb51",
+  "scopeNote": "All 17 checks passed on the initial isolated source snapshot. The live checkout changed during execution in the three recorded fixture/API files; this evidence belongs to the initial source fingerprint and is not the final-source gate.",
+  "snapshot": "/var/folders/g6/42wb8c9j23q1p3v23m7tw77c0000gn/T/gon-upstream-bootstrap-zahc7z7q/gon",
+  "snapshotChecks": "pass",
+  "snapshotPreparation": {
+    "copy": "Existing inventoried files copied with modes; symlinks preserved; no .git, root bin/pkg or gon/bin. Recorded historical validation/benchmark artifacts omitted. VERSION text derived from existing VERSION.cache, which identifies the published HEAD, not the current uncommitted source fingerprint.",
+    "excludedCount": 1368,
+    "inventoryCommand": [
+      "git",
+      "ls-files",
+      "-z",
+      "--cached",
+      "--others",
+      "--exclude-standard"
+    ],
+    "missingInventoriedFiles": [
+      "src/simd/copycheck_test.go"
+    ]
+  },
+  "sourceFilesCopied": 21007,
+  "sourceManifest": "bootstrap-initial-source-manifest.json.gz",
+  "sourceSHA256": "3c6d0b22362c98f0882ed6c6696f6e1da35283565252e409f87829a45ef41a88",
+  "sourceStable": false,
+  "startedAt": "2026-10-07T23:29:51.992391+00:00",
+  "status": "snapshot-pass",
+  "temporarySnapshotRemoved": true,
+  "tools": {
+    "bin/go": "56b8d92da227b899c808c39750b89eaf036c1ca0d80b81925153891e6f46f2e0",
+    "bin/gofmt": "8a467a3c642c1d13204dd4ba588843eb3b9af33c72c48a20c3f5316055a39c0a",
+    "pkg/tool/darwin_arm64/cgo": "578f5376864fa22f3935b85cd6bbed93de88d9b5411110ee89bfb1b4e83864b1",
+    "pkg/tool/darwin_arm64/compile": "ce409832d1c19799bc9c5648aaed313dc7250d0dcacb6b3992bb05acb25015dc",
+    "pkg/tool/darwin_arm64/link": "ace5da5210c00dc531f1c49f40990b4d5fcd62885b65679f1bd5dd41eea746c5",
+    "pkg/tool/darwin_arm64/vet": "4fccc6eeeb297e8daeba0ab35ffbdff785ed0fc65d1120dceea7e4b026e1eebb"
+  },
+  "upstreamRevision": "a99091efdb38ba38e85970b726fb92c1882f8d97",
+  "version": "go1.28-devel_a0713d52d6 Wed Oct 7 17:22:58 2026 -0300",
+  "versionSHA256": "91ad2f3c9b12569eef3a7383e0711bf5ff0f24c90a3adf3d42561a4c8188daa6"
+}

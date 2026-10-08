@@ -1135,6 +1135,13 @@ var rootConsistencyTestCases = []rootConsistencyTest{{
 		// os.Create returns ENOTDIR or EISDIR depending on the platform.
 		return runtime.GOOS == "js"
 	},
+	check: func(t *testing.T) {
+		if runtime.GOOS == "aix" {
+			// On AIX, opening a regular file with a trailing slash succeeds,
+			// whereas os.Root returns ENOTDIR.
+			t.Skip("known inconsistency on aix")
+		}
+	},
 }, {
 	name: "file in path",
 	fs: []string{
@@ -1206,6 +1213,13 @@ var rootConsistencyTestCases = []rootConsistencyTest{{
 		"link => file/",
 	},
 	open: "link",
+	check: func(t *testing.T) {
+		if runtime.GOOS == "aix" {
+			// On AIX, a symlink whose stored target ends in a slash is
+			// followed successfully, whereas os.Root returns ENOTDIR.
+			t.Skip("known inconsistency on aix")
+		}
+	},
 }, {
 	name: "long file name",
 	open: strings.Repeat("a", 500),
@@ -2269,6 +2283,15 @@ func runRootMultiTestDescs(t *testing.T, source, target testFileDesc, f func(*te
 		}
 	}
 
+	if runtime.GOOS == "aix" {
+		// On AIX, paths ending in / on non-directory targets may succeed
+		// instead of returning ENOTDIR, so root and non-root results
+		// are inconsistent. See https://go.dev/issue/80382.
+		if rootTest.source.anySlashSuffix() || rootTest.target.anySlashSuffix() {
+			return
+		}
+	}
+
 	osResult, osErr := f(t, osTest)
 
 	t.Cleanup(func() {
@@ -3275,9 +3298,9 @@ func TestRootMultiReadFile(t *testing.T) {
 		case runtime.GOOS == "plan9":
 			// Plan9 lets you read from directories.
 			// Just rely on consistency checks.
-		case runtime.GOOS == "netbsd":
+		case runtime.GOOS == "netbsd", runtime.GOOS == "aix":
 			// See https://go.dev/issue/80322:
-			// NetBSD builder appears to be succeeding on read-from-dir as well.
+			// NetBSD and AIX builders appear to be succeeding on read-from-dir as well.
 			return "", gotErr
 		case test.target.finalKind() == testFileDir:
 			test.wantError(t, gotErr, errAny)

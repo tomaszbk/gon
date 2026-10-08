@@ -83,8 +83,8 @@ func (w *writer) coalesceExpr(x *syntax.Operation) {
 	w.implicitConvExpr(w.p.typeOf(x), x.Y)
 }
 
-func nilTest(pos src.XPos, x ir.Node, op ir.Op) ir.Node {
-	return typecheck.DefaultLit(typecheck.Expr(ir.NewBinaryExpr(pos, op, x, ir.NewNilExpr(pos, x.Type()))), types.Types[types.TBOOL])
+func nilTest(curfunc *ir.Func, pos src.XPos, x ir.Node, op ir.Op) ir.Node {
+	return typecheck.DefaultLit(typecheck.Expr(curfunc, ir.NewBinaryExpr(pos, op, x, ir.NewNilExpr(pos, x.Type()))), types.Types[types.TBOOL])
 }
 
 func (r *reader) nilGuardExpr() ir.Node {
@@ -93,7 +93,7 @@ func (r *reader) nilGuardExpr() ir.Node {
 	assert(r.nilSafety != nil)
 	ctx := r.nilSafety
 	tmp := r.tempCopy(pos, x, ctx.current)
-	guard := ir.NewIfStmt(pos, nilTest(pos, tmp, ir.ONE), nil, nil)
+	guard := ir.NewIfStmt(pos, nilTest(r.curfn, pos, tmp, ir.ONE), nil, nil)
 	guard.SetTypecheck(1)
 	ctx.current.Append(guard)
 	ctx.guards = append(ctx.guards, guard)
@@ -138,13 +138,13 @@ func (r *reader) safeNavExpr() ir.Node {
 	x := r.expr()
 	var result *ir.Name
 	if statement {
-		ctx.current.Append(typecheck.Stmt(x))
+		ctx.current.Append(typecheck.Stmt(r.curfn, x))
 	} else {
 		result = r.temp(pos, typ)
 		ctx.value = r.tempCopy(pos, x, ctx.current)
 		converted := r.expr()
-		ctx.current.Append(typecheck.Stmt(ir.NewAssignStmt(pos, result, converted)))
-		body = append(ir.Nodes{typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, result)), typecheck.Stmt(ir.NewAssignStmt(pos, result, ir.NewZero(pos, typ)))}, body...)
+		ctx.current.Append(typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, result, converted)))
+		body = append(ir.Nodes{typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, result)), typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, result, ir.NewZero(pos, typ)))}, body...)
 	}
 	r.nilSafety = previous
 	return nilInline(pos, body, result)
@@ -154,23 +154,23 @@ func (r *reader) coalesceExpr() ir.Node {
 	pos := r.pos()
 	typ := r.typ()
 	result := r.temp(pos, typ)
-	body := ir.Nodes{typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, result)), typecheck.Stmt(ir.NewAssignStmt(pos, result, ir.NewZero(pos, typ)))}
+	body := ir.Nodes{typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, result)), typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, result, ir.NewZero(pos, typ)))}
 	ctx := &nilSafetyContext{current: &body}
 	previous := r.nilSafety
 	r.nilSafety = ctx
 	ctx.value = r.tempCopy(pos, r.expr(), ctx.current)
 	if ctx.value.Type().HasNil() {
-		guard := ir.NewIfStmt(pos, nilTest(pos, ctx.value, ir.ONE), nil, nil)
+		guard := ir.NewIfStmt(pos, nilTest(r.curfn, pos, ctx.value, ir.ONE), nil, nil)
 		guard.SetTypecheck(1)
 		ctx.current.Append(guard)
 		ctx.guards = append(ctx.guards, guard)
 		ctx.current = &guard.Body
 	}
 	converted := r.expr()
-	ctx.current.Append(typecheck.Stmt(ir.NewAssignStmt(pos, result, converted)))
+	ctx.current.Append(typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, result, converted)))
 	r.nilSafety = previous
 	rhs := r.expr()
-	fallback := typecheck.Stmt(ir.NewAssignStmt(pos, result, rhs))
+	fallback := typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, result, rhs))
 	if len(ctx.guards) == 1 {
 		// A single guard has exactly two outcomes. Use its else branch
 		// directly instead of materializing a presence flag and another if.
@@ -179,9 +179,9 @@ func (r *reader) coalesceExpr() ir.Node {
 		// Nested guards share one lazy fallback. Keep the flag so the RHS
 		// remains a single IR subtree and is evaluated only after absence.
 		present := r.temp(pos, types.Types[types.TBOOL])
-		*ctx.current = append(*ctx.current, typecheck.Stmt(ir.NewAssignStmt(pos, present, ir.NewBool(pos, true))))
-		body = append(ir.Nodes{typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, present)), typecheck.Stmt(ir.NewAssignStmt(pos, present, ir.NewBool(pos, false)))}, body...)
-		body.Append(typecheck.Stmt(ir.NewIfStmt(pos, typecheck.Expr(ir.NewUnaryExpr(pos, ir.ONOT, present)), []ir.Node{fallback}, nil)))
+		*ctx.current = append(*ctx.current, typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, present, ir.NewBool(pos, true))))
+		body = append(ir.Nodes{typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, present)), typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, present, ir.NewBool(pos, false)))}, body...)
+		body.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(pos, typecheck.Expr(r.curfn, ir.NewUnaryExpr(pos, ir.ONOT, present)), []ir.Node{fallback}, nil)))
 	}
 	return nilInline(pos, body, result)
 }
@@ -196,14 +196,14 @@ func (r *reader) coalesceAssign() ir.Node {
 		index.X = r.tempCopy(pos, index.X, &body)
 		index.Index = r.tempCopy(pos, index.Index, &body)
 	} else {
-		pointer := r.tempCopy(pos, typecheck.Expr(typecheck.NodAddrAt(pos, lhs)), &body)
-		lhs = typecheck.Expr(ir.NewStarExpr(pos, pointer))
+		pointer := r.tempCopy(pos, typecheck.Expr(r.curfn, typecheck.NodAddrAt(r.curfn, pos, lhs)), &body)
+		lhs = typecheck.Expr(r.curfn, ir.NewStarExpr(pos, pointer))
 	}
 	// Typechecking the store marks map indexes Assigned. Keep its read node
 	// separate so the nil test uses mapaccess rather than mapassign and never
 	// inserts a key or writes to an already-present entry.
 	read := ir.Copy(lhs)
-	body.Append(typecheck.Stmt(ir.NewIfStmt(pos, nilTest(pos, read, ir.OEQ), []ir.Node{typecheck.Stmt(ir.NewAssignStmt(pos, lhs, rhs))}, nil)))
+	body.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(pos, nilTest(r.curfn, pos, read, ir.OEQ), []ir.Node{typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, lhs, rhs))}, nil)))
 	result := ir.NewBlockStmt(pos, body)
 	result.GonLowering = true
 	return result

@@ -1,0 +1,29 @@
+{
+  "startedAt": "2026-10-07T23:35:48.322005+00:00",
+  "sourceSHA256": "756b18424579aea7cca37ae1fbea1fcf03dc070a11514c0dd44b01afa4c9b921",
+  "gitHEAD": "a0713d52d6e2c7f5e09a06916bf2c0c18c07cb51",
+  "platform": "darwin/arm64",
+  "baseline": "/opt/homebrew/bin/go",
+  "baselineVersion": "go version go1.27.1 darwin/arm64",
+  "profiles": [
+    {
+      "name": "tooling",
+      "command": [
+        "/Users/tzbk/.fury/fury_venv/bin/python3",
+        "misc/gon/validate.py",
+        "tooling"
+      ],
+      "exitCode": 1,
+      "seconds": 136.45,
+      "summary": "tooling.json",
+      "log": "logs/profile-tooling.log.gz",
+      "checks": 75,
+      "passed": 37,
+      "sourceStable": false,
+      "sourceSHA256": "756b18424579aea7cca37ae1fbea1fcf03dc070a11514c0dd44b01afa4c9b921"
+    }
+  ],
+  "status": "fail",
+  "finalSourceSHA256": "9a18ef5287f5c6c4ab24d4a95d8a4af8de98ed68f8870563d7490cce03f60674",
+  "finishedAt": "2026-10-07T23:38:05.332786+00:00"
+}

@@ -782,6 +782,45 @@ var genericOps = []opData{
 	{name: "BroadcastInt64s", argLength: 1},
 	{name: "BroadcastUint64s", argLength: 1},
 	{name: "BroadcastFloat64s", argLength: 1},
+
+	// AllTrue constructs a scalable predicate with every lane true. Written by
+	// hand: there is no instruction operand to unify on, and the lowering is
+	// the same synthesized PWHILELT the implicitly predicated operations use.
+	{name: "Mask8sAllTrue", argLength: 0},
+	{name: "Mask16sAllTrue", argLength: 0},
+	{name: "Mask32sAllTrue", argLength: 0},
+	{name: "Mask64sAllTrue", argLength: 0},
+
+	// First returns a mask with only the first active lane of arg0 active.
+	{name: "Mask8sFirst", argLength: 1},
+	{name: "Mask16sFirst", argLength: 1},
+	{name: "Mask32sFirst", argLength: 1},
+	{name: "Mask64sFirst", argLength: 1},
+
+	// Next returns a mask with only the lane after the last active lane of
+	// arg0 active; lane 0 if arg0 has none.
+	{name: "Mask8sNext", argLength: 1},
+	{name: "Mask16sNext", argLength: 1},
+	{name: "Mask32sNext", argLength: 1},
+	{name: "Mask64sNext", argLength: 1},
+
+	// All reports whether every lane of arg0 is active.
+	{name: "Mask8sAll", argLength: 1},
+	{name: "Mask16sAll", argLength: 1},
+	{name: "Mask32sAll", argLength: 1},
+	{name: "Mask64sAll", argLength: 1},
+
+	// None reports whether no lane of arg0 is active.
+	{name: "Mask8sNone", argLength: 1},
+	{name: "Mask16sNone", argLength: 1},
+	{name: "Mask32sNone", argLength: 1},
+	{name: "Mask64sNone", argLength: 1},
+
+	// Any reports whether some lane of arg0 is active.
+	{name: "Mask8sAny", argLength: 1},
+	{name: "Mask16sAny", argLength: 1},
+	{name: "Mask32sAny", argLength: 1},
+	{name: "Mask64sAny", argLength: 1},
 }
 
 //     kind          controls          successors   implicit exit

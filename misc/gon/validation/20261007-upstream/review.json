@@ -1,0 +1,19 @@
+{
+  "sourceSHA256": "5d25090420fa98cbdcbfb71f68997e33fa47220a7ffc36dedebe26540fb75a1c",
+  "scope": "read-only review of Gon lowering adaptations and early export integration",
+  "result": "no concrete defects found",
+  "areas": [
+    "named callee/receiver/argument written order",
+    "nearest function error and absence return",
+    "synthetic enum constructors and string-enum Parse functions",
+    "interpolation source segment offsets",
+    "reflect optional storage guards",
+    "early symidx traversal of optional/enum typed struct storage"
+  ],
+  "arityAudit": {
+    "changedSignatures": 106,
+    "currentCalls": 808,
+    "mismatches": 0
+  },
+  "upstreamSymidxIdentical": true
+}

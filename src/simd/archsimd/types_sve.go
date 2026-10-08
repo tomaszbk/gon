@@ -4,6 +4,8 @@
 
 package archsimd
 
+import "unsafe"
+
 // psve is a tag type that tells the compiler that this is an SVE predicate.
 type psve struct {
 	_sve [0]func() // uncomparable
@@ -999,58 +1001,57 @@ func (x Uint64s) String() string {
 // An SVE predicate holds one bit per byte of the vector it governs, so a
 // Mask8s carries one bit for each byte of the runtime vector length, and
 // lane i is governed by bit i.
+//
+// In memory a Mask8s is a uint64 holding those bits, bit 0 first; the bits
+// beyond the runtime vector length are zero. So the bits of m can be read with
+// *(*uint64)(unsafe.Pointer(&m)).
 type Mask8s struct {
 	mask8s psve
-	vals   uint32
+	vals   uint64
 }
 
-// LoadMask8s loads a Mask8s from the predicate bits packed into bits.
-// The bits are concatenated in little-endian order: bit i of bits[j] governs
-// vector byte 16*j+i, and so lane k is governed by bit k.
+// Mask8sAllTrue returns a mask with every lane true.
 //
-// One uint16 covers 16 bytes of vector, the length of the smallest vector SVE
-// defines, so bits must hold one uint16 per 16 bytes of the runtime vector
-// length. LoadMask8s panics if bits is shorter than that.
-//
-// Asm: Emulated (a length check that can panic, then PLDR (predicate)).
-func LoadMask8s(bits []uint16) Mask8s {
-	if len(bits) < (vl()+15)/16 {
-		panic("simd: LoadMask8s: bits is too short to hold the predicate")
-	}
-	return loadMask8s(bits)
-}
+// Asm: PWHILELT, CPU Feature: SVE
+func Mask8sAllTrue() Mask8s
 
-//go:noescape
-func loadMask8s(bits []uint16) Mask8s
-
-// Store stores m's predicate bits into bits, concatenated in little-endian
-// order: bit i of bits[j] governs vector byte 16*j+i, and so lane k is
-// governed by bit k.
+// First returns a mask with only the first active lane of m active, or no
+// lanes active if m has none.
 //
-// bits must hold one uint16 per 16 bytes of the runtime vector length; Store
-// panics if it is shorter.
-//
-// Asm: Emulated (a length check that can panic, then PSTR (predicate)).
-func (m Mask8s) Store(bits []uint16) {
-	if len(bits) < (vl()+15)/16 {
-		panic("simd: Mask8s.Store: bits is too short to hold the predicate")
-	}
-	m.store(bits)
-}
+// Asm: PNEXT, CPU Feature: SVE
+func (m Mask8s) First() Mask8s
 
-//go:noescape
-func (m Mask8s) store(bits []uint16)
+// Next returns a mask with only the lane after the last active lane of m
+// active. If m has no active lanes, lane 0 is active; if its last active lane
+// is the last lane, no lanes are active.
+//
+// Asm: PNEXT, CPU Feature: SVE
+func (m Mask8s) Next() Mask8s
+
+// All reports whether every lane of m is active.
+//
+// Asm: BICS (predicate), CPU Feature: SVE
+func (m Mask8s) All() bool
+
+// None reports whether no lane of m is active.
+//
+// Asm: PTEST, CPU Feature: SVE
+func (m Mask8s) None() bool
+
+// Any reports whether some lane of m is active.
+//
+// Asm: PTEST, CPU Feature: SVE
+func (m Mask8s) Any() bool
 
 // String returns a string representation of SIMD mask m: 1 for an active lane,
 // 0 for an inactive one. Only the vl() lanes that exist at the runtime
 // vector length are shown.
 func (m Mask8s) String() string {
-	var bits [2]uint16
-	m.Store(bits[:])
+	bits := *(*uint64)(unsafe.Pointer(&m))
 	var s [32]int8
 	n := vl()
 	for i := range n {
-		if b := i; bits[b/16]>>(b%16)&1 != 0 {
+		if bits>>i&1 != 0 {
 			s[i] = 1
 		}
 	}
@@ -1062,58 +1063,57 @@ func (m Mask8s) String() string {
 // An SVE predicate holds one bit per byte of the vector it governs, so a
 // Mask16s carries one bit for each byte of the runtime vector length, and
 // lane i is governed by bit 2*i. The bits in between are ignored.
+//
+// In memory a Mask16s is a uint64 holding those bits, bit 0 first; the bits
+// beyond the runtime vector length are zero. So the bits of m can be read with
+// *(*uint64)(unsafe.Pointer(&m)).
 type Mask16s struct {
 	mask16s psve
-	vals    uint32
+	vals    uint64
 }
 
-// LoadMask16s loads a Mask16s from the predicate bits packed into bits.
-// The bits are concatenated in little-endian order: bit i of bits[j] governs
-// vector byte 16*j+i, and so lane k is governed by bit 2*k.
+// Mask16sAllTrue returns a mask with every lane true.
 //
-// One uint16 covers 16 bytes of vector, the length of the smallest vector SVE
-// defines, so bits must hold one uint16 per 16 bytes of the runtime vector
-// length. LoadMask16s panics if bits is shorter than that.
-//
-// Asm: Emulated (a length check that can panic, then PLDR (predicate)).
-func LoadMask16s(bits []uint16) Mask16s {
-	if len(bits) < (vl()+15)/16 {
-		panic("simd: LoadMask16s: bits is too short to hold the predicate")
-	}
-	return loadMask16s(bits)
-}
+// Asm: PWHILELT, CPU Feature: SVE
+func Mask16sAllTrue() Mask16s
 
-//go:noescape
-func loadMask16s(bits []uint16) Mask16s
-
-// Store stores m's predicate bits into bits, concatenated in little-endian
-// order: bit i of bits[j] governs vector byte 16*j+i, and so lane k is
-// governed by bit 2*k.
+// First returns a mask with only the first active lane of m active, or no
+// lanes active if m has none.
 //
-// bits must hold one uint16 per 16 bytes of the runtime vector length; Store
-// panics if it is shorter.
-//
-// Asm: Emulated (a length check that can panic, then PSTR (predicate)).
-func (m Mask16s) Store(bits []uint16) {
-	if len(bits) < (vl()+15)/16 {
-		panic("simd: Mask16s.Store: bits is too short to hold the predicate")
-	}
-	m.store(bits)
-}
+// Asm: PNEXT, CPU Feature: SVE
+func (m Mask16s) First() Mask16s
 
-//go:noescape
-func (m Mask16s) store(bits []uint16)
+// Next returns a mask with only the lane after the last active lane of m
+// active. If m has no active lanes, lane 0 is active; if its last active lane
+// is the last lane, no lanes are active.
+//
+// Asm: PNEXT, CPU Feature: SVE
+func (m Mask16s) Next() Mask16s
+
+// All reports whether every lane of m is active.
+//
+// Asm: BICS (predicate), CPU Feature: SVE
+func (m Mask16s) All() bool
+
+// None reports whether no lane of m is active.
+//
+// Asm: PTEST, CPU Feature: SVE
+func (m Mask16s) None() bool
+
+// Any reports whether some lane of m is active.
+//
+// Asm: PTEST, CPU Feature: SVE
+func (m Mask16s) Any() bool
 
 // String returns a string representation of SIMD mask m: 1 for an active lane,
 // 0 for an inactive one. Only the vl() / 2 lanes that exist at the runtime
 // vector length are shown.
 func (m Mask16s) String() string {
-	var bits [2]uint16
-	m.Store(bits[:])
+	bits := *(*uint64)(unsafe.Pointer(&m))
 	var s [16]int16
 	n := vl() / 2
 	for i := range n {
-		if b := i * 2; bits[b/16]>>(b%16)&1 != 0 {
+		if bits>>(i*2)&1 != 0 {
 			s[i] = 1
 		}
 	}
@@ -1125,58 +1125,57 @@ func (m Mask16s) String() string {
 // An SVE predicate holds one bit per byte of the vector it governs, so a
 // Mask32s carries one bit for each byte of the runtime vector length, and
 // lane i is governed by bit 4*i. The bits in between are ignored.
+//
+// In memory a Mask32s is a uint64 holding those bits, bit 0 first; the bits
+// beyond the runtime vector length are zero. So the bits of m can be read with
+// *(*uint64)(unsafe.Pointer(&m)).
 type Mask32s struct {
 	mask32s psve
-	vals    uint32
+	vals    uint64
 }
 
-// LoadMask32s loads a Mask32s from the predicate bits packed into bits.
-// The bits are concatenated in little-endian order: bit i of bits[j] governs
-// vector byte 16*j+i, and so lane k is governed by bit 4*k.
+// Mask32sAllTrue returns a mask with every lane true.
 //
-// One uint16 covers 16 bytes of vector, the length of the smallest vector SVE
-// defines, so bits must hold one uint16 per 16 bytes of the runtime vector
-// length. LoadMask32s panics if bits is shorter than that.
-//
-// Asm: Emulated (a length check that can panic, then PLDR (predicate)).
-func LoadMask32s(bits []uint16) Mask32s {
-	if len(bits) < (vl()+15)/16 {
-		panic("simd: LoadMask32s: bits is too short to hold the predicate")
-	}
-	return loadMask32s(bits)
-}
+// Asm: PWHILELT, CPU Feature: SVE
+func Mask32sAllTrue() Mask32s
 
-//go:noescape
-func loadMask32s(bits []uint16) Mask32s
-
-// Store stores m's predicate bits into bits, concatenated in little-endian
-// order: bit i of bits[j] governs vector byte 16*j+i, and so lane k is
-// governed by bit 4*k.
+// First returns a mask with only the first active lane of m active, or no
+// lanes active if m has none.
 //
-// bits must hold one uint16 per 16 bytes of the runtime vector length; Store
-// panics if it is shorter.
-//
-// Asm: Emulated (a length check that can panic, then PSTR (predicate)).
-func (m Mask32s) Store(bits []uint16) {
-	if len(bits) < (vl()+15)/16 {
-		panic("simd: Mask32s.Store: bits is too short to hold the predicate")
-	}
-	m.store(bits)
-}
+// Asm: PNEXT, CPU Feature: SVE
+func (m Mask32s) First() Mask32s
 
-//go:noescape
-func (m Mask32s) store(bits []uint16)
+// Next returns a mask with only the lane after the last active lane of m
+// active. If m has no active lanes, lane 0 is active; if its last active lane
+// is the last lane, no lanes are active.
+//
+// Asm: PNEXT, CPU Feature: SVE
+func (m Mask32s) Next() Mask32s
+
+// All reports whether every lane of m is active.
+//
+// Asm: BICS (predicate), CPU Feature: SVE
+func (m Mask32s) All() bool
+
+// None reports whether no lane of m is active.
+//
+// Asm: PTEST, CPU Feature: SVE
+func (m Mask32s) None() bool
+
+// Any reports whether some lane of m is active.
+//
+// Asm: PTEST, CPU Feature: SVE
+func (m Mask32s) Any() bool
 
 // String returns a string representation of SIMD mask m: 1 for an active lane,
 // 0 for an inactive one. Only the vl() / 4 lanes that exist at the runtime
 // vector length are shown.
 func (m Mask32s) String() string {
-	var bits [2]uint16
-	m.Store(bits[:])
+	bits := *(*uint64)(unsafe.Pointer(&m))
 	var s [8]int32
 	n := vl() / 4
 	for i := range n {
-		if b := i * 4; bits[b/16]>>(b%16)&1 != 0 {
+		if bits>>(i*4)&1 != 0 {
 			s[i] = 1
 		}
 	}
@@ -1188,58 +1187,57 @@ func (m Mask32s) String() string {
 // An SVE predicate holds one bit per byte of the vector it governs, so a
 // Mask64s carries one bit for each byte of the runtime vector length, and
 // lane i is governed by bit 8*i. The bits in between are ignored.
+//
+// In memory a Mask64s is a uint64 holding those bits, bit 0 first; the bits
+// beyond the runtime vector length are zero. So the bits of m can be read with
+// *(*uint64)(unsafe.Pointer(&m)).
 type Mask64s struct {
 	mask64s psve
-	vals    uint32
+	vals    uint64
 }
 
-// LoadMask64s loads a Mask64s from the predicate bits packed into bits.
-// The bits are concatenated in little-endian order: bit i of bits[j] governs
-// vector byte 16*j+i, and so lane k is governed by bit 8*k.
+// Mask64sAllTrue returns a mask with every lane true.
 //
-// One uint16 covers 16 bytes of vector, the length of the smallest vector SVE
-// defines, so bits must hold one uint16 per 16 bytes of the runtime vector
-// length. LoadMask64s panics if bits is shorter than that.
-//
-// Asm: Emulated (a length check that can panic, then PLDR (predicate)).
-func LoadMask64s(bits []uint16) Mask64s {
-	if len(bits) < (vl()+15)/16 {
-		panic("simd: LoadMask64s: bits is too short to hold the predicate")
-	}
-	return loadMask64s(bits)
-}
+// Asm: PWHILELT, CPU Feature: SVE
+func Mask64sAllTrue() Mask64s
 
-//go:noescape
-func loadMask64s(bits []uint16) Mask64s
-
-// Store stores m's predicate bits into bits, concatenated in little-endian
-// order: bit i of bits[j] governs vector byte 16*j+i, and so lane k is
-// governed by bit 8*k.
+// First returns a mask with only the first active lane of m active, or no
+// lanes active if m has none.
 //
-// bits must hold one uint16 per 16 bytes of the runtime vector length; Store
-// panics if it is shorter.
-//
-// Asm: Emulated (a length check that can panic, then PSTR (predicate)).
-func (m Mask64s) Store(bits []uint16) {
-	if len(bits) < (vl()+15)/16 {
-		panic("simd: Mask64s.Store: bits is too short to hold the predicate")
-	}
-	m.store(bits)
-}
+// Asm: PNEXT, CPU Feature: SVE
+func (m Mask64s) First() Mask64s
 
-//go:noescape
-func (m Mask64s) store(bits []uint16)
+// Next returns a mask with only the lane after the last active lane of m
+// active. If m has no active lanes, lane 0 is active; if its last active lane
+// is the last lane, no lanes are active.
+//
+// Asm: PNEXT, CPU Feature: SVE
+func (m Mask64s) Next() Mask64s
+
+// All reports whether every lane of m is active.
+//
+// Asm: BICS (predicate), CPU Feature: SVE
+func (m Mask64s) All() bool
+
+// None reports whether no lane of m is active.
+//
+// Asm: PTEST, CPU Feature: SVE
+func (m Mask64s) None() bool
+
+// Any reports whether some lane of m is active.
+//
+// Asm: PTEST, CPU Feature: SVE
+func (m Mask64s) Any() bool
 
 // String returns a string representation of SIMD mask m: 1 for an active lane,
 // 0 for an inactive one. Only the vl() / 8 lanes that exist at the runtime
 // vector length are shown.
 func (m Mask64s) String() string {
-	var bits [2]uint16
-	m.Store(bits[:])
+	bits := *(*uint64)(unsafe.Pointer(&m))
 	var s [4]int64
 	n := vl() / 8
 	for i := range n {
-		if b := i * 8; bits[b/16]>>(b%16)&1 != 0 {
+		if bits>>(i*8)&1 != 0 {
 			s[i] = 1
 		}
 	}

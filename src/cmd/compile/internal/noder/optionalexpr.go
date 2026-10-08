@@ -48,10 +48,10 @@ func enumPayload(pos src.XPos, value ir.Node, storage, field int) ir.Node {
 	return typecheck.DotField(pos, intermediate, field)
 }
 
-func enumTagTest(pos src.XPos, value ir.Node, tag int, op ir.Op) ir.Node {
+func enumTagTest(curfunc *ir.Func, pos src.XPos, value ir.Node, tag int, op ir.Op) ir.Node {
 	actual := typecheck.DotField(pos, value, 0)
-	constant := typecheck.Conv(ir.NewInt(pos, int64(tag)), actual.Type())
-	return typecheck.DefaultLit(typecheck.Expr(ir.NewBinaryExpr(pos, op, actual, constant)), types.Types[types.TBOOL])
+	constant := typecheck.Conv(curfunc, ir.NewInt(pos, int64(tag)), actual.Type())
+	return typecheck.DefaultLit(typecheck.Expr(curfunc, ir.NewBinaryExpr(pos, op, actual, constant)), types.Types[types.TBOOL])
 }
 
 func (w *writer) optionNilCompare(e *syntax.Operation) bool {
@@ -79,7 +79,7 @@ func (r *reader) optionNilCompare() ir.Node {
 	// its discriminator, never comparing or extracting the payload.
 	var body ir.Nodes
 	value := r.tempCopy(pos, r.expr(), &body)
-	return nilInlineValue(pos, body, enumTagTest(pos, value, 0, op))
+	return nilInlineValue(pos, body, enumTagTest(r.curfn, pos, value, 0, op))
 }
 
 func (w *writer) optionExpr(e *syntax.OptionalExpr) {
@@ -103,7 +103,7 @@ func (r *reader) optionExpr() ir.Node {
 	handler := r.blockStmt()
 	markPropagationTemporaries(handler)
 	r.closeScope()
-	body.Append(typecheck.Stmt(ir.NewIfStmt(pos, enumTagTest(pos, value, tag, ir.ONE), handler, nil)))
+	body.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(pos, enumTagTest(r.curfn, pos, value, tag, ir.ONE), handler, nil)))
 	return nilInlineValue(pos, body, enumPayload(pos, value, storage, 0))
 }
 
@@ -135,13 +135,13 @@ func (r *reader) optionCoalesce() ir.Node {
 	var body ir.Nodes
 	value := r.tempCopy(pos, r.expr(), &body)
 	result := r.temp(pos, typ)
-	body.Append(typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, result)))
+	body.Append(typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, result)))
 	previous := r.nilSafety
 	r.nilSafety = &nilSafetyContext{value: enumPayload(pos, value, storage, 0)}
 	converted := r.expr()
 	r.nilSafety = previous
 	fallback := r.expr()
-	body.Append(typecheck.Stmt(ir.NewIfStmt(pos, enumTagTest(pos, value, tag, ir.OEQ), []ir.Node{typecheck.Stmt(ir.NewAssignStmt(pos, result, converted))}, []ir.Node{typecheck.Stmt(ir.NewAssignStmt(pos, result, fallback))})))
+	body.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(pos, enumTagTest(r.curfn, pos, value, tag, ir.OEQ), []ir.Node{typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, result, converted))}, []ir.Node{typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, result, fallback))})))
 	return nilInline(pos, body, result)
 }
 
@@ -183,18 +183,18 @@ func (r *reader) optionSafeNav() ir.Node {
 	var result *ir.Name
 	if !statement {
 		result = r.temp(pos, typ)
-		ctx.value = typecheck.Expr(ir.NewZero(pos, wrapped))
+		ctx.value = typecheck.Expr(r.curfn, ir.NewZero(pos, wrapped))
 		zeroConverted := r.expr()
-		body.Append(typecheck.Stmt(ir.NewDecl(pos, ir.ODCL, result)), typecheck.Stmt(ir.NewAssignStmt(pos, result, zeroConverted)))
+		body.Append(typecheck.Stmt(r.curfn, ir.NewDecl(pos, ir.ODCL, result)), typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, result, zeroConverted)))
 		ctx.value = nil
 	}
 	value := r.expr()
 	if statement {
-		ctx.current.Append(typecheck.Stmt(value))
+		ctx.current.Append(typecheck.Stmt(r.curfn, value))
 	} else {
-		ctx.value = r.tempCopy(pos, enumValue(pos, wrapped, tag, storage, []int{0}, []ir.Node{value}), ctx.current)
+		ctx.value = r.tempCopy(pos, enumValue(r.curfn, pos, wrapped, tag, storage, []int{0}, []ir.Node{value}), ctx.current)
 		converted := r.expr()
-		ctx.current.Append(typecheck.Stmt(ir.NewAssignStmt(pos, result, converted)))
+		ctx.current.Append(typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, result, converted)))
 	}
 	r.nilSafety = previous
 	return nilInline(pos, body, result)
@@ -215,7 +215,7 @@ func (r *reader) optionGuard() ir.Node {
 	ctx := r.nilSafety
 	assert(ctx != nil)
 	value := r.tempCopy(pos, r.expr(), ctx.current)
-	guard := ir.NewIfStmt(pos, enumTagTest(pos, value, tag, ir.OEQ), nil, nil)
+	guard := ir.NewIfStmt(pos, enumTagTest(r.curfn, pos, value, tag, ir.OEQ), nil, nil)
 	guard.SetTypecheck(1)
 	ctx.current.Append(guard)
 	ctx.current = &guard.Body
@@ -243,12 +243,12 @@ func (r *reader) optionCoalesceAssign() ir.Node {
 		index.X = r.tempCopy(pos, index.X, &body)
 		index.Index = r.tempCopy(pos, index.Index, &body)
 	} else {
-		pointer := r.tempCopy(pos, typecheck.Expr(typecheck.NodAddrAt(pos, lhs)), &body)
-		lhs = typecheck.Expr(ir.NewStarExpr(pos, pointer))
+		pointer := r.tempCopy(pos, typecheck.Expr(r.curfn, typecheck.NodAddrAt(r.curfn, pos, lhs)), &body)
+		lhs = typecheck.Expr(r.curfn, ir.NewStarExpr(pos, pointer))
 	}
 	read := ir.Copy(lhs)
-	replacement := enumValue(pos, lhs.Type(), tag, storage, []int{0}, []ir.Node{rhs})
-	body.Append(typecheck.Stmt(ir.NewIfStmt(pos, enumTagTest(pos, read, tag, ir.ONE), []ir.Node{typecheck.Stmt(ir.NewAssignStmt(pos, lhs, replacement))}, nil)))
+	replacement := enumValue(r.curfn, pos, lhs.Type(), tag, storage, []int{0}, []ir.Node{rhs})
+	body.Append(typecheck.Stmt(r.curfn, ir.NewIfStmt(pos, enumTagTest(r.curfn, pos, read, tag, ir.ONE), []ir.Node{typecheck.Stmt(r.curfn, ir.NewAssignStmt(pos, lhs, replacement))}, nil)))
 	result := ir.NewBlockStmt(pos, body)
 	result.GonLowering = true
 	return result

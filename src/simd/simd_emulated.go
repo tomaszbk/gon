@@ -116,14 +116,14 @@ func (x *Int8s) set(i int, v int8) {
 }
 
 // Abs returns the element-wise absolute value of x.
-func (x Int8s) Abs() Int8s {
-	var res Int8s
+func (x Int8s) Abs() Uint8s {
+	var res Uint8s
 	for i := 0; i < 16; i++ {
 		v := x.get(i)
 		if v < 0 {
-			res.set(i, -v)
+			res.set(i, uint8(-v))
 		} else {
-			res.set(i, v)
+			res.set(i, uint8(v))
 		}
 	}
 	return res
@@ -439,14 +439,14 @@ func (x *Int16s) set(i int, v int16) {
 }
 
 // Abs returns the element-wise absolute value of x.
-func (x Int16s) Abs() Int16s {
-	var res Int16s
+func (x Int16s) Abs() Uint16s {
+	var res Uint16s
 	for i := 0; i < 8; i++ {
 		v := x.get(i)
 		if v < 0 {
-			res.set(i, -v)
+			res.set(i, uint16(-v))
 		} else {
-			res.set(i, v)
+			res.set(i, uint16(v))
 		}
 	}
 	return res
@@ -647,30 +647,6 @@ func (x Int16s) ShiftAllRight(y uint64) Int16s {
 	return res
 }
 
-// RotateAllLeft rotates all elements left by dist bits.
-func (x Int16s) RotateAllLeft(dist uint64) Int16s {
-	var res Int16s
-	d := dist & 15
-	for i := 0; i < 8; i++ {
-		u := uint16(x.get(i))
-		r := (u << d) | (u >> ((16 - d) & 15))
-		res.set(i, int16(r))
-	}
-	return res
-}
-
-// RotateAllRight rotates all elements right by dist bits.
-func (x Int16s) RotateAllRight(dist uint64) Int16s {
-	var res Int16s
-	d := dist & 15
-	for i := 0; i < 8; i++ {
-		u := uint16(x.get(i))
-		r := (u >> d) | (u << ((16 - d) & 15))
-		res.set(i, int16(r))
-	}
-	return res
-}
-
 // ReduceSum returns the scalar sum of the elements of x.
 func (x Int16s) ReduceSum() int16 {
 	var res int16
@@ -804,14 +780,14 @@ func (x *Int32s) set(i int, v int32) {
 }
 
 // Abs returns the element-wise absolute value of x.
-func (x Int32s) Abs() Int32s {
-	var res Int32s
+func (x Int32s) Abs() Uint32s {
+	var res Uint32s
 	for i := 0; i < 4; i++ {
 		v := x.get(i)
 		if v < 0 {
-			res.set(i, -v)
+			res.set(i, uint32(-v))
 		} else {
-			res.set(i, v)
+			res.set(i, uint32(v))
 		}
 	}
 	return res
@@ -1001,30 +977,6 @@ func (x Int32s) ShiftAllRight(y uint64) Int32s {
 	var res Int32s
 	for i := 0; i < 4; i++ {
 		res.set(i, x.get(i)>>y)
-	}
-	return res
-}
-
-// RotateAllLeft rotates all elements left by dist bits.
-func (x Int32s) RotateAllLeft(dist uint64) Int32s {
-	var res Int32s
-	d := dist & 31
-	for i := 0; i < 4; i++ {
-		u := uint32(x.get(i))
-		r := (u << d) | (u >> ((32 - d) & 31))
-		res.set(i, int32(r))
-	}
-	return res
-}
-
-// RotateAllRight rotates all elements right by dist bits.
-func (x Int32s) RotateAllRight(dist uint64) Int32s {
-	var res Int32s
-	d := dist & 31
-	for i := 0; i < 4; i++ {
-		u := uint32(x.get(i))
-		r := (u >> d) | (u << ((32 - d) & 31))
-		res.set(i, int32(r))
 	}
 	return res
 }
@@ -1253,24 +1205,6 @@ func (x Int64s) Or(y Int64s) Int64s {
 // ShiftAllLeft shifts all elements left by y bits.
 func (x Int64s) ShiftAllLeft(y uint64) Int64s {
 	return Int64s{a: x.a << y, b: x.b << y}
-}
-
-// RotateAllLeft rotates all elements left by dist bits.
-func (x Int64s) RotateAllLeft(dist uint64) Int64s {
-	d := dist & 63
-	return Int64s{
-		a: (x.a << d) | (x.a >> ((64 - d) & 63)),
-		b: (x.b << d) | (x.b >> ((64 - d) & 63)),
-	}
-}
-
-// RotateAllRight rotates all elements right by dist bits.
-func (x Int64s) RotateAllRight(dist uint64) Int64s {
-	d := dist & 63
-	return Int64s{
-		a: (x.a >> d) | (x.a << ((64 - d) & 63)),
-		b: (x.b >> d) | (x.b << ((64 - d) & 63)),
-	}
 }
 
 // Store stores the vector elements into the slice s.
