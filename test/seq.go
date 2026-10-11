@@ -53,6 +53,9 @@ func main() {
 	defer os.RemoveAll(dir)
 	for i, tc := range []struct{ command, fixture string }{{baseline, legacy}, {tool, legacy}, {tool, modern}} {
 		binary := filepath.Join(dir, fmt.Sprintf("pair%d", i))
+		if runtime.GOOS == "windows" {
+			binary += ".exe"
+		}
 		run(tc.command, "build", "-o", binary, common, tc.fixture)
 		if got := run(binary); !bytes.Equal(want, got) {
 			panic(fmt.Sprintf("DWARF pair differs: %s", got))
