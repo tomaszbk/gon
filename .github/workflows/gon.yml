@@ -79,7 +79,7 @@ jobs:
           name: postgres-evidence
           path: |
             pkg/gon-validation/sql-optionals-postgres/
-            pkg/gon-validation/sql-stringenums-postgres/
+            pkg/gon-validation/sql-postgres/
           if-no-files-found: error
 
   js-wasm:
