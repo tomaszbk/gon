@@ -2,7 +2,7 @@
   <img src="doc/gon_logo.png" alt="Gon mascot" width="180">
 </p>
 
-<h1 align="center">Gon — Go done well.</h1>
+<h1 align="center">Gon — Another way to Go!</h1>
 
 <p align="center"><strong>Less boilerplate. Go-compatible.</strong></p>
 
@@ -15,12 +15,10 @@
   <a href="#support-gon">Support Gon</a>
 </p>
 
-You know the operation you want to perform. Then come the error checks, nil
-checks, temporary variables and callbacks. Gon makes that code shorter while
-keeping Go 100% backward compatible.
+The Go features we always wanted, minus the boilerplate we always hated.
 
-**Gon extends the Go compiler directly.** Keep your `.go` files, `go.mod` and
-existing Go APIs. Choose Gon per project, alongside your normal Go installation.
+**Gon extends the Go compiler directly.** Use Gon to build, test and run your
+project. This project is NOT a transpiler.
 
 ## See the difference
 
@@ -329,7 +327,7 @@ Gon 2.28 will follow the release of Go 1.28.
 
 ## Performance, measured
 
-In the [2026-10-07 Apple M4 measurements](misc/gon/benchmarks/results/20261007T033706Z/report.md),
+In our [measurements](misc/gon/benchmarks/results/20261007T033706Z/report.md),
 rebuild times were comparable and Gon binaries were **1.7% smaller**.
 
 | Measurement | Go 1.27.1 | Gon, legacy Go | Gon, modern code |
@@ -341,9 +339,7 @@ rebuild times were comparable and Gon binaries were **1.7% smaller**.
 ## Support Gon
 
 If Gon helps you, consider supporting its development through
-[GitHub Sponsors](https://github.com/sponsors/tomaszbk). One-time and monthly
-contributions help fund compiler work, editor tooling, documentation and
-compatibility testing.
+[GitHub Sponsors](https://github.com/sponsors/tomaszbk).
 
 ## Upstream and license
 
