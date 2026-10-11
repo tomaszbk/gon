@@ -2,10 +2,12 @@ package types
 
 import (
 	"fmt"
+	"internal/gover"
 	"internal/goversion"
 	"internal/lazyregexp"
 	"log"
 	"strconv"
+	"strings"
 
 	"cmd/compile/internal/base"
 )
@@ -59,6 +61,12 @@ func parseLang(s string) (lang, error) {
 		s = "go1.0"
 	}
 
+	if v := strings.TrimPrefix(s, "go"); strings.HasPrefix(s, "go") && gover.IsGon(v) {
+		if gover.Compare(v, goversion.GonVersion) > 0 {
+			return lang{}, fmt.Errorf("requires Gon >= %s (running Gon %s)", v, goversion.GonVersion)
+		}
+		s = "go" + gover.GoVersion(v)
+	}
 	matches := goVersionRE.FindStringSubmatch(s)
 	if matches == nil {
 		return lang{}, fmt.Errorf(`should be something like "go1.12"`)

@@ -26,8 +26,8 @@ legacy source files are byte-identical across toolchains.
 The modern fixture uses native optional values: `T?`, nil absence, direct
 payload assignment, one-layer conversions, presence patterns and `is` tests.
 Wrapping handlers use one-line error context, matching uses alternative patterns,
-captured callbacks use seq.Reduce and formatting uses string interpolation. Benchmark names containing
-"Option" identify optional workloads; they do not name a language API.
+captured callbacks use seq.Reduce and formatting uses string interpolation.
+Benchmark names identify optional-value workloads.
 
 The twenty-two benchmarks cover the eight original features and runtime additions:
 
@@ -39,7 +39,7 @@ The twenty-two benchmarks cover the eight original features and runtime addition
 | Nil safety | present/absent fields, guarded calls, coalescing assignment |
 | Enums | construction of unit/positional/record variants; copied storage |
 | Matching | exhaustive arms; guards with observable side effects and lazy bodies |
-| Option | present/absent propagation/defaults; assignment into mixed slots |
+| Optional values | present/absent propagation/defaults; assignment into mixed slots |
 | Interpolation | 64 ordered integer formats, equivalent to fmt.Sprintf |
 | Collections | seq.Reduce with a captured lambda, equivalent to the legacy loop |
 | Named arguments | reordered arguments after observable callee evaluation; final slice variadic |

@@ -110,7 +110,8 @@ type Config struct {
 	// start with a prefix of the form "go%d.%d" (e.g. "go1.20", "go1.21rc1", or
 	// "go1.21.0") or it must be empty; an empty string disables Go language
 	// version checks. If the format is invalid, invoking the type checker will
-	// result in an error.
+	// result in an error. Gon requirements such as "go2.27" use the
+	// corresponding Go language rules ("go1.27") and check the Gon release.
 	GoVersion string
 
 	// If IgnoreFuncBodies is set, function bodies are not
@@ -306,7 +307,8 @@ type Info struct {
 
 	// FileVersions maps a file to its Go version string.
 	// If the file doesn't specify a version, the reported
-	// string is Config.GoVersion.
+	// string is Config.GoVersion, with Gon requirements mapped to their
+	// corresponding Go language version.
 	// Version strings begin with “go”, like “go1.21”, and
 	// are suitable for use with the [go/version] package.
 	FileVersions map[*syntax.PosBase]string

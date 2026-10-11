@@ -71,7 +71,7 @@ The same VSIX is also distributed through GitHub Releases.
 
 ## Use Gon in your project
 
-From your application's module:
+Set `go 2.27` in your application's `go.mod` to require Gon 2.27+, then run:
 
 ```sh
 gon test ./...

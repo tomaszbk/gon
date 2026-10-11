@@ -1341,7 +1341,7 @@ func loadFromRoots(ld *Loader, ctx context.Context, params loaderParams) *packag
 			// Add importer go version information to import errors of standard
 			// library packages arising from newer releases.
 			if importer := pkg.stack; importer != nil {
-				if v, ok := rawGoVersion.Load(importer.mod); ok && gover.Compare(gover.Local(), v.(string)) < 0 {
+				if v, ok := rawGoVersion.Load(importer.mod); ok && !gover.Allows(v.(string)) {
 					stdErr.importerGoVersion = v.(string)
 				}
 			}

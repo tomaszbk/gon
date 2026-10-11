@@ -1,0 +1,8 @@
+{"Time":"2026-10-11T14:22:06.485425-03:00","Action":"start","Package":"go/build"}
+{"Time":"2026-10-11T14:22:06.712534-03:00","Action":"run","Package":"go/build","Test":"TestDependencies"}
+{"Time":"2026-10-11T14:22:06.712631-03:00","Action":"output","Package":"go/build","Test":"TestDependencies","Output":"=== RUN   TestDependencies\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:08.366114-03:00","Action":"output","Package":"go/build","Test":"TestDependencies","Output":"--- PASS: TestDependencies (1.65s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:08.36616-03:00","Action":"pass","Package":"go/build","Test":"TestDependencies","Elapsed":1.65}
+{"Time":"2026-10-11T14:22:08.36618-03:00","Action":"output","Package":"go/build","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:08.366575-03:00","Action":"output","Package":"go/build","Output":"ok  \tgo/build\t1.881s\n"}
+{"Time":"2026-10-11T14:22:08.366588-03:00","Action":"pass","Package":"go/build","Elapsed":1.881}

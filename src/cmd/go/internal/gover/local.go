@@ -36,3 +36,14 @@ func local() (goVers, toolVers string) {
 	}
 	return goVers, toolVers
 }
+
+// GonVersion is the Gon release implemented by this command.
+const GonVersion = goversion.GonVersion
+
+// Allows reports whether this toolchain satisfies a module's go directive.
+func Allows(v string) bool {
+	if IsGon(v) {
+		return Compare(v, GonVersion) <= 0
+	}
+	return Compare(v, Local()) <= 0
+}

@@ -2902,6 +2902,25 @@ var _ = f(1, 2)
 	}
 }
 
+func TestGonModuleVersion(t *testing.T) {
+	for _, v := range []string{"go2.27", "go2.27.0"} {
+		conf := Config{GoVersion: v}
+		// Gon requirements must not accidentally enable Go 1.28 features.
+		pkg := mustTypecheck("package p; type Maybe = int?; var value Maybe = 7; var text = string(65)", &conf, nil)
+		want := "go1.27" + strings.TrimPrefix(v, "go2.27")
+		if pkg.GoVersion() != want {
+			t.Errorf("GoVersion = %q; want %q", pkg.GoVersion(), want)
+		}
+	}
+	for _, v := range []string{"go2.27.1", "go2.28", "go3.0"} {
+		conf := Config{GoVersion: v}
+		_, err := typecheck("package p", &conf, nil)
+		if err == nil || !strings.Contains(err.Error(), "requires Gon >=") {
+			t.Errorf("%s: %v", v, err)
+		}
+	}
+}
+
 func TestModuleVersion(t *testing.T) {
 	// version go1.dd must be able to typecheck go1.dd.0, go1.dd.1, etc.
 	goversion := fmt.Sprintf("go1.%d", goversion.Version)

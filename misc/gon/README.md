@@ -68,8 +68,8 @@ var pointer *int
 var presentPointer (*int)? = pointer // present, with a nil payload
 ```
 
-There are no predeclared `Option`, `Some` or `None` constructors. Existing user
-identifiers with those spellings remain ordinary Go declarations. Native
+There are no predeclared optional constructors. Existing user identifiers
+retain ordinary Go name resolution. Native
 presence patterns use `case value?`; `case nil` matches absence. For optional
 pointers, `case nil?` matches a present nil pointer. Nested `(value?)?` patterns
 check both presence layers. An explicit `(T?)(payload)` conversion is available
@@ -369,6 +369,20 @@ underlying Go version, so tools that query the compiler can still parse it.
 be handled by upgrading Gon; silently downloading an upstream compiler would
 lose Gon syntax support.
 
+## Module versions
+
+`go 2.27` in `go.mod` requires Gon 2.27 or newer. Versions with major 2 or
+above name Gon; `go 1.x` retains its Go meaning. `go.work` uses the same rule.
+The current toolchain implements Gon 2.27.0, independently of its Go development
+provenance. A newer Gon requirement reports the required and installed versions.
+
+Gon 2.N uses Go 1.N language rules internally. Module metadata, tidy, dependencies
+and vendoring retain the Gon requirement. A module that consumes a Gon dependency
+must meet that dependency's requirement; `gon mod tidy` updates the directive as
+usual. Unmodified Go rejects Gon module versions. Use `gon` in terminals and CI,
+and Gon/gonpls in the editor; no new configuration file or toolchain directive is
+needed.
+
 ## Tooling commands for agents, scripts and CI
 
 `gon query`, `gon refactor`, `gon check`, `gon explain` and `gon capabilities`
@@ -439,7 +453,7 @@ public commands to select Gon for this project.
    Check the reported toolchain root. Keep your `.go` and `_test.go` files,
    `go.mod`, `go.sum`, any `go.work`, dependencies and imports. Selecting Gon
    requires no new language configuration file and does not reinterpret the
-   module's `go` directive. If existing code splits prefix negation immediately
+   module's `go 1.x` directive. Use `go 2.27` to declare a Gon requirement. If existing code splits prefix negation immediately
    after `!`, put the operand on the same line. See the validation record for
    the supported-platform evidence; your own tests verify your application.
 

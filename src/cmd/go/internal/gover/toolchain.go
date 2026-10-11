@@ -65,6 +65,9 @@ type TooNewError struct {
 }
 
 func (e *TooNewError) Error() string {
+	if IsGon(e.GoVersion) {
+		return fmt.Sprintf("%v requires Gon >= %v (running Gon %v); upgrade Gon", e.What, e.GoVersion, GonVersion)
+	}
 	var explain string
 	if Startup.GOTOOLCHAIN != "" && Startup.GOTOOLCHAIN != "auto" {
 		explain = "; GOTOOLCHAIN=" + Startup.GOTOOLCHAIN

@@ -7,8 +7,10 @@ import (
 	"go/ast"
 	"go/constant"
 	"go/token"
+	"internal/goversion"
 	. "internal/types/errors"
 	"os"
+	"strings"
 )
 
 // nopos, noposn indicate an unknown position
@@ -333,17 +335,20 @@ func (check *Checker) initFiles(files []*ast.File) {
 	check.versions = versions
 
 	pkgVersion := asGoVersion(check.conf.GoVersion)
-	if pkgVersion.isValid() && len(files) > 0 && pkgVersion.cmp(go_current) > 0 {
+	if len(files) > 0 && gonVersionTooNew(check.conf.GoVersion) {
+		check.errorf(files[0], TooNew, "package requires Gon >= %s (application built with Gon %s)",
+			strings.TrimPrefix(check.conf.GoVersion, "go"), goversion.GonVersion)
+	} else if pkgVersion.isValid() && len(files) > 0 && pkgVersion.cmp(go_current) > 0 {
 		check.errorf(files[0], TooNew, "package requires newer Go version %v (application built with %v)",
 			pkgVersion, go_current)
 	}
 
 	// determine Go version for each file
 	for _, file := range check.files {
-		// use unaltered Config.GoVersion by default
+		// use Config.GoVersion by default, mapping Gon requirements to Go rules
 		// (This version string may contain dot-release numbers as in go1.20.1,
 		// unlike file versions which are Go language versions only, if valid.)
-		v := check.conf.GoVersion
+		v := goLanguageVersion(check.conf.GoVersion)
 
 		// If the file specifies a version, use max(fileVersion, go1.21).
 		if fileVersion := asGoVersion(file.GoVersion); fileVersion.isValid() {
@@ -488,7 +493,7 @@ func (check *Checker) checkFiles(files []*ast.File) {
 		check.monomorph()
 	}
 
-	check.pkg.goVersion = check.conf.GoVersion
+	check.pkg.goVersion = goLanguageVersion(check.conf.GoVersion)
 	check.pkg.complete = true
 
 	// no longer needed - release memory

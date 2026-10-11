@@ -875,7 +875,7 @@ func ReadWorkFile(path string) (*modfile.WorkFile, error) {
 	if err != nil {
 		return nil, fmt.Errorf("errors parsing go.work:\n%w", err)
 	}
-	if f.Go != nil && gover.Compare(f.Go.Version, gover.Local()) > 0 && cfg.CmdName != "work edit" {
+	if f.Go != nil && !gover.Allows(f.Go.Version) && cfg.CmdName != "work edit" {
 		base.Fatal(&gover.TooNewError{What: base.ShortPath(path), GoVersion: f.Go.Version})
 	}
 	return f, nil
@@ -1970,7 +1970,7 @@ func UpdateGoModFromReqs(ld *Loader, ctx context.Context, opts WriteOpts) (befor
 	if goVersion == "" {
 		base.Fatalf("go: internal error: missing go root module in WriteGoMod")
 	}
-	if gover.Compare(goVersion, gover.Local()) > 0 {
+	if !gover.Allows(goVersion) {
 		// We cannot assume that we know how to update a go.mod to a newer version.
 		return nil, nil, nil, &gover.TooNewError{What: "updating go.mod", GoVersion: goVersion}
 	}

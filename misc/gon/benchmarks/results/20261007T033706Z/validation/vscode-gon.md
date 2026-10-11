@@ -20,8 +20,8 @@ contextual `is`, block and one-line `or`, and quoted/raw interpolation. Embedded
 expressions cover nested quotes, maps, slice indexes, named calls, conditional
 expressions, nested interpolation, comments and fmt verbs. Escaped dollars and
 ordinary Go identifiers retain their meanings. Match indentation and packaging
-of all eight Gon snippets pass; retired Result constructors and snippets are
-absent. TypeScript checking and bundling pass.
+of all eight Gon snippets pass; retired constructors and snippets are absent.
+TypeScript checking and bundling pass.
 
 The isolated extension host uses the actual language client to verify enum,
 optional, error-tuple and named-call hover, definitions, signatures and formatting.

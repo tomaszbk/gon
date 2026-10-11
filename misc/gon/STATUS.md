@@ -1,5 +1,13 @@
 # Current Gon status
 
+Module directives `go 2.27` require Gon 2.27+, and `go 1.x` keeps its Go
+meaning. The same rule applies to workspaces. Gon requirements are checked
+against Gon 2.27.0, separately from the upstream compiler provenance.
+This working-tree addition is covered by the complete native macOS
+[`moduleversions` profile](validation/20261011-moduleversions/summary.json);
+published release evidence below retains its source
+snapshot. The module-version addition has not been published yet.
+
 Gon 2.27 is the first stable release line, compatible with Go 1.27+ on amd64,
 arm64, riscv64 and wasm subject to the accepted newline-after-prefix-`!` exception.
 Unmodified Go 1.27.1 is the baseline; the fork's Go 1.28 development version

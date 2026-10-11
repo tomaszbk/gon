@@ -82,10 +82,9 @@ static non-null types.
 
 ## Optional values (`T?`): a value, or nothing
 
-`string?` means “a string may be available.” Think of Python's
-`str | None`: a lookup can find a nickname, or find nothing. Go often represents
-this with two returns, `(string, bool)`; `string?` puts both possibilities in one
-value.
+`string?` means “a string may be available.” A lookup can find a nickname or
+find nothing. Go often represents this with two returns, `(string, bool)`;
+`string?` puts both possibilities in one value.
 
 - `"Ada"`: a nickname was found.
 - `""`: a nickname was found, and it is empty.
@@ -456,8 +455,8 @@ optional values are preserved. There is no recursive lift or flattening.
 Match absence with `case nil` and presence with `case value?`. Presence
 patterns can nest: `case nil?` recognizes a present outer layer containing
 an absent inner layer; `case (value?)?` extracts two present layers.
-`Option`, `Some` and `None` have no special language meaning. Existing Go
-programs may still define identifiers with those names.
+Optional constructor names have no special language meaning, so existing Go
+declarations keep resolving as before.
 
 The suffix binds tightly: `[]int?` is a slice of optional ints, while `([]int)?`
 is an optional slice. Use `(*User)?` for an optional pointer and `(int?)?` for

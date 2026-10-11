@@ -60,7 +60,7 @@ func (f *Fetcher) Download(ctx context.Context, mod module.Version) (dir string,
 		// If go.mod exists (not an old legacy module), check version is not too new.
 		if data, err := os.ReadFile(filepath.Join(dir, "go.mod")); err == nil {
 			goVersion := gover.GoModLookup(data, "go")
-			if gover.Compare(goVersion, gover.Local()) > 0 {
+			if !gover.Allows(goVersion) {
 				return "", &gover.TooNewError{What: mod.String(), GoVersion: goVersion}
 			}
 		} else if !errors.Is(err, fs.ErrNotExist) {

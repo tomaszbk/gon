@@ -56,7 +56,7 @@ func runGraph(ctx context.Context, cmd *base.Command, args []string) {
 	moduleLoader.RootMode = modload.NeedRoot
 
 	goVersion := graphGo.String()
-	if goVersion != "" && gover.Compare(gover.Local(), goVersion) < 0 {
+	if goVersion != "" && !gover.Allows(goVersion) {
 		toolchain.SwitchOrFatal(moduleLoader, ctx, &gover.TooNewError{
 			What:      "-go flag",
 			GoVersion: goVersion,

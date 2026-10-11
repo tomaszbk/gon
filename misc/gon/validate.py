@@ -81,6 +81,18 @@ def checks(feature):
         if pattern:
             args += ['-run', pattern]
         return name, cwd, args + ['-count=1']
+    if feature == 'moduleversions':
+        return [
+            test('module-version-ordering', '.', ['internal/gover', 'cmd/go/internal/gover', 'cmd/go/internal/modcmd', 'cmd/go/internal/toolchain', 'cmd/go/internal/modload', 'cmd/go/internal/work'], 'TestGon|TestCompare|TestGoVersionFlag|TestAllowedVersion'),
+            test('module-version-types', '.', ['cmd/compile/internal/types', 'cmd/compile/internal/types2', 'go/types'], 'TestGonLang|TestGonModuleVersion|TestModuleVersion|TestFileVersions|TestTooNew|TestGenerate'),
+            test('module-version-dependencies', '.', ['go/build'], '^TestDependencies$'),
+            ('build-tooling', '.', [sys.executable, 'misc/gon/build.py']),
+            ('module-version-execution', '.', [sys.executable, 'misc/gon/test_moduleversions.py']),
+            test('module-version-editor', 'tools/gonpls', ['./internal/test/integration/misc'], '^TestGonModuleVersionEditor$'),
+            test('module-version-registry', 'tools/gonpls', ['./internal/settings'], '^TestGonAnalyzers$'),
+            test('module-version-semantic-tools', 'tools/x-tools', ['./internal/versions', './go/ssa'], 'TestGon|TestFileVersion|TestGoVersion'),
+            ('readme-examples', '.', [sys.executable, 'misc/gon/test_readme.py']),
+        ]
     common = [
         ('validation-snapshot', '.', [sys.executable, 'misc/gon/test_validate.py']),
         ('vendor', '.', [sys.executable, 'misc/gon/vendor.py', '--check']),
@@ -283,7 +295,7 @@ def checks(feature):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('feature', choices=['tooling', 'errorhandling', 'conditional', 'lambda', 'nullsafety', *MODERN_FEATURES, 'modern'])
+    parser.add_argument('feature', choices=['tooling', 'errorhandling', 'conditional', 'lambda', 'nullsafety', 'moduleversions', *MODERN_FEATURES, 'modern'])
     parser.add_argument('--list', action='store_true', help='show commands without executing')
     parser.add_argument('--only', action='append', help='run selected check IDs; reports a partial run')
     args = parser.parse_args()

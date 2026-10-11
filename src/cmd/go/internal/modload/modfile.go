@@ -42,7 +42,7 @@ func ReadModFile(gomod string, fix modfile.VersionFixer) (data []byte, f *modfil
 	if err != nil {
 		f, laxErr := modfile.ParseLax(gomod, data, fix)
 		if laxErr == nil {
-			if f.Go != nil && gover.Compare(f.Go.Version, gover.Local()) > 0 {
+			if f.Go != nil && !gover.Allows(f.Go.Version) {
 				toolchain := ""
 				if f.Toolchain != nil {
 					toolchain = f.Toolchain.Name
@@ -54,7 +54,7 @@ func ReadModFile(gomod string, fix modfile.VersionFixer) (data []byte, f *modfil
 		// Errors returned by modfile.Parse begin with file:line.
 		return nil, nil, fmt.Errorf("errors parsing %s:\n%w", base.ShortPath(gomod), shortPathErrorList(err))
 	}
-	if f.Go != nil && gover.Compare(f.Go.Version, gover.Local()) > 0 {
+	if f.Go != nil && !gover.Allows(f.Go.Version) {
 		toolchain := ""
 		if f.Toolchain != nil {
 			toolchain = f.Toolchain.Name
@@ -760,7 +760,7 @@ func summaryFromModFile(m module.Version, f *modfile.File) (*modFileSummary, err
 	// returned.
 	if summary.goVersion != "" && gover.Compare(summary.goVersion, gover.GoStrictVersion) >= 0 {
 		summary.require = append(summary.require, module.Version{Path: "go", Version: summary.goVersion})
-		if gover.Compare(summary.goVersion, gover.Local()) > 0 {
+		if !gover.Allows(summary.goVersion) {
 			return summary, &gover.TooNewError{What: "module " + m.String(), GoVersion: summary.goVersion}
 		}
 	}

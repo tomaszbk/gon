@@ -33,6 +33,11 @@ func (r *toolchainRepo) ModulePath() string {
 }
 
 func (r *toolchainRepo) Versions(ctx context.Context, prefix string) (*Versions, error) {
+	// Gon requirement queries use the installed Gon release, not the Go
+	// distribution registry. Ordinary Go queries keep their existing behavior.
+	if r.path == "go" && gover.IsGon(strings.TrimSuffix(prefix, ".")) {
+		return &Versions{List: []string{gover.GonVersion}}, nil
+	}
 	// Read DL repo list and convert to "go" or "toolchain" version list.
 	versions, err := r.repo.Versions(ctx, "")
 	if err != nil {
@@ -98,7 +103,10 @@ func (r *toolchainRepo) Stat(ctx context.Context, rev string) (*RevInfo, error) 
 	// If we're asking about "go" (not "toolchain"), pretend to have
 	// all earlier Go versions available without network access:
 	// we will provide those ourselves, at least in GOTOOLCHAIN=auto mode.
-	if r.path == "go" && gover.Compare(v, gover.Local()) <= 0 {
+	if r.path == "go" && gover.IsGon(v) && !gover.Allows(v) {
+		return nil, &gover.TooNewError{What: "go directive", GoVersion: v}
+	}
+	if r.path == "go" && gover.Allows(v) {
 		return &RevInfo{Version: prefix + v}, nil
 	}
 

@@ -209,7 +209,11 @@ func Select() {
 					gover.Startup.AutoToolchain = toolchain
 				}
 			}
-			if gover.Compare(goVers, minVers) > 0 {
+			if gover.IsGon(goVers) {
+				if !gover.Allows(goVers) {
+					base.Fatal(&gover.TooNewError{What: base.ShortPath(file), GoVersion: goVers})
+				}
+			} else if gover.Compare(goVers, minVers) > 0 {
 				gotoolchain = "go" + goVers
 				minVers = goVers
 				// Starting with Go 1.21, the first released version has a .0 patch version suffix.

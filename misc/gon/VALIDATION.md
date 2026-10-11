@@ -6,8 +6,43 @@ baseline is `/opt/homebrew/bin/go`, **Go 1.27.1**. Native host execution is
 **darwin/arm64**, Apple M4. The fork's Go 1.28 development version identifies
 source provenance; it is not the released compatibility baseline.
 
-The current release closure appears first. Earlier sections retain their own
-source snapshots and do not establish validation of a later compiler.
+Latest working-tree evidence appears first. Release and earlier evidence retain
+their own source snapshots and do not establish validation of a later compiler.
+
+## Gon module versions — 2026-10-11 (working tree)
+
+`go 2.27` in go.mod/go.work requires Gon 2.27+; `go 1.x` keeps its Go
+meaning. Module metadata retains Gon requirements while compiler/checkers and
+analysis use the corresponding Go language baseline. Future Gon requirements
+fail with Gon diagnostics, without downloading Go 2.x. This addition is local
+and has not been included in the published release archives yet.
+
+```sh
+GON_BASELINE_GO=/opt/homebrew/bin/go python3 misc/gon/validate.py moduleversions
+```
+
+**PASS: all 9 complete gates**, no partial selection, no pending items, unchanged
+implementation/fixture inventory `b5a066f8ad7873231634bbabf99e5ce321fb9f3d67b2ffe411fddc954dc4e048`. Native
+**darwin/arm64**, with unmodified **Go 1.27.1** executing legacy pairs. Public
+tools were rebuilt from the maintained sources. Evidence:
+[module-version summary](validation/20261011-moduleversions/summary.json) and
+[source inventory](validation/20261011-moduleversions/source.json).
+
+The executable gate passed **44 checks**: paired legacy Go and modern Gon
+programs with asserted results and side effects; build/test/vet/fmt/check;
+2.27/2.27.0 metadata; tidy/graph/get; local and downloaded Gon dependencies;
+Go dependencies; native optional exports; vendoring; workspace sync; future
+release/patch and malformed-version rejection; upstream Go rejection; cgo
+execution on baseline/Gon and coverage. Checker gates include Go 1.27 integer
+string conversions to detect accidental Go 1.28 language behavior. Gonpls
+passed diagnostics, hover and rename under go 2.27; analyzer registry and
+maintained versions/SSA tests passed. Standard-library dependency boundaries
+and generated checker consistency passed.
+
+No additional platform, PostgreSQL, Docker or timed benchmark execution was
+started. The complete release-profile, bootstrap and platform evidence below
+keeps its historical source scope; it is not a final release gate for this
+module-version addition.
 
 ## Release closure — 2026-10-11
 
@@ -393,7 +428,7 @@ GON_BASELINE_GO=/opt/homebrew/bin/go GOMAXPROCS=2 \
   python3 misc/gon/validate.py PROFILE
 ```
 
-| Profile | Checks | Result |
+| Profile | Checks | Outcome |
 | --- | ---: | --- |
 | tooling | 71 | PASS |
 | errorhandling | 34 | PASS |
@@ -435,9 +470,9 @@ non-macOS, PostgreSQL or Docker validation was started.
 The eight original features and accepted additions share both parsers/checkers,
 public AST/formatting, export data, native compiler lowering, maintained tooling
 and executable compatibility pairs. Error handling uses ordinary Go tuples
-ending in error. The predeclared Result, contextual constructors, tuple bridges,
-ErrNilResult and optional migration command are removed. User-declared homonyms
-and ordinary Go error/nullable semantics remain valid.
+ending in error. The former tagged error wrapper, contextual constructors,
+tuple bridges, nil-error sentinel and optional migration command are removed.
+Existing identifiers and ordinary Go error/nullable semantics remain valid.
 
 Paired harnesses execute the legacy program with unmodified Go 1.27.1 and Gon,
 and the equivalent modern program with Gon. They assert output, effects,
@@ -532,7 +567,7 @@ GON_BASELINE_GO=/opt/homebrew/bin/go GOMAXPROCS=2 \
 Each PROFILE below ran without `--only`. Check counts include shared gates;
 they are not counts of distinct tests across profiles.
 
-| Profile | Checks | Result |
+| Profile | Checks | Outcome |
 | --- | ---: | --- |
 | tooling | 63 | PASS |
 | errorhandling | 26 | PASS |

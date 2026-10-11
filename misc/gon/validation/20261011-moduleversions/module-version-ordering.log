@@ -1,0 +1,44 @@
+{"Time":"2026-10-11T14:22:00.239567-03:00","Action":"start","Package":"internal/gover"}
+{"Time":"2026-10-11T14:22:00.271966-03:00","Action":"start","Package":"cmd/go/internal/gover"}
+{"Time":"2026-10-11T14:22:00.499862-03:00","Action":"run","Package":"internal/gover","Test":"TestGonVersions"}
+{"Time":"2026-10-11T14:22:00.499974-03:00","Action":"output","Package":"internal/gover","Test":"TestGonVersions","Output":"=== RUN   TestGonVersions\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:00.500065-03:00","Action":"output","Package":"internal/gover","Test":"TestGonVersions","Output":"--- PASS: TestGonVersions (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:00.500097-03:00","Action":"pass","Package":"internal/gover","Test":"TestGonVersions","Elapsed":0}
+{"Time":"2026-10-11T14:22:00.500116-03:00","Action":"run","Package":"internal/gover","Test":"TestCompare"}
+{"Time":"2026-10-11T14:22:00.500125-03:00","Action":"output","Package":"internal/gover","Test":"TestCompare","Output":"=== RUN   TestCompare\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:00.500146-03:00","Action":"output","Package":"internal/gover","Test":"TestCompare","Output":"--- PASS: TestCompare (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:00.500172-03:00","Action":"pass","Package":"internal/gover","Test":"TestCompare","Elapsed":0}
+{"Time":"2026-10-11T14:22:00.500182-03:00","Action":"output","Package":"internal/gover","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:00.50224-03:00","Action":"output","Package":"internal/gover","Output":"ok  \tinternal/gover\t0.262s\n"}
+{"Time":"2026-10-11T14:22:00.502331-03:00","Action":"pass","Package":"internal/gover","Elapsed":0.263}
+{"Time":"2026-10-11T14:22:00.503955-03:00","Action":"run","Package":"cmd/go/internal/gover","Test":"TestGonRequirements"}
+{"Time":"2026-10-11T14:22:00.504581-03:00","Action":"output","Package":"cmd/go/internal/gover","Test":"TestGonRequirements","Output":"=== RUN   TestGonRequirements\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:00.504671-03:00","Action":"output","Package":"cmd/go/internal/gover","Test":"TestGonRequirements","Output":"--- PASS: TestGonRequirements (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:00.504688-03:00","Action":"pass","Package":"cmd/go/internal/gover","Test":"TestGonRequirements","Elapsed":0}
+{"Time":"2026-10-11T14:22:00.504702-03:00","Action":"run","Package":"cmd/go/internal/gover","Test":"TestCompare"}
+{"Time":"2026-10-11T14:22:00.504707-03:00","Action":"output","Package":"cmd/go/internal/gover","Test":"TestCompare","Output":"=== RUN   TestCompare\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:00.504721-03:00","Action":"output","Package":"cmd/go/internal/gover","Test":"TestCompare","Output":"--- PASS: TestCompare (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:00.504725-03:00","Action":"pass","Package":"cmd/go/internal/gover","Test":"TestCompare","Elapsed":0}
+{"Time":"2026-10-11T14:22:00.504728-03:00","Action":"output","Package":"cmd/go/internal/gover","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:00.504774-03:00","Action":"output","Package":"cmd/go/internal/gover","Output":"ok  \tcmd/go/internal/gover\t0.233s\n"}
+{"Time":"2026-10-11T14:22:00.504788-03:00","Action":"pass","Package":"cmd/go/internal/gover","Elapsed":0.233}
+{"Time":"2026-10-11T14:22:01.965607-03:00","Action":"start","Package":"cmd/go/internal/modcmd"}
+{"Time":"2026-10-11T14:22:01.965633-03:00","Action":"output","Package":"cmd/go/internal/modcmd","Output":"?   \tcmd/go/internal/modcmd\t[no test files]\n"}
+{"Time":"2026-10-11T14:22:01.965648-03:00","Action":"skip","Package":"cmd/go/internal/modcmd","Elapsed":0}
+{"Time":"2026-10-11T14:22:02.156072-03:00","Action":"start","Package":"cmd/go/internal/toolchain"}
+{"Time":"2026-10-11T14:22:02.15611-03:00","Action":"start","Package":"cmd/go/internal/modload"}
+{"Time":"2026-10-11T14:22:02.211751-03:00","Action":"start","Package":"cmd/go/internal/work"}
+{"Time":"2026-10-11T14:22:02.418567-03:00","Action":"output","Package":"cmd/go/internal/modload","Output":"vcs-test.golang.org rerouted to http://127.0.0.1:58501\n"}
+{"Time":"2026-10-11T14:22:02.41862-03:00","Action":"output","Package":"cmd/go/internal/modload","Output":"https://vcs-test.golang.org rerouted to https://127.0.0.1:58502\n"}
+{"Time":"2026-10-11T14:22:02.418746-03:00","Action":"output","Package":"cmd/go/internal/modload","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-10-11T14:22:02.418756-03:00","Action":"output","Package":"cmd/go/internal/modload","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:02.420273-03:00","Action":"output","Package":"cmd/go/internal/modload","Output":"ok  \tcmd/go/internal/modload\t0.264s [no tests to run]\n"}
+{"Time":"2026-10-11T14:22:02.420283-03:00","Action":"pass","Package":"cmd/go/internal/modload","Elapsed":0.264}
+{"Time":"2026-10-11T14:22:02.430284-03:00","Action":"output","Package":"cmd/go/internal/toolchain","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-10-11T14:22:02.430311-03:00","Action":"output","Package":"cmd/go/internal/toolchain","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:02.430677-03:00","Action":"output","Package":"cmd/go/internal/toolchain","Output":"ok  \tcmd/go/internal/toolchain\t0.275s [no tests to run]\n"}
+{"Time":"2026-10-11T14:22:02.430689-03:00","Action":"pass","Package":"cmd/go/internal/toolchain","Elapsed":0.275}
+{"Time":"2026-10-11T14:22:02.470699-03:00","Action":"output","Package":"cmd/go/internal/work","Output":"testing: warning: no tests to run\n"}
+{"Time":"2026-10-11T14:22:02.470737-03:00","Action":"output","Package":"cmd/go/internal/work","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:02.471302-03:00","Action":"output","Package":"cmd/go/internal/work","Output":"ok  \tcmd/go/internal/work\t0.260s [no tests to run]\n"}
+{"Time":"2026-10-11T14:22:02.47132-03:00","Action":"pass","Package":"cmd/go/internal/work","Elapsed":0.26}

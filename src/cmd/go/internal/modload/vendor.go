@@ -107,7 +107,7 @@ func readVendorList(vendorDir string) {
 					if goVersion, ok := strings.CutPrefix(entry, "go "); ok {
 						meta.GoVersion = goVersion
 						rawGoVersion.Store(mod, meta.GoVersion)
-						if gover.Compare(goVersion, gover.Local()) > 0 {
+						if !gover.Allows(goVersion) {
 							base.Fatal(&gover.TooNewError{What: mod.Path + " in " + base.ShortPath(vendorFile), GoVersion: goVersion})
 						}
 					}

@@ -73,7 +73,7 @@ def main():
         for variant, command in (("legacy", args.go), ("legacy", args.gon), ("modern", args.gon)):
             folder = Path(temporary) / (variant + ("-go" if command == args.go else "-gon"))
             folder.mkdir()
-            (folder / "go.mod").write_text("module example.com/readme\n\ngo 1.27\n")
+            (folder / "go.mod").write_text("module example.com/readme\n\ngo " + ("2.27" if variant == "modern" else "1.27") + "\n")
             shutil.copyfile(FIXTURES / "common.go", folder / "common.go")
             (folder / "impl.go").write_text(sources[variant])
             result = subprocess.run([command, "run", "."], cwd=folder, env=env, text=True,

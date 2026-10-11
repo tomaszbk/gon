@@ -459,7 +459,7 @@ func allowedVersion(v string) bool {
 	if v == "" {
 		return true
 	}
-	return gover.Compare(gover.Local(), v) >= 0
+	return gover.Allows(v)
 }
 
 func (b *Builder) computeNonGoOverlay(a *Action, p *load.Package, sh *Shell, objdir string, nonGoFileLists [][]string) error {

@@ -1,0 +1,258 @@
+{"Time":"2026-10-11T14:22:46.100404-03:00","Action":"start","Package":"golang.org/x/tools/internal/versions"}
+{"Time":"2026-10-11T14:22:46.217718-03:00","Action":"start","Package":"golang.org/x/tools/go/ssa"}
+{"Time":"2026-10-11T14:22:46.353411-03:00","Action":"run","Package":"golang.org/x/tools/internal/versions","Test":"TestFileVersions"}
+{"Time":"2026-10-11T14:22:46.353521-03:00","Action":"output","Package":"golang.org/x/tools/internal/versions","Test":"TestFileVersions","Output":"=== RUN   TestFileVersions\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:46.353644-03:00","Action":"output","Package":"golang.org/x/tools/internal/versions","Test":"TestFileVersions","Output":"--- PASS: TestFileVersions (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:46.353662-03:00","Action":"pass","Package":"golang.org/x/tools/internal/versions","Test":"TestFileVersions","Elapsed":0}
+{"Time":"2026-10-11T14:22:46.353685-03:00","Action":"output","Package":"golang.org/x/tools/internal/versions","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:46.354293-03:00","Action":"output","Package":"golang.org/x/tools/internal/versions","Output":"ok  \tgolang.org/x/tools/internal/versions\t0.253s\n"}
+{"Time":"2026-10-11T14:22:46.354313-03:00","Action":"pass","Package":"golang.org/x/tools/internal/versions","Elapsed":0.254}
+{"Time":"2026-10-11T14:22:46.472536-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives"}
+{"Time":"2026-10-11T14:22:46.472673-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives","Output":"=== RUN   TestGonAlternatives\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:46.472722-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives/legacy"}
+{"Time":"2026-10-11T14:22:46.472735-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives/legacy","Output":"=== RUN   TestGonAlternatives/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:46.997151-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives/legacy","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:46.997747-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives/legacy","Output":"--- PASS: TestGonAlternatives/legacy (0.53s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:46.997764-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives/legacy","Elapsed":0.53}
+{"Time":"2026-10-11T14:22:46.99777-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives/modern"}
+{"Time":"2026-10-11T14:22:46.997773-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives/modern","Output":"=== RUN   TestGonAlternatives/modern\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:47.291995-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives/modern","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:47.292807-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives/modern","Output":"--- PASS: TestGonAlternatives/modern (0.30s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:47.292822-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives/modern","Elapsed":0.3}
+{"Time":"2026-10-11T14:22:47.292845-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives","Output":"--- PASS: TestGonAlternatives (0.82s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:47.292853-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonAlternatives","Elapsed":0.82}
+{"Time":"2026-10-11T14:22:47.29286-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification"}
+{"Time":"2026-10-11T14:22:47.292865-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification","Output":"=== RUN   TestGonSyntaxSimplification\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:47.292882-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification/legacy"}
+{"Time":"2026-10-11T14:22:47.292901-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification/legacy","Output":"=== RUN   TestGonSyntaxSimplification/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:47.654601-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification/legacy","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:47.655224-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification/legacy","Output":"--- PASS: TestGonSyntaxSimplification/legacy (0.36s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:47.655246-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification/legacy","Elapsed":0.36}
+{"Time":"2026-10-11T14:22:47.655254-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification/modern"}
+{"Time":"2026-10-11T14:22:47.655258-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification/modern","Output":"=== RUN   TestGonSyntaxSimplification/modern\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:47.944358-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification/modern","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:47.945322-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification/modern","Output":"--- PASS: TestGonSyntaxSimplification/modern (0.29s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:47.945339-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification/modern","Elapsed":0.29}
+{"Time":"2026-10-11T14:22:47.945352-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification","Output":"--- PASS: TestGonSyntaxSimplification (0.65s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:47.945368-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonSyntaxSimplification","Elapsed":0.65}
+{"Time":"2026-10-11T14:22:47.945547-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonTestFunctionPropagation"}
+{"Time":"2026-10-11T14:22:47.945557-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonTestFunctionPropagation","Output":"=== RUN   TestGonTestFunctionPropagation\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.698708-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonTestFunctionPropagation","Output":"--- PASS: TestGonTestFunctionPropagation (0.75s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.698744-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonTestFunctionPropagation","Elapsed":0.75}
+{"Time":"2026-10-11T14:22:48.698753-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext"}
+{"Time":"2026-10-11T14:22:48.698757-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext","Output":"=== RUN   TestGonErrorContext\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.698762-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext/legacy"}
+{"Time":"2026-10-11T14:22:48.698766-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext/legacy","Output":"=== RUN   TestGonErrorContext/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.699199-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext/legacy","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:48.69921-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext/legacy","Output":"--- PASS: TestGonErrorContext/legacy (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.699215-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext/legacy","Elapsed":0}
+{"Time":"2026-10-11T14:22:48.699218-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext/modern"}
+{"Time":"2026-10-11T14:22:48.699233-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext/modern","Output":"=== RUN   TestGonErrorContext/modern\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.699538-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext/modern","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:48.699545-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext/modern","Output":"--- PASS: TestGonErrorContext/modern (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.699548-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext/modern","Elapsed":0}
+{"Time":"2026-10-11T14:22:48.699552-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext","Output":"--- PASS: TestGonErrorContext (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.699555-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorContext","Elapsed":0}
+{"Time":"2026-10-11T14:22:48.699571-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional"}
+{"Time":"2026-10-11T14:22:48.699576-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional","Output":"=== RUN   TestGonConditional\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.69958-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional/conditional_legacy"}
+{"Time":"2026-10-11T14:22:48.699582-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional/conditional_legacy","Output":"=== RUN   TestGonConditional/conditional_legacy\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.701647-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional/conditional_legacy","Output":"gon conditional pair passed\n"}
+{"Time":"2026-10-11T14:22:48.701653-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional/conditional_legacy","Output":"--- PASS: TestGonConditional/conditional_legacy (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.701657-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional/conditional_legacy","Elapsed":0}
+{"Time":"2026-10-11T14:22:48.70166-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional/conditional_modern"}
+{"Time":"2026-10-11T14:22:48.701663-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional/conditional_modern","Output":"=== RUN   TestGonConditional/conditional_modern\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.703511-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional/conditional_modern","Output":"gon conditional pair passed\n"}
+{"Time":"2026-10-11T14:22:48.703527-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional/conditional_modern","Output":"--- PASS: TestGonConditional/conditional_modern (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.703533-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional/conditional_modern","Elapsed":0}
+{"Time":"2026-10-11T14:22:48.703538-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional","Output":"--- PASS: TestGonConditional (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.703543-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditional","Elapsed":0}
+{"Time":"2026-10-11T14:22:48.703546-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditionalBlocks"}
+{"Time":"2026-10-11T14:22:48.703549-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditionalBlocks","Output":"=== RUN   TestGonConditionalBlocks\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.703625-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditionalBlocks","Output":"--- PASS: TestGonConditionalBlocks (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.703638-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonConditionalBlocks","Elapsed":0}
+{"Time":"2026-10-11T14:22:48.703642-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures"}
+{"Time":"2026-10-11T14:22:48.703645-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures","Output":"=== RUN   TestGonFeatures\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:48.703648-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures/legacy"}
+{"Time":"2026-10-11T14:22:48.703651-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures/legacy","Output":"=== RUN   TestGonFeatures/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.051285-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures/legacy","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:49.051973-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures/legacy","Output":"--- PASS: TestGonFeatures/legacy (0.35s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.051988-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures/legacy","Elapsed":0.35}
+{"Time":"2026-10-11T14:22:49.052001-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures/modern"}
+{"Time":"2026-10-11T14:22:49.052007-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures/modern","Output":"=== RUN   TestGonFeatures/modern\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.360722-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures/modern","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:49.361703-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures/modern","Output":"--- PASS: TestGonFeatures/modern (0.31s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.361721-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures/modern","Elapsed":0.31}
+{"Time":"2026-10-11T14:22:49.361733-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures","Output":"--- PASS: TestGonFeatures (0.66s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.361743-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonFeatures","Elapsed":0.66}
+{"Time":"2026-10-11T14:22:49.36175-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow"}
+{"Time":"2026-10-11T14:22:49.361758-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow","Output":"=== RUN   TestGonErrorFlow\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.361765-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow/legacy"}
+{"Time":"2026-10-11T14:22:49.361771-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow/legacy","Output":"=== RUN   TestGonErrorFlow/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.363529-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow/legacy","Output":"gon analysis pair passed\n"}
+{"Time":"2026-10-11T14:22:49.36354-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow/legacy","Output":"--- PASS: TestGonErrorFlow/legacy (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.363547-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow/legacy","Elapsed":0}
+{"Time":"2026-10-11T14:22:49.363555-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow/modern"}
+{"Time":"2026-10-11T14:22:49.36356-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow/modern","Output":"=== RUN   TestGonErrorFlow/modern\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.36533-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow/modern","Output":"gon analysis pair passed\n"}
+{"Time":"2026-10-11T14:22:49.365339-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow/modern","Output":"--- PASS: TestGonErrorFlow/modern (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.365345-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow/modern","Elapsed":0}
+{"Time":"2026-10-11T14:22:49.365351-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow","Output":"--- PASS: TestGonErrorFlow (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.365355-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonErrorFlow","Elapsed":0}
+{"Time":"2026-10-11T14:22:49.365374-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch"}
+{"Time":"2026-10-11T14:22:49.365395-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch","Output":"=== RUN   TestGonInterfaceMatch\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.365407-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch/legacy"}
+{"Time":"2026-10-11T14:22:49.365415-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch/legacy","Output":"=== RUN   TestGonInterfaceMatch/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.75905-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch/legacy","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:49.759771-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch/legacy","Output":"--- PASS: TestGonInterfaceMatch/legacy (0.39s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:49.75978-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch/legacy","Elapsed":0.39}
+{"Time":"2026-10-11T14:22:49.759786-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch/modern"}
+{"Time":"2026-10-11T14:22:49.75979-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch/modern","Output":"=== RUN   TestGonInterfaceMatch/modern\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.068252-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch/modern","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:50.069209-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch/modern","Output":"--- PASS: TestGonInterfaceMatch/modern (0.31s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.069231-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch/modern","Elapsed":0.31}
+{"Time":"2026-10-11T14:22:50.069247-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch","Output":"--- PASS: TestGonInterfaceMatch (0.70s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.069257-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterfaceMatch","Elapsed":0.7}
+{"Time":"2026-10-11T14:22:50.069266-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterpolation"}
+{"Time":"2026-10-11T14:22:50.069274-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterpolation","Output":"=== RUN   TestGonInterpolation\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.421311-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterpolation","Output":"--- PASS: TestGonInterpolation (0.35s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.421348-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonInterpolation","Elapsed":0.35}
+{"Time":"2026-10-11T14:22:50.421356-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives"}
+{"Time":"2026-10-11T14:22:50.42136-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives","Output":"=== RUN   TestGonMatchAlternatives\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.421378-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy"}
+{"Time":"2026-10-11T14:22:50.421382-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"=== RUN   TestGonMatchAlternatives/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.422343-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"0 0 -1 -1\n"}
+{"Time":"2026-10-11T14:22:50.42236-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"3 3 3 0\n"}
+{"Time":"2026-10-11T14:22:50.422374-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"5 5 5 0\n"}
+{"Time":"2026-10-11T14:22:50.422378-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"8 8 8 0\n"}
+{"Time":"2026-10-11T14:22:50.422382-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"0 0 -1 -1\n"}
+{"Time":"2026-10-11T14:22:50.422385-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"0\n"}
+{"Time":"2026-10-11T14:22:50.422388-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"0\n"}
+{"Time":"2026-10-11T14:22:50.422391-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"7\n"}
+{"Time":"2026-10-11T14:22:50.422395-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"-1 1 1\n"}
+{"Time":"2026-10-11T14:22:50.422398-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"-1 2 1\n"}
+{"Time":"2026-10-11T14:22:50.422401-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"9\n"}
+{"Time":"2026-10-11T14:22:50.422404-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:50.422408-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Output":"--- PASS: TestGonMatchAlternatives/legacy (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.422418-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/legacy","Elapsed":0}
+{"Time":"2026-10-11T14:22:50.422421-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern"}
+{"Time":"2026-10-11T14:22:50.422426-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"=== RUN   TestGonMatchAlternatives/modern\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.423477-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"0 0 -1 -1\n"}
+{"Time":"2026-10-11T14:22:50.423485-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"3 3 3 0\n"}
+{"Time":"2026-10-11T14:22:50.423493-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"5 5 5 0\n"}
+{"Time":"2026-10-11T14:22:50.423498-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"8 8 8 0\n"}
+{"Time":"2026-10-11T14:22:50.423501-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"0 0 -1 -1\n"}
+{"Time":"2026-10-11T14:22:50.423503-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"0\n"}
+{"Time":"2026-10-11T14:22:50.423512-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"0\n"}
+{"Time":"2026-10-11T14:22:50.423514-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"7\n"}
+{"Time":"2026-10-11T14:22:50.423527-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"-1 1 1\n"}
+{"Time":"2026-10-11T14:22:50.423542-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"-1 2 1\n"}
+{"Time":"2026-10-11T14:22:50.423545-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"9\n"}
+{"Time":"2026-10-11T14:22:50.423548-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:50.423551-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Output":"--- PASS: TestGonMatchAlternatives/modern (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.423554-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives/modern","Elapsed":0}
+{"Time":"2026-10-11T14:22:50.423557-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives","Output":"--- PASS: TestGonMatchAlternatives (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.42356-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonMatchAlternatives","Elapsed":0}
+{"Time":"2026-10-11T14:22:50.423563-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments"}
+{"Time":"2026-10-11T14:22:50.423566-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments","Output":"=== RUN   TestGonNamedArguments\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.423569-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments/legacy"}
+{"Time":"2026-10-11T14:22:50.423571-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments/legacy","Output":"=== RUN   TestGonNamedArguments/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.763984-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments/legacy","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:50.764603-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments/legacy","Output":"--- PASS: TestGonNamedArguments/legacy (0.34s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:50.764614-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments/legacy","Elapsed":0.34}
+{"Time":"2026-10-11T14:22:50.764624-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments/modern"}
+{"Time":"2026-10-11T14:22:50.764628-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments/modern","Output":"=== RUN   TestGonNamedArguments/modern\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.057218-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments/modern","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:51.057741-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments/modern","Output":"--- PASS: TestGonNamedArguments/modern (0.29s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.057752-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments/modern","Elapsed":0.29}
+{"Time":"2026-10-11T14:22:51.05776-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments","Output":"--- PASS: TestGonNamedArguments (0.63s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.057765-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonNamedArguments","Elapsed":0.63}
+{"Time":"2026-10-11T14:22:51.057778-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest"}
+{"Time":"2026-10-11T14:22:51.057783-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest","Output":"=== RUN   TestGonPatternTest\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.057788-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy"}
+{"Time":"2026-10-11T14:22:51.057791-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"=== RUN   TestGonPatternTest/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.060098-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"5\n"}
+{"Time":"2026-10-11T14:22:51.060105-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"3 4\n"}
+{"Time":"2026-10-11T14:22:51.060115-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"false true false\n"}
+{"Time":"2026-10-11T14:22:51.060119-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"true false true\n"}
+{"Time":"2026-10-11T14:22:51.060123-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"false true false\n"}
+{"Time":"2026-10-11T14:22:51.060127-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"false 0\n"}
+{"Time":"2026-10-11T14:22:51.060131-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"true 7\n"}
+{"Time":"2026-10-11T14:22:51.060135-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"true 0\n"}
+{"Time":"2026-10-11T14:22:51.060138-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"42\n"}
+{"Time":"2026-10-11T14:22:51.060142-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"42\n"}
+{"Time":"2026-10-11T14:22:51.060146-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"3\n"}
+{"Time":"2026-10-11T14:22:51.06016-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"3 1 7 0\n"}
+{"Time":"2026-10-11T14:22:51.060172-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"true false true\n"}
+{"Time":"2026-10-11T14:22:51.060184-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"9 2 0\n"}
+{"Time":"2026-10-11T14:22:51.06019-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"contextual\n"}
+{"Time":"2026-10-11T14:22:51.060195-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"0\n"}
+{"Time":"2026-10-11T14:22:51.0602-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"0\n"}
+{"Time":"2026-10-11T14:22:51.060203-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"7\n"}
+{"Time":"2026-10-11T14:22:51.060207-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"0\n"}
+{"Time":"2026-10-11T14:22:51.060211-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"true false\n"}
+{"Time":"2026-10-11T14:22:51.060214-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:51.060218-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Output":"--- PASS: TestGonPatternTest/legacy (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.060234-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/legacy","Elapsed":0}
+{"Time":"2026-10-11T14:22:51.060239-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern"}
+{"Time":"2026-10-11T14:22:51.060242-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"=== RUN   TestGonPatternTest/modern\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.062335-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"5\n"}
+{"Time":"2026-10-11T14:22:51.062341-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"3 4\n"}
+{"Time":"2026-10-11T14:22:51.062345-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"false true false\n"}
+{"Time":"2026-10-11T14:22:51.062349-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"true false true\n"}
+{"Time":"2026-10-11T14:22:51.062352-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"false true false\n"}
+{"Time":"2026-10-11T14:22:51.062356-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"false 0\n"}
+{"Time":"2026-10-11T14:22:51.062359-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"true 7\n"}
+{"Time":"2026-10-11T14:22:51.062362-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"true 0\n"}
+{"Time":"2026-10-11T14:22:51.062366-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"42\n"}
+{"Time":"2026-10-11T14:22:51.062369-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"42\n"}
+{"Time":"2026-10-11T14:22:51.062372-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"3\n"}
+{"Time":"2026-10-11T14:22:51.062382-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"3 1 7 0\n"}
+{"Time":"2026-10-11T14:22:51.062386-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"true false true\n"}
+{"Time":"2026-10-11T14:22:51.062424-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"9 2 0\n"}
+{"Time":"2026-10-11T14:22:51.062429-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"contextual\n"}
+{"Time":"2026-10-11T14:22:51.062432-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"0\n"}
+{"Time":"2026-10-11T14:22:51.062435-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"0\n"}
+{"Time":"2026-10-11T14:22:51.062438-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"7\n"}
+{"Time":"2026-10-11T14:22:51.062441-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"0\n"}
+{"Time":"2026-10-11T14:22:51.062444-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"true false\n"}
+{"Time":"2026-10-11T14:22:51.062447-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:51.062451-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Output":"--- PASS: TestGonPatternTest/modern (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.062454-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest/modern","Elapsed":0}
+{"Time":"2026-10-11T14:22:51.062461-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest","Output":"--- PASS: TestGonPatternTest (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.062465-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonPatternTest","Elapsed":0}
+{"Time":"2026-10-11T14:22:51.062481-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods"}
+{"Time":"2026-10-11T14:22:51.062485-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods","Output":"=== RUN   TestGonStringEnumImportedMethods\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.062561-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods/#00"}
+{"Time":"2026-10-11T14:22:51.062566-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods/#00","Output":"=== RUN   TestGonStringEnumImportedMethods/#00\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.062947-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods/#00","Output":"--- PASS: TestGonStringEnumImportedMethods/#00 (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.062953-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods/#00","Elapsed":0}
+{"Time":"2026-10-11T14:22:51.062956-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods/G"}
+{"Time":"2026-10-11T14:22:51.062959-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods/G","Output":"=== RUN   TestGonStringEnumImportedMethods/G\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.063361-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods/G","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:51.063367-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods/G","Output":"--- PASS: TestGonStringEnumImportedMethods/G (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.06337-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods/G","Elapsed":0}
+{"Time":"2026-10-11T14:22:51.063374-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods","Output":"--- PASS: TestGonStringEnumImportedMethods (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.063377-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumImportedMethods","Elapsed":0}
+{"Time":"2026-10-11T14:22:51.063381-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums"}
+{"Time":"2026-10-11T14:22:51.063384-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums","Output":"=== RUN   TestGonStringEnums\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.063387-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums/legacy"}
+{"Time":"2026-10-11T14:22:51.06339-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums/legacy","Output":"=== RUN   TestGonStringEnums/legacy\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.44001-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums/legacy","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:51.440609-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums/legacy","Output":"--- PASS: TestGonStringEnums/legacy (0.38s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.440619-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums/legacy","Elapsed":0.38}
+{"Time":"2026-10-11T14:22:51.440625-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums/modern"}
+{"Time":"2026-10-11T14:22:51.440638-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums/modern","Output":"=== RUN   TestGonStringEnums/modern\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.745298-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums/modern","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:51.746209-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums/modern","Output":"--- PASS: TestGonStringEnums/modern (0.31s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.746226-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums/modern","Elapsed":0.31}
+{"Time":"2026-10-11T14:22:51.74624-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums","Output":"--- PASS: TestGonStringEnums (0.68s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.746248-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnums","Elapsed":0.68}
+{"Time":"2026-10-11T14:22:51.746256-03:00","Action":"run","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumsLocalConstraints"}
+{"Time":"2026-10-11T14:22:51.746262-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumsLocalConstraints","Output":"=== RUN   TestGonStringEnumsLocalConstraints\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.747257-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumsLocalConstraints","Output":"PASS\n"}
+{"Time":"2026-10-11T14:22:51.747267-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumsLocalConstraints","Output":"--- PASS: TestGonStringEnumsLocalConstraints (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.747273-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Test":"TestGonStringEnumsLocalConstraints","Elapsed":0}
+{"Time":"2026-10-11T14:22:51.747279-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:51.748999-03:00","Action":"output","Package":"golang.org/x/tools/go/ssa","Output":"ok  \tgolang.org/x/tools/go/ssa\t5.531s\n"}
+{"Time":"2026-10-11T14:22:51.749019-03:00","Action":"pass","Package":"golang.org/x/tools/go/ssa","Elapsed":5.531}

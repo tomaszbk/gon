@@ -63,8 +63,8 @@ Carried over from the former patch:
   qualified identity. Enum methods, interface methods, generic instantiations
   and aliases are indexed and matched across packages. The inline-variable
   action skips named-argument labels and preserves indentation when inserting
-  multiline error handlers. Regression tests: `TestGenericEnumMethods`,
-  `TestUserDefinedResult` and the `inline-var-gon` marker test.
+  multiline error handlers. Regression tests cover generic enum methods,
+  user-declared identifiers and the `inline-var-gon` marker.
 
 Added for the tooling commands of the public `gon` launcher:
 

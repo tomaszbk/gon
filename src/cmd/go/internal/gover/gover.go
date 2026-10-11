@@ -69,3 +69,6 @@ func Prev(x string) string {
 func IsValid(x string) bool {
 	return gover.IsValid(x)
 }
+
+// IsGon reports whether a module version names Gon rather than Go.
+func IsGon(v string) bool { return gover.IsGon(v) }

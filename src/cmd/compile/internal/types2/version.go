@@ -3,7 +3,9 @@ package types2
 import (
 	"fmt"
 	"go/version"
+	"internal/gover"
 	"internal/goversion"
+	"strings"
 )
 
 // A goVersion is a Go language version string of the form "go1.%d"
@@ -14,7 +16,7 @@ type goVersion string
 // asGoVersion returns v as a goVersion (e.g., "go1.20.1" becomes "go1.20").
 // If v is not a valid Go version, the result is the empty string.
 func asGoVersion(v string) goVersion {
-	return goVersion(version.Lang(v))
+	return goVersion(version.Lang(goLanguageVersion(v)))
 }
 
 // isValid reports whether v is a valid Go version.
@@ -62,4 +64,17 @@ func (check *Checker) verifyVersionf(at poser, v goVersion, format string, args 
 		return false
 	}
 	return true
+}
+
+// goLanguageVersion separates a module's Gon requirement from its Go rules.
+func goLanguageVersion(v string) string {
+	if strings.HasPrefix(v, "go") {
+		return "go" + gover.GoVersion(v[2:])
+	}
+	return v
+}
+
+func gonVersionTooNew(v string) bool {
+	v = strings.TrimPrefix(v, "go")
+	return gover.IsGon(v) && gover.Compare(v, goversion.GonVersion) > 0
 }

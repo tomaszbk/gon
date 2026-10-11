@@ -272,7 +272,7 @@ export interface FormFieldTypeList {
 ```
 
 Response:
-- Result: `ExecuteCommandParams` (the server returns the same params object, potentially modified with new `formFields` or with `formFields` omitted to signal completion).
+- Returned params: `ExecuteCommandParams` (the server returns the same params object, potentially modified with new `formFields` or with `formFields` omitted to signal completion).
 - error: code and message set in case an exception happens during the code action request.
 
 ## Input Types
@@ -310,7 +310,7 @@ export interface InteractiveListEnumParams {
 ```
 
 Response:
-- Result: `FormFieldTypeEnum` containing the matching `entries` for the query.
+- Returned entries: `FormFieldTypeEnum` containing the matching `entries` for the query.
 - error: code and message set in case an exception happens during interactive enum fetching.
 
 ## Interaction Example

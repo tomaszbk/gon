@@ -1,0 +1,12 @@
+{"Time":"2026-10-11T14:22:40.286748-03:00","Action":"start","Package":"golang.org/x/tools/gopls/internal/test/integration/misc"}
+{"Time":"2026-10-11T14:22:40.891646-03:00","Action":"run","Package":"golang.org/x/tools/gopls/internal/test/integration/misc","Test":"TestGonModuleVersionEditor"}
+{"Time":"2026-10-11T14:22:40.891714-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/test/integration/misc","Test":"TestGonModuleVersionEditor","Output":"=== RUN   TestGonModuleVersionEditor\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:40.892051-03:00","Action":"run","Package":"golang.org/x/tools/gopls/internal/test/integration/misc","Test":"TestGonModuleVersionEditor/default"}
+{"Time":"2026-10-11T14:22:40.892058-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/test/integration/misc","Test":"TestGonModuleVersionEditor/default","Output":"=== RUN   TestGonModuleVersionEditor/default\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:40.983228-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/test/integration/misc","Test":"TestGonModuleVersionEditor/default","Output":"--- PASS: TestGonModuleVersionEditor/default (0.09s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:40.98326-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/test/integration/misc","Test":"TestGonModuleVersionEditor/default","Elapsed":0.09}
+{"Time":"2026-10-11T14:22:40.983617-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/test/integration/misc","Test":"TestGonModuleVersionEditor","Output":"--- PASS: TestGonModuleVersionEditor (0.09s)\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:40.983625-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/test/integration/misc","Test":"TestGonModuleVersionEditor","Elapsed":0.09}
+{"Time":"2026-10-11T14:22:40.98363-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/test/integration/misc","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-11T14:22:40.985375-03:00","Action":"output","Package":"golang.org/x/tools/gopls/internal/test/integration/misc","Output":"ok  \tgolang.org/x/tools/gopls/internal/test/integration/misc\t0.698s\n"}
+{"Time":"2026-10-11T14:22:40.985396-03:00","Action":"pass","Package":"golang.org/x/tools/gopls/internal/test/integration/misc","Elapsed":0.699}

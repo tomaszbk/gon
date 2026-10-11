@@ -1791,7 +1791,11 @@ func validGoVersion(goVersion string) bool {
 		return false // malformed version string
 	}
 
-	if relVer := releaseVersion(); relVer != "" && versions.Before(versions.Lang(relVer), versions.Lang(goVersion)) {
+	languageVersion := goVersion
+	if strings.HasPrefix(languageVersion, "go2.") {
+		languageVersion = "go1." + strings.TrimPrefix(languageVersion, "go2.")
+	}
+	if relVer := releaseVersion(); relVer != "" && versions.Before(versions.Lang(relVer), versions.Lang(languageVersion)) {
 		return false // 'go list' is too new for go/types
 	}
 

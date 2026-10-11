@@ -33,6 +33,7 @@ func (pkg *Package) Name() string { return pkg.name }
 func (pkg *Package) SetName(name string) { pkg.name = name }
 
 // GoVersion returns the minimum Go version required by this package.
+// Gon requirements are reported as their corresponding Go language version.
 // If the minimum version is unknown, GoVersion returns the empty string.
 // Individual source files may specify a different minimum Go version,
 // as reported in the [go/ast.File.GoVersion] field.

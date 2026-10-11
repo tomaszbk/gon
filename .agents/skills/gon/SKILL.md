@@ -1,12 +1,15 @@
 ---
 name: gon
-description: Write, read, test and refactor Gon code using its current syntax, gon commands and gonpls. Use for development in projects that select the Gon toolchain.
+description: Write, read, test and refactor Gon code using its current syntax, gon commands and gonpls. Use for development in projects that select use Gon.
 ---
 
 # Gon 2.27
 
 Keep this skill at `.agents/skills/gon/SKILL.md` in every Gon project.
 Gon extends Go natively; keep `.go`, `_test.go`, `go.mod` and `go.work`.
+Set `go 2.27` in `go.mod` to require Gon 2.27+. Versions with major 2 or
+above name Gon; `go 1.x` retains its Go meaning. The same rule applies to
+`go.work`. Build, test and analyze these projects with Gon.
 Go 1.27+ remains compatible, including ordinary errors and nullable types,
 except that a newline after `!` ends the statement. Keep prefix negation on one line.
 Compatibility guarantees cover Go 1.27+ source. Earlier Gon designs and syntax
@@ -84,7 +87,7 @@ Lambdas need a function target: `f := (x) => x` is invalid. Parameters have no
 written types. Generic expression bodies can infer results once parameters are
 known; block results must be known. Captures, return and defer follow Go closures.
 
-## Optionals and nil safety
+## Presence types and nil safety
 
 ```go
 var missing int? = nil
@@ -107,7 +110,7 @@ present. Presence does not imply a non-nil payload; hover explains this
 distinction. Assignment/conversion preserves assignable optionals or lifts one
 immediate payload; no flattening. `(int?)(7)` is an explicit conversion.
 `[]int?` means optional elements; `([]int)?` means optional slice. Use aliases
-like `type Maybe[T any] = T?`; no predeclared Option/Some/None API. Postfix `?`
+like `type Maybe[T any] = T?`. Postfix `?`
 returns absence early from the nearest function, which must return one optional.
 `x == nil`/`x != nil` test absence/presence in either operand order, even for
 noncomparable payloads; present typed nil remains present. Shadowed nil keeps

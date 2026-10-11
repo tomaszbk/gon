@@ -91,7 +91,10 @@ func (f *goVersionFlag) Set(s string) error {
 		if !modfile.GoVersionRE.MatchString(s) {
 			return fmt.Errorf("expecting a Go version like %q", latest)
 		}
-		if gover.Compare(s, latest) > 0 {
+		if !gover.Allows(s) {
+			if gover.IsGon(s) {
+				return &gover.TooNewError{What: "version flag", GoVersion: s}
+			}
 			return fmt.Errorf("maximum supported Go version is %s", latest)
 		}
 	}
@@ -120,7 +123,7 @@ func runTidy(ctx context.Context, cmd *base.Command, args []string) {
 	moduleLoader.RootMode = modload.NeedRoot
 
 	goVersion := tidyGo.String()
-	if goVersion != "" && gover.Compare(gover.Local(), goVersion) < 0 {
+	if goVersion != "" && !gover.Allows(goVersion) {
 		toolchain.SwitchOrFatal(moduleLoader, ctx, &gover.TooNewError{
 			What:      "-go flag",
 			GoVersion: goVersion,

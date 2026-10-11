@@ -1,8 +1,7 @@
 # Native optionals
 
 Gon uses `T?` as its native presence/absence type. It has its own identity,
-separate from structs, enums and names a program may shadow. `Option`, `Some`
-and `None` are ordinary identifiers with no predeclared optional API.
+separate from structs and enums, and adds no reserved constructor names.
 
 ```go
 var missing int? = nil
@@ -79,7 +78,7 @@ handler with `t.Fatal(err)` and `return`. See
 
 `go/types.Optional` exposes `Elem`; `NewOptional`, `OptionalOf` and `IsOptional`
 identify native optional types. `EnumOf` returns nil for them. Analysis and
-lowering use private storage metadata without public Some/None variants.
+lowering use private storage metadata without public constructor variants.
 
 Checked reflection uses `reflect.IsOptional`, `OptionalElement`,
 `OptionalValuePresent`, `OptionalValuePayload` and `OptionalValueSetPayload`.
@@ -152,7 +151,7 @@ outside `database/sql`, which need their own codecs.
 
 Use `T?`, direct payloads, untyped nil and `P?` patterns.
 Ordinary semantic rename/apply refactoring remains available. Existing user
-declarations named `Option`, `Some`, `None` or `Result` remain ordinary names.
+declarations retain their ordinary name resolution.
 
 See [STATUS](STATUS.md), [VALIDATION](VALIDATION.md) and the current
 [benchmark report](benchmarks/README.md) for executed checks and platform evidence.
