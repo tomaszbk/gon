@@ -6,13 +6,114 @@ baseline is `/opt/homebrew/bin/go`, **Go 1.27.1**. Native host execution is
 **darwin/arm64**, Apple M4. The fork's Go 1.28 development version identifies
 source provenance; it is not the released compatibility baseline.
 
+The current release closure appears first. Earlier sections retain their own
+source snapshots and do not establish validation of a later compiler.
+
+## Release closure — 2026-10-11
+
+The release gates used source commit
+`7a3203a06aef342d173afe649903eca846e4399e`, whose implementation, fixtures and CI
+inventory has SHA256
+`f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d`.
+Release documentation and
+retained evidence are excluded from that inventory; subsequent documentation
+commits preserve the validated implementation. Go **1.27.1** remains the
+unmodified legacy baseline.
+
+All **16 complete profiles passed** on native **darwin/arm64**, with no partial
+selection or pending gates, and the same source inventory throughout:
+
+| Profile | Passed checks | Record |
+| --- | ---: | --- |
+| tooling | 75/75 | [tooling.json](validation/20261011-release/tooling.json) |
+| modern | 116/116 | [modern.json](validation/20261011-release/modern.json) |
+| errorhandling | 38/38 | [errorhandling.json](validation/20261011-release/errorhandling.json) |
+| conditional | 38/38 | [conditional.json](validation/20261011-release/conditional.json) |
+| lambda | 41/41 | [lambda.json](validation/20261011-release/lambda.json) |
+| nullsafety | 41/41 | [nullsafety.json](validation/20261011-release/nullsafety.json) |
+| namedarguments | 38/38 | [namedarguments.json](validation/20261011-release/namedarguments.json) |
+| enums | 44/44 | [enums.json](validation/20261011-release/enums.json) |
+| matching | 42/42 | [matching.json](validation/20261011-release/matching.json) |
+| option | 51/51 | [option.json](validation/20261011-release/option.json) |
+| seq | 7/7 | [seq.json](validation/20261011-release/seq.json) |
+| errorcontext | 9/9 | [errorcontext.json](validation/20261011-release/errorcontext.json) |
+| matchalternatives | 7/7 | [matchalternatives.json](validation/20261011-release/matchalternatives.json) |
+| patterntest | 7/7 | [patterntest.json](validation/20261011-release/patterntest.json) |
+| interpolation | 11/11 | [interpolation.json](validation/20261011-release/interpolation.json) |
+| nilanalysis | 5/5 | [nilanalysis.json](validation/20261011-release/nilanalysis.json) |
+
+[Combined commands, durations and skipped tests](validation/20261011-release/profiles.json),
+[exact source inventory](validation/20261011-release/source-manifest.json.gz),
+[per-check logs](validation/20261011-release/logs/). Shared checks repeat across
+profiles; these counts are not a count of distinct tests. Commands used
+`GON_BASELINE_GO=/opt/homebrew/bin/go GON_SQL_POSTGRES=0 GOMAXPROCS=2`
+and `GOWORK=off GOTOOLCHAIN=local`. Real PostgreSQL integration ran separately.
+
+Both PostgreSQL runners passed with **PostgreSQL 17.11**, **pgx stdlib v5.7.6**
+and **lib/pq v1.10.9**: baseline legacy, Gon legacy, modern and no-inline.
+The programs executed natively on darwin/arm64; the disposable database ran
+in a Docker Linux arm64 VM. Both containers were cleaned up successfully.
+[Optional integration](validation/20261011-release/postgres-optional/summary.json),
+[string-enum integration](validation/20261011-release/postgres-string-enum/summary.json).
+The commands were `GON_SQL_POSTGRES=1 GON_BASELINE_GO=/opt/homebrew/bin/go`
+`python3 misc/gon/test_optionals_postgres.py` and
+`python3 misc/gon/test_stringenums_postgres.py`, with `GOWORK=off GOTOOLCHAIN=local`.
+This validates the database/sql drivers, not native pgx codecs.
+
+**js/wasm passed 68 executed checks** under **Node 26.6.0**, with
+`GOMAXPROCS=1`. The runner includes unmodified Go legacy, Gon legacy, modern
+and no-inline programs. [Command and scope](validation/20261011-release/js-wasm-native.json),
+[execution log](validation/20261011-release/js-wasm.log.gz).
+Native PostgreSQL/js runs used `4b52ed97b0`; only CI metadata changed afterward.
+[Exact source delta](validation/20261011-release/platform-source-scope.json).
+Fresh Linux, Windows, WASI, js/wasm and container execution is recorded in
+[release CI evidence](validation/20261011-release/ci.json).
+
+The expanded selector covers 22 language harnesses and removes the retired
+`optionresult` entry. Its first Windows run found a seq harness portability
+bug: a generated executable lacked `.exe`. The harness now names the Windows
+executable correctly; the later CI rerun passed.
+[Initial CI result](validation/20261011-release/initial-ci.json),
+[initial Windows log](validation/20261011-release/initial-windows-failure.log.gz).
+[Earlier local attempts](validation/20261011-release/interrupted-attempts.json)
+were interrupted to finalize CI metadata and are not claimed as complete passes.
+
+The extension's full real-VS-Code suite passed, including configuration
+changes, LSP, execution, debugger and test explorer. A generic LSP configuration
+notification raced with the Gon client's serialized restart; that registration
+was removed, while initialization/configuration snapshots and Gon settings
+restarts remain. Tests now reject startup/configuration failures found in the
+isolated profile's logs. The corrected **gon-lang.gon 0.1.0 VSIX** was packaged,
+its contents verified and installation passed in an isolated VS Code profile.
+[Extension source, checksum and checks](validation/20261011-release/extension.json),
+[focused test output](validation/20261011-release/extension.log.gz).
+The test window's `--disable-extensions` notice is expected. The VSIX is
+available through [Gon Releases](https://github.com/tomaszbk/gon/releases/tag/v2.27.0);
+this does not claim VS Code Marketplace publication.
+
+Five native download targets are packaged: darwin arm64/amd64, Linux arm64/amd64
+and Windows amd64. Each release build bootstraps from unmodified Go 1.27.1 and
+verifies the actual extracted archive in a path containing spaces: relocated
+GOROOT, gon/gonpls, semantic checks, fmt/vet and executable Go/Gon pairs.
+Each archive carries its exact commit and compiler checksum in GON_RELEASE.json;
+release assets include SHA256SUMS. Full profiles ran on darwin/arm64; archive
+smoke tests on other hosts do not establish the same full-profile coverage.
+Riscv64 feature execution is under QEMU user-mode emulation, not native execution.
+
+The README links the human guides and reports historical benchmark measurements
+with **Same / Same / Smaller** conclusions and their limits. No timed samples
+were collected for this release gate. The 2026-10-07 report retains its exact
+source/compiler scope; it is not a benchmark of the downloadable release.
+
+## Earlier source scope
+
 The published `3356d44968` commit did not have a complete validation run on one
 unchanged final source tree. The sixteen recorded profiles passed, but twelve
 finished before subsequent gonpls, public ExprString and runner edits. The
 bootstrap, wasm and Linux snapshots also preceded those final edits. The
 historical results in the recorded sections below describe those snapshots,
-not validation of the published commit or of later review fixes. Additional
-platform and Docker testing remains deferred by the user.
+not validation of the published commit or of later review fixes. Those earlier runs
+remain historical; the release closure below records new platform execution.
 
 ## Upstream integration
 

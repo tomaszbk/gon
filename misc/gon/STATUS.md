@@ -1,7 +1,7 @@
 # Current Gon status
 
-Gon 2.27 is the development target, compatible with Go 1.27+ on amd64, arm64,
-riscv64 and wasm subject to the accepted newline-after-prefix-`!` exception.
+Gon 2.27 is the first stable release line, compatible with Go 1.27+ on amd64,
+arm64, riscv64 and wasm subject to the accepted newline-after-prefix-`!` exception.
 Unmodified Go 1.27.1 is the baseline; the fork's Go 1.28 development version
 identifies provenance. Keep `.go`, `_test.go`, `go.mod` and `go.work` and select
 public `gon`/`gonpls` per project alongside ordinary Go.
@@ -18,13 +18,19 @@ share their contracts. [features.json](features.json) records open integration
 checks and supported limits; [VALIDATION.md](VALIDATION.md) records actual runs.
 A local pass does not establish execution on other targets.
 
-The review closure passed all sixteen complete profiles and a source-only
-Go 1.27.1 bootstrap on one unchanged local implementation fingerprint on
-darwin/arm64. The retained source manifest and per-check tool hashes identify
-that local tree independently of the published Git HEAD; other platform
-evidence remains historical and additional platform/Docker runs remain deferred.
+The release closure passed all sixteen complete profiles on one unchanged
+implementation inventory on native darwin/arm64, with Go 1.27.1 executing
+legacy pairs. Fresh PostgreSQL optional/string-enum and 68 js/wasm checks
+passed. Current CI also records Linux amd64, Windows amd64, QEMU riscv64,
+WASI, js/wasm and native Linux amd64/arm64 container execution.
+See [release commands, hashes, platforms and limits](VALIDATION.md#release-closure--2026-10-11).
+Download the toolchain and corrected VSIX from
+[Gon 2.27.0](https://github.com/tomaszbk/gon/releases/tag/v2.27.0), with
+[installation instructions](../../doc/install.md). Stable containers use
+`ghcr.io/tomaszbk/gon:v2.27.0`; the release tags reuse the tested image for the
+exact release commit. Timed benchmark measurements remain historical.
 
-Subsequent cleanup removed obsolete design names and test-environment aliases.
+Earlier cleanup removed obsolete design names and test-environment aliases.
 Its affected checks passed on darwin/arm64 with Go 1.27.1; the earlier complete
 review gate retains its own source fingerprint. See the cleanup record in
 [VALIDATION.md](VALIDATION.md#cleanup-of-prior-gon-designs).
@@ -37,14 +43,14 @@ harnesses also passed; the compiler source remains identical to that snapshot.
 The recorded inventories distinguish the later tooling-fixture correction and
 parallel Sponsors metadata from compiler changes. See the commands, exact
 source scopes and retained attempts in
-[VALIDATION.md](VALIDATION.md#upstream-integration). Additional platform,
-PostgreSQL and Docker runs remain deferred, and timed benchmark evidence keeps
-its historical snapshot scope.
+[VALIDATION.md](VALIDATION.md#upstream-integration). That integration did not run
+platform, PostgreSQL or Docker checks; the release closure above records the
+new runs. Timed benchmark evidence keeps its historical snapshot scope.
 
 API checks include native optional signatures and a separate inventory of
 public parameter names, including nested signatures and reachable private
 types. The name inventory is recorded only for darwin/arm64; other platform
-inventories remain unrecorded while additional platform validation is deferred.
+inventories remain unrecorded; platform execution does not imply an API inventory.
 
 Error handling uses ordinary Go tuples ending in `error`. `!` and
 `or err => expression` propagate errors and zero the other results before

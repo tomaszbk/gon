@@ -51,7 +51,7 @@ In VS Code, use **Extensions: Install from VSIX...** and select the downloaded
 `gon-0.1.0.vsix`, or run:
 
 ```sh
-code --install-extension gon-0.1.0.vsix
+code --install-extension gon-0.1.0.vsix --force
 ```
 
 Disable the official Go extension **for the Gon workspace**, then reload VS

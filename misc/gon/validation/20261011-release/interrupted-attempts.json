@@ -1,0 +1,48 @@
+[
+  {
+    "startedAt": "2026-10-11T13:01:56.830392+00:00",
+    "gitHEAD": "a5c66fe2648c265560b3b108fa6ec963554e6e31",
+    "profiles": [
+      {
+        "name": "tooling",
+        "exitCode": 0,
+        "seconds": 257.63
+      },
+      {
+        "name": "modern",
+        "exitCode": -2,
+        "seconds": 241.42
+      }
+    ],
+    "scope": "Interrupted attempt while finalizing CI metadata; not a complete release gate."
+  },
+  {
+    "startedAt": "2026-10-11T13:11:18.756190+00:00",
+    "gitHEAD": "4b52ed97b0497438907512c940a73a560b83affb",
+    "profiles": [
+      {
+        "name": "tooling",
+        "exitCode": 0,
+        "seconds": 302.31
+      },
+      {
+        "name": "modern",
+        "exitCode": -2,
+        "seconds": 23.07
+      }
+    ],
+    "scope": "Interrupted attempt while finalizing CI metadata; not a complete release gate."
+  },
+  {
+    "startedAt": "2026-10-11T13:17:01.175453+00:00",
+    "gitHEAD": "c17a26b2505a2a3568ef2efd61ce7b985f12dc71",
+    "profiles": [
+      {
+        "name": "tooling",
+        "exitCode": -2,
+        "seconds": 146.41
+      }
+    ],
+    "scope": "Interrupted attempt while finalizing CI metadata; not a complete release gate."
+  }
+]

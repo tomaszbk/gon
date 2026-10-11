@@ -1,0 +1,29 @@
+{
+  "status": "pass",
+  "registry": "ghcr.io/tomaszbk/gon",
+  "tag": "dev",
+  "digest": "sha256:ef825394d2ad9ef397f02f710f967fc305ea88cf7ee7859748a5cc45b25fca49",
+  "sourceCommit": "7a3203a06aef342d173afe649903eca846e4399e",
+  "anonymousPullMetadata": true,
+  "images": [
+    {
+      "platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "digest": "sha256:503f1af5e7565e8d0012ef5763749df3d9493cf2343662ffaa4106f42f9bbd11",
+      "revision": "7a3203a06aef342d173afe649903eca846e4399e",
+      "source": "https://github.com/tomaszbk/gon"
+    },
+    {
+      "platform": {
+        "architecture": "arm64",
+        "os": "linux"
+      },
+      "digest": "sha256:9baecf4bfbad2aee3cb3c1408a2d0999d508185aab8fc67f42e36677617532fb",
+      "revision": "7a3203a06aef342d173afe649903eca846e4399e",
+      "source": "https://github.com/tomaszbk/gon"
+    }
+  ],
+  "scope": "Anonymous registry index, manifests and image-config labels inspected. Image layers were not downloaded or executed locally; execution evidence is the container CI."
+}

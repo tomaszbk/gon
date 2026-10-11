@@ -1,0 +1,22 @@
+[
+  {
+    "conclusion": "success",
+    "name": "linux-amd64"
+  },
+  {
+    "conclusion": "success",
+    "name": "wasip1-wasm"
+  },
+  {
+    "conclusion": "success",
+    "name": "js-wasm"
+  },
+  {
+    "conclusion": "failure",
+    "name": "windows-amd64"
+  },
+  {
+    "conclusion": "success",
+    "name": "linux-riscv64"
+  }
+]

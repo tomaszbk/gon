@@ -1,0 +1,274 @@
+{
+  "startedAt": "2026-10-11T13:19:39.209479+00:00",
+  "gitHEAD": "7a3203a06aef342d173afe649903eca846e4399e",
+  "profiles": [
+    {
+      "name": "tooling",
+      "exitCode": 0,
+      "seconds": 318.48,
+      "checks": 75,
+      "passed": 75,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "tooling.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "tooling"
+      ],
+      "log": "logs/profile-tooling.log.gz"
+    },
+    {
+      "name": "modern",
+      "exitCode": 0,
+      "seconds": 484.5,
+      "checks": 116,
+      "passed": 116,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "modern.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "modern"
+      ],
+      "log": "logs/profile-modern.log.gz"
+    },
+    {
+      "name": "errorhandling",
+      "exitCode": 0,
+      "seconds": 152.92,
+      "checks": 38,
+      "passed": 38,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "errorhandling.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "errorhandling"
+      ],
+      "log": "logs/profile-errorhandling.log.gz"
+    },
+    {
+      "name": "conditional",
+      "exitCode": 0,
+      "seconds": 132.97,
+      "checks": 38,
+      "passed": 38,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "conditional.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "conditional"
+      ],
+      "log": "logs/profile-conditional.log.gz"
+    },
+    {
+      "name": "lambda",
+      "exitCode": 0,
+      "seconds": 155.42,
+      "checks": 41,
+      "passed": 41,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "lambda.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "lambda"
+      ],
+      "log": "logs/profile-lambda.log.gz"
+    },
+    {
+      "name": "nullsafety",
+      "exitCode": 0,
+      "seconds": 143.68,
+      "checks": 41,
+      "passed": 41,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "nullsafety.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "nullsafety"
+      ],
+      "log": "logs/profile-nullsafety.log.gz"
+    },
+    {
+      "name": "namedarguments",
+      "exitCode": 0,
+      "seconds": 120.65,
+      "checks": 38,
+      "passed": 38,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "namedarguments.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "namedarguments"
+      ],
+      "log": "logs/profile-namedarguments.log.gz"
+    },
+    {
+      "name": "enums",
+      "exitCode": 0,
+      "seconds": 149.07,
+      "checks": 44,
+      "passed": 44,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "enums.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "enums"
+      ],
+      "log": "logs/profile-enums.log.gz"
+    },
+    {
+      "name": "matching",
+      "exitCode": 0,
+      "seconds": 129.35,
+      "checks": 42,
+      "passed": 42,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "matching.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "matching"
+      ],
+      "log": "logs/profile-matching.log.gz"
+    },
+    {
+      "name": "option",
+      "exitCode": 0,
+      "seconds": 137.97,
+      "checks": 51,
+      "passed": 51,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "option.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "option"
+      ],
+      "log": "logs/profile-option.log.gz"
+    },
+    {
+      "name": "seq",
+      "exitCode": 0,
+      "seconds": 27.73,
+      "checks": 7,
+      "passed": 7,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "seq.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "seq"
+      ],
+      "log": "logs/profile-seq.log.gz"
+    },
+    {
+      "name": "errorcontext",
+      "exitCode": 0,
+      "seconds": 28.71,
+      "checks": 9,
+      "passed": 9,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "errorcontext.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "errorcontext"
+      ],
+      "log": "logs/profile-errorcontext.log.gz"
+    },
+    {
+      "name": "matchalternatives",
+      "exitCode": 0,
+      "seconds": 22.93,
+      "checks": 7,
+      "passed": 7,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "matchalternatives.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "matchalternatives"
+      ],
+      "log": "logs/profile-matchalternatives.log.gz"
+    },
+    {
+      "name": "patterntest",
+      "exitCode": 0,
+      "seconds": 35.69,
+      "checks": 7,
+      "passed": 7,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "patterntest.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "patterntest"
+      ],
+      "log": "logs/profile-patterntest.log.gz"
+    },
+    {
+      "name": "interpolation",
+      "exitCode": 0,
+      "seconds": 44.31,
+      "checks": 11,
+      "passed": 11,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "interpolation.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "interpolation"
+      ],
+      "log": "logs/profile-interpolation.log.gz"
+    },
+    {
+      "name": "nilanalysis",
+      "exitCode": 0,
+      "seconds": 119.14,
+      "checks": 5,
+      "passed": 5,
+      "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+      "sourceStable": true,
+      "summary": "nilanalysis.json",
+      "command": [
+        "python3",
+        "misc/gon/validate.py",
+        "nilanalysis"
+      ],
+      "log": "logs/profile-nilanalysis.log.gz"
+    }
+  ],
+  "completedAt": "2026-10-11T13:56:22.772845+00:00",
+  "status": "pass",
+  "sourceSHA256": "f941e93af63cdd6b24366273a8467e7e3e65611e3da60a39bc4be3f0ad8aa00d",
+  "platform": "darwin/arm64",
+  "baseline": "/opt/homebrew/bin/go",
+  "baselineVersion": "Go 1.27.1",
+  "skippedTests": {
+    "golang.org/x/tools/internal/typesinternal/TestErrorCodes": 10,
+    "cmd/vet/TestVet/loopclosure": 1,
+    "cmd/vet/TestVet/stringintconv": 1,
+    "cmd/vet/TestVet/stdversion": 1
+  }
+}

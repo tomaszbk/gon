@@ -4,7 +4,7 @@
 
 <h1 align="center">Gon — Go done well.</h1>
 
-<p align="center"><strong>Less boilerplate. Fully retrocompatible.</strong></p>
+<p align="center"><strong>Less boilerplate. Go-compatible.</strong></p>
 
 <p align="center">
   <a href="#see-the-difference">See the difference</a> ·
@@ -307,11 +307,11 @@ Download a prebuilt toolchain and the VS Code extension from
 [Gon releases](https://github.com/tomaszbk/gon/releases).
 [Installation instructions →](doc/install.md)
 
-Use the [development container image](doc/containers.md) to compile and test
+Use the [Gon 2.27.0 container image](doc/containers.md) to compile and test
 Gon projects or build application containers for the cloud:
 
 ```sh
-docker run --rm ghcr.io/tomaszbk/gon:dev gon version
+docker run --rm ghcr.io/tomaszbk/gon:v2.27.0 gon version
 ```
 
 Build from this checkout with an unmodified bootstrap Go toolchain:

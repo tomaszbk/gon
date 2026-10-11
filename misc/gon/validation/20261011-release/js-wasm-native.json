@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "sourceCommit": "4b52ed97b0497438907512c940a73a560b83affb",
+  "sourceSHA256": "75044a8b3eff2fd689070ad698dc99f0cee50b342c91be3ac71a39c98060524c",
+  "host": "darwin/arm64",
+  "executionTarget": "js/wasm",
+  "node": "26.6.0",
+  "checks": 68,
+  "command": "GON_BASELINE_GO=/opt/homebrew/bin/go GOMAXPROCS=1 misc/gon/cross_pair.sh js wasm",
+  "scope": "Baseline legacy, Gon legacy, modern and no-inline programs executed under Node; the log identifies every executed check."
+}

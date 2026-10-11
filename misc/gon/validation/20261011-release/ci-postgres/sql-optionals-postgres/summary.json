@@ -1,0 +1,168 @@
+{
+  "status": "pass",
+  "host": {
+    "system": "Linux",
+    "machine": "x86_64"
+  },
+  "drivers": {
+    "github.com/jackc/pgx/v5": "v5.7.6",
+    "github.com/lib/pq": "v1.10.9"
+  },
+  "checks": [
+    {
+      "name": "baseline-version",
+      "command": [
+        "/opt/hostedtoolcache/go/1.27.1/x64/bin/go",
+        "version"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.004
+    },
+    {
+      "name": "gon-version",
+      "command": [
+        "/home/runner/work/gon/gon/gon/bin/gon",
+        "version"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.006
+    },
+    {
+      "name": "docker-version",
+      "command": [
+        "docker",
+        "version",
+        "--format",
+        "{{.Server.Version}}"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.021
+    },
+    {
+      "name": "postgres-image",
+      "command": [
+        "docker",
+        "image",
+        "inspect",
+        "postgres:17-alpine",
+        "--format",
+        "{{.Id}}"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.021
+    },
+    {
+      "name": "postgres-start",
+      "command": [
+        "docker",
+        "run",
+        "--detach",
+        "--rm",
+        "--pull",
+        "never",
+        "--name",
+        "gon-optionals-6194d68f4fe2",
+        "--publish",
+        "127.0.0.1::5432",
+        "--tmpfs",
+        "/var/lib/postgresql/data:rw",
+        "--env",
+        "POSTGRES_USER=gon_optional_test",
+        "--env",
+        "POSTGRES_PASSWORD=gon_optional_test",
+        "--env",
+        "POSTGRES_DB=gon_optional_test",
+        "postgres:17-alpine"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.231
+    },
+    {
+      "name": "postgres-port",
+      "command": [
+        "docker",
+        "inspect",
+        "gon-optionals-6194d68f4fe2",
+        "--format",
+        "{{json .NetworkSettings.Ports}}"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.013
+    },
+    {
+      "name": "postgres-version",
+      "command": [
+        "docker",
+        "exec",
+        "gon-optionals-6194d68f4fe2",
+        "psql",
+        "-U",
+        "gon_optional_test",
+        "-d",
+        "gon_optional_test",
+        "-Atc",
+        "SHOW server_version"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.053
+    },
+    {
+      "name": "module-tidy",
+      "command": [
+        "/opt/hostedtoolcache/go/1.27.1/x64/bin/go",
+        "mod",
+        "tidy"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.83
+    },
+    {
+      "name": "baseline-legacy",
+      "command": [
+        "/opt/hostedtoolcache/go/1.27.1/x64/bin/go",
+        "run",
+        "."
+      ],
+      "exit_code": 0,
+      "duration_seconds": 8.687
+    },
+    {
+      "name": "gon-legacy",
+      "command": [
+        "/home/runner/work/gon/gon/gon/bin/gon",
+        "run",
+        "."
+      ],
+      "exit_code": 0,
+      "duration_seconds": 4.479
+    },
+    {
+      "name": "gon-modern",
+      "command": [
+        "/home/runner/work/gon/gon/gon/bin/gon",
+        "run",
+        "."
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.469
+    },
+    {
+      "name": "gon-modern-noinline",
+      "command": [
+        "/home/runner/work/gon/gon/gon/bin/gon",
+        "run",
+        "-gcflags=all=-l",
+        "."
+      ],
+      "exit_code": 0,
+      "duration_seconds": 5.576
+    }
+  ],
+  "baseline_version": "go version go1.27.1 linux/amd64",
+  "gon_version": "go version go1.28-devel_7a3203a0 Sun Oct 11 10:19:27 2026 -0300 linux/amd64",
+  "docker_version": "28.0.4",
+  "postgres_image": "postgres:17-alpine",
+  "postgres_image_id": "sha256:79bd7c99e923138f136f8009d6bffa66e21e9d4fda5c0c561b00fc9c90cfe537",
+  "postgres_version": "17.11",
+  "cleanup_exit_code": 0
+}

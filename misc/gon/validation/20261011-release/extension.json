@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "sourceCommit": "7d1dfc4bf511c525d5adc9e054a84eb1023e721f",
+  "version": "0.1.0",
+  "identity": "gon-lang.gon",
+  "vsixSHA256": "64b3a6f4da8662ce0b3334082127bc67fc7433c54ac887c6a8d7ab791b58f7f0",
+  "host": "darwin/arm64",
+  "checks": [
+    "full npm test with real VS Code extension host",
+    "no client startup/configuration errors in isolated profile logs",
+    "npm run package",
+    "VSIX identity and bundled dist source verification",
+    "isolated VS Code profile installation"
+  ],
+  "distribution": "Public Gon release asset; VS Code Marketplace publication is not included.",
+  "screenshot": "The didChangeConfiguration startup failure was a client restart race; generic configuration notification registration was removed and Gon settings still trigger serialized restart. --disable-extensions is expected in the isolated test profile."
+}
