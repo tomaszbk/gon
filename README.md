@@ -303,8 +303,9 @@ cover the language features, success, errors, absence and evaluation order.
 
 ## Try Gon
 
-Download a prebuilt toolchain and the VS Code extension from
-[Gon releases](https://github.com/tomaszbk/gon/releases).
+Download a prebuilt toolchain from [Gon releases](https://github.com/tomaszbk/gon/releases)
+and install the [Gon extension from the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gon-lang.gon).
+The release also includes a VSIX for manual installation.
 [Installation instructions →](doc/install.md)
 
 Use the [Gon 2.27.0 container image](doc/containers.md) to compile and test
@@ -359,8 +360,8 @@ Build Gon once and keep its toolchain directory in place.
    exception is a prefix `!` split from its operand by a newline; keep it on
    one line.
 
-3. **Select Gon in your editor.** In VS Code, install the Gon extension's
-   [downloadable VSIX](https://github.com/tomaszbk/gon/releases), disable the
+3. **Select Gon in your editor.** In VS Code, install
+   [Gon from the Marketplace](https://marketplace.visualstudio.com/items?itemName=gon-lang.gon), disable the
    official Go extension **for this workspace**, and reload.
    The enabled Gon extension automatically uses Gon for `.go` files and finds
    the installed tools. No `gon.enabled` flag or settings file is required.

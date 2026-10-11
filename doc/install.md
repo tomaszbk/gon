@@ -2,8 +2,10 @@
 
 [Back to Gon](../README.md) · [Examples](gon-examples.md)
 
-Download the toolchain archive for your computer and `gon-0.1.0.vsix` from
+Download the toolchain archive for your computer from
 [Gon 2.27.0](https://github.com/tomaszbk/gon/releases/tag/v2.27.0).
+Install the [VS Code extension from the Marketplace](https://marketplace.visualstudio.com/items?itemName=gon-lang.gon),
+or download `gon-0.1.0.vsix` from the same release for manual installation.
 Prebuilt toolchains are provided for macOS arm64/amd64, Linux arm64/amd64 and
 Windows amd64. The compiler also targets riscv64 and wasm; those architectures
 do not have standalone host archives in this release.
@@ -47,8 +49,15 @@ does not change that support policy.
 
 ## Install the VS Code extension
 
-In VS Code, use **Extensions: Install from VSIX...** and select the downloaded
-`gon-0.1.0.vsix`, or run:
+Install [Gon (`gon-lang.gon`) from the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gon-lang.gon),
+or run:
+
+```sh
+code --install-extension gon-lang.gon
+```
+
+For manual installation, use **Extensions: Install from VSIX...** and select
+the downloaded `gon-0.1.0.vsix`, or run:
 
 ```sh
 code --install-extension gon-0.1.0.vsix --force
@@ -58,8 +67,7 @@ Disable the official Go extension **for the Gon workspace**, then reload VS
 Code. Gon discovers the installed public tools automatically. Optional path
 settings and other editors are covered in the
 [editor guide](../misc/gon/README.md#vs-code).
-The VSIX is distributed through GitHub Releases; Marketplace installation is
-not required.
+The same VSIX is also distributed through GitHub Releases.
 
 ## Use Gon in your project
 

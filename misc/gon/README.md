@@ -443,8 +443,9 @@ public commands to select Gon for this project.
    after `!`, put the operand on the same line. See the validation record for
    the supported-platform evidence; your own tests verify your application.
 
-2. **Enable the editor for this workspace.** Install the Gon extension's local
-   VSIX, disable the official Go extension for this workspace, reload VS Code,
+2. **Enable the editor for this workspace.** Install
+   [Gon from the Marketplace](https://marketplace.visualstudio.com/items?itemName=gon-lang.gon),
+   disable the official Go extension for this workspace, reload VS Code,
    and open a `.go` file. The extension selects Gon automatically and discovers
    its installed tools, without `gon.enabled` or a settings file. The
    [VS Code section](#vs-code) describes optional installation overrides.
@@ -494,8 +495,9 @@ This is independent of compiler and editor selection.
 ## VS Code
 
 The dedicated **Gon** extension (`gon-lang.gon`) is maintained in the separate
-`vscode-gon` repository, cloned from `golang/vscode-go`. Download its VSIX from
-[Gon releases](https://github.com/tomaszbk/gon/releases), then follow the
+`vscode-gon` repository, cloned from `golang/vscode-go`. Install it from the
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gon-lang.gon)
+or download its VSIX from [Gon releases](https://github.com/tomaszbk/gon/releases), then follow the
 [installation guide](../../doc/install.md). Disable the official Go extension
 **for this workspace**, and reload
 VS Code. The enabled extension automatically uses `gon` and `gonpls` for `.go`
@@ -546,8 +548,9 @@ This repository owns the compiler, public launchers and the maintained modules
 and build/test scripts. `src/vendor` and `src/cmd/vendor` are generated from selected dependencies
 and the maintained x/tools module. The
 VS Code extension has its own `vscode-gon` Git repository; its build emits
-`gon-0.1.0.vsix`. Neither the local clone nor the VSIX implies publication to
-GitHub or the VS Code marketplace.
+`gon-0.1.0.vsix`. Version 0.1.0 is distributed through the
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gon-lang.gon)
+and the public Gon 2.27.0 release.
 
 ## Support and current limits
 
