@@ -1,7 +1,7 @@
 # Checks that cannot run on the maintainers' darwin/arm64 machines: the other
 # in-scope architectures (amd64, riscv64, wasm), Linux- and Windows-specific
 # tests, and the Gon launcher on Windows. Language checks select the individual
-# Gon feature harnesses; js/wasm (misc/gon/cross_pair.sh js wasm) runs locally.
+# Gon feature harnesses; JS and WASI wasm pairs execute in CI.
 name: gon
 
 on:
@@ -20,6 +20,7 @@ concurrency:
 env:
   GOTOOLCHAIN: local
   GOFLAGS: ""
+  GON_FEATURE_TESTS: '^Test/(errorhandling|errortest|conditional|lambda|nullsafety|namedarguments|enums|stringenums|stringenums_sql|matching|matchinterface|optionals|optionsyntax|optionaljson|optionalsql|sqlstruct|seq|errorcontext|matchalternatives|patterntest|interpolation|nilanalysis)\.go$'
 
 jobs:
   linux-amd64:
@@ -41,14 +42,14 @@ jobs:
       - name: Runtime, cgo and coverage tests
         working-directory: src
         run: >-
-          env -u GOROOT GO_ERROR_HANDLING_BASELINE="$BASELINE" ../gon/bin/gon test -short -count=1
+          env -u GOROOT GON_BASELINE_GO="$BASELINE" ../gon/bin/gon test -short -count=1
           runtime cmd/cgo/internal/test cmd/cgo/internal/testerrors cmd/cgo/internal/testerrorhandling
           cmd/cgo/internal/testconditional cmd/cover
       - name: Language tests, with the legacy programs also run by upstream Go
         working-directory: src
         run: >-
-          env -u GOROOT GO_ERROR_HANDLING_BASELINE="$BASELINE" ../gon/bin/gon test -count=1
-          cmd/internal/testdir -run '^Test/(errorhandling|conditional|lambda|nullsafety|namedarguments|enums|matching|optionresult|optionsyntax)\.go$'
+          env -u GOROOT GON_BASELINE_GO="$BASELINE" ../gon/bin/gon test -count=1
+          cmd/internal/testdir -run "$GON_FEATURE_TESTS"
       - name: Syntax modernization analyzers
         working-directory: tools/x-tools
         run: ../../gon/bin/gon test -count=1 ./go/analysis/passes/gonmodernize
@@ -65,6 +66,55 @@ jobs:
           gon/bin/gon test cmd/compile/internal/inline -run '^TestGon' -count=1
           python3 misc/gon/test_readme.py
           python3 misc/gon/benchmark.py --correctness-only
+
+      - name: PostgreSQL optional and string-enum integration
+        run: |
+          docker pull postgres:17-alpine
+          GON_SQL_POSTGRES=1 python3 misc/gon/test_optionals_postgres.py
+          GON_SQL_POSTGRES=1 python3 misc/gon/test_stringenums_postgres.py
+      - name: Retain PostgreSQL evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: postgres-evidence
+          path: |
+            pkg/gon-validation/sql-optionals-postgres/
+            pkg/gon-validation/sql-stringenums-postgres/
+          if-no-files-found: error
+
+  js-wasm:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      GOMAXPROCS: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.1'
+          cache: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26.6.0'
+      - name: Build Gon
+        run: |
+          echo "GON_BASELINE_GO=$(go env GOROOT)/bin/go" >> "$GITHUB_ENV"
+          cd src && env -u GOROOT GOROOT_BOOTSTRAP="$(go env GOROOT)" ./make.bash
+      - name: Build public Gon tools
+        run: python3 misc/gon/build.py
+      - name: Execute all JS wasm feature pairs
+        run: |
+          mkdir -p pkg/gon-validation/js-wasm
+          node --version > pkg/gon-validation/js-wasm/node-version.log
+          gon/bin/gon version > pkg/gon-validation/js-wasm/gon-version.log
+          misc/gon/cross_pair.sh js wasm | tee pkg/gon-validation/js-wasm/pairs.log
+      - name: Retain JS wasm evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: js-wasm-evidence
+          path: pkg/gon-validation/js-wasm/
+          if-no-files-found: error
 
   linux-riscv64:
     runs-on: ubuntu-latest
@@ -143,8 +193,8 @@ jobs:
         working-directory: src
         run: |
           Remove-Item Env:GOROOT -ErrorAction SilentlyContinue
-          $env:GO_ERROR_HANDLING_BASELINE = $env:BASELINE
-          ..\gon\bin\gon.exe test -count=1 cmd/internal/testdir -run '^Test/(errorhandling|conditional|lambda|nullsafety|namedarguments|enums|matching|optionresult|optionsyntax)\.go$'
+          $env:GON_BASELINE_GO = $env:BASELINE
+          ..\gon\bin\gon.exe test -count=1 cmd/internal/testdir -run $env:GON_FEATURE_TESTS
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           ..\gon\bin\gon.exe test -short -count=1 cmd/cgo/internal/testerrorhandling cmd/cgo/internal/testconditional cmd/cover
           if ($LASTEXITCODE) { exit $LASTEXITCODE }

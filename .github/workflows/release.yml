@@ -1,0 +1,74 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Gon release version
+        required: true
+        default: '2.27.0'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: darwin-arm64
+            runner: macos-15
+          - platform: darwin-amd64
+            runner: macos-15-intel
+          - platform: linux-amd64
+            runner: ubuntu-24.04
+          - platform: linux-arm64
+            runner: ubuntu-24.04-arm
+          - platform: windows-amd64
+            runner: windows-2025
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.1'
+          cache: false
+      - name: Build native Gon toolchain
+        run: |
+          python - <<'PY'
+          import os, shutil, subprocess
+          from pathlib import Path
+          baseline = shutil.which('go')
+          bootstrap = subprocess.check_output([baseline, 'env', 'GOROOT'], text=True).strip()
+          with open(os.environ['GITHUB_ENV'], 'a') as stream:
+              stream.write('GON_BASELINE_GO=' + baseline + '\n')
+          environment = dict(os.environ, GOROOT_BOOTSTRAP=bootstrap, GOTOOLCHAIN='local')
+          environment.pop('GOROOT', None)
+          command = ['cmd', '/c', 'make.bat'] if os.name == 'nt' else ['./make.bash']
+          subprocess.run(command, cwd='src', env=environment, check=True)
+          PY
+      - name: Build public tools
+        run: python misc/gon/build.py
+      - name: Package and verify extracted toolchain
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python misc/gon/package.py --version "$RELEASE_VERSION"
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess, sys
+          for archive in Path('pkg/gon-release').glob('gon-*'):
+              if archive.name.endswith(('.zip', '.tar.gz')):
+                  subprocess.run([sys.executable, 'misc/gon/test_package.py', str(archive)], check=True)
+          PY
+      - name: Upload verified archives and checksums
+        uses: actions/upload-artifact@v7
+        with:
+          name: gon-${{ matrix.platform }}
+          path: pkg/gon-release/*
+          if-no-files-found: error

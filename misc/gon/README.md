@@ -494,8 +494,10 @@ This is independent of compiler and editor selection.
 ## VS Code
 
 The dedicated **Gon** extension (`gon-lang.gon`) is maintained in the separate
-`vscode-gon` repository, cloned from `golang/vscode-go`. Install its
-local VSIX, disable the official Go extension **for this workspace**, and reload
+`vscode-gon` repository, cloned from `golang/vscode-go`. Download its VSIX from
+[Gon releases](https://github.com/tomaszbk/gon/releases), then follow the
+[installation guide](../../doc/install.md). Disable the official Go extension
+**for this workspace**, and reload
 VS Code. The enabled extension automatically uses `gon` and `gonpls` for `.go`
 files. No `gon.enabled` flag, project-enabling command or settings file is required.
 For an ordinary Go workspace, disable Gon and enable the official Go extension.

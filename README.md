@@ -9,6 +9,7 @@
 <p align="center">
   <a href="#see-the-difference">See the difference</a> ·
   <a href="doc/gon-examples.md">Examples</a> ·
+  <a href="#documentation">Documentation</a> ·
   <a href="#try-gon">Try Gon</a> ·
   <a href="misc/gon/README.md">Editor setup</a> ·
   <a href="#support-gon">Support Gon</a>
@@ -269,9 +270,42 @@ Optionals map natively to JSON `null` and SQL `NULL` in `encoding/json` and
 `database/sql`, with no per-field adapters. See [native optionals](misc/gon/OPTIONALS.md#json-and-sql).
 
 [More examples and boundary cases →](doc/gon-examples.md) ·
-[Contextual construction and optional types →](doc/gon-examples.md#contextual-construction-and-optional-types)
+[Optional types and ordinary errors →](doc/gon-examples.md#optional-types-and-ordinary-errors)
+
+## More in Gon 2.27
+
+The eight core features above also work with these additions:
+
+| Addition | What it provides | Documentation |
+| --- | --- | --- |
+| Alternative patterns | Several patterns in one arm: `case A, B =>` | [Patterns](misc/gon/README.md#additions-for-227) |
+| Pattern tests | `value is pattern`, with bindings in `if` and later `&&` operands | [Examples](doc/gon-examples.md#collections-pattern-tests-and-interpolation) |
+| Error context | `call() or err => fmt.Errorf(...)` | [Error handling](doc/gon-examples.md#errors-retain-the-operation-and-its-context) |
+| String interpolation | `$"Hello ${name}"`, including `${price:%.2f}` | [Interpolation](misc/gon/README.md#additions-for-227) |
+| Collections | Generic `gon/seq` functions, including optional lookups | [Collections](misc/gon/README.md#additions-for-227) |
+| Nil analysis | Opt-in NilAway warnings in `gon check` and gonpls | [NilAway](misc/gon/README.md#additions-for-227) |
+
+String enums supply text, JSON and SQL conversions. Native optionals support
+JSON and SQL NULL, and `database/sql` provides strict struct scanning.
+
+## Documentation
+
+Start with [Gon by example](doc/gon-examples.md): executable Go/Gon comparisons
+cover the language features, success, errors, absence and evaluation order.
+
+- [Language, commands and editor setup](misc/gon/README.md)
+- [Native optional values, JSON and SQL](misc/gon/OPTIONALS.md)
+- [Semantic CLI reference](misc/gon/CLI.md)
+- [Download and install Gon and the VS Code extension](doc/install.md)
+- [Containers and application builds](doc/containers.md)
+- [Implementation status](misc/gon/STATUS.md) and [validation evidence](misc/gon/VALIDATION.md)
+- [Benchmark methodology](misc/gon/benchmarks/README.md) and [measured results](misc/gon/benchmarks/results/20261007T033706Z/report.md)
 
 ## Try Gon
+
+Download a prebuilt toolchain and the VS Code extension from
+[Gon releases](https://github.com/tomaszbk/gon/releases).
+[Installation instructions →](doc/install.md)
 
 Use the [development container image](doc/containers.md) to compile and test
 Gon projects or build application containers for the cloud:
@@ -325,8 +359,9 @@ Build Gon once and keep its toolchain directory in place.
    exception is a prefix `!` split from its operand by a newline; keep it on
    one line.
 
-3. **Select Gon in your editor.** In VS Code, install the Gon extension's local
-   VSIX, disable the official Go extension **for this workspace**, and reload.
+3. **Select Gon in your editor.** In VS Code, install the Gon extension's
+   [downloadable VSIX](https://github.com/tomaszbk/gon/releases), disable the
+   official Go extension **for this workspace**, and reload.
    The enabled Gon extension automatically uses Gon for `.go` files and finds
    the installed tools. No `gon.enabled` flag or settings file is required.
    Optional tool-path overrides select a particular installation.
@@ -361,7 +396,7 @@ expose the same semantic engine to scripts and agents.
 [Current implementation status](misc/gon/STATUS.md) and
 [validation evidence](misc/gon/VALIDATION.md) are maintained in place.
 
-**In development for Gon 2.27, the first stable release.** The eight original features and accepted 2.27 additions are implemented in
+**Gon 2.27 is the first stable release.** The eight original features and accepted 2.27 additions are implemented in
 the native compiler and maintained tools. See the [validation record](misc/gon/VALIDATION.md)
 for executed checks and platforms, and the [supported tooling limits](misc/gon/features.json).
 
@@ -384,6 +419,24 @@ output. The current report includes every workload, heap allocations, storage
 sizes and build costs, including increases. Go/Gon base revisions differ;
 modern versus legacy Gon isolates syntax on the same toolchain.
 [Measurements, raw samples and limits →](misc/gon/benchmarks/results/20261007T033706Z/report.md)
+
+The following build medians are from that **2026-10-07 source snapshot**, before
+the compact unit-enum representation and latest upstream integration. They are
+historical measurements, not a fresh benchmark of the release binaries.
+
+| Measurement | Go 1.27.1 | Gon, legacy Go | Gon, modern code | Conclusion |
+| --- | ---: | ---: | ---: | --- |
+| Recompile and link, dependencies cached | 249 ms | 249 ms | 251 ms | Same |
+| Build without changes | 105 ms | 109 ms | 115 ms | Same |
+| Executable size, bytes | 3,819,122 | 3,752,418 | 3,752,466 | Smaller |
+
+Here **Same** means similar in scale, not identical: the modern no-change build
+was about 9.5% slower than Go in this session. **Smaller** compares the Gon
+executables with Go; modern Gon adds 48 bytes over legacy Gon. Builds use warm
+dependency caches, and executables include runtime and debug metadata. Go and
+Gon have different upstream bases, so these differences cannot all be attributed
+to Gon syntax. The full report includes runtime results, allocations,
+representation sizes, regressions and measurement limits.
 
 ## Support Gon
 
