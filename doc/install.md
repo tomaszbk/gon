@@ -76,6 +76,7 @@ gradually with [Gon by example](gon-examples.md). The packaged
 [Gon agent skill](../.agents/skills/gon/SKILL.md) can be copied into your project
 with `python3 /path/to/gon-2.27.0/misc/gon/install.py --project-skill /path/to/project`.
 
-For cloud/application builds see [containers](containers.md). The `dev` image
-follows tested master; pin a published `sha-FULL_COMMIT_SHA` tag or digest for
-reproducible builds.
+For cloud/application builds see [containers](containers.md). Use
+`ghcr.io/tomaszbk/gon:v2.27.0` for this release; the `dev` image follows tested
+master. Pin a release tag, `sha-FULL_COMMIT_SHA` tag or digest for reproducible
+builds.

@@ -1,6 +1,6 @@
 # Gon containers
 
-The development toolchain image is `ghcr.io/tomaszbk/gon:dev`, linked to the
+The Gon 2.27.0 toolchain image is `ghcr.io/tomaszbk/gon:v2.27.0`, linked to the
 [Gon repository](https://github.com/tomaszbk/gon). It includes `gon`, `gonpls`,
 the standard library, Git, CA certificates and the C/C++ tools needed by cgo.
 The public PATH exposes only `gon` and `gonpls`; private Go-compatible tools
@@ -12,9 +12,9 @@ not establish validation evidence for `riscv64` or `wasm`.
 ## Try the toolchain
 
 ```sh
-docker run --rm ghcr.io/tomaszbk/gon:dev gon version
-docker run --rm ghcr.io/tomaszbk/gon:dev gon capabilities --json
-docker run --rm -v "$PWD:/workspace" ghcr.io/tomaszbk/gon:dev gon test ./...
+docker run --rm ghcr.io/tomaszbk/gon:v2.27.0 gon version
+docker run --rm ghcr.io/tomaszbk/gon:v2.27.0 gon capabilities --json
+docker run --rm -v "$PWD:/workspace" ghcr.io/tomaszbk/gon:v2.27.0 gon test ./...
 ```
 
 Run the last command from your application module. Keep the existing `.go`
@@ -28,7 +28,7 @@ image. This example assumes an application at `./cmd/server` that listens on
 port 8080 and can build with cgo disabled:
 
 ```dockerfile
-FROM ghcr.io/tomaszbk/gon:dev AS build
+FROM ghcr.io/tomaszbk/gon:v2.27.0 AS build
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN gon mod download
@@ -62,9 +62,10 @@ executable and runtime data; deployment does not need a Gon compiler.
 
 ## Tags and publication
 
-`dev` follows the latest successfully tested `master` commit. It is a moving
-development tag, not a stable Gon 2.27 release. For reproducible application
-builds, use the corresponding `sha-FULL_COMMIT_SHA` tag or image digest.
+`v2.27.0` identifies the stable release; `2.27` and `latest` follow the latest
+stable Gon 2.27 release. `dev` follows the latest successfully tested `master`
+commit. For reproducible application builds, use a release tag, the
+corresponding `sha-FULL_COMMIT_SHA` tag or image digest.
 
 The [container workflow](../.github/workflows/container.yml) builds both
 architectures on standard GitHub-hosted Linux runners. The Docker build runs
@@ -72,6 +73,8 @@ the existing nine-feature legacy/modern examples, with unmodified Go 1.27.1
 also executing the legacy program. The installed image then builds and runs
 both variants, checks gonpls/semantic commands and compiles a cgo program.
 Only passing images are pushed; `dev` advances after both platforms pass.
+Publishing a stable GitHub release adds its version tags to the already-tested
+multi-platform image for that exact source commit, without rebuilding it.
 Pull requests build and test without publishing. Publication uses the
 repository's `GITHUB_TOKEN`, with no personal-token secret required.
 
